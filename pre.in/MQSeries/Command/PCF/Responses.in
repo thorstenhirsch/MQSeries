@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: Responses.in,v 20.1 2002/03/18 20:35:09 biersma Exp $
+# $Id: Responses.in,v 21.1 2002/06/07 20:26:45 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -12,21 +12,33 @@ package MQSeries::Command::PCF;
   (
    Error				=> [ "Error",				$ResponseParameters{Error} ],
 
+   ChangeAuthInfo                   	=> [ &MQCMD_CHANGE_AUTH_INFO,		$ResponseParameters{AuthInfo} ],
    ChangeChannel                   	=> [ &MQCMD_CHANGE_CHANNEL,		$ResponseParameters{Channel} ],
    ChangeProcess 			=> [ &MQCMD_CHANGE_PROCESS,		$ResponseParameters{Process} ],
    ChangeQueue 				=> [ &MQCMD_CHANGE_Q,			$ResponseParameters{Queue} ],
    ChangeQueueManager 			=> [ &MQCMD_CHANGE_Q_MGR,		$ResponseParameters{QueueManager} ],
+
    ClearQueue 				=> [ &MQCMD_CLEAR_Q,			$ResponseParameters{Queue} ],
+
+   CopyAuthInfo				=> [ &MQCMD_COPY_AUTH_INFO,		$ResponseParameters{AuthInfo} ],
    CopyChannel 				=> [ &MQCMD_COPY_CHANNEL,		$ResponseParameters{Channel} ],
    CopyProcess 				=> [ &MQCMD_COPY_PROCESS,		$ResponseParameters{Process} ],
    CopyQueue 				=> [ &MQCMD_COPY_Q,			$ResponseParameters{Queue} ],
+
+   CreateAuthInfo 			=> [ &MQCMD_CREATE_AUTH_INFO,		$ResponseParameters{AuthInfo} ],
    CreateChannel 			=> [ &MQCMD_CREATE_CHANNEL,		$ResponseParameters{Channel} ],
    CreateProcess 			=> [ &MQCMD_CREATE_PROCESS,		$ResponseParameters{Process} ],
    CreateQueue 				=> [ &MQCMD_CREATE_Q,			$ResponseParameters{Queue} ],
+
+   DeleteAuthInfo 			=> [ &MQCMD_DELETE_AUTH_INFO,		$ResponseParameters{AuthInfo} ],
    DeleteChannel 			=> [ &MQCMD_DELETE_CHANNEL,		$ResponseParameters{Channel} ],
    DeleteProcess 			=> [ &MQCMD_DELETE_PROCESS,		$ResponseParameters{Process} ],
    DeleteQueue 				=> [ &MQCMD_DELETE_Q,			$ResponseParameters{Queue} ],
+
    Escape 				=> [ &MQCMD_ESCAPE,			$ResponseParameters{Escape} ],
+
+   InquireAuthInfo 			=> [ &MQCMD_INQUIRE_AUTH_INFO,		$ResponseParameters{AuthInfo} ],
+   InquireAuthInfoNames			=> [ &MQCMD_INQUIRE_AUTH_INFO_NAMES,    $ResponseParameters{AuthInfo} ],
    InquireChannel 			=> [ &MQCMD_INQUIRE_CHANNEL,		$ResponseParameters{Channel} ],
    InquireChannelNames 			=> [ &MQCMD_INQUIRE_CHANNEL_NAMES,	$ResponseParameters{Channel} ],
    InquireChannelStatus 		=> [ &MQCMD_INQUIRE_CHANNEL_STATUS,	$ResponseParameters{Channel} ],
@@ -38,8 +50,11 @@ package MQSeries::Command::PCF;
    InquireQueue 			=> [ &MQCMD_INQUIRE_Q,			$ResponseParameters{Queue} ],
    InquireQueueManager 			=> [ &MQCMD_INQUIRE_Q_MGR,		$ResponseParameters{QueueManager} ],
    InquireQueueNames 			=> [ &MQCMD_INQUIRE_Q_NAMES,		$ResponseParameters{Queue} ],
+   InquireQueueStatus 			=> [ &MQCMD_INQUIRE_Q_STATUS,		$ResponseParameters{QueueStatus} ],
+
    PingChannel 				=> [ &MQCMD_PING_CHANNEL,		$ResponseParameters{Channel} ],
    PingQueueManager 			=> [ &MQCMD_PING_Q_MGR,			$ResponseParameters{QueueManager} ],
+
    ResetChannel 			=> [ &MQCMD_RESET_CHANNEL,		$ResponseParameters{Channel} ],
    ResetQueueStatistics 		=> [ &MQCMD_RESET_Q_STATS,		$ResponseParameters{Queue} ],
    ResolveChannel 			=> [ &MQCMD_RESOLVE_CHANNEL,		$ResponseParameters{Channel} ],

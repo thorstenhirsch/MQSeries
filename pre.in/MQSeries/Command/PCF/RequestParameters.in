@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: RequestParameters.in,v 20.1 2002/03/18 20:34:49 biersma Exp $
+# $Id: RequestParameters.in,v 21.1 2002/06/07 20:07:22 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,6 +21,7 @@ package MQSeries::Command::PCF;
     ClusterWorkLoadData         => [ &MQCA_CLUSTER_WORKLOAD_DATA,       &MQCFT_STRING ],
     ClusterWorkLoadExit         => [ &MQCA_CLUSTER_WORKLOAD_EXIT,       &MQCFT_STRING ],
     ClusterWorkLoadLength       => [ &MQIA_CLUSTER_WORKLOAD_LENGTH,     &MQCFT_INTEGER ],
+    ConfigurationEvent          => [ &MQIA_CONFIGURATION_EVENT,         &MQCFT_INTEGER ],
     DeadLetterQName             => [ &MQCA_DEAD_LETTER_Q_NAME,          &MQCFT_STRING ],
     DefXmitQName                => [ &MQCA_DEF_XMIT_Q_NAME,             &MQCFT_STRING ],
     Force                       => [ &MQIACF_FORCE,                     &MQCFT_INTEGER ],
@@ -34,14 +35,17 @@ package MQSeries::Command::PCF;
     RemoteEvent                 => [ &MQIA_REMOTE_EVENT,                &MQCFT_INTEGER ],
     RepositoryName              => [ &MQCA_REPOSITORY_NAME,             &MQCFT_STRING ],
     RepositoryNamelist          => [ &MQCA_REPOSITORY_NAMELIST,         &MQCFT_STRING ],
+    SSLCRLNamelist              => [ &MQCA_SSL_CRL_NAMELIST,            &MQCFT_STRING ],
+    SSLCryptoHardware           => [ &MQCA_SSL_CRYPTO_HARDWARE,         &MQCFT_STRING ],
+    SSLKeyRepository            => [ &MQCA_SSL_KEY_REPOSITORY,          &MQCFT_STRING ],
     StartStopEvent              => [ &MQIA_START_STOP_EVENT,            &MQCFT_INTEGER ],
     TriggerInterval             => [ &MQIA_TRIGGER_INTERVAL,            &MQCFT_INTEGER ],
    },
 
    Process =>
    {
-    ApplType                    => [ &MQIA_APPL_TYPE,			&MQCFT_INTEGER,		$RequestValues{ApplType} ],
-    ProcessAttrs                => [ &MQIACF_PROCESS_ATTRS,             &MQCFT_INTEGER_LIST,    $RequestValues{Process} ],
+    ApplType                    => [ &MQIA_APPL_TYPE,			&MQCFT_INTEGER,                 $RequestValues{ApplType} ],
+    ProcessAttrs                => [ &MQIACF_PROCESS_ATTRS,             &MQCFT_INTEGER_LIST,            $RequestValues{Process} ],
     ApplId                      => [ &MQCA_APPL_ID,                     &MQCFT_STRING ],
     EnvData                     => [ &MQCA_ENV_DATA,                    &MQCFT_STRING ],
     FromProcessName             => [ &MQCACF_FROM_PROCESS_NAME,         &MQCFT_STRING ],
@@ -54,16 +58,16 @@ package MQSeries::Command::PCF;
 
    Queue =>
    {
-    DefBind                     => [ &MQIA_DEF_BIND,			&MQCFT_INTEGER,		$RequestValues{DefBind} ],
-    DefinitionType              => [ &MQIA_DEFINITION_TYPE,             &MQCFT_INTEGER,		$RequestValues{DefinitionType} ],
-    DefInputOpenOption          => [ &MQIA_DEF_INPUT_OPEN_OPTION,       &MQCFT_INTEGER,		$RequestValues{DefInputOpenOption} ],
-    MsgDeliverySequence         => [ &MQIA_MSG_DELIVERY_SEQUENCE,       &MQCFT_INTEGER,		$RequestValues{MsgDeliverySequence} ],
-    QAttrs                      => [ &MQIACF_Q_ATTRS,                   &MQCFT_INTEGER_LIST,	$RequestValues{Queue} ],
-    QServiceIntervalEvent       => [ &MQIA_Q_SERVICE_INTERVAL_EVENT,    &MQCFT_INTEGER,		$RequestValues{QServiceIntervalEvent} ],
-    QType                       => [ &MQIA_Q_TYPE,                      &MQCFT_INTEGER,		$RequestValues{QType} ],
-    Scope                       => [ &MQIA_SCOPE,                       &MQCFT_INTEGER,		$RequestValues{Scope} ],
-    TriggerType                 => [ &MQIA_TRIGGER_TYPE,                &MQCFT_INTEGER,		$RequestValues{TriggerType} ],
-    Usage                       => [ &MQIA_USAGE,                       &MQCFT_INTEGER,		$RequestValues{Usage} ],
+    DefBind                     => [ &MQIA_DEF_BIND,			&MQCFT_INTEGER,                 $RequestValues{DefBind} ],
+    DefinitionType              => [ &MQIA_DEFINITION_TYPE,             &MQCFT_INTEGER,                 $RequestValues{DefinitionType} ],
+    DefInputOpenOption          => [ &MQIA_DEF_INPUT_OPEN_OPTION,       &MQCFT_INTEGER,                 $RequestValues{DefInputOpenOption} ],
+    MsgDeliverySequence         => [ &MQIA_MSG_DELIVERY_SEQUENCE,       &MQCFT_INTEGER,                 $RequestValues{MsgDeliverySequence} ],
+    QAttrs                      => [ &MQIACF_Q_ATTRS,                   &MQCFT_INTEGER_LIST,            $RequestValues{Queue} ],
+    QServiceIntervalEvent       => [ &MQIA_Q_SERVICE_INTERVAL_EVENT,    &MQCFT_INTEGER,                 $RequestValues{QServiceIntervalEvent} ],
+    QType                       => [ &MQIA_Q_TYPE,                      &MQCFT_INTEGER,                 $RequestValues{QType} ],
+    Scope                       => [ &MQIA_SCOPE,                       &MQCFT_INTEGER,                 $RequestValues{Scope} ],
+    TriggerType                 => [ &MQIA_TRIGGER_TYPE,                &MQCFT_INTEGER,                 $RequestValues{TriggerType} ],
+    Usage                       => [ &MQIA_USAGE,                       &MQCFT_INTEGER,                 $RequestValues{Usage} ],
     BackoutRequeueName          => [ &MQCA_BACKOUT_REQ_Q_NAME,          &MQCFT_STRING ],
     BackoutThreshold            => [ &MQIA_BACKOUT_THRESHOLD,           &MQCFT_INTEGER ],
     BaseQName                   => [ &MQCA_BASE_Q_NAME,                 &MQCFT_STRING ],
@@ -106,16 +110,17 @@ package MQSeries::Command::PCF;
 
    Channel =>
    {
-    ChannelAttrs                => [ &MQIACF_CHANNEL_ATTRS,             &MQCFT_INTEGER_LIST,	$RequestValues{Channel} ],
-    ChannelInstanceAttrs        => [ &MQIACH_CHANNEL_INSTANCE_ATTRS,    &MQCFT_INTEGER_LIST,	$RequestValues{Channel} ],
-    ChannelInstanceType         => [ &MQIACH_CHANNEL_INSTANCE_TYPE,     &MQCFT_INTEGER,		$RequestValues{ChannelInstanceType} ],
-    ChannelTable                => [ &MQIACH_CHANNEL_TABLE,             &MQCFT_INTEGER,		$RequestValues{ChannelTable} ],
-    ChannelType                 => [ &MQIACH_CHANNEL_TYPE,              &MQCFT_INTEGER,		$RequestValues{ChannelType} ],
-    InDoubt                     => [ &MQIACH_IN_DOUBT,                  &MQCFT_INTEGER,		$RequestValues{InDoubt} ],
-    MCAType                     => [ &MQIACH_MCA_TYPE,                  &MQCFT_INTEGER,		$RequestValues{MCAType} ],
-    NonPersistentMsgSpeed       => [ &MQIACH_NPM_SPEED,                 &MQCFT_INTEGER,		$RequestValues{NonPersistentMsgSpeed} ],
-    PutAuthority                => [ &MQIACH_PUT_AUTHORITY,             &MQCFT_INTEGER,		$RequestValues{PutAuthority} ],
-    TransportType               => [ &MQIACH_XMIT_PROTOCOL_TYPE,        &MQCFT_INTEGER,		$RequestValues{TransportType} ],
+    ChannelAttrs                => [ &MQIACF_CHANNEL_ATTRS,             &MQCFT_INTEGER_LIST,            $RequestValues{Channel} ],
+    ChannelInstanceAttrs        => [ &MQIACH_CHANNEL_INSTANCE_ATTRS,    &MQCFT_INTEGER_LIST,            $RequestValues{Channel} ],
+    ChannelInstanceType         => [ &MQIACH_CHANNEL_INSTANCE_TYPE,     &MQCFT_INTEGER,                 $RequestValues{ChannelInstanceType} ],
+    ChannelTable                => [ &MQIACH_CHANNEL_TABLE,             &MQCFT_INTEGER,                 $RequestValues{ChannelTable} ],
+    ChannelType                 => [ &MQIACH_CHANNEL_TYPE,              &MQCFT_INTEGER,                 $RequestValues{ChannelType} ],
+    InDoubt                     => [ &MQIACH_IN_DOUBT,                  &MQCFT_INTEGER,                 $RequestValues{InDoubt} ],
+    MCAType                     => [ &MQIACH_MCA_TYPE,                  &MQCFT_INTEGER,                 $RequestValues{MCAType} ],
+    NonPersistentMsgSpeed       => [ &MQIACH_NPM_SPEED,                 &MQCFT_INTEGER,                 $RequestValues{NonPersistentMsgSpeed} ],
+    PutAuthority                => [ &MQIACH_PUT_AUTHORITY,             &MQCFT_INTEGER,                 $RequestValues{PutAuthority} ],
+    TransportType               => [ &MQIACH_XMIT_PROTOCOL_TYPE,        &MQCFT_INTEGER,                 $RequestValues{TransportType} ],
+    BatchHeartBeat              => [ &MQIACH_BATCH_HB,                  &MQCFT_INTEGER ],
     BatchInterval               => [ &MQIACH_BATCH_INTERVAL,            &MQCFT_INTEGER ],
     BatchSize                   => [ &MQIACH_BATCH_SIZE,                &MQCFT_INTEGER ],
     ChannelDesc                 => [ &MQCACH_DESC,                      &MQCFT_STRING ],
@@ -129,6 +134,7 @@ package MQSeries::Command::PCF;
     FromChannelName             => [ &MQCACF_FROM_CHANNEL_NAME,         &MQCFT_STRING ],
     HeartbeatInterval           => [ &MQIACH_HB_INTERVAL,               &MQCFT_INTEGER ],
     InitiationQName             => [ &MQCA_INITIATION_Q_NAME,           &MQCFT_STRING ],
+    LocalAddress                => [ &MQCACH_LOCAL_ADDRESS,             &MQCFT_STRING ],
     LongRetryCount              => [ &MQIACH_LONG_RETRY,                &MQCFT_INTEGER ],
     LongRetryInterval           => [ &MQIACH_LONG_TIMER,                &MQCFT_INTEGER ],
     MCAName                     => [ &MQCACH_MCA_NAME,                  &MQCFT_STRING ],
@@ -156,6 +162,9 @@ package MQSeries::Command::PCF;
     SeqNumberWrap               => [ &MQIACH_SEQUENCE_NUMBER_WRAP,      &MQCFT_INTEGER ],
     ShortRetryCount             => [ &MQIACH_SHORT_RETRY,               &MQCFT_INTEGER ],
     ShortRetryInterval          => [ &MQIACH_SHORT_TIMER,               &MQCFT_INTEGER ],
+    SSLCipherSpec               => [ &MQCACH_SSL_CIPHER_SPEC,           &MQCFT_STRING ],
+    SSLClientAuth               => [ &MQIACH_SSL_CLIENT_AUTH,           &MQCFT_INTEGER,                 $RequestValues{SSLClientAuth} ],
+    SSLPeerName                 => [ &MQCACH_SSL_PEER_NAME,             &MQCFT_STRING ],
     ToChannelName               => [ &MQCACF_TO_CHANNEL_NAME,           &MQCFT_STRING ],
     TpName                      => [ &MQCACH_TP_NAME,                   &MQCFT_STRING ],
     UserIdentifier              => [ &MQCACH_USER_ID,                   &MQCFT_STRING ],
@@ -181,8 +190,8 @@ package MQSeries::Command::PCF;
 
    Cluster =>
    {
-    Action                      => [ &MQIACF_ACTION,                    &MQCFT_INTEGER,		$RequestValues{Action} ],
-    ClusterQMgrAttrs            => [ &MQIACF_CLUSTER_Q_MGR_ATTRS,       &MQCFT_INTEGER_LIST,	$RequestValues{Cluster} ],
+    Action                      => [ &MQIACF_ACTION,                    &MQCFT_INTEGER,                 $RequestValues{Action} ],
+    ClusterQMgrAttrs            => [ &MQIACF_CLUSTER_Q_MGR_ATTRS,       &MQCFT_INTEGER_LIST,            $RequestValues{Cluster} ],
     Channel                     => [ &MQCACH_CHANNEL_NAME,              &MQCFT_STRING ],
     ClusterName                 => [ &MQCA_CLUSTER_NAME,                &MQCFT_STRING ],
     ClusterNamelist             => [ &MQCA_CLUSTER_NAMELIST,            &MQCFT_STRING ],
@@ -191,6 +200,34 @@ package MQSeries::Command::PCF;
     Quiesce                     => [ &MQIACF_QUIESCE,                   &MQCFT_INTEGER ],
    },
 
+   #
+   # New with WebSphere MQ 5.3
+   #
+   AuthInfo =>
+   {
+    AuthInfoAttrs               => [ &MQIACF_AUTH_INFO_ATTRS,           &MQCFT_INTEGER_LIST,            $RequestValues{AuthInfo} ],
+    AuthInfoConnName            => [ &MQCA_AUTH_INFO_CONN_NAME,         &MQCFT_STRING ],
+    AuthInfoDesc                => [ &MQCA_AUTH_INFO_DESC,              &MQCFT_STRING ],
+    AuthInfoName                => [ &MQCA_AUTH_INFO_NAME,              &MQCFT_STRING ],
+    AuthInfoType                => [ &MQIA_AUTH_INFO_TYPE,              &MQCFT_INTEGER,                 $RequestValues{AuthInfoType} ],
+    FromAuthInfoName            => [ &MQCACF_FROM_AUTH_INFO_NAME,       &MQCFT_STRING ],
+    LDAPPassword                => [ &MQCA_LDAP_PASSWORD,               &MQCFT_STRING ],
+    LDAPUserName                => [ &MQCA_LDAP_USER_NAME,              &MQCFT_STRING ],
+    ToAuthInfoName              => [ &MQCACF_TO_AUTH_INFO_NAME,         &MQCFT_STRING ],
+   },
+
+   QueueStatus =>
+   {
+    OpenType                    => [ &MQIACF_OPEN_TYPE,                 &MQCFT_INTEGER,                 $RequestValues{OpenType} ],
+    QName                       => [ &MQCA_Q_NAME,                      &MQCFT_STRING ],
+    QStatusAttrs                => [ &MQIACF_Q_STATUS_ATTRS,            &MQCFT_INTEGER_LIST,            $RequestValues{QStatusAttrs} ],
+    StatusType                  => [ &MQIACF_Q_STATUS_TYPE,             &MQCFT_INTEGER,                 $RequestValues{StatusType} ],
+   },
+
+
+   #
+   # Used by Morgan Stanley extensions
+   #
    Authority =>
    {
     ObjectType			=> [ &MQIAE_OBJECT_TYPE,		&MQCFT_INTEGER,		$RequestValues{ObjectType} ],

@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 20.2 2002/03/13 15:31:16 biersma Exp $
+# $Id: parse_headers,v 21.1 2002/05/14 16:30:00 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -74,6 +74,15 @@ foreach my $header ( @headers ) {
 
 	my ($key,$value) = (split(/\s+/,$_,3))[1,2];
 
+        #
+        # Skip the MQ_64_BIT constant (which has no value)
+        #
+        next if ($key eq 'MQ_64_BIT');
+
+        #unless (defined $value) {
+        #    print STDERR "XX: key [$key] leads to undefined value\n";
+        #}
+
 	next if $key eq "MQENTRY";
 	next if $key eq "MQPOINTER";
 
@@ -123,27 +132,39 @@ foreach my $header ( @headers ) {
 	    $value =~ s/L$//;
 	    $constant_hex{$key} = eval($value);
 	}
+
 	#
-	# Numeric
+	# Numeric constants
 	#
-	# NOTE: Special case to handle the MQ_64_BIT conditionals.  If
-	# we see the same value more than once, then we use the longer
-	# value IFF we are compiling with a 64 bit perl.  Sleazy, but
-	# effective.  This works because the ONLY parameters that are
+	# NOTE: Special case to handle the MQ_64_BIT conditionals.
+        # This works because the ONLY parameters that are
 	# affected by these conditionals are the _LENGTH parameters
 	# for some of the structures.
 	#
+        # At this time, we assume you are not using the 64-bit client
+        # on Solaris.  Patches to support this (preferably with
+        # auto-detection in the Makefile) are welcome.
+        #
 	elsif ( $value =~ /L$/ || $value =~ /^-?\d+$/) {
 
 	    $value =~ s/L$//;
 
-	    if ( not exists $constant_numeric{$key} ) {
+            my $use_64_bit = 0; # Patchers: hint, hint
+
+	    if (not exists $constant_numeric{$key} || # First time
+                (not defined $value && not defined $constant_numeric{$key}) &&
+                (defined $value && defined $constant_numeric{$key} && $constant_numeric{$key} eq $value) # No change
+               ) {
 		$constant_numeric{$key} = $value;
-	    } elsif ( $Config{use64bits} eq 'true' && $value > $constant_numeric{$key} ) {
+	    } elsif ($use_64_bit && $value > $constant_numeric{$key}) {
+                #print STDERR "AAA: Use 64-bit value [$key] [$value]\n";
 		$constant_numeric{$key} = $value;
-	    } elsif ( $Config{use64bits} eq 'false' && $value < $constant_numeric{$key} ) {
+	    } elsif (not $use_64_bit && $value < $constant_numeric{$key}) {
+                #print STDERR "AAA: Use 32-bit value [$key] [$value]\n";
 		$constant_numeric{$key} = $value;
-	    }
+	    } else {
+                print STDERR "WARNING: Have two conflicting constant values for [$key], using first\n";
+            }
 
 	}
 	#

@@ -1,5 +1,5 @@
 #
-# $Id: AdminMessage.pm,v 20.2 2002/03/18 20:33:27 biersma Exp $
+# $Id: AdminMessage.pm,v 21.2 2002/05/01 13:46:10 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::PubSub::AdminMessage;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
@@ -22,7 +22,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 #
 # Generate the message contents from the Command

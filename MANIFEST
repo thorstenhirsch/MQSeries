@@ -1,7 +1,9 @@
 CONFIG
 COPYRIGHT
+Changes.html
 Changes.src
 LICENSE
+MANIFEST
 MQClient/MQSeries.pm.in
 MQClient/MQSeries.xs.in/00header
 MQClient/MQSeries.xs.in/21core
@@ -102,6 +104,7 @@ MQSeries/QueueManager.pm
 MQSeries/Utils.pm
 Makefile.PL
 README
+README.html
 examples/OO/request-reply-1/reply.pl
 examples/OO/request-reply-1/request.pl
 examples/OO/request-reply-2/reply.pl

@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameters.pl,v 20.1 2002/03/18 20:33:48 biersma Exp $
+# $Id: RequestParameters.pl,v 21.1 2002/06/21 16:04:30 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -225,6 +225,15 @@ package MQSeries::Command::MQSC;
 
     NamelistAttrs		=> [ "",		$RequestValues{NamelistAttrs} ],
 
+   },
+
+   InquireQueueStatus =>
+   {
+    QName                       => [ "QSTATUS",         "string" ],
+    CommandScope                => [ "CMDSCOPE",        "string" ],
+    StatusType                  => [ "TYPE",            $RequestValues{StatusType} ],
+    OpenType                    => [ "OPENTYPE",        $RequestValues{OpenType} ],
+    QStatusAttrs                => [ "",                $RequestValues{QStatusAttrs} ],
    },
 
    ResetQueueStatistics =>

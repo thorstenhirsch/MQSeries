@@ -5,7 +5,7 @@
 # (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 20.2 2002/03/18 20:34:12 biersma Exp $
+# $Id: Parser.pm,v 21.2 2002/06/06 15:07:05 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -27,7 +27,7 @@ use vars qw(
 
 require "MQSeries/ErrorLog/descriptions.pl";
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 #
 # Constructor
@@ -66,7 +66,7 @@ sub parse_data {
     confess "Illegal no of args" unless (@_ == 2 && defined $text);
 
     my @entries;
-    my @chunks = split /\n---+\n/, $text;
+    my @chunks = split /\n----+(?: [\w.]+ : \d+ ----+)?\n/, $text;
     #print "Have [" . @chunks . "] chunks\n";
     foreach (@chunks) {
         #

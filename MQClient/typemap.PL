@@ -1,5 +1,5 @@
 #
-# $Id: typemap.PL,v 20.1 2002/03/18 20:32:53 biersma Exp $
+# $Id: typemap.PL,v 21.2 2002/06/10 18:16:22 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -11,7 +11,7 @@
 # typemap for the TYPE, and $output{TYPE} is the output section of the
 # typemap.
 #
-# The acutal code used to convert a field can be found in:
+# The actual code used to convert a field can be found in:
 #
 #	&long_output, &long_input		for MQLONG types
 #	&string_output, &string_input		for MQCHARn types
@@ -53,6 +53,12 @@ while ( <> ) {
 	$input{$type} .= &input_footer($type);
 	undef $type;
     }
+    elsif ($type && /^\s*\}\s*;\s*$/) {
+        # exit of a type in 5.3 headers
+	print "#we're ending a $type\n" if $debug;
+	$input{$type} .= &input_footer($type);
+	undef $type;
+    }
     elsif ($type && ($_ =~ /\s+(MQ\w+)\s+(\w+);/)) {
 	# found a new field of type $fieldt and name $field:
 	$fieldt = $1;
@@ -62,11 +68,10 @@ while ( <> ) {
 	print "#Found a $field of type $fieldt\n" if $debug;
 
 	#
-	# Three known types we don't support.  Ignore them.
+	# A list of known types we don't support.  Ignore them.
 	#
-	next if $fieldt eq 'MQPTR';
-	next if $fieldt eq 'MQMD1';
-	next if $fieldt eq 'MQHCONN';
+	next if (grep { $fieldt eq $_ } 
+                 qw(MQPTR MQMD1 MQHCONN MQPOINTER MQPID MQTID MQHCONFIG));
 
 	if ($fieldt eq 'MQLONG' ||
 	    $fieldt eq 'MQHOBJ') {
@@ -146,6 +151,7 @@ PMQVOID		T_PV
 PPMQVOID	T_PV
 
 # Structures
+MQAIR           T_MQAIR
 MQBO		T_MQBO
 MQCNO		T_MQCNO
 MQDH		T_MQDH
@@ -161,6 +167,7 @@ MQPMO		T_MQPMO
 MQRFH		T_MQRFH
 MQRMH		T_MQRMH
 MQRR		T_MQRR
+MQSCO           T_MQSCO
 MQTM		T_MQTM
 MQTMC2		T_MQTMC2
 MQXQH		T_MQXQH

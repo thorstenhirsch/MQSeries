@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: ResponseValues.in,v 20.1 2002/03/18 20:35:03 biersma Exp $
+# $Id: ResponseValues.in,v 21.1 2002/06/07 19:46:19 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -146,13 +146,16 @@ package MQSeries::Command::PCF;
    ApplType =>
    {
     CICS			=> &MQAT_CICS,
+    CHINIT                      => &MQAT_CHANNEL_INITIATOR,
     DOS				=> &MQAT_DOS,
     IMS				=> &MQAT_IMS,
     MVS				=> &MQAT_MVS,
     NSK                         => &MQAT_NSK,
     OS2				=> &MQAT_OS2,
     OS400			=> &MQAT_OS400,
+    QMGR                        => &MQAT_QMGR,
     UNIX			=> &MQAT_UNIX,
+    USER                        => &MQAT_USER,
     VMS				=> &MQAT_VMS,
     Win16			=> &MQAT_WINDOWS,
     Win32			=> &MQAT_WINDOWS_NT,
@@ -193,6 +196,7 @@ package MQSeries::Command::PCF;
 
    ObjectType =>
    {
+    AuthInfo                    => &MQOT_AUTH_INFO,
     Namelist			=> &MQOT_NAMELIST,
     Process			=> &MQOT_PROCESS,
     Queue			=> &MQOT_Q,
@@ -216,6 +220,30 @@ package MQSeries::Command::PCF;
     ClntconnChannel		=> &MQOT_CLNTCONN_CHANNEL,
    },
 
+   #
+   # New with WebSphere MQ 5.3
+   #
+   AuthInfoType =>
+   {
+    CRLLDAP                     => &MQAIT_CRL_LDAP,
+   },
+
+   QStatusInputType => 
+   {
+    Exclusive                   => &MQQSO_EXCLUSIVE,
+    No                          => &MQQSO_NO,
+    Shared                      => &MQQSO_SHARED,
+   },
+
+   SSLClientAuth =>
+   {
+    Optional                    => &MQSCA_OPTIONAL,
+    Required                    => &MQSCA_REQUIRED,
+   },
+
+   #
+   # Used with the Morgan Stanley extended Authority commands
+   #
    EntityType =>
    {
     Principal			=> &MQETE_PRINCIPAL,

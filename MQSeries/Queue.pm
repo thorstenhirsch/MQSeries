@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 20.3 2002/03/13 15:24:15 biersma Exp $
+# $Id: Queue.pm,v 21.3 2002/05/09 18:28:45 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Queue;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
@@ -26,7 +26,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 sub new {
     my $proto = shift;
@@ -473,18 +473,25 @@ sub Get {
 
     #
     # This flag is used to prevent the redo logic from looping.  We
-    # want to handle MQRC_TRUNCATED_MSG_FAILED and
-    # MQRC_CONVERTED_MSG_TOO_BIG retries exactly once.
+    # want to handle MQRC_TRUNCATED_MSG_FAILED retries exactly once
+    # for the same message.
     #
     # If DisableAutoResize is given as either an argument to the
     # object constructor, *or* to the Get method call, then this will
     # effectively disable the redo logic.
     #
-    my $redone = $self->{DisableAutoResize} || $args{DisableAutoResize};
+    # However, the redo issue is more complex than you'd hope: if we
+    # have to issue a re-read, we have to do so with the original
+    # MQMD, as the encoding or the message we just read partially may
+    # screw us up on a re-read.  And in the meantime, somebody else
+    # may take that message away from us...
+    #
+    my $retry_allowed = not($self->{DisableAutoResize} || 
+                            $args{DisableAutoResize});
+    my $retry_msgid = '';       # Msg id of message in retry
+    my %orig_mqmd = %{ $args{Message}->MsgDesc() }; # Deep copy
 
-  GET:
-    {
-
+    while (1) {
 	$self->{"GetConvertReason"} = 0;
 
 	my $data = undef;
@@ -505,21 +512,17 @@ sub Get {
 	# truncated message.  Note that it may very well fail, but
 	# we'll try anyway.
 	#
-	if (
-	    $self->{"CompCode"} == MQSeries::MQCC_OK ||
+	if ($self->{"CompCode"} == MQSeries::MQCC_OK ||
 	    (
 	     $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
 	     $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_ACCEPTED
-	    )
-	   ) {
+	    )) {                # Successful read
 
-	    if (
-		$GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT ||
+	    if ($GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT ||
 		(
 		 $GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT &&
 		 $args{Message}->MsgDesc('Persistence')
-		)
-	       ) {
+		)) {
 		$self->{QueueManager}->{_Pending}->{Get}++;
 	    }
 
@@ -531,7 +534,7 @@ sub Get {
 		    return;
 		}
 	    } else {
-		if ( $args{Message}->can("GetConvert") ) {
+		if ($args{Message}->can("GetConvert") ) {
 		    $data = $args{Message}->GetConvert($buffer);
 		    unless ( defined $data ) {
 			$self->{"GetConvertReason"} = 1;
@@ -556,30 +559,46 @@ sub Get {
 
 	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
 
-	    if ( $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_FAILED and not $redone ) {
+	    if ( $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_FAILED 
+                 and $retry_allowed ) {
+                #
+                # FIXME: Maybe add some buffer poker-space
+                #
 		$args{Message}->BufferLength($datalength);
-		$redone = 1;
-		redo GET;
-	    } elsif ( $self->{"Reason"} == MQSeries::MQRC_CONVERTED_MSG_TOO_BIG and not $redone ) {
-		$args{Message}->BufferLength(2 * $datalength);
-		$redone = 1;
-		redo GET;
+                $retry_msgid = $args{Message}->MsgDesc('MsgId');
+                $args{Message}{'MsgDesc'} = { %orig_mqmd,
+                                              'MsgId' => $retry_msgid,
+                                            };
+                next;           # Retry
 	    } else {
+                #
+                # Make buffer available, even though it may be garbage.
+                # If the app chooses to ignore MQCC_WARNING, it may
+                # be of use to it.
+                #
+                $args{Message}->Data($buffer) if ($buffer);
 		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
 		return;
 	    }
 
 	} else {
-
 	    if ( $self->{"Reason"} == MQSeries::MQRC_NO_MSG_AVAILABLE ) {
+                #
+                # If we are in a retry, somebody else beat us to the
+                # message.  Retry for a fresh message...
+                #
+                if ($retry_msgid) { # In retry - clean up
+                    $retry_msgid = '';
+                    $args{Message}{'MsgDesc'} = { %orig_mqmd };
+                    next;
+                }
+
 		return -1;
 	    } else {
 		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
 		return;
 	    }
-
 	}
-
     }
 }
 

@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 31MQCONNX-v5,v 20.1 2002/03/18 20:32:27 biersma Exp $
+# $Id: 31MQCONNX-v5,v 21.2 2002/05/13 16:25:00 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,7 +16,189 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
 	MQLONG		Reason
 
 	CODE:
-	MQCONNX(Name,&ConnectOpts,&RETVAL,&CompCode,&Reason);
+        {
+#ifdef MQCNO_VERSION_2
+        MQCD ClientConnOpts = { MQCD_CLIENT_CONN_DEFAULT };
+
+        /* 
+           If the ClientConn hash entry is present in the ConnectOpts, 
+           we need to build an MQCD data structure manually
+           and refer to it from the MQCON data structure.
+        */
+        if (hv_exists((HV*)SvRV(ST(1)),"ClientConn",10)) {
+          SV **cvp, **elem;
+          HV *options;
+          int FieldSize, StringLength;
+          char *String;
+
+          /* warn("Using ClientConn options to set MQCD"); */
+          ConnectOpts.ClientConnOffset = 0;
+          ConnectOpts.ClientConnPtr = &ClientConnOpts;
+          ConnectOpts.Version = MQCNO_VERSION_2;
+          cvp = hv_fetch((HV*)SvRV(ST(1)),"ClientConn",10, FALSE);
+          if ( !SvROK(*cvp) || ( SvROK(*cvp) &&
+                                 SvTYPE(SvRV(*cvp)) != SVt_PVHV ) ) {
+            warn("Invalid data for ClientConn, not a HASH reference\n");
+            XSRETURN_EMPTY;
+          }
+          options = (HV*)SvRV(*cvp);
+          
+          /* ChannelName */
+          elem = hv_fetch(options, "ChannelName", 11, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.ChannelName);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.ChannelName,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* Version */
+          elem = hv_fetch(options, "Version", 7, FALSE);
+          if (elem) {
+            ClientConnOpts.Version = SvIV(*elem);
+          }
+          
+          /* TransportType */
+          /* We support the string "TCP", or any numerical constant */
+          elem = hv_fetch(options, "TransportType", 13, FALSE);
+          if (elem) {
+            String = SvPV(*elem, StringLength);
+            if (StringLength && ! strcmp(String, "TCP")) {
+              ClientConnOpts.TransportType = MQXPT_TCP;
+            } else {            /* Fall back on numerical code */
+              ClientConnOpts.TransportType = SvIV(*elem);
+            }
+          }
+          
+          /* ModeName */
+          elem = hv_fetch(options, "ModeName", 8, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.ModeName);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.ModeName,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* TpName */
+          elem = hv_fetch(options, "TpName", 6, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.TpName);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.TpName,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* SecurityExit */
+          elem = hv_fetch(options, "SecurityExit", 12, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.SecurityExit);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.SecurityExit,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* SendExit */
+          elem = hv_fetch(options, "SendExit", 8, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.SendExit);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.SendExit,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* ReceiveExit */
+          elem = hv_fetch(options, "ReceiveExit", 11, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.ReceiveExit);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.ReceiveExit,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* MaxMsgLength */
+          elem = hv_fetch(options, "MaxMsgLength", 12, FALSE);
+          if (elem) {
+            ClientConnOpts.MaxMsgLength = SvIV(*elem);
+          }
+
+          /* SecurityUserData */
+          elem = hv_fetch(options, "SecurityUserData", 16, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.SecurityUserData);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.SecurityUserData,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* SendUserData */
+          elem = hv_fetch(options, "SendUserData", 12, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.SendUserData);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.SendUserData,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* ReceiveUserData */
+          elem = hv_fetch(options, "ReceiveUserData", 15, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.ReceiveUserData);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.ReceiveUserData,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* UserIdentifier */
+          elem = hv_fetch(options, "UserIdentifier", 14, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.UserIdentifier);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.UserIdentifier,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* Password */
+          elem = hv_fetch(options, "Password", 8, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.Password);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.Password,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* ConnectionName */
+          elem = hv_fetch(options, "ConnectionName", 14, FALSE);
+          if (elem) {
+            FieldSize = sizeof(ClientConnOpts.ConnectionName);
+            String = SvPV(*elem, StringLength);
+            strncpy(ClientConnOpts.ConnectionName,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* HeartbeatInterval */
+          elem = hv_fetch(options, "HeartbeatInterval", 17, FALSE);
+          if (elem) {
+            ClientConnOpts.HeartbeatInterval = SvIV(*elem);
+          }
+        } else {
+          /* warn("ClientConn options not present"); */
+        }
+#endif
+
+        MQCONNX(Name,&ConnectOpts,&RETVAL,&CompCode,&Reason);
+        }
 	OUTPUT:
 	ConnectOpts
 	RETVAL

@@ -31,20 +31,38 @@ while ( <> ) {
     s/\s+$//;
 
     # <P><DT>MQRC_ADAPTER_DEFS_LOAD_ERROR
-    if ( /<P><DT>(MQRC(CF)?_.*)/ ) {
+    if ( /<P><DT>(MQRC(?:CF)?_\S+)/ ) {
 	$reason = $1;
 	$text{$reason} = undef unless defined $text{$reason};
 	$maxlength = length($reason) if length($reason) > $maxlength;
     }
     # <DD>(2132, X'854') Unable to load adapter subsystem definition module.
-    elsif ( /^<DD>\(\d+,\s+X\'[^\']+\'\)\s+(.*)/ ) {
-	$text{$reason} = $1 unless defined $text{$reason};
+    elsif ( /^(?:<\/DT>)?<DD>\(\d+,\s+X\'[^\']+\'\)\s+(.*)/ ) {
+        my $desc = $1;
+        $desc =~ s!</?\w[^>]+>!!g;
+	$text{$reason} = $desc unless defined $text{$reason};
     }
-    elsif ( /^<DD>(.*)/ ) {
-	$text{$reason} = $1 unless defined $text{$reason};
+    elsif ($reason && /^(?:<\/DT>)?<DD>(.*)/ ) {
+        my $desc = $1;
+        $desc =~ s!</?\w[^>]+>!!g;
+	$text{$reason} = $desc unless defined $text{$reason};
     }
-
 }
+#$maxlength--;
+
+#
+# Hack, hack... read the files generated from a previous release and add
+# those entries that are no longer generated or parseable.
+#
+open (OLD, "/ms/dev/perl5/MQSeries/1.17/src/pre.in/MQSeries/Constants/ReasonText.in") || die "Cannot open: $!";
+while (<OLD>) {
+    #&MQRCCF_CFST_STRING_LENGTH_ERR  => "String length not valid.",
+    next unless (/&(MQR\S+)\s+=>\s+\"(.*?)\"/);
+    my ($reason, $desc) = ($1, $2);
+    $text{$reason} = $desc;
+}
+close OLD;
+             
 
 foreach my $type ( qw( ReasonText ReasonMacro ) ) {
     
@@ -72,7 +90,7 @@ foreach my $type ( qw( ReasonText ReasonMacro ) ) {
 #
 #    ..../src/util/extract_reason_codes
 #
-# $Id: extract_reason_codes,v 20.1 2002/03/18 20:31:28 biersma Exp $
+# \$Id: extract_reason_codes,v 21.1 2002/07/08 14:58:40 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 20.2 2002/03/18 20:33:38 biersma Exp $
+# $Id: Command.pm,v 21.3 2002/06/07 20:05:25 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Command;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
@@ -17,18 +17,23 @@ use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::Command::Request;
 use MQSeries::Command::Response;
-use MQSeries::Command::PCF;
-use MQSeries::Command::MQSC;
-use MQSeries::Utils qw(ConvertUnit);
+#use MQSeries::Command::PCF;
+#use MQSeries::Command::MQSC;
+use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
 
 use vars qw($VERSION);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 sub new {
-    my $proto = shift;
+    my ($proto, %args) = @_;
     my $class = ref($proto) || $proto;
-    my %args = @_;
+    VerifyNamedParams(\%args, 
+                      [ qw(QueueManager) ],
+                      [ qw(Type Carp DynamicQName Expiry Wait
+                           ModelQName StrictMapping
+                           CommandQueueName RealQueueManager
+                           ProxyQueueManager ReplyToQMgr ReplyToQ) ]);
 
     my $self =
       {
@@ -42,69 +47,53 @@ sub new {
        DynamicQName		=> 'PERL.COMMAND.*',
        StrictMapping		=> 0,
        Stats                    => {},
-      };
+      };                        # Blessed later - see below
 
     #
-    # First thing -- override the Carp routine if given.
+    # A large set of optional parameters that become data members if
+    # present.  Note that the 'Carp is code ref' check is done inside
+    # VerifyNamedParams.
     #
-    if ( $args{Carp} ) {
-	if ( ref $args{Carp} ne "CODE" ) {
-	    carp "Invalid argument: 'Carp' must be a CODE reference";
-	    return;
-	} else {
-	    $self->{Carp} = $args{Carp};
-	}
+    foreach my $param (qw(Carp
+                          DynamicQName ModelQName
+                          StrictMapping
+                          CommandQueueName ReplyToQMgr)) {
+        $self->{$param} = $args{$param} if (defined $args{$param});
     }
 
     #
-    # You can specify the type, but we'll default to PCF
+    # You can specify the type, but we'll default to PCF; this in turn
+    # determines our class (if need be, we dynamically load the
+    # subclass).
     #
-    if ( $args{Type} ) {
-	unless ( $args{Type} eq 'PCF' or $args{Type} eq 'MQSC' ) {
+    if (defined $args{Type}) {
+	unless ($args{Type} eq 'PCF' or $args{Type} eq 'MQSC') {
 	    $self->Carp("Invalid argument: 'Type' must be one of: PCF MQSC");
 	    return;
 	}
 	$self->{Type} = $args{Type};
     }
-
-    #
-    # Fully qualify the class as either ::PCF or ::MQSC, but beware,
-    # as someone can now do:  MQSeries::Command::PCF->new()
-    #
-    if ( $class =~ /::(PCF|MQSC)$/ ) {
-	if ( $self->{Type} ne $1 ) {
+    if ($class =~ /::(PCF|MQSC)$/) {
+	if ($self->{Type} ne $1) {
 	    $self->Carp("Invalid argument: 'Type' $self->{Type} does not match $class");
 	    return;
 	}
     } else {
 	$class .= "::" . $self->{Type};
+        eval { "use $class" } || do {
+            $self->Carp("Could not load sub-class '$class': $@");
+            return;
+        };
     }
-
     bless ($self, $class);
-
-    #
-    # Allow the DynamicQName template for the ReplyToQName to be
-    # overridden, as well as the ModelQName.
-    #
-    if ( $args{DynamicQName} ) {
-	$self->{DynamicQName} = $args{DynamicQName};
-    }
-
-    if ( $args{ModelQName} ) {
-	$self->{ModelQName} = $args{ModelQName};
-    }
-
-    #
-    # Do we want strict mapping turned on?
-    #
-    if ( exists $args{StrictMapping} ) {
-	$self->{StrictMapping} = $args{StrictMapping};
-    }
 
     #
     # Where do we send requests?
     #
-    if ( $args{CommandQueueName} ) {
+    # - CommandQueueName (may set RealQueueManager for message display)
+    # - SYSTEM.COMMAND.INPUT / SYSTEM.ADMIN.COMMAND.QUEUE
+    #
+    if ($args{CommandQueueName}) {
         #
         # NOTE: This may be distribution-list notation
         #       (queue@xmitqname), in which case the RealQueueManager
@@ -116,12 +105,11 @@ sub new {
         }
     } else {
 	#
-	# Some reasonable defaults.  If we're proxying to a MQSC
-	# queue manager, then this is (in the author's case
-	# anyway) probably an MVS queue manager with no direct
-	# client access.
+	# Some reasonable defaults.  If we're proxying to a MQSC queue
+	# manager, then this is (in the author's case anyway) probably
+	# an MVS queue manager with no direct client access.
 	#
-	if ( $self->{Type} eq 'MQSC' ) {
+	if ($self->{Type} eq 'MQSC') {
 	    $self->{CommandQueueName} = "SYSTEM.COMMAND.INPUT";
 	} else {
 	    $self->{CommandQueueName} = "SYSTEM.ADMIN.COMMAND.QUEUE";
@@ -134,22 +122,26 @@ sub new {
     # NOTE: This value can be a empty string, to indicate the
     # "default" queue manager.
     #
-    if ( exists $args{ProxyQueueManager} ) {
-	
-	if ( ref $args{QueueManager} || $args{QueueManager} eq "" ) {
+    if (exists $args{ProxyQueueManager}) {
+	if (ref $args{QueueManager} || $args{QueueManager} eq "") {
 	    $self->Carp("QueueManager must be a non-empty string when ProxyQueueManager is specified");
 	    return;
 	}
 
-	$self->{ProxyQueueManager}	= $args{ProxyQueueManager};
-	$self->{RealQueueManager} 	= $args{QueueManager};
-	$self->{ReplyToQMgr} 		= $args{ProxyQueueManager};
+	$self->{ProxyQueueManager} = $args{ProxyQueueManager};
+	$self->{RealQueueManager}  = $args{QueueManager};
+	$self->{ReplyToQMgr} 	   = $args{ProxyQueueManager};
 
-	unless ( $args{CommandQueueName} ) {
+        #
+        # This assumes that a default command queue name, such as
+        # SYSTEM.COMMAND.INPUT, will have a remote queue on the proxy
+        # called SYSTEM.COMMAND.INPUT.<TargetQueueManager>.
+        #
+	unless (exists $args{CommandQueueName}) {
 	    $self->{CommandQueueName} .= ".$args{QueueManager}";
 	}
 
-	if ( ref $args{ProxyQueueManager} ) {
+	if (ref $args{ProxyQueueManager}) {
 	    if ( $args{ProxyQueueManager}->isa("MQSeries::QueueManager") ) {
 		$self->{QueueManager} = $args{ProxyQueueManager};
 	    } else {
@@ -158,16 +150,14 @@ sub new {
 		return;
 	    }
 	} else {
-	    $self->{QueueManager} = MQSeries::QueueManager->new
-	      (
-	       QueueManager	=> $args{ProxyQueueManager},
-	       Carp		=> $self->{Carp},
-	      ) or return;
+	    $self->{QueueManager} = MQSeries::QueueManager::->
+              new(QueueManager => $args{ProxyQueueManager},
+                  Carp	       => $self->{Carp},
+                 ) or return;
 	}
-
-    } else {
-	if ( ref $args{QueueManager} ) {
-	    if ( $args{QueueManager}->isa("MQSeries::QueueManager") ) {
+    } else {                    # No proxy specified: connect directly
+	if (ref $args{QueueManager}) {
+	    if ($args{QueueManager}->isa("MQSeries::QueueManager")) {
 		$self->{QueueManager} = $args{QueueManager};
 	    } else {
 		$self->Carp("Invalid argument: 'QueueManager' " .
@@ -175,30 +165,16 @@ sub new {
 		return;
 	    }
 	} else {
-	    $self->{QueueManager} = MQSeries::QueueManager->new
-	      (
-	       QueueManager	=> $args{QueueManager},
-	       Carp		=> $self->{Carp},
-	      ) or return;
+	    $self->{QueueManager} = MQSeries::QueueManager::->
+              new(QueueManager => $args{QueueManager},
+                  Carp	       => $self->{Carp},
+                 ) or return;
 	}
     }
 
     #
-    # If we are sending things via a remote queue manager (and a
-    # qremote definition), then we need to tell how to get back.  This
-    # defaults to the ProxyQueueManager, and may not need to be set
-    # explicitly, for example to utilize a special purpose channel.
-    #
-    # FIXME: Why don't we set the DynamicQName and the ModelQName here either?
-    #
-    foreach my $parameter ( qw(ReplyToQMgr CommandQueueName ) ) {
-	if ( $args{$parameter} ) {
-            $self->{$parameter} = $args{$parameter};
-	}
-    }
-
-    #
-    # The Wait and Expiry parameters can be tweaked, too.
+    # The Wait and Expiry parameters can be tweaked, too, but go
+    # through a 'ConvertUnit' step to support '60s', '2m' strings.
     #
     foreach my $parameter (qw(Expiry Wait)) {
 	if (defined $args{$parameter}) {
@@ -210,25 +186,26 @@ sub new {
     # Open the command queue, and assume that the MQSeries::Queue
     # object will whine appropriately.
     #
-    $self->{CommandQueue} = MQSeries::Queue->new
-      (
-       QueueManager 			=> $self->{QueueManager},
-       Queue 				=> $self->{CommandQueueName},
-       Mode 				=> 'output',
-       Carp 				=> $self->{Carp},
-       Reason				=> \$self->{"Reason"},
-       CompCode				=> \$self->{"CompCode"},
-      ) || do {
-	  $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{CommandQueueName}");
-	  return;
-      };
+    # FIXME: This Reason/CompCode stuff will go away
+    #
+    $self->{CommandQueue} = MQSeries::Queue::->
+      new(QueueManager  => $self->{QueueManager},
+          Queue 	=> $self->{CommandQueueName},
+          Mode 		=> 'output',
+          Carp 		=> $self->{Carp},
+          Reason	=> \$self->{"Reason"},
+          CompCode	=> \$self->{"CompCode"},
+         ) || do {
+             $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{CommandQueueName}");
+             return;
+         };
 
     #
     # Open the ReplyToQ
     #
-    if ( $args{ReplyToQ} ) {
-	if ( ref $args{ReplyToQ} ) {
-	    if ( $args{ReplyToQ}->isa("MQSeries::Queue") ) {
+    if ($args{ReplyToQ}) {
+	if (ref $args{ReplyToQ}) {
+	    if ($args{ReplyToQ}->isa("MQSeries::Queue")) {
 		$self->{ReplyToQ} = $args{ReplyToQ};
 	    } else {
 		$self->Carp("Invalid argument: 'ReplyToQ' " .
@@ -236,37 +213,34 @@ sub new {
 		return;
 	    }
 	} else {
-	    $self->{ReplyToQ} = MQSeries::Queue->new
-	      (
-	       QueueManager 		=> $self->{QueueManager},
-	       Queue 			=> $args{ReplyToQ},
-	       Mode			=> 'input',
-	       Carp 			=> $self->{Carp},
-	       Reason			=> \$self->{"Reason"},
-	       CompCode			=> \$self->{"CompCode"},
-	      ) || do {
-		  $self->Carp("Unable to instantiate MQSeries::Queue object for $args{ReplyToQ}");
-		  return;
-	      };
+	    $self->{ReplyToQ} = MQSeries::Queue::->
+              new(QueueManager  => $self->{QueueManager},
+                  Queue 	=> $args{ReplyToQ},
+                  Mode		=> 'input',
+                  Carp 		=> $self->{Carp},
+                  Reason	=> \$self->{"Reason"},
+                  CompCode	=> \$self->{"CompCode"},
+                 ) || do {
+                     $self->Carp("Unable to instantiate MQSeries::Queue object for $args{ReplyToQ}");
+                     return;
+                 };
 	}
     } else {
-	$self->{ReplyToQ} = MQSeries::Queue->new
-	  (
-	   QueueManager 		=> $self->{QueueManager},
-	   Queue 			=> $self->{ModelQName},
-	   DynamicQName 		=> $self->{DynamicQName},
-	   Mode				=> 'input',
-	   Carp 			=> $self->{Carp},
-	   Reason			=> \$self->{"Reason"},
-	   CompCode			=> \$self->{"CompCode"},
-	  ) || do {
-	      $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{ModelQName}");
-	      return;
-	  };
+	$self->{ReplyToQ} = MQSeries::Queue::->
+          new(QueueManager => $self->{QueueManager},
+              Queue 	   => $self->{ModelQName},
+              DynamicQName => $self->{DynamicQName},
+              Mode	   => 'input',
+              Carp 	   => $self->{Carp},
+              Reason	   => \$self->{"Reason"},
+              CompCode	   => \$self->{"CompCode"},
+             ) || do {
+                 $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{ModelQName}");
+                 return;
+             };
     }
 
     return $self;
-
 }
 
 
@@ -289,6 +263,9 @@ sub DataParameters {
 }
 
 
+#
+# FIXME: This, too, probably will have to go.
+#
 sub ErrorParameters {
 
     my $self = shift;
@@ -306,20 +283,20 @@ sub ErrorParameters {
 
 
 sub CompCode {
-    my $self = shift;
+    my ($self) = @_;
     return $self->{"CompCode"};
 }
 
 
 sub Reason {
-    my $self = shift;
+    my ($self) = @_;
     return $self->{"Reason"};
 }
 
 
 sub ReasonText {
-    my $self = shift;
-    if (defined $self->{'ReasonText'}) {
+    my ($self) = @_;
+    if (defined $self->{'ReasonText'}) { # Cached from MF response
         return $self->{'ReasonText'};
     }
     return MQReasonToText($self->{"Reason"});
@@ -339,7 +316,7 @@ sub DESTROY { 1 }
 #
 sub AUTOLOAD {
     use vars qw($AUTOLOAD);
-    my $self = shift;
+    my ($self) = shift @_;
     my $name = $AUTOLOAD;
     $name =~ s/.*://;
     return $self->_Command($name,{@_});
@@ -373,10 +350,13 @@ sub CreateObject {
         return;
     }
 
-    my $QMgr			= (
-				   $self->{RealQueueManager} ||
-				   $self->{QueueManager}->{QueueManager}
-				  );
+    #
+    # Queue Manager name used for reporting (could need to extract
+    # from default queue manager after connecting).
+    #
+    my $QMgr = ($self->{RealQueueManager} ||
+                $self->{QueueManager}->{QueueManager}
+               );
 
     my $Need 			= 1;
 
@@ -391,7 +371,7 @@ sub CreateObject {
     my $Type			= "";
 
     my @KeyNames		= qw(ChannelName NamelistName ProcessName 
-                                     QName StorageClassName);
+                                     QName StorageClassName AuthInfoName);
     my $KeyCount		= 0;
 
     #
@@ -459,6 +439,12 @@ sub CreateObject {
 	$Change			= "ChangeStorageClass";
 	$Key			= "StorageClassName";
 	$Type			= "StorageClass";
+    } elsif ( $Attrs->{AuthInfoName} ) {
+	$Inquire		= "InquireAuthInfo";
+	$Create			= "CreateAuthInfo";
+	$Change			= "ChangeAuthInfo";
+	$Key			= "AuthInfoName";
+	$Type			= "AuthInfo";
     }
 
     #
@@ -521,7 +507,8 @@ sub CreateObject {
 
     #
     # If we have any changes, make sure we include the QName/QType,
-    # ChannelName/ChannelType, ProcessName or StorageClass name.
+    # ChannelName/ChannelType, ProcessName, StorageClass or
+    # AuthInfoName name.
     # 
     # We must do this here, as user's callbacks will get it wrong...
     #
@@ -536,9 +523,10 @@ sub CreateObject {
 
     #
     # If the QType has changed, we'll have to delete the queue first.
-    # NOTE: We do *not* purge.  That should be checked out manually,
-    # as it will be an odd case anyway.  In any event, this will be
-    # somewhat rare.
+    #
+    # NOTE: We do *not* purge, unless the 'Clear' flag is specified.
+    # That should be checked out manually, as it will be an odd case
+    # anyway.  In any event, this will be somewhat rare.
     #
     if ($Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType}) {
 
@@ -633,12 +621,16 @@ sub _Command {
        InquireProcessNames	=> 'ProcessName',
        InquireQueue		=> 'QName',
        InquireQueueNames	=> 'QName',
+       InquireQueueStatus	=> 'QName',
        ResetQueueStatistics	=> 'QName',
        InquireChannel		=> 'ChannelName',
        InquireChannelNames	=> 'ChannelName',
        InquireChannelStatus	=> 'ChannelName',
        InquireStorageClass	=> 'StorageClassName',
        InquireStorageClassNames	=> 'StorageClassName',       
+       InquireAuthInfo          => 'AuthInfoName',
+       InquireAuthInfoNames	=> 'AuthInfoName',       
+       InquireThread	        => 'ThreadName',
       );	
 
     if ( $command2name{$command} ) {
@@ -662,7 +654,9 @@ sub _Command {
        InquireProcess			=> 'ProcessAttrs',
        InquireQueue			=> 'QAttrs',
        InquireQueueManager		=> 'QMgrAttrs',
+       InquireQueueStatus		=> 'QStatusAttrs',
        InquireStorageClass		=> 'StorageClassAttrs',
+       InquireAuthInfo                  => 'AuthInfoAttrs',
       );
 
     if ( $command2all{$command} ) {
@@ -671,24 +665,23 @@ sub _Command {
 	}
     }
 
-    $self->{Request} = MQSeries::Command::Request->new
-      (
-       MsgDesc 		=>
-       {
-	ReplyToQ 	=> $self->{ReplyToQ}->ObjDesc("ObjectName"),
-	ReplyToQMgr	=> $self->{ReplyToQMgr},
-	Expiry		=> $self->{Expiry},
-       },
-       Type		=> $self->{Type},
-       Command 		=> $command,
-       Parameters 	=> $parameters,
-       Carp 		=> $self->{Carp},
-       StrictMapping	=> $self->{StrictMapping},
-      ) || do {
-	  $self->{"CompCode"} = MQSeries::MQCC_FAILED;
-	  $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
-	  return;
-      };
+    $self->{Request} = MQSeries::Command::Request::->
+      new(MsgDesc 	=>
+          {
+           ReplyToQ 	=> $self->{ReplyToQ}->ObjDesc("ObjectName"),
+           ReplyToQMgr	=> $self->{ReplyToQMgr},
+           Expiry	=> $self->{Expiry},
+          },
+          Type		=> $self->{Type},
+          Command 	=> $command,
+          Parameters 	=> $parameters,
+          Carp 		=> $self->{Carp},
+          StrictMapping	=> $self->{StrictMapping},
+         ) || do {
+             $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+             $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
+             return;
+         };
 
     my $putresult = $self->{CommandQueue}->Put(Message => $self->{Request});
 
@@ -716,26 +709,24 @@ sub _Command {
 
     my @response_buffers;
     while ( 1 ) {
-	my $response = MQSeries::Command::Response->new
-	  (
-	   MsgDesc 		=>
-	   {
-	    CorrelId		=> $self->{Request}->MsgDesc("MsgId"),
-	   },
-	   Type			=> $self->{Type},
-	   Header		=> $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
-	   StrictMapping	=> $self->{StrictMapping},
-	  ) || do {
-	      $self->{"CompCode"} = MQSeries::MQCC_FAILED;
-	      $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
-	      return;
-	  };
+	my $response = MQSeries::Command::Response::->
+          new(MsgDesc 		=>
+              {
+               CorrelId         => $self->{Request}->MsgDesc("MsgId"),
+              },
+              Type		=> $self->{Type},
+              Header		=> $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
+              StrictMapping	=> $self->{StrictMapping},
+             ) || do {
+                 $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+                 $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
+                 return;
+             };
 	
-	my $getresult = $self->{ReplyToQ}->Get
-	  (
-	   Message	=> $response,
-	   Wait		=> $self->{Wait},
-	  );
+	my $getresult = $self->{ReplyToQ}->
+          Get(Message	=> $response,
+              Wait	=> $self->{Wait},
+             );
 
         #
         # Stats again: keep track of no replies, total bytes, largest
@@ -1196,6 +1187,8 @@ Only the methods associated with those commands documented as
 producing data responses:
 
   Escape
+  Inquire AuthInfo
+  Inquire AuthInfo Names
   Inquire Channel
   Inquire Channel Names
   Inquire Channel Status
@@ -1207,6 +1200,7 @@ producing data responses:
   Inquire Queue
   Inquire Queue Manager
   Inquire Queue Names
+  Inquire Queue Status
   Reset Queue Statistics
 
 plus the following equivalents for MQSC
@@ -1225,9 +1219,10 @@ page.
 Note that in an array context, the entire list is returned, but in a
 scalar context, only the first item in the list is returned.
 
-Four of these commands, however, have a simplified return value.  All
-five of:
+Some of these commands, however, have a simplified return value.  All
+six of:
 
+  Inquire AuthInfo Names
   Inquire Channel Names
   Inquire Namelist Names
   Inquire Process Names
@@ -1752,6 +1747,7 @@ Same as ChannelAttrs:
     All                         MQIACF_ALL
     AlterationDate              MQCA_ALTERATION_DATE
     AlterationTime              MQCA_ALTERATION_TIME
+    BatchHeartBeat              MQIACH_BATCH_HB
     BatchInterval               MQIACH_BATCH_INTERVAL
     BatchSize                   MQIACH_BATCH_SIZE
     Batches                     MQIACH_BATCHES
@@ -1781,6 +1777,7 @@ Same as ChannelAttrs:
     LastMsgDate                 MQCACH_LAST_MSG_DATE
     LastMsgTime                 MQCACH_LAST_MSG_TIME
     LastSequenceNumber          MQIACH_LAST_SEQ_NUMBER
+    LocalAddress                MQCACH_LOCAL_ADDRESS
     LongRetriesLeft             MQIACH_LONG_RETRIES_LEFT
     LongRetryCount              MQIACH_LONG_RETRY
     LongRetryInterval           MQIACH_LONG_TIMER
@@ -1813,6 +1810,9 @@ Same as ChannelAttrs:
     ShortRetriesLeft            MQIACH_SHORT_RETRIES_LEFT
     ShortRetryCount             MQIACH_SHORT_RETRY
     ShortRetryInterval          MQIACH_SHORT_TIMER
+    SSLCipherSpec               MQCACH_SSL_CIPHER_SPEC
+    SSLClientAuth               MQIACH_SSL_CLIENT_AUTH
+    SSLPeerName                 MQCACH_SSL_PEER_NAME
     StopRequested               MQIACH_STOP_REQUESTED
     TpName                      MQCACH_TP_NAME
     TransportType               MQIACH_XMIT_PROTOCOL_TYPE
@@ -1833,6 +1833,13 @@ Same as ChannelAttrs:
     Backout                     MQIDO_BACKOUT
     Commit                      MQIDO_COMMIT
 
+=item SSLClientAuth             (integer)
+
+    Key				Macro
+    ===				=====
+    Optional                    MQSCA_OPTIONAL
+    Required                    MQSCA_REQUIRED
+
 =back
 
 The following keys have Boolean values:
@@ -1844,6 +1851,44 @@ The following keys have Boolean values:
 =item DataConversion
 
 =item Quiesce
+
+=back
+
+=head2 AuthInfo Commands
+
+Subsets of the these keys are applicable to the following commands.
+See the documentation for each of the commands for the specific list.
+
+  Change AuthInfo
+  Copy AuthInfo
+  Create AuthInfo
+  Delete AuthInfo
+  Inquire AuthInfo
+  Inquire AuthInfo Names
+
+The following keys have special value mappings:
+
+=over 4
+
+=item AuthInfoType 		(integer)
+
+    Key				Macro
+    ===				=====
+    CRLLDAP                     MQAIT_CRL_LDAP
+
+=item AuthInfoAttrs		(integer list)
+
+    Key				Macro
+    ===				=====
+    All                         MQIACF_ALL
+    AlterationDate              MQCA_ALTERATION_DATE
+    AlterationTime              MQCA_ALTERATION_TIME
+    AuthInfoConnName            MQCA_AUTH_INFO_CONN_NAME,
+    AuthInfoDesc                MQCA_AUTH_INFO_DESC,
+    AuthInfoName                MQCA_AUTH_INFO_NAME,
+    AuthInfoType                MQIA_AUTH_INFO_TYPE,
+    LDAPPassword                MQCA_LDAP_PASSWORD,
+    LDAPUserName                MQCA_LDAP_USER_NAME,
 
 =back
 
@@ -2128,6 +2173,134 @@ The following keys have Boolean values:
 
 =back
 
+=head2 Inquire Queue Status Command
+
+The C<InquireQueueStatus> command does not behave like the other queue
+commands.  In addition, the documentation is incorrect and incomplete,
+so the following is subject to change.
+
+For a request, the following keys are supported:
+
+    QName
+    StatusType
+    OpenType
+    QStatusAttrs
+
+The following keys have special value mappings:
+
+=over 4
+
+=item StatusType                (integer)
+
+    Key				Macro
+    ===				=====
+    Queue                       MQIACF_Q_STATUS
+    Handle                      MQIACF_Q_HANDLE
+
+=item OpenType                  (integer)
+
+    Key				Macro
+    ===				=====
+    All                         MQQSOT_ALL
+    Input                       MQQSOT_INPUT
+    Output                      MQQSOT_OUTPUT
+
+=item QStatusAttrs		(integer list)
+
+    Key				Macro
+    ===				=====
+    All                         MQIACF_ALL
+    ApplTag                     MQCACF_APPL_TAG
+    ApplType                    MQIA_APPL_TYPE
+    ChannelName                 MQCACH_CHANNEL_NAME
+    Conname                     MQCACH_CONNECTION_NAME
+    CurrentQDepth               MQIA_CURRENT_Q_DEPTH
+    OpenInputCount              MQIA_OPEN_INPUT_COUNT
+    OpenOptions                 MQIACF_OPEN_OPTIONS
+    OpenOutputCount             MQIA_OPEN_OUTPUT_COUNT
+    ProcessId                   MQIACF_PROCESS_ID
+    QName                       MQCA_Q_NAME
+    ThreadId                    MQIACF_THREAD_ID
+    UncommittedMsgs             MQIACF_UNCOMMITTED_MSGS
+    UserIdentifier              MQCACF_USER_IDENTIFIER
+
+=back
+
+The output of the C<InquireQueueStatus> is dependent on the
+C<StatusType> specified.
+
+For C<StatusType> 'Queue' (the default), the following fields are returned:
+
+    Key				Macro
+    ===				=====
+    CurrentQDepth               MQIA_CURRENT_Q_DEPTH
+    OpenInputCount              MQIA_OPEN_INPUT_COUNT
+    OpenOutputCount             MQIA_OPEN_OUTPUT_COUNT
+    QName                       MQCA_Q_NAME
+    UncommittedMsgs             MQIACF_UNCOMMITTED_MSGS
+
+The following keys have Boolean values:
+
+=over 4
+
+=item UncommittedMsgs
+
+=back
+
+For C<StatusType> 'Handle', the following fields are returned:
+
+    Key				Macro
+    ===				=====
+    ApplTag                     MQCACF_APPL_TAG
+    ApplType                    MQIA_APPL_TYPE
+    Browse                      MQIACF_OPEN_BROWSE
+    ChannelName                 MQCACH_CHANNEL_NAME
+    Conname                     MQCACH_CONNECTION_NAME
+    InputType                   MQIACF_OPEN_INPUT_TYPE
+    Inquire                     MQIACF_OPEN_INQUIRE
+    Output                      MQIACF_OPEN_OUTPUT
+    ProcessId                   MQIACF_PROCESS_ID
+    QName                       MQCA_Q_NAME
+    Set                         MQIACF_OPEN_SET
+    ThreadId                    MQIACF_THREAD_ID
+    UserIdentifier              MQCACF_USER_IDENTIFIER
+
+The following keys have special value mappings:
+
+=over 4
+
+=item ApplType			(integer)
+
+    Key				Macro
+    ===				=====
+    CHINIT                      MQAT_CHANNEL_INITIATOR
+    QMGR                        MQAT_QMGR
+    USER                        MQAT_USER
+
+=item OpenType			(integer)
+
+    Key				Macro
+    ===				=====
+    Exclusive                   MQQSO_EXCLUSIVE
+    No                          MQQSO_NO
+    Shared                      MQQSO_SHARED
+
+=back
+
+The following keys have Boolean values:
+
+=over 4
+
+=item Browse
+
+=item Inquire
+
+=item Output
+
+=item Set
+
+=back
+
 =head2 Queue Manager Commands
 
 Subsets of the these keys are applicable to the following commands.
@@ -2158,6 +2331,7 @@ The following keys have special value mappings:
     CodedCharSetId              MQIA_CODED_CHAR_SET_ID
     CommandInputQName           MQCA_COMMAND_INPUT_Q_NAME
     CommandLevel                MQIA_COMMAND_LEVEL
+    ConfigurationEvent          MQIA_CONFIGURATION_EVENT
     DeadLetterQName             MQCA_DEAD_LETTER_Q_NAME
     DefXmitQName                MQCA_DEF_XMIT_Q_NAME
     DistLists                   MQIA_DIST_LISTS
@@ -2175,6 +2349,9 @@ The following keys have special value mappings:
     RemoteEvent                 MQIA_REMOTE_EVENT
     RepositoryName              MQCA_REPOSITORY_NAME
     RepositoryNamelist          MQCA_REPOSITORY_NAMELIST
+    SSLCRLNamelist              MQCA_SSL_CRL_NAMELIST
+    SSLCryptoHardware           MQCA_SSL_CRYPTO_HARDWARE
+    SSLKeyRepository            MQCA_SSL_KEY_REPOSITORY
     StartStopEvent              MQIA_START_STOP_EVENT
     SyncPoint                   MQIA_SYNCPOINT
     TriggerInterval             MQIA_TRIGGER_INTERVAL
@@ -2353,6 +2530,7 @@ which greatly simplifies the parsing of the return value.
 
 The commands which return a list of names are:
 
+  Inquire AuthInfo Names
   Inquire Channel Names
   Inquire Namelist Names
   Inquire Process Names
@@ -2371,6 +2549,7 @@ In a scalar context, only the first Parameters HASH reference is
 returned.  This applies to all of the following commands:
 
   Escape
+  Inquire AuthInfo
   Inquire Channel
   Inquire Channel Status
   Inquire Cluster Queue Manager
@@ -2540,9 +2719,18 @@ In addition, the MQSeries documentation is the primary source of
 documentation for the commands and their arguments, especially the
 following sections.
 
+For MQSeries 5.2 and before, this is:
+
   "MQSeries Programmable System Management"
   Part 2. Programmable Command Formats
     Chapter 8. Definitions of the Programmable Command Formats
     Chapter 9. Structures used for commands and responses
+
+For WebSphere MQ 5.3, this is:
+
+  "WebSphere MQ Programmable Command Formats and Administration Interface"
+  Part 1. Programmable Command Formats
+    Chapter 4. Definitions of the Programmable Command Formats
+    Chapter 5. Structures used for commands and responses
 
 =cut

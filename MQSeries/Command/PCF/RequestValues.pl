@@ -222,6 +222,7 @@ package MQSeries::Command::PCF;
     All                         => 1009,
     AlterationDate              => 2027,
     AlterationTime              => 2028,
+    BatchHeartBeat              => 1567,
     BatchInterval               => 1564,
     BatchSize                   => 1502,
     Batches                     => 1537,
@@ -251,6 +252,7 @@ package MQSeries::Command::PCF;
     LastMsgDate                 => 3525,
     LastMsgTime                 => 3524,
     LastSequenceNumber          => 1529,
+    LocalAddress                => 3520,
     LongRetriesLeft             => 1540,
     LongRetryCount              => 1507,
     LongRetryInterval           => 1506,
@@ -283,6 +285,9 @@ package MQSeries::Command::PCF;
     ShortRetriesLeft            => 1541,
     ShortRetryCount             => 1505,
     ShortRetryInterval          => 1504,
+    SSLCipherSpec               => 3544,
+    SSLClientAuth               => 1568,
+    SSLPeerName                 => 3545,
     StopRequested               => 1543,
     TpName                      => 3504,
     TransportType               => 1501,
@@ -347,6 +352,12 @@ package MQSeries::Command::PCF;
    {
     Backout                     => 2,
     Commit                      => 1,
+   },
+
+   SSLClientAuth =>
+   {
+    Optional                    => 1,
+    Required                    => 0,
    },
 
    #
@@ -435,6 +446,7 @@ package MQSeries::Command::PCF;
 
    ObjectType =>
    {
+    AuthInfo			=> 7,
     Namelist			=> 2,
     Process			=> 3,
     Queue			=> 1,
@@ -458,6 +470,62 @@ package MQSeries::Command::PCF;
     ClntconnChannel		=> 1014,
    },
 
+   #
+   # AuthInfo
+   #
+   AuthInfo =>
+   {
+    All                         => 1009,
+    AuthInfoConnName            => 2053,
+    AuthInfoDesc                => 2046,
+    AuthInfoName                => 2045,
+    AuthInfoType                => 66,
+    LDAPPassword                => 2048,
+    LDAPUserName                => 2047,
+   },
+
+   AuthInfoType =>
+   {
+    CRLLDAP                     => 1,
+   },
+
+   #
+   # Queue Status
+   #
+   OpenType =>
+   {
+    All                         => 1,
+    Input                       => 2,
+    Output                      => 3,
+   },
+
+   QStatusAttrs =>
+   {
+    All                         => 1009,
+    ApplTag                     => 3058,
+    ApplType                    => 1,
+    ChannelName                 => 3501,
+    Conname                     => 3506,
+    CurrentQDepth               => 3,
+    OpenInputCount              => 17,
+    OpenOptions                 => 1022,
+    OpenOutputCount             => 18,
+    ProcessId                   => 1024,
+    QName                       => 2016,
+    ThreadId                    => 1025,
+    UncommittedMsgs             => 1027,
+    UserIdentifier              => 3025,
+   },
+
+   StatusType =>
+   {
+    Queue                       => 1105,
+    Handle                      => 1104,
+   },
+
+   #
+   # Morgan Stanley extensions
+   #
    EntityType =>
    {
     Principal			=> 1000,

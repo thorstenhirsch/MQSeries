@@ -1,5 +1,5 @@
 #
-# $Id: RequestValues.pl,v 20.1 2002/03/18 20:33:49 biersma Exp $
+# $Id: RequestValues.pl,v 21.2 2002/06/27 11:59:34 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -209,6 +209,7 @@ package MQSeries::Command::MQSC;
     Live                        => "LIVE",
     Private                     => "PRIVATE",
     QMgr                        => "QMGR",
+    Shared                      => "SHARED",
    },
 
    Scope =>
@@ -498,6 +499,40 @@ package MQSeries::Command::MQSC;
     Backout			=> "BACKOUT",
    },
 
+   StatusType =>
+   {
+    Queue                       => "QUEUE",
+    Handle                      => "HANDLE",
+   },
+
+   OpenType =>
+   {
+    All                         => "ALL",
+    Input                       => "INPUT",
+    Output                      => "OUTPUT",
+   },
+
+   QStatusAttrs => 
+   {
+    All                         => "ALL",
+    AddressSpaceId              => "ASID",
+    ApplTag                     => "APPLTAG",
+    ApplType                    => "APPLTYPE",
+    ChannelName                 => "CHANNEL",
+    Conname                     => "CONNAME",
+    CurrentQDepth               => "CURDEPTH",
+    OpenInputCount              => "IPPROCS",
+    OpenOutputCount             => "OPPROCS",
+    PSBName                     => "PSBNAME",
+    PSTId                       => "PSTID",
+    QName                       => "QNAME",
+    QSharingGroupDisposition    => "QSGDISP",
+    TaskNumber                  => "TASKNO",
+    TransactionId               => "TRANSID",
+    UncommittedMsgs             => "UNCOM",
+    URId                        => "URID",
+    UserIdentifier              => "USERID",
+   },
   );
 
 1;

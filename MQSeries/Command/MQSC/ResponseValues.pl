@@ -1,5 +1,5 @@
 #
-# $Id: ResponseValues.pl,v 20.2 2002/03/18 20:33:54 biersma Exp $
+# $Id: ResponseValues.pl,v 21.2 2002/06/27 12:00:00 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -69,12 +69,11 @@ package MQSeries::Command::MQSC;
    
    QSharingGroupDisposition => 
    {
-    ALL                 => "All",
     COPY                => "Copy",
     GROUP               => "Group",
-    LIVE                => "Live",
     PRIVATE             => "Private",
     QMGR                => "QMgr",
+    SHARED              => "Shared",
    },
 
    QServiceIntervalEvent =>
@@ -166,6 +165,8 @@ package MQSeries::Command::MQSC;
 
    ApplType =>
    {
+    BATCH               => "Batch",
+    CHINIT              => "Channel Initiator",
     CICS    		=> "CICS",
     DOS    		=> "DOS",
     IMS 		=> "IMS",
@@ -173,7 +174,10 @@ package MQSeries::Command::MQSC;
     NSK                 => "NSK",
     OS400		=> "OS400",
     OS2 		=> "OS2",
+    RRSBATCH            => "RRS-Batch",
+    SYSTEM              => "Queue Manager",
     UNIX    		=> "UNIX",
+    USER                => "User Application",
     VMS 		=> "VMS",
     WINDOWS    		=> "Win16",
     WINDOWSNT    	=> "Win32",
@@ -232,6 +236,19 @@ package MQSeries::Command::MQSC;
     MSGTOKEN		=> "MsgToken",
     MSGID		=> "MsgId",
     NONE		=> "None",
+   },
+
+   StatusType => 
+   {
+    HANDLE              => "Handle",
+    QUEUE               => "Queue",
+   },
+
+   QStatusInputType =>
+   {
+    EXCL                => "Exclusive",
+    NO                  => "No",
+    SHARED              => "Shared",
    },
 
  );

@@ -1,5 +1,5 @@
 #
-# $Id: Storable.pm,v 20.2 2002/03/18 20:34:24 biersma Exp $
+# $Id: Storable.pm,v 21.2 2002/05/01 13:24:35 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Message::Storable;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
@@ -18,7 +18,7 @@ use MQSeries::Message;
 
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 @ISA = qw(MQSeries::Message);
 
 #

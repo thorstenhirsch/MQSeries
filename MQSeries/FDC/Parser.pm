@@ -5,7 +5,7 @@
 # (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 20.3 2002/03/18 20:34:19 biersma Exp $
+# $Id: Parser.pm,v 21.2 2002/06/06 15:06:45 biersma Exp $
 #
 
 package MQSeries::FDC::Parser;
@@ -17,7 +17,7 @@ use MQSeries::FDC::Entry;
 
 use vars qw($VERSION);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 #
 # Constructor
@@ -57,7 +57,7 @@ sub parse_data {
     }
 
     my @entries;
-    my @chunks = split /\n(?=\+\-+\+\n.*\n\| MQSeries)/, $text;
+    my @chunks = split /\n(?=\+\-+\+\n.*\n\| (?:MQSeries|WebSphere MQ) First Failure)/, $text;
     #print "Have [" . @chunks . "] FDC chunks\n";
 
     #

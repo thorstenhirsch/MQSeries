@@ -1,5 +1,5 @@
 #
-# $Id: Requests.pl,v 20.1 2002/03/18 20:33:51 biersma Exp $
+# $Id: Requests.pl,v 21.1 2002/06/21 16:01:27 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -47,6 +47,7 @@ package MQSeries::Command::MQSC;
    #
    # Available from release 5.2 on MVS, not before
    #
+   InquireQueueStatus           => [ "DISPLAY",         $RequestParameters{InquireQueueStatus} ],
    ResetQueueStatistics		=> [ "RESET",           $RequestParameters{ResetQueueStatistics} ],
 
    #

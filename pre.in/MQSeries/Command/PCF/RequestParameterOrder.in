@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: RequestParameterOrder.in,v 20.1 2002/03/19 22:01:25 biersma Exp $
+# $Id: RequestParameterOrder.in,v 21.1 2002/06/07 20:07:56 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -17,7 +17,9 @@ package MQSeries::Command::PCF;
 
 %RequestParameterOrder =
   (
-   DeleteQueue			=> [qw( QType Purge )],
+   DeleteQueue			=> [ qw(QType Purge) ],
+
+   InquireQueueStatus           => [ qw(StatusType OpenType QStatusAttrs) ],
   );
 
 1;

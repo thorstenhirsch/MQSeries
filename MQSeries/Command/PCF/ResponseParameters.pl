@@ -53,6 +53,7 @@ package MQSeries::Command::PCF;
     ClusterWorkLoadLength 	=> [ 58,                            	3 ],
     CodedCharSetId 		=> [ 2,                       		3 ],
     CommandLevel 		=> [ 31,                  		3 ],
+    ConfigurationEvent          => [ 51,                                 3 ],
     DistLists 			=> [ 34,               			3 ],
     InhibitEvent 		=> [ 48,                  		3 ],
     LocalEvent 			=> [ 49,                			3 ],
@@ -62,6 +63,9 @@ package MQSeries::Command::PCF;
     MaxUncommittedMsgs 		=> [ 33,                         	3 ],
     PerformanceEvent 		=> [ 53,                      		3 ],
     RemoteEvent 		=> [ 50,                 		3 ],
+    SSLCRLNamelist              => [ 2050,                               4 ],
+    SSLCryptoHardware           => [ 2051,                               4 ],
+    SSLKeyRepository            => [ 2049,                               4 ],
     StartStopEvent 		=> [ 52,                     		3 ],
     SyncPoint 			=> [ 30,              			3 ],
     TriggerInterval 		=> [ 25,                     		3 ],
@@ -195,6 +199,7 @@ package MQSeries::Command::PCF;
     ClusterNamelist		=> [ 2030,                   		4 ],
     QMgrName			=> [ 2015,             			4 ],
     Batches			=> [ 1537,            			3 ],
+    BatchHeartBeat              => [ 1567,                               3 ],
     BatchInterval		=> [ 1564,                   		3 ],
     BatchSize			=> [ 1502,               		3 ],
     BuffersReceived		=> [ 1539,                 		3 ],
@@ -208,6 +213,7 @@ package MQSeries::Command::PCF;
     HeartbeatInterval		=> [ 1563,                		3 ],
     InDoubtStatus		=> [ 1528,                   		3 ],
     LastSequenceNumber		=> [ 1529,                    		3 ],
+    LocalAddress                => [ 3520,                               4 ],
     LongRetriesLeft		=> [ 1540,                      		3 ],
     LongRetryCount		=> [ 1507,               		3 ],
     LongRetryInterval		=> [ 1506,               		3 ],
@@ -220,6 +226,9 @@ package MQSeries::Command::PCF;
     ShortRetriesLeft		=> [ 1541,                       	3 ],
     ShortRetryCount		=> [ 1505,                		3 ],
     ShortRetryInterval		=> [ 1504,                		3 ],
+    SSLCipherSpec               => [ 3544,                               4 ],
+    SSLClientAuth               => [ 1568,                               3,                 $ResponseValues{SSLClientAuth} ],
+    SSLPeerName                 => [ 3545,                               4 ],
     StopRequested		=> [ 1543,                   		3 ],
    },
 
@@ -300,6 +309,51 @@ package MQSeries::Command::PCF;
     NamelistName		=> [ 2010,                		4 ],
     Names			=> [ 2020,        			4 ],
    },
+
+   #
+   # AuthInfo is new with WebSphere MQ 5.3
+   #
+   AuthInfo =>
+   {
+    AlterationDate		=> [ 2027,                  		4 ],
+    AlterationTime		=> [ 2028,                  		4 ],
+    AuthInfoConnName            => [ 2053,                               4 ],
+    AuthInfoDesc                => [ 2046,                               4 ],
+    AuthInfoName                => [ 2045,                               4 ],
+    AuthInfoNames               => [ 3048,                               4 ],
+    AuthInfoType                => [ 66,                                 3, $ResponseValues{AuthInfoType} ],
+    LDAPPassword                => [ 2048,                               4 ],
+    LDAPUserName                => [ 2047,                               4 ],
+   },
+
+   #
+   # QueueStatus is new with WebSphere MQ 5.3
+   #
+   QueueStatus =>
+   {
+    ApplTag                     => [ 3058,                               4 ],
+    ApplType                    => [ 1,                                  3,                 $ResponseValues{ApplType} ],
+    Browse                      => [ 1102,                               3 ],
+    ChannelName                 => [ 3501,                               4 ],
+    Conname                     => [ 3506,                               4 ],
+    CurrentQDepth               => [ 3,                                  3 ],
+    InputType                   => [ 1098,                               3,                 $ResponseValues{QStatusInputType} ],
+    Inquire                     => [ 1101,                               3 ],
+    OpenInputCount              => [ 17,                                 3 ],
+    OpenOptions                 => [ 1022,                               3 ],
+    OpenOutputCount             => [ 18,                                 3 ],
+    Output                      => [ 1099,                               3 ],
+    ProcessId                   => [ 1024,                               3 ],
+    Set                         => [ 1100,                               3 ],
+    QName			=> [ 2016,         			4 ],
+    ThreadId                    => [ 1025,                               3 ],
+    UncommittedMsgs             => [ 1027,                               3 ],
+    UserIdentifier              => [ 3025,                               4 ],
+   },
+
+   #
+   # Authority is a Morgan Stanley extension
+   #
 
    Authority =>
    {

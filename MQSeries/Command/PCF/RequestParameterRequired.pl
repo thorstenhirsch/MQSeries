@@ -33,18 +33,19 @@ package MQSeries::Command::PCF;
 %RequestParameterRequired =
   (
 
-   InquireAuthority		=>
-   {
-    ObjectType			=> 1,
-    ObjectName			=> 1,
-   },
-
    ChangeAuthority		=>
    {
     ObjectName			=> 1,
     ObjectType			=> 1,
     EntityName			=> 1,
     EntityType			=> 1,
+   },
+
+   CopyAuthInfo                 =>
+   {
+    AuthInfoType                => 3,
+    FromAuthInfoName            => 1,
+    ToAuthInfoName              => 2,
    },
 
    CopyChannel                  =>
@@ -73,6 +74,19 @@ package MQSeries::Command::PCF;
     ToQName                     => 2,
    },
 
+   CreateAuthInfo               =>
+   {
+    AuthInfoName                => 1,
+    AuthInfoConnName            => 2,
+    AuthInfoType                => 3,
+   },
+
+   InquireAuthority		=>
+   {
+    ObjectType			=> 1,
+    ObjectName			=> 1,
+   },
+
    InquireClusterQueueManager   =>
    {
     ClusterQMgrName             => 1,
@@ -89,6 +103,14 @@ package MQSeries::Command::PCF;
 #
 # This *greatly* shrinks the size of this file...
 #
+$RequestParameterRequired{InquireAuthInfo} =
+  $RequestParameterRequired{InquireAuthInfoNames} =
+  $RequestParameterRequired{ChangeAuthInfo} =
+  $RequestParameterRequired{DeleteAuthInfo} =
+  {
+   AuthInfoName         => 1,
+  };
+
 $RequestParameterRequired{InquireNamelist} =
   $RequestParameterRequired{CreateNamelist} =
   $RequestParameterRequired{ChangeNamelist} =
@@ -112,6 +134,7 @@ $RequestParameterRequired{CreateQueue} =
 
 $RequestParameterRequired{InquireQueueNames} =
   $RequestParameterRequired{InquireQueue} =
+  $RequestParameterRequired{InquireQueueStatus} =
   $RequestParameterRequired{DeleteQueue} =
   {
    QName                        => 1,

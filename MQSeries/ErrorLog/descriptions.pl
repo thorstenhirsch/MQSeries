@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
+# (c) 2000, 2001, 2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 # 
-# $Id: descriptions.pl,v 20.2 2002/03/21 14:26:47 biersma Exp $
+# $Id: descriptions.pl,v 21.2 2002/07/08 15:57:42 biersma Exp $
 #
 
 #
@@ -37,6 +37,7 @@ my $reason_patt = '\d+: \(.*?\)|\d+:\w+|\d+\w+|\d+:?';
 my $resourcemgr_patt = '\w+\s+\w+';
 my $xa_operation_patt = 'xa_\w+';
 my $seqno_patt = '\d+';
+my $product_patt = '(?:MQSeries|WebSphere MQ)';
 
 #
 # NOTE: Keep this table in alphabetical order for ease of maintenance
@@ -58,10 +59,10 @@ $error_table =
    # Messages AMQ5000-5999 are Installable Services Messages
    #
 
-   'AMQ5008' => [ "An essential MQSeries process ($pid_patt) cannot be found and is assumed to be terminated\\.",
+   'AMQ5008' => [ "An essential $product_patt process ($pid_patt) cannot be found and is assumed to be terminated\\.",
                   "Pid" ],
 
-   'AMQ5009' => [ "MQSeries agent process ($pid_patt) has terminated unexpectedly\\.",
+   'AMQ5009' => [ "$product_patt agent process ($pid_patt) has terminated unexpectedly\\.",
                   "Pid" ],
 
    'AMQ5511' => [ "Installable service component '(.*?)' returned 'CompCode = ($rc_patt), Reason = ($rc_patt)'\\.",
@@ -70,84 +71,84 @@ $error_table =
    'AMQ5520' => [ "The system could not load the module '(.*?)' for the installable service '(.*?)' component '(.*?)'\\. The system return code was ($rc_patt)\\. The Queue Manager is continuing without this component\\.",
                   "Module", "Service", "Component", "Code" ],
 
-   'AMQ5806' => [ "MQSeries message broker started for queue manager ($qmgr_patt)\\.",
+   'AMQ5806' => [ "$product_patt message broker started for queue manager ($qmgr_patt)\\.",
                   "QMgr" ],
 
-   'AMQ5807' => [ "MQSeries message broker for queue manager ($qmgr_patt) ended\\.",
+   'AMQ5807' => [ "$product_patt message broker for queue manager ($qmgr_patt) ended\\.",
                   "QMgr" ],
 
-   'AMQ5817' => [ "An invalid stream queue \\(($qname_patt)\\s*\\) has been detected by the MQSeries message broker\\.",
+   'AMQ5817' => [ "An invalid stream queue \\(($qname_patt)\\s*\\) has been detected by the $product_patt message broker\\.",
                   "Stream" ],
 
    # NOTE: Have encountered this guy without an actual broker name...
-   'AMQ5818' => [ "Unable to open MQSeries message broker stream queue \\((.*?)\\s*\\) for reason (\\d+,\\d+)\." ],
+   'AMQ5818' => [ "Unable to open $product_patt message broker stream queue \\((.*?)\\s*\\) for reason (\\d+,\\d+)\." ],
 
-   'AMQ5819' => [ "MQSeries message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
+   'AMQ5819' => [ "$product_patt message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
                   "Stream", "Reason" ],
 
-   'AMQ5820' => [ "MQSeries message broker stream \\(\\s*($qname_patt)\\s*\\) restarted.",
+   'AMQ5820' => [ "$product_patt message broker stream \\(\\s*($qname_patt)\\s*\\) restarted.",
                   "Stream" ],
    
-   'AMQ5821' => [ "MQSeries message broker unable to contact parent broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\.",
+   'AMQ5821' => [ "$product_patt message broker unable to contact parent broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\.",
                   "Broker", "Reason" ],
 
-   'AMQ5822' => [ "MQSeries message broker failed to register as a child of broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\. .* The problem is likely to be caused by the parent broker not yet existing, or a problem with the ($qname_patt) queue at the parent broker\\.",
+   'AMQ5822' => [ "$product_patt message broker failed to register as a child of broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\. .* The problem is likely to be caused by the parent broker not yet existing, or a problem with the ($qname_patt) queue at the parent broker\\.",
                   "Broker", "Reason", "QName" ],
 
-   'AMQ5826' => [ "MQSeries message broker failed to propagate subscription to stream \\(($qname_patt) \\) at broker \\(($qmgr_patt) \\)\\. Reason codes ($reason_patt) and ($reason_patt)\\.",
+   'AMQ5826' => [ "$product_patt message broker failed to propagate subscription to stream \\(($qname_patt) \\) at broker \\(($qmgr_patt) \\)\\. Reason codes ($reason_patt) and ($reason_patt)\\.",
                   "Stream", "Broker", "Reason1", "Reason2" ],
 
-   'AMQ5832' => [ "MQSeries message broker failed to publish configuration information on ($qname_patt)\\.",
+   'AMQ5832' => [ "$product_patt message broker failed to publish configuration information on ($qname_patt)\\.",
                   "QName" ],
 
-   'AMQ5833' => [ "A loop has been detected in the MQSeries message broker hierarchy\\." ],
+   'AMQ5833' => [ "A loop has been detected in the $product_patt message broker hierarchy\\." ],
 
-   'AMQ5834' => [ "Conflicting queue manager names in the MQSeries message broker hierarchy\\..* The names of the queue managers \\(($qmgr_patt)\\s*\\) and \\(($qmgr_patt)\\s*\\) in the MQSeries message broker hierarchy both start with the same 12 characters\\." ],
+   'AMQ5834' => [ "Conflicting queue manager names in the $product_patt message broker hierarchy\\..* The names of the queue managers \\(($qmgr_patt)\\s*\\) and \\(($qmgr_patt)\\s*\\) in the $product_patt message broker hierarchy both start with the same 12 characters\\." ],
 
-   'AMQ5838' => [ "MQSeries message broker cannot be deleted as child \\(($qmgr_patt)\\s*\\) is still registered\\.",
+   'AMQ5838' => [ "$product_patt message broker cannot be deleted as child \\(($qmgr_patt)\\s*\\) is still registered\\.",
                   "Child" ],
 
    # FIXME: So far, encountered this guy without an actual broker name...
-   'AMQ5839' => [ "MQSeries message broker received (?:an )?unexpected inter-broker communication" ],
+   'AMQ5839' => [ "$product_patt message broker received (?:an )?unexpected inter-broker communication" ],
 
-   'AMQ5840' => [ "MQSeries message broker (?unable to delete|failed to delete the) queue \\(($qname_patt)\\s*\\) for reason ($reason_patt)\\.",
+   'AMQ5840' => [ "$product_patt message broker (?unable to delete|failed to delete the) queue \\(($qname_patt)\\s*\\) for reason ($reason_patt)\\.",
                   "QName", "Reason" ],
 
-   'AMQ5841' => [ "MQSeries message broker \\(($qmgr_patt)\\) deleted.",
+   'AMQ5841' => [ "$product_patt message broker \\(($qmgr_patt)\\) deleted.",
                   "Broker" ],
 
-   'AMQ5842' => [ "MQSeries message broker \\(($qmgr_patt)\\) cannot be deleted for reason '($reason_patt)'\\.",
+   'AMQ5842' => [ "$product_patt message broker \\(($qmgr_patt)\\) cannot be deleted for reason '($reason_patt)'\\.",
                   "Broker", "Reason" ],
 
-   'AMQ5843' => [ "MQSeries message broker \\(($qmgr_patt)\\) cannot be started as it is partially deleted\\.",
+   'AMQ5843' => [ "$product_patt message broker \\(($qmgr_patt)\\) cannot be started as it is partially deleted\\.",
                   "Broker" ],
 
    # NOTE: This guy often has blank relation names, cannot be parsed reliably
-   'AMQ5844' => [ "MQSeries message broker relation \\(.*\\) is unknown to broker \\(($qmgr_patt)\\)\\.",
+   'AMQ5844' => [ "$product_patt message broker relation \\(.*\\) is unknown to broker \\(($qmgr_patt)\\)\\.",
                   "Broker" ],
 
-   'AMQ5847' => [ "MQSeries message broker \\(($qmgr_patt)\\) has removed knowledge of relation \\(($qmgr_patt)\\)\\.",
+   'AMQ5847' => [ "$product_patt message broker \\(($qmgr_patt)\\) has removed knowledge of relation \\(($qmgr_patt)\\)\\.",
                   "Broker", "Relation" ],
 
    # FIXME: So far, enountered this guy without an actual relation name...
-   'AMQ5848' => [ "MQSeries message broker \\(($qmgr_patt)\\) has failed to remove references to relation \\(\\) for reason '($reason_patt)'\\.",
+   'AMQ5848' => [ "$product_patt message broker \\(($qmgr_patt)\\) has failed to remove references to relation \\(\\) for reason '($reason_patt)'\\.",
                   "Broker", "Reason" ],
 
-   'AMQ5849' => [ "MQSeries message broker \\(($qmgr_patt) \\) may not change parent from \\(($qmgr_patt) \\) to \\(($qmgr_patt) \\)\\.",
+   'AMQ5849' => [ "$product_patt message broker \\(($qmgr_patt) \\) may not change parent from \\(($qmgr_patt) \\) to \\(($qmgr_patt) \\)\\.",
                   "Broker", "OldParent", "NewParent" ],
 
    # NOTE: The 'related broker' can be a queue manager name or 
    #       'unknown relation', so be generous in accepting that pattern
-   'AMQ5852' => [ "MQSeries message broker failed to propagate delete publication command for stream \\(($qname_patt)\\s*\\) to related broker \\(.*?\\s*\\) for reason ($reason_patt)\\.",
+   'AMQ5852' => [ "$product_patt message broker failed to propagate delete publication command for stream \\(($qname_patt)\\s*\\) to related broker \\(.*?\\s*\\) for reason ($reason_patt)\\.",
                   "Stream", "Related", "Reason" ],
 
-   'AMQ5855' => [ "MQSeries message broker \\(($qmgr_patt)\\) (?:but the broker has )?ended for reason '($reason_patt)'\\.",
+   'AMQ5855' => [ "$product_patt message broker \\(($qmgr_patt)\\) (?:but the broker has )?ended for reason '($reason_patt)'\\.",
                   "Broker", "Reason" ],
 
-   'AMQ5856' => [ "Broker publish command message cannot be processed\\. Reason code ($reason_patt)\\..* The MQSeries broker failed to process a publish message for stream \\(($qname_patt)\\s*\\)\\.",
+   'AMQ5856' => [ "Broker publish command message cannot be processed\\. Reason code ($reason_patt)\\..* The $product_patt broker failed to process a publish message for stream \\(($qname_patt)\\s*\\)\\.",
                   "Reason", "Stream" ],
 
-   'AMQ5857' => [ "Broker control command message cannot be processed\\. Reason code ($reason_patt)\\..*The MQSeries broker failed to process a command message on the ($qname_patt)\\.",
+   'AMQ5857' => [ "Broker control command message cannot be processed\\. Reason code ($reason_patt)\\..*The $product_patt broker failed to process a command message on the ($qname_patt)\\.",
                   "Reason", "Stream" ],
 
    'AMQ5864' => [ "Broker reply message could not be sent to queue \\(($qname_patt)\\s*\\) at queue manager \\(($qmgr_patt)\\s*\\) for reason ($reason_patt)\\.",
@@ -156,60 +157,62 @@ $error_table =
    'AMQ5866' => [ "Broker command message has been discarded\\. Reason code ($reason_patt)\\.",
                   "Reason" ],
 
-   'AMQ5867' => [ " MQSeries message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
+   'AMQ5867' => [ " $product_patt message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
                   "Stream", "Reason" ],
 
-   'AMQ5869' => [ "MQSeries message broker is checkpointing registrations\\..*registrations of stream \\(($qname_patt)\\s*\\)\\.",
+   'AMQ5869' => [ "$product_patt message broker is checkpointing registrations\\..*registrations of stream \\(($qname_patt)\\s*\\)\\.",
                   "Stream" ],
 
    # NOTE: The queue-manager name is missing here
-   'AMQ5876' => [ "A parent conflict has been detected in the MQSeries message broker hierarchy\\." ],
+   'AMQ5876' => [ "A parent conflict has been detected in the $product_patt message broker hierarchy\\." ],
 
-   'AMQ5878' => [ "MQSeries message broker recovery failure detected\\." ],
+   'AMQ5878' => [ "$product_patt message broker recovery failure detected\\." ],
      
    # NOTE: The 'Stream' field here may look like 'uncreated stream',
    #       hence not match the qname_pattern normally used.
-   'AMQ5882' => [ "The MQSeries message broker has written a message to the dead-letter queue \\(($qname_patt)\\s*\\) for reason '($reason_patt)'.*for stream \\((.*?)\\s*\\)",
+   'AMQ5882' => [ "The $product_patt message broker has written a message to the dead-letter queue \\(($qname_patt)\\s*\\) for reason '($reason_patt)'.*for stream \\((.*?)\\s*\\)",
                    "DeadletterQueue", "Reason", "Stream" ],
 
    # 
    # Messages AMQ6000-6999 are Common Services Messages
    # Many of these (all?) should have a corresponding entry in the FDC logs.
    #
-   'AMQ6004' => [ "An error occurred during MQSeries initialization or ending\\." ],
+   'AMQ6004' => [ "An error occurred during $product_patt initialization or ending\\." ],
 
-   'AMQ6026' => [ "A resource shortage prevented the creation of an MQSeries process\\." ],
+   'AMQ6026' => [ "A resource shortage prevented the creation of an $product_patt process\\." ],
 
-   'AMQ6035' => [ "MQSeries failed, no storage available\\." ],
+   'AMQ6035' => [ "$product_patt failed, no storage available\\." ],
 
-   'AMQ6037' => [ "MQSeries was unable to obtain enough storage\\." ],
+   'AMQ6037' => [ "$product_patt was unable to obtain enough storage\\." ],
 
-   'AMQ6047' => [ "MQSeries is unable to convert string data tagged in CCSID \\d+ to data in CCSID \\d+\\." ],
+   'AMQ6047' => [ "$product_patt is unable to convert string data tagged in CCSID \\d+ to data in CCSID \\d+\\." ],
 
-   'AMQ6050' => [ "MQSeries is unable to convert string data in CCSID \\d+ to data in CCSID \\d+\\." ],
+   'AMQ6050' => [ "$product_patt is unable to convert string data in CCSID \\d+ to data in CCSID \\d+\\." ],
 
-   'AMQ6053' => [ "MQSeries is unable to convert string data in CCSID \\d+ to data in CCSID -?\\d+\\." ],
+   'AMQ6053' => [ "$product_patt is unable to convert string data in CCSID \\d+ to data in CCSID -?\\d+\\." ],
 
-   'AMQ6090' => [ "MQSeries was unable to display an error message" ],
+   'AMQ6090' => [ "$product_patt was unable to display an error message" ],
 
-   'AMQ6091' => [ "An internal MQSeries error has occurred\\." ],
+   'AMQ6091' => [ "An internal $product_patt error has occurred\\." ],
 
-   'AMQ6109' => [ "An internal MQSeries error has occurred\\." ],
+   'AMQ6109' => [ "An internal $product_patt error has occurred\\." ],
 
-   'AMQ6110' => [ "An internal MQSeries error has occurred\\." ],
+   'AMQ6110' => [ "An internal $product_patt error has occurred\\." ],
 
-   'AMQ6118' => [ "An internal MQSeries error has occurred" ],
+   'AMQ6118' => [ "An internal $product_patt error has occurred" ],
 
-   'AMQ6119' => [ "An internal MQSeries error has occurred" ],
+   'AMQ6119' => [ "An internal $product_patt error has occurred" ],
 
-   'AMQ6122' => [ "An internal MQSeries error has occurred\\." ],
+   'AMQ6122' => [ "An internal $product_patt error has occurred\\." ],
    
    'AMQ6125' => [ "An internal error has occurred with identifier ($hex_patt)\\.",
                   "Id" ],
 
-   'AMQ6150' => [ "MQSeries semaphore is busy" ], 
+   'AMQ6150' => [ "$product_patt semaphore is busy\\." ], 
 
    'AMQ6162' => [ "An error has occurred reading an INI file\\." ],
+
+   'AMQ6165' => [ "Access to the MQS.INI file or a queue manager QM.INI file is denied\\." ],
 
    'AMQ6166' => [ "The MQS.INI file or a queue manager QM.INI file is missing\\." ],
 
@@ -225,10 +228,10 @@ $error_table =
    'AMQ6188' => [ "The system could not dynamically load the shared library '($exit_patt)' due to a problem with the library",
                   "Exit" ],
 
-   'AMQ6184' => [ "An internal MQSeries error has occurred on queue manager ($qmgr_patt)\\..*The failing process is process ($pid_patt)\\.",
+   'AMQ6184' => [ "An internal $product_patt error has occurred on queue manager ($qmgr_patt)\\..*The failing process is process ($pid_patt)\\.",
                   "QMgr", "Pid" ],
 
-   'AMQ6209' => [ "An unexpected asynchronous signal \\((\\d+)\\) has been received and ignored\\..* Process ($pid_patt) received an unexpected asynchronous signal and ignored it\\.",
+   'AMQ6209' => [ "An unexpected asynchronous signal \\((\\d+)(?: : [A-Z\\d]+)?\\) has been received and ignored\\..* Process ($pid_patt) received an unexpected asynchronous signal and ignored it\\.",
                   "Signal", "Pid" ],
 
    # NOTE: So far, encountered this error without a location.
@@ -240,6 +243,10 @@ $error_table =
    # 
    # Messages AMQ7000-7999 are MQSeries Product Messages
    #
+
+   'AMQ7006' => [ "The (\\S+) stanza starting on line (\\d+) of configuration file (\\S+) is missing the required (\\S+) attribute\\.",
+                  "Stanza", "Line", "File", "Attribute" ],
+
    # AMQ7030 changed between MQ 5.0/5.1 and 5.2
    'AMQ7030' => [ "(?:Request to quiesce the queue manager accepted\\.|Quiesce request accepted\\.)" ],
 
@@ -249,7 +256,21 @@ $error_table =
    'AMQ7076' => [ "Line (\\d+) of the configuration file (\\S+) contained value (.*?)\\s*that is not valid for the attribute (\\S+)\\.",
                   "Line", "File", "Value", "Attribute" ],
 
+   # NOTE: Not sure whether the mode is variable or not
+   'AMQ7126' => [ "This copy of $product_patt is now running in Production mode\\." ],
+
+   # NOTE: Not sure whether the filename and dirname are variable or not
+   'AMQ7153' => [ "A Production, Beta or Trial Period license could not be installed for this copy of $product_patt\\. This is because the 'nodelock' file in the 'qmgrs/\@SYSTEM' directory could not be created or updated\\." ],
+
    'AMQ7159' => [ "A FASTPATH application has ended unexpectedly" ],
+   
+   'AMQ7191' => [ "There are (\\d+) days left in the beta test period for this copy of $product_patt\\.",
+                  "Days" ],
+
+   'AMQ7199' => [ "The purchased processor allowance for this installation has been set to (-?\\d+) using the MQ setmqcap command\\.",
+                  "Capacity" ],
+
+   'AMQ7203' => [ "The purchased processor allowance for this installation has not been set\\." ],
 
    'AMQ7214' => [ "The module '(\\S+)' for Api Exit '(\\w+)' could not be loaded for reason (\\S+)\\.",
                   "Module", "Exit", "Reason" ],
@@ -257,6 +278,10 @@ $error_table =
    'AMQ7216' => [ "The Api Exit '(\\w+)' function '(\\w+)' in the module '(\\S+)' returned CompCode ($code_patt) and ReasonCode ($rc_patt)",
 
                   "Exit", "Function", "Module", "Code", "Reason" ],
+
+   # NOTE: This was found with empty strings, rather useless...
+   'AMQ7217' => [ "The Api Exit '' module '' function'' returned a response code '($code_patt)' that is not valid in the ExitResponse field of the Api Exit parameters \\(MQAXP\\)\\.",
+                  "Reason" ],
 
    'AMQ7310' => [ "The attempt to put a report message on queue ($qname_patt) on queue manager ($qmgr_patt) failed with reason code ($reason_patt)\\. The message will be put on the dead-letter queue\\.",
                   "QName", "QMgr", "Reason" ],
@@ -284,7 +309,7 @@ $error_table =
    'AMQ7605' => [ "The XA resource manager ($resourcemgr_patt) has returned an unexpected return code ($code_patt), when called for ($xa_operation_patt)\\.",
                   "ResourceMgr", "Code", "Operation" ],
 
-   'AMQ7622' => [ "MQSeries could not load the XA switch load file for resource manager '($resourcemgr_patt)'\\..*?An error has occurred loading XA switch file (.*?)\\. If the error",
+   'AMQ7622' => [ "$product_patt could not load the XA switch load file for resource manager '($resourcemgr_patt)'\\..*?An error has occurred loading XA switch file (.*?)\\. If the error",
                   "ResourceMgr", "File" ],
 
    'AMQ7624' => [ "An exception occurred during an ($xa_operation_patt) call to XA resource manager '($resourcemgr_patt)'\\.",
@@ -305,31 +330,39 @@ $error_table =
    # Messages AMQ8000-8999 are MQSeries Administration Messages
    #
 
-   'AMQ8003' => [ "MQSeries queue manager '?($qmgr_patt)'? started\\.",
+   'AMQ8003' => [ "$product_patt queue manager '?($qmgr_patt)'? started\\.",
                   "QMgr" ],
 
-   'AMQ8004' => [ "MQSeries queue manager ($qmgr_patt) ended\\.",
+   'AMQ8004' => [ "$product_patt queue manager '?($qmgr_patt)'? ended\\.",
                   "QMgr" ],
 
    # FIXME: Are the number of objects of interest?
    'AMQ8048' => [ "Default objects statistics :" ],
 
-
-   'AMQ8049' => [ " While creating or replacing the default object ($qname_patt) for MQSeries queue manager ($qmgr_patt) an error occurred\\. The error was due to improper authorization\\. The reason code is ($reason_patt)\\.",
+   'AMQ8049' => [ "While creating or replacing the default object ($qname_patt) for $product_patt queue manager ($qmgr_patt) an error occurred\\. The error was due to improper authorization\\. The reason code is ($reason_patt)\\.",
                   "ObjectName", "QMgr", "Reason" ],
+
+   'AMQ8053' => [ "While creating or replacing the default object ($qname_patt) for $product_patt queue manager ($qmgr_patt) an error occurred\\. The error was due to a broken connection. The reason code is ($reason_patt)\\.",
+                  "ObjectName", "QMgr", "Reason" ],
+
+   'AMQ8059' => [ "While creating or replacing the default object ($qname_patt) for $product_patt queue manager ($qmgr_patt) an error occurred\\. The error was due to an unexpected error, error code ($reason_patt) ",
+                  "ObjectName", "QMgr", "Reason" ],
+
+   'AMQ8101' => [ "An unexpected reason code with hexadecimal value ($reason_patt) was received from the $product_patt queue manager during command processing\\.",
+                  "Reason" ],
 
    'AMQ8214' => [ "CONNAME parameter required with channel types SDR, RQSTR, CLNTCONN, CLUSSDR and CLUSRCVR\\." ],
 
-   'AMQ8226' => [ "MQSeries channel ($channel_patt) cannot be created",
+   'AMQ8226' => [ "$product_patt channel ($channel_patt) cannot be created",
                   "Channel" ],
 
 
    'AMQ8424' => [ "Error detected in a name keyword\\." ],
 
-   'AMQ8504' => [ "An MQINQ request by the command server, for the MQSeries queue ($qname_patt), failed with reason code ($reason_patt)\\.",
+   'AMQ8504' => [ "An MQINQ request by the command server, for the $product_patt queue ($qname_patt), failed with reason code ($reason_patt)\\.",
                   "QName", "Reason" ],
 
-   'AMQ8506' => [ "An MQGET request by the command server, for the MQSeries queue ($qname_patt), failed with reason code ($reason_patt)\\.",
+   'AMQ8506' => [ "An MQGET request by the command server, for the $product_patt queue ($qname_patt), failed with reason code ($reason_patt)\\.",
                   "QName", "Reason" ],
 
    'AMQ8507' => [ "failed with reason code ($reason_patt)\\. The MQDLH reason code was ($reason_patt)\\.",
@@ -392,7 +425,7 @@ $error_table =
 
    'AMQ9244' => [ "The default queue manager does not exist\\." ],
 
-   'AMQ9245' => [ "MQSeries was unable to obtain the account details for MCA user ID '(\\w+)'\\. This user ID was the MCA user ID for channel '($channel_patt)' on queue manager '($qmgr_patt)' and may have been defined in the channel definition, or supplied either by a channel exit or by a client\\.",
+   'AMQ9245' => [ "$product_patt was unable to obtain the account details for MCA user ID '(\\w+)'\\. This user ID was the MCA user ID for channel '($channel_patt)' on queue manager '($qmgr_patt)' and may have been defined in the channel definition, or supplied either by a channel exit or by a client\\.",
                   "Userid", "Channel", "QMgr" ],
 
    'AMQ9409' => [ "The repository manager ended abnormally\\." ],
@@ -407,6 +440,9 @@ $error_table =
    'AMQ9437' => [ "Unable to commit repository changes.\\" ],
 
    'AMQ9447' => [ "Following an error, the repository manager tried to backout some updates to the repository, but was unsuccessful\\. The repository manager terminates\\." ],
+
+   'AMQ9496' => [ "Channel program '($channel_patt)' was ended because the channel exit at the remote end requested it\\.",
+                  "Channel" ],
 
    'AMQ9502' => [ "Type of channel not suitable for action requested\\..*The operation requested cannot be performed on channel '($channel_patt)'\\.",
                   "Channel" ],

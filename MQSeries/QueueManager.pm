@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 20.2 2002/02/27 18:09:51 biersma Exp $
+# $Id: QueueManager.pm,v 21.3 2002/06/06 18:23:28 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::QueueManager;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
@@ -28,7 +28,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 sub new {
     my $proto = shift;
@@ -106,7 +106,8 @@ sub new {
     # yada.
     #
     foreach my $connectarg ( qw( RetryCount RetrySleep RetryReasons
-				 ConnectTimeout ConnectTimeoutSignal ) ) {
+				 ConnectTimeout ConnectTimeoutSignal 
+                                 ClientConn) ) {
 	next unless exists $args{$connectarg};
 	$self->{ConnectArgs}->{$connectarg} = $args{$connectarg};
     }
@@ -649,6 +650,8 @@ sub Connect {
 
     }
 
+    my $mqconnx_opts = {};
+    $mqconnx_opts->{ClientConn} = $args{ClientConn} if ($args{ClientConn});
   CONNECT:
     {
 
@@ -671,11 +674,12 @@ sub Connect {
 		    #
 		    eval {
 			local $SIG{$self->{ConnectTimeoutSignal}} = sub { die $alarm };
-			$Hconn = MQCONN(
-					$self->{ProxyQueueManager} || $self->{QueueManager},
-					$self->{"CompCode"},
-					$self->{"Reason"},
-				       );
+			$Hconn = MQCONNX($self->{ProxyQueueManager} || 
+                                         $self->{QueueManager},
+                                         $mqconnx_opts,
+                                         $self->{"CompCode"},
+                                         $self->{"Reason"},
+                                        );
 		    };
 		    kill $self->{ConnectTimeoutSignal}, $child;
 		    waitpid($child,0);
@@ -696,17 +700,14 @@ sub Connect {
 		    $self->{Carp}->("Unable to fork: $!");
 		    return;
 		}
-
 	    }
-
 	} else {
-		
-	    $Hconn = MQCONN(
-			    $self->{ProxyQueueManager} || $self->{QueueManager},
-			    $self->{"CompCode"},
-			    $self->{"Reason"},
-			   );
-
+            $Hconn = MQCONNX($self->{ProxyQueueManager} || 
+                             $self->{QueueManager},
+                             $mqconnx_opts,
+                             $self->{"CompCode"},
+                             $self->{"Reason"},
+                            );
 	}
 
 
@@ -799,6 +800,20 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
 	"Reason => " . $qmgr->Reason() .
         " (", MQReasonToText($qmgr->Reason()) . ")\n";
 
+  #
+  # Avoid a channel table file or MQSERVER variable and specify
+  # the client connect options directly.
+  #
+  my $qmgr = MQSeries::QueueManager->new
+    (
+     QueueManager => 'some.queue.manager',
+     ClientConn   => { 'ChannelName'    => 'FOO',
+                       'TransportType'  => 'TCP', # Default
+                       'ConnectionName' => "hostname(1414)",
+                       'MaxMsgLength'   => 16 * 1024 * 1024,
+                     },
+    ) || die("Unable to connect to queue manager\n");
+
 =head1 DESCRIPTION
 
 The MQSeries::QueueManager object is an OO mechanism for connecting to
@@ -810,8 +825,8 @@ MQSeries::Message, and the other MQSeries::* modules.  These objects
 provide a simpler, higher level interface to the MQI.
 
 This module also provides special support for connect timeouts (for
-interrupting MQCONN() calls that may hang forever), as well as connect
-retry logic, which will retry failed MQCONN() calls for a specific
+interrupting MQCONNX() calls that may hang forever), as well as connect
+retry logic, which will retry failed MQCONNX() calls for a specific
 list of reason codes.
 
 See the "Special Considerations" section for a discussion of these
@@ -844,7 +859,7 @@ The constructor takes a hash as an argument, with the following keys:
 =item QueueManager
 
 This is simply the name of the Queue Manager to which to connect.
-This is passed directly to the MQCONN() call as-is.
+This is passed directly to the MQCONNX() call as-is.
 
 Normally, this is simply the name of the queue manager to which you
 wish to connect, but if the "default" queue manager is to be used,
@@ -900,15 +915,29 @@ manager during object destruction.
 
 See the section on "AutoCommit" in "Special Considerations".
 
+=item ClientConn
+
+For client connections, the connection details must be provided
+somehow.  By default, the client channel table file (AMQCLCHL.TAB) or
+MQSERVER environment variable is used.  This optional parameter allows
+you to specify the details in your code (possibly read from some sort
+of configuration file or directory service).
+
+The C<ClientConn> parameter is a hash reference of which the
+C<ChannelName>, C<ConnectionName> and C<MaxMsgLength> are most
+relevant.  See the description of the C<MQCD> parameter structure in
+the Application Programming Reference guide for details on the other
+fields.
+
 =item ConnectTimeout
 
 If this value is given, it must be a positive integer.  This is the
-time, in seconds, in which an MQCONN() must complete before the MQI
+time, in seconds, in which an MQCONNX() must complete before the MQI
 call will be interrupted.  The default value is zero, which means the
-MQCONN() call will not be interrupted.
+MQCONNX() call will not be interrupted.
 
 There are outage scenarios, in the experience of the author, where the
-MQCONN() call will block indefinetely and never return.  This happens
+MQCONNX() call will block indefinitely and never return.  This happens
 when a queue manager is "hung", and completely unresponsive, in some
 cases.
 
@@ -922,12 +951,12 @@ support signals will generate a warning, and be silently ignored.
 =item ConnectTimeoutSignal
 
 By default, the ConnectTimeout mechanism is implemented using a signal
-handler for SIGUSR1, but the signal used to interrupt the MQCONN()
+handler for SIGUSR1, but the signal used to interrupt the MQCONNX()
 call can be customized using this attribute.
 
 The signal handler installed by this API is done using local(), so the
 effects of the handler will only override the applications handler
-during the call to MQCONN().
+during the call to MQCONNX().
 
 The string used for this attribute should be the short hand name of
 the signal, for example, to set the signal to SIGUSR2:
@@ -974,13 +1003,6 @@ transparently, in the class definition.
 
 =item CompCode, Reason
 
-WARNING: These keys are deprecated, and their use no longer
-encouraged.  They are left in place only for backwards compabitility
-and will be removed in a future release.
-
-See the docs for the C<AutoConnect> argument, and the Connect()
-method.
-
 When the constructor encounters an error, it returns nothing, and you
 can not make method calls off of a non-existent object.  Thus, you do
 not have access to the CompCode() and Reason() method calls.  If you
@@ -1002,7 +1024,7 @@ docs, too).
 
 =item RetryCount
 
-The call to MQCONN() (implemented via the Connect() method), can be
+The call to MQCONNX() (implemented via the Connect() method), can be
 told to retry the failure for a specific list of reason codes.  This
 functionality is only enabled if the RetryCount is non-zero. By
 default, this value is zero, and thus retries are disabled.
@@ -1023,7 +1045,7 @@ HASH, then the keys are the reason codes (and the values ignored).
 
 =head2 Connect
 
-This method takes no arguments, and merely calls MQCONN() to connect
+This method takes no arguments, and merely calls MQCONNX() to connect
 to the queue manager.  The various options are all set via the
 MQSeries::Queue constructor (see above).
 
@@ -1398,25 +1420,25 @@ the default.
 There are known outage scenarios wherein the queue manager will be in
 a "hung" state, where it is entirely unresponsive, but still up and
 running.  Attempts to connect to such a queue manager can block
-indefinetely, with the MQCONN() call never returning, until the queue
+indefinetely, with the MQCONNX() call never returning, until the queue
 manager is shutdown and restarted.  Normally, applications can not
-trap this error, since they will be stuck in the MQCONN() call,
+trap this error, since they will be stuck in the MQCONNX() call,
 forever.
 
 By setting the ConnectTimeout argument to the MQSeries::QueueManager
-constructor, a time limit on MQCONN() can be imposed, and applications
+constructor, a time limit on MQCONNX() can be imposed, and applications
 will be able to detect this situation, and take action, if so desired.
 
 This functionality is implemented by forking a child process, which
 sleeps for the duration of the ConnectTimeout, and then sends a signal
-to the parent to interrupt the MQCONN() call.  If the MQCONN() call
+to the parent to interrupt the MQCONNX() call.  If the MQCONNX() call
 succeeds before the timeout is reached, then the parent kill the child
 with the same signal.
 
 By default, SIGUSR1 is used, and the handlers are installed locally,
 so there should be no conflict with any signal handlers installed by
 the application, unless you really need your own SIGUSR1 to be enabled
-during the MQCONN() call.  You can customize the signal used via the
+during the MQCONNX() call.  You can customize the signal used via the
 ConnectTimeoutSignal argument.
 
 If the timeout occurs, it will be considered a retryable error. (See
@@ -1428,16 +1450,16 @@ not support sending signals to other processes.
 
 =head2 Connection Retry Support
 
-Normally, when MQCONN() fails, the method that called it (Connect() or
+Normally, when MQCONNX() fails, the method that called it (Connect() or
 new()) also fails.  It is possible to have the Connect() method retry
-the MQCONN() call for a specific set of reason codes.
+the MQCONNX() call for a specific set of reason codes.
 
 By default, the retry logic is disabled, but it can be enabled by
 setting the RetryCount to a non-zero value.  The list of reason codes
 defaults to a few reasonable values, but a list of retryable codes can
 be specified via the RetryReasons argument.
 
-You are probably wondering why this logic is useful for MQCONN().  The
+You are probably wondering why this logic is useful for MQCONNX().  The
 choice of the default RetryReasons is not without its own reason.
 
 Consider an application that loses its connection to its queue
@@ -1448,7 +1470,7 @@ succeeds.
 
 Alternately, consider an application that is started at boot time,
 possible in parallel with the queue manager.  If the application comes
-up before the queue manager, the MQCONN() call will fail.  Retrying
+up before the queue manager, the MQCONNX() call will fail.  Retrying
 this initial connection will make the application startup more robust.
 
 This makes it easier to have applications recover from queue manager

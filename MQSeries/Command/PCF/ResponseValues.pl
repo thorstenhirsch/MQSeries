@@ -155,13 +155,16 @@ package MQSeries::Command::PCF;
    ApplType =>
    {
     CICS			=> 1,
+    CHINIT                      => 30,
     DOS				=> 5,
     IMS				=> 3,
     MVS				=> 2,
     NSK                         => 13,
     OS2				=> 4,
     OS400			=> 8,
+    QMGR                        => 7,
     UNIX			=> 6,
+    USER                        => 25,
     VMS				=> 12,
     Win16			=> 9,
     Win32			=> 11,
@@ -202,6 +205,7 @@ package MQSeries::Command::PCF;
 
    ObjectType =>
    {
+    AuthInfo                    => 7,
     Namelist			=> 2,
     Process			=> 3,
     Queue			=> 1,
@@ -225,6 +229,30 @@ package MQSeries::Command::PCF;
     ClntconnChannel		=> 1014,
    },
 
+   #
+   # New with WebSphere MQ 5.3
+   #
+   AuthInfoType =>
+   {
+    CRLLDAP                     => 1,
+   },
+
+   QStatusInputType =>
+   {
+    Exclusive                   => 2,
+    No                          => 0,
+    Shared                      => 1,
+   },
+
+   SSLClientAuth =>
+   {
+    Optional                    => 1,
+    Required                    => 0,
+   },
+
+   #
+   # Used with the Morgan Stanley extended Authority commands
+   #
    EntityType =>
    {
     Principal			=> 1000,

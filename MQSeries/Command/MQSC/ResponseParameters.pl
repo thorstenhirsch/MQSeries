@@ -1,5 +1,5 @@
 #
-# $Id: ResponseParameters.pl,v 20.2 2002/03/18 20:33:53 biersma Exp $
+# $Id: ResponseParameters.pl,v 21.2 2002/06/27 16:27:20 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -242,7 +242,7 @@ package MQSeries::Command::MQSC;
     ALTDATE	=> [ "AlterationDate" ],
     DESCR	=> [ "NamelistDesc" ],
     NAMELIST	=> [ "NamelistName" ],
-    NAMCOUNT  	=> [ "NamelistCount" ],
+    NAMCOUNT  	=> [ "NameCount" ],
     NAMES   	=> [ "Names" ],
     QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
    },
@@ -322,6 +322,32 @@ package MQSeries::Command::MQSC;
     USERID	=> [ "UserIdentifier" ],
    },
 
+   QueueStatus => 
+   {
+    APPLTAG     => [ "ApplTag" ],
+    APPLTYPE    => [ "ApplType",                $ResponseValues{ApplType} ],
+    ASID        => [ "AddressSpaceId" ],
+    BROWSE      => [ "Browse",                  $ResponseValues{Yes} ],
+    CHANNEL     => [ "ChannelName" ],
+    CONNAME     => [ "Conname" ],
+    CURDEPTH    => [ "CurrentQDepth" ],
+    INPUT       => [ "Input",                   $ResponseValues{QStatusInputType} ],
+    INQUIRE     => [ "Inquire",                 $ResponseValues{Yes} ],
+    IPPROCS     => [ "OpenInputCount" ],
+    OPPROCS     => [ "OpenOutputCount" ],
+    OUTPUT      => [ "Output",                  $ResponseValues{Yes} ],
+    PSBNAME     => [ "PSBName" ],
+    PSTID       => [ "PSTId" ],
+    QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
+    QSTATUS     => [ "QName" ],
+    SET         => [ "Set",                     $ResponseValues{Yes} ],
+    TASKNO      => [ "TaskNumber" ],
+    TRANSID     => [ "TransactionId" ],
+    TYPE        => [ "StatusType",              $ResponseValues{StatusType} ],
+    UNCOM       => [ "UncommittedMsgs" ],
+    URID        => [ "URId" ],
+    USERID      => [ "UserIdentifier" ],
+   },
   );
 
 1;

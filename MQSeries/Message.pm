@@ -1,5 +1,5 @@
 #
-# $Id: Message.pm,v 20.2 2002/03/18 20:34:22 biersma Exp $
+# $Id: Message.pm,v 21.3 2002/07/08 22:09:18 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,16 +7,17 @@
 
 package MQSeries::Message;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Utils qw(ConvertUnit);
 
 use vars qw($VERSION);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 sub new {
 
@@ -50,13 +51,19 @@ sub new {
     }
 
     if ( exists $args{MsgDesc} ) {
-	if ( ref $args{MsgDesc} eq "HASH" ) {
-	    #$self->{MsgDesc} = $args{MsgDesc};
-	    %MsgDesc = %{$args{MsgDesc}};
-	} else {
+	if ( ref $args{MsgDesc} ne "HASH" ) {
 	    $self->{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
 	    return;
-	}
+        }
+
+        %MsgDesc = %{$args{MsgDesc}};
+
+        #
+        # Handle Expiry settings in the format '300s' or '5m'
+        #
+        if (defined $MsgDesc{Expiry}) {
+            $MsgDesc{Expiry} = ConvertUnit('Expiry', $MsgDesc{Expiry});
+        }
     }
 
     #

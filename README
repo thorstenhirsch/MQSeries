@@ -1,8 +1,9 @@
 
 =head1 INTRODUCTION
 
-This module implements a perl5 API for the IBM MQSeries messaging
-middleware product API (often referred to as the MQI), as well as:
+This module implements a perl5 API for the IBM MQSeries / WebSphere MQ
+messaging middleware product API (often referred to as the MQI), as
+well as:
 
 =over 
 
@@ -16,13 +17,13 @@ middleware product API (often referred to as the MQI), as well as:
 
 =back
 
-For more information on the MQSeries product itself, see the IBM
-website at: http://www.ibm.com/software/mqseries
+For more information on the MQSeries / WebSphere MQ product itself,
+see the IBM website at: http://www.ibm.com/software/mqseries
 
 =head1 PREREQUISITES
 
-This release requires perl5.004 or later, and some release of the IBM
-MQSeries product installed, either V2, V5.0, V5.1 or V5.2.
+This release requires perl5.005 or later, and some release of the IBM
+MQSeries product installed, either V2, V5.0, V5.1, V5.2 or V5.3.
 
 The PubSub extensions, and the RulesFormat message support require
 either V5.2, V5.1, or V5.0 with CSD05 or later.  MQSI is not
@@ -38,25 +39,24 @@ the author, of course.
 
   Operating System	MQSeries Version	Perl Version	
   ================	================	============	
-  SunOS 5.5.1	        5.0			5.00404
-						5.00405
-						5.00502
-						5.00502 (w/ -Dusethreads)
+  SunOS 5.5.1	        5.0			5.00502
 						5.00503
-						5.00503 (w/ -Dusethreads)
+						5.6.1
   SunOS 5.6		5.0			5.00503
   SunOS 5.7		5.1			Same as SunOS 5.5.1
   SunOS 5.7		5.2			Same as SunOS 5.5.1
+  SunOS 5.7		5.3			Same as SunOS 5.5.1
   SunOS 5.8		5.1			Same as SunOS 5.5.1
   SunOS 5.8		5.2			Same as SunOS 5.5.1
-  IRIX 6.5		2.x			Same as SunOS 5.5.1	
+  SunOS 5.8		5.3			Same as SunOS 5.5.1
+ *IRIX 6.5		2.x			Same as SunOS 5.5.1	
   IRIX 6.5		5.0			Same as SunOS 5.5.1	
  *HP-UX 11.0 32bit	5.1			5.00503
  *HP-UX 11.0 32bit	5.2			5.6.1
-  NT 4.0		5.0			AS build 521
-  NT 4.0		5.1			AS build 521
-  NT 4.0		5.1			AS build 617
-  NT 4.0		5.1			AS build 617
+ *NT 4.0		5.0			AS build 521
+ *NT 4.0		5.1			AS build 521
+ *NT 4.0		5.1			AS build 617
+ *NT 4.0		5.1			AS build 617
  *Windows 2000		5.2			??
  *AIX 4.3.3		5.1			5.00503
  *AIX 4.3.3		5.2			5.6.1
@@ -65,8 +65,7 @@ the author, of course.
  *Redhat Linux 5.2	?? 			??
   Redhat Linux 6.1	5.1 			5.00503
   Redhat Linux 6.2	5.1			5.6.0
-  Redhat Linux 7.x	5.2			5.00405
-						5.00503
+  Redhat Linux 7.x	5.2			5.00503
 						5.6.1
 
 NOTE: The ?? indicates that I received reports of a successful test
@@ -81,7 +80,13 @@ integrate it.
 
 ANOTHER NOTE: The IRIX 6.5 tests were client only, as we used the
 WillowTech port of the 2.x code base, which doesn't include support
-for the MQSeries server.  
+for the MQSeries server.
+
+ANOTHER NOTE: We have reports that the server bindings do not work on
+HP-UX with MQSeries release 5.1 and 5.2, as the server bindings want
+to override various pthread functions already linked to the perl
+interpreter.  As we do not have HP-UX systems here, we are unable to
+verify whether the client bindings work properly.
 
 YET ANOTHER NOTE: I do not have an NT 4.0 MQSeries 5.0 queue manager
 against which to test, but the same code works fine for 5.1, so I
@@ -176,6 +181,7 @@ There is also an interface to the Publish/Subscribe system:
 A number of utility classes have been created for parsing the various
 file formats used by the MQSeries product:
 
+  man MQSeries::Config::ChannelTable
   man MQSeries::Config::Machine
   man MQSeries::Config::QMgr
   man MQSeries::ErrorLog::Parser
@@ -211,7 +217,7 @@ Although, nothing remains of the original code.... (sorry, David :-)
 =cut
 
 #
-# $Id: README,v 20.3 2002/03/26 14:33:43 biersma Exp $
+# $Id: README,v 21.2 2002/06/10 18:23:44 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

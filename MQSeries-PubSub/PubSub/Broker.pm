@@ -1,5 +1,5 @@
 #
-# $Id: Broker.pm,v 20.2 2002/03/18 20:33:28 biersma Exp $
+# $Id: Broker.pm,v 21.1 2002/03/27 15:32:12 wpm Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,7 +21,7 @@ use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::QueueManager );
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 #
 # All 5 of these PubSub commands must be sent to the Broker.

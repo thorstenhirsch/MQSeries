@@ -26,7 +26,9 @@ package MQSeries::Command::PCF;
 
 %RequestParameterOrder =
   (
-   DeleteQueue			=> [qw( QType Purge )],
+   DeleteQueue			=> [ qw(QType Purge) ],
+
+   InquireQueueStatus           => [ qw(StatusType OpenType QStatusAttrs) ],
   );
 
 1;

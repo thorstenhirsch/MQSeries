@@ -1,5 +1,5 @@
 #
-# $Id: Responses.pl,v 20.1 2002/03/18 20:33:55 biersma Exp $
+# $Id: Responses.pl,v 21.1 2002/06/21 16:04:39 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -27,6 +27,7 @@ package MQSeries::Command::MQSC;
    DeleteQueue 			=> $ResponseParameters{Queue}, 
    InquireQueue 		=> $ResponseParameters{Queue}, 
    InquireQueueNames 		=> $ResponseParameters{Queue}, 
+   InquireQueueStatus 		=> $ResponseParameters{QueueStatus}, 
    ResetQueueStatistics 	=> $ResponseParameters{Queue}, 
 
    ChangeChannel 		=> $ResponseParameters{Channel}, 

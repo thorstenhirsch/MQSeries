@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameterPrimary.pl,v 20.1 2002/03/18 20:33:45 biersma Exp $
+# $Id: RequestParameterPrimary.pl,v 21.1 2002/06/21 16:04:52 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -28,6 +28,7 @@ package MQSeries::Command::MQSC;
    CreateQueue			=> "QName",
    DeleteQueue			=> "QName",
    InquireQueue			=> "QName",
+   InquireQueueStatus           => "QName",
    ResetQueueStatistics         => "QName",
 
    #

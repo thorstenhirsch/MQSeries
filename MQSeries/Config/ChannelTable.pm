@@ -1,5 +1,5 @@
 #
-# $Id: ChannelTable.pm,v 20.2 2002/03/18 20:34:03 biersma Exp $
+# $Id: ChannelTable.pm,v 21.3 2002/07/01 15:36:56 biersma Exp $
 #
 # (c) 2001-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,7 +19,7 @@ use vars qw(
 	    %StrucLength
 	   );
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 @MQCDFields =
   (
@@ -167,11 +167,9 @@ $VERSION = '1.17';
    6				=> 1648,
   );
 
+
 sub readFile {
-
-    my $class = shift;
-    my (%args) = @_;
-
+    my ($class, %args) = @_;
     my ($filename) = @args{qw(Filename)};
 
     if ( $args{Debug} ) {
@@ -182,11 +180,9 @@ sub readFile {
 
     open(FILE,$filename) ||
       confess "Unable to open $filename: $!\n";
-
-    local($/) = undef;
-
+    binmode(FILE);              # Required for Windows NT
+    local $/ = undef;
     my $data = <FILE>;
-
     close(FILE) ||
       confess "Unable to close $filename: $!\n";
 
@@ -300,14 +296,11 @@ sub readFile {
     }
 
     return @clntconn;
-
 }
 
+
 sub writeFile {
-
-    my $class = shift;
-    my (%args) = @_;
-
+    my ($class, %args) = @_;
     my ($filename,$clntconn,$version) = @args{qw(Filename Clntconn Version)};
 
     my $data = "AMQR";
@@ -321,9 +314,7 @@ sub writeFile {
       confess "Invalid Version '$version': only 3, 4 and 6 are supported\n";
 
     #
-    # We apparently need to ensure that SYSTEM.DEF.CLNTCONN is the
-    # first channel in the table, and more importantly, that it
-    # exists.
+    # We need to ensure that SYSTEM.DEF.CLNTCONN exists.
     #
     my $default = {%SystemDefClntconn};
     my @channel = ();
@@ -343,8 +334,14 @@ sub writeFile {
 	my $newchannel = { %$default, %$channel };
 	$newchannel->{Version} = $version;
 	$newchannel->{StrucLength} = $StrucLength{$version};
-	push(@channel,$newchannel);
+	push @channel, $newchannel;
     }
+
+    #
+    # The channels need to be in reverse alphabetical order,
+    # or any MQ client processing the file will hang.
+    #
+    @channel = sort { $b->{ChannelName} cmp $a->{ChannelName} } @channel;
 
     {
 	my $supportedkeys = { map { $_->[0] => 1 } @MQCDFields };
@@ -362,11 +359,13 @@ sub writeFile {
     #
     # We're going to create an array of binary encoded MQCD
     # structures, and then go back and create the next/previous
-    # pointers.  We used to do this (version 1.15) as we went, but it
-    # appears that IBM's code that parses this file assumes that the
-    # end of the linked list is the beginning of the file, and after
-    # following the linked list pointers to the end, it then parses
-    # the file sequentially.
+    # pointers.  We've had various ways of doing the ordering for the
+    # double-linked but at this time (July 2002) it seems that the
+    # channel names need to be in alphabetical order - so we sort the
+    # channels and then create a straight linked list.
+    #
+    # The two-pass structure is kep in case we need to change this
+    # again.
     #
     my @mqcd = ();
 
@@ -429,7 +428,7 @@ sub writeFile {
 			$exitstring .= $class->writeString($name,length($name));
 			$exitstring .= "\x02";
 		    }
-		}
+                }
 
 		$exitstring .= "\x01";
 
@@ -448,7 +447,6 @@ sub writeFile {
 	    # We've got the V6 data structure decoded, but we're not
 	    # entirely sure about V4.
 	    $mqcd .= "\0" x 20;
-
 	}
 
 	my $mqcd_length = length($mqcd);
@@ -465,44 +463,39 @@ sub writeFile {
 
     #
     # Now we'll troll through the @mqcd array of hashes, and add the
-    # next and previous pointers.  This is gross, because we have to
-    # make this look *exactly* like the order the physical list is
-    # written when a queue manager writes the file.  IOW, we have to
-    # fool IBM.
-    #
-    # The physical order of the entries is:  1 2 3 4 5 6
-    # The logical order of the entries is:   1 6 5 4 3 2
-    #
-    # Confused?  I hope so...
+    # next and previous pointers.
     #
     for ( my $index = 0 ; $index <= $#mqcd ; $index++ ) {
-
 	my $next = 0;
 	my $prev = 0;
 
 	#
-	# Three special cases.
+	# Two special cases and one noral one:
+        # - First entry (NULL prev pointer)
+        # - Last entry (NULL next pointer)
+        # - Any other entry (two pointers)
 	#
 	if ( $index == 0 ) {
+            #
 	    # The first physical entry is the first in the linked
 	    # list, thus no previous pointer.
-	    $next = $mqcd[$#mqcd]->{Offset};
-	    $prev = 0;
-	} elsif ( $index == 1 ) {
-	    # The second physical entry is the last in the linked
-	    # list, thus no next pointer.
-	    $next = 0;
-	    $prev = $mqcd[$index+1]->{Offset};
+            #
+	    $next = $mqcd[$index+1]->{Offset};
+            $prev = 0;
 	} elsif ( $index == $#mqcd ) {
+            #
 	    # The last physical entry has to point back to the first
 	    # one.
-	    $next = $mqcd[$index-1]->{Offset};
-	    $prev = $mqcd[0]->{Offset};
+            #
+	    $next = 0;
+	    $prev = $mqcd[$index-1]->{Offset};
 	} else {
-	    # The default next/previous pointers just go backwards through
-	    # the physical list, in the opposite order.
-	    $next = $mqcd[$index-1]->{Offset};
-	    $prev = $mqcd[$index+1]->{Offset};
+            #
+	    # The default next/previous pointers just go forwards
+	    # through the physical list.
+            #
+	    $next = $mqcd[$index+1]->{Offset};
+	    $prev = $mqcd[$index-1]->{Offset};
 	}
 
 	my $mqcd_length = length($mqcd[$index]->{MQCD});
@@ -537,15 +530,14 @@ sub writeFile {
     # Trailing zero
     $data .= "\0" x 4;
 
-    open(FILE,">$filename") || confess "Unable to write to $filename: $!\n";
-
+    open(FILE, ">$filename") || confess "Unable to write to $filename: $!\n";
+    binmode(FILE);              # Required for Windows NT
     print FILE $data;
-
     close(FILE) || confess "Unable to close $filename: $!\n";
 
     return 1;
-
 }
+
 
 sub readString {
     my $class = shift;
@@ -553,11 +545,13 @@ sub readString {
     return unpack("A*", substr($data,$offset,$length));
 }
 
+
 sub readNumber {
     my $class = shift;
     my ($data,$offset,$length) = @_;
     return unpack("N", reverse substr($data,$offset,$length));
 }
+
 
 sub writeString {
     my $class = shift;
@@ -565,17 +559,20 @@ sub writeString {
     return $string . ( " " x ( $length - length($string) ) );
 }
 
+
 sub writeNumber {
     my $class = shift;
     my ($number) = @_;
     return reverse pack("N",$number);
 }
 
+
 sub readByte {
     my $class = shift;
     my ($data,$offset,$length) = @_;
     return substr($data,$offset,$length);
 }
+
 
 sub writeByte {
     my $class = shift;
@@ -885,7 +882,7 @@ he worked for me at the time (December 2000), so I own them ;-)
 
 The channel table is basically a doubly linked list of MQCDs.  A few
 extra strings follow the MQCD as version 6 of the MQCD allows for
-variable length strings to contain the list of send/recieve/message
+variable length strings to contain the list of send/receive/message
 exits.  (NOTE: Message exits are not really supported for CLNTCONNs,
 but the channel table file supports them as lists anyway.  IBM has yet
 to explain this to me).
@@ -900,7 +897,7 @@ identifier followed by an array of channel definitions
 
 The forward/backwards links are used to traverse the channel
 definitions during an MQCONN or DISPLAY CHL(*).  The file may contain
-deleted channel definitions snice the entire file is not rewritten
+deleted channel definitions since the entire file is not rewritten
 just to delete/add/modify a channel definition.
 
 To traverse all channel definitions including deleted ones, for
@@ -981,7 +978,7 @@ lists are MsgExitPtr, MsgUserDataPtr, SendExitPtr, SendUserDataPtr,
 ReceiveExitPtr, ReceiveUserDataPtr.  But since these are pointer
 fields the value of them is zero in the MQCD and the strings are
 appended to the channel definition after the MQCD.  The value of
-SendExitsDefined, ...  are also zero and irrelavent even though send
+SendExitsDefined, ...  are also zero and irrelevant even though send
 exits may be defined for the channel.
 
 The IBM documentation is not entirely clear on the use of the MsgExit

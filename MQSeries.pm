@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 20.2 2002/03/18 20:33:35 biersma Exp $
+# $Id: MQSeries.pm,v 21.4 2002/06/13 13:25:30 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -11,7 +11,7 @@
 
 package MQSeries;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
@@ -20,37 +20,60 @@ use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS);
 require Exporter;
 require DynaLoader;
 
+use MQSeries::Config::Machine;
+
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 BEGIN {
+    my $server;
+    if (exists $INC{"MQServer/MQSeries.pm"}) {
+        $server = 1;
+    } elsif (exists $INC{"MQClient/MQSeries.pm"}) {
+        $server = 0;
+    } else {
+        if ( $^O =~ /Win32/i ) { # Windows: check systemdir
+            no strict;
 
-    my $systemdir = q{/var/mqm/qmgrs/@SYSTEM};
+            require "Win32/TieRegistry.pm";
+            import Win32::TieRegistry;
 
-    if ( $^O =~ /Win32/i ) {
+            $Registry->Delimiter('/');
 
-	no strict;
+            my $CurrentVersion = "LMachine/SOFTWARE/IBM/MQSeries/CurrentVersion/";
 
-	require "Win32/TieRegistry.pm";
-	import Win32::TieRegistry;
-
-	$Registry->Delimiter('/');
-
-	my $CurrentVersion = "LMachine/SOFTWARE/IBM/MQSeries/CurrentVersion/";
-
-	($systemdir) = (
-			$Registry->{"$CurrentVersion/FilePath"} ||
-			$Registry->{"$CurrentVersion/WorkPath"} ||
-			"C:/Mqm"
-		       ) . q{/qmgrs/@SYSTEM};
-
+            my ($systemdir) = (
+                               $Registry->{"$CurrentVersion/FilePath"} ||
+                               $Registry->{"$CurrentVersion/WorkPath"} ||
+                               "C:/Mqm"
+                              )  . q{/qmgrs/@SYSTEM};
+            if (-d $systemdir) {
+                $server = 1;
+            } else {
+                $server = 0;
+            }
+        } else {                # Unix: check systemdir and mqs.ini
+            eval {
+                my $mqMachine = MQSeries::Config::Machine->new();
+                if (keys %{$mqMachine->localqmgrs}) { # If any local qmgrs...
+                    $server = 1;
+                } else {
+                    $server = 0;
+                }
+            };
+            unless (defined $server) {
+                my $systemdir = q{/var/mqm/qmgrs/@SYSTEM};
+                if (-d $systemdir) {
+                    $server = 1;
+                } else {
+                    $server = 0;
+                }
+            }
+        }
     }
 
-    if (
-	$INC{"MQServer/MQSeries.pm"} ||
-	(  -d $systemdir && ! exists $INC{"MQClient/MQSeries.pm"} )
-       ) {
+    if ($server) {
 	require "MQServer/MQSeries.pm";
 	import MQServer::MQSeries;
 	*EXPORT = *MQServer::MQSeries::EXPORT;
@@ -63,8 +86,8 @@ BEGIN {
 	*EXPORT_TAGS = *MQClient::MQSeries::EXPORT_TAGS;
 	$MQSeries::Mode = "Client";
     }
-
 }
+
 
 1;
 

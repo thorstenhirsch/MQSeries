@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: ResponseParameters.in,v 20.1 2002/03/18 20:34:59 biersma Exp $
+# $Id: ResponseParameters.in,v 21.1 2002/06/07 20:07:35 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -44,6 +44,7 @@ package MQSeries::Command::PCF;
     ClusterWorkLoadLength 	=> [ &MQIA_CLUSTER_WORKLOAD_LENGTH,	&MQCFT_INTEGER ],
     CodedCharSetId 		=> [ &MQIA_CODED_CHAR_SET_ID,		&MQCFT_INTEGER ],
     CommandLevel 		=> [ &MQIA_COMMAND_LEVEL,		&MQCFT_INTEGER ],
+    ConfigurationEvent          => [ &MQIA_CONFIGURATION_EVENT,         &MQCFT_INTEGER ],
     DistLists 			=> [ &MQIA_DIST_LISTS,			&MQCFT_INTEGER ],
     InhibitEvent 		=> [ &MQIA_INHIBIT_EVENT,		&MQCFT_INTEGER ],
     LocalEvent 			=> [ &MQIA_LOCAL_EVENT,			&MQCFT_INTEGER ],
@@ -53,6 +54,9 @@ package MQSeries::Command::PCF;
     MaxUncommittedMsgs 		=> [ &MQIA_MAX_UNCOMMITTED_MSGS,	&MQCFT_INTEGER ],
     PerformanceEvent 		=> [ &MQIA_PERFORMANCE_EVENT,		&MQCFT_INTEGER ],
     RemoteEvent 		=> [ &MQIA_REMOTE_EVENT,		&MQCFT_INTEGER ],
+    SSLCRLNamelist              => [ &MQCA_SSL_CRL_NAMELIST,            &MQCFT_STRING ],
+    SSLCryptoHardware           => [ &MQCA_SSL_CRYPTO_HARDWARE,         &MQCFT_STRING ],
+    SSLKeyRepository            => [ &MQCA_SSL_KEY_REPOSITORY,          &MQCFT_STRING ],
     StartStopEvent 		=> [ &MQIA_START_STOP_EVENT,		&MQCFT_INTEGER ],
     SyncPoint 			=> [ &MQIA_SYNCPOINT,			&MQCFT_INTEGER ],
     TriggerInterval 		=> [ &MQIA_TRIGGER_INTERVAL,		&MQCFT_INTEGER ],
@@ -186,6 +190,7 @@ package MQSeries::Command::PCF;
     ClusterNamelist		=> [ &MQCA_CLUSTER_NAMELIST,		&MQCFT_STRING ],
     QMgrName			=> [ &MQCA_Q_MGR_NAME,			&MQCFT_STRING ],
     Batches			=> [ &MQIACH_BATCHES,			&MQCFT_INTEGER ],
+    BatchHeartBeat              => [ &MQIACH_BATCH_HB,                  &MQCFT_INTEGER ],
     BatchInterval		=> [ &MQIACH_BATCH_INTERVAL,		&MQCFT_INTEGER ],
     BatchSize			=> [ &MQIACH_BATCH_SIZE,		&MQCFT_INTEGER ],
     BuffersReceived		=> [ &MQIACH_BUFFERS_RCVD,		&MQCFT_INTEGER ],
@@ -199,6 +204,7 @@ package MQSeries::Command::PCF;
     HeartbeatInterval		=> [ &MQIACH_HB_INTERVAL,		&MQCFT_INTEGER ],
     InDoubtStatus		=> [ &MQIACH_INDOUBT_STATUS,		&MQCFT_INTEGER ],
     LastSequenceNumber		=> [ &MQIACH_LAST_SEQ_NUMBER,		&MQCFT_INTEGER ],
+    LocalAddress                => [ &MQCACH_LOCAL_ADDRESS,             &MQCFT_STRING ],
     LongRetriesLeft		=> [ &MQIACH_LONG_RETRIES_LEFT,		&MQCFT_INTEGER ],
     LongRetryCount		=> [ &MQIACH_LONG_RETRY,		&MQCFT_INTEGER ],
     LongRetryInterval		=> [ &MQIACH_LONG_TIMER,		&MQCFT_INTEGER ],
@@ -211,6 +217,9 @@ package MQSeries::Command::PCF;
     ShortRetriesLeft		=> [ &MQIACH_SHORT_RETRIES_LEFT,	&MQCFT_INTEGER ],
     ShortRetryCount		=> [ &MQIACH_SHORT_RETRY,		&MQCFT_INTEGER ],
     ShortRetryInterval		=> [ &MQIACH_SHORT_TIMER,		&MQCFT_INTEGER ],
+    SSLCipherSpec               => [ &MQCACH_SSL_CIPHER_SPEC,           &MQCFT_STRING ],
+    SSLClientAuth               => [ &MQIACH_SSL_CLIENT_AUTH,           &MQCFT_INTEGER,                 $ResponseValues{SSLClientAuth} ],
+    SSLPeerName                 => [ &MQCACH_SSL_PEER_NAME,             &MQCFT_STRING ],
     StopRequested		=> [ &MQIACH_STOP_REQUESTED,		&MQCFT_INTEGER ],
    },
 
@@ -291,6 +300,51 @@ package MQSeries::Command::PCF;
     NamelistName		=> [ &MQCA_NAMELIST_NAME,		&MQCFT_STRING ],
     Names			=> [ &MQCA_NAMES,			&MQCFT_STRING ],
    },
+
+   #
+   # AuthInfo is new with WebSphere MQ 5.3
+   #
+   AuthInfo =>
+   {
+    AlterationDate		=> [ &MQCA_ALTERATION_DATE,		&MQCFT_STRING ],
+    AlterationTime		=> [ &MQCA_ALTERATION_TIME,		&MQCFT_STRING ],
+    AuthInfoConnName            => [ &MQCA_AUTH_INFO_CONN_NAME,         &MQCFT_STRING ],
+    AuthInfoDesc                => [ &MQCA_AUTH_INFO_DESC,              &MQCFT_STRING ],
+    AuthInfoName                => [ &MQCA_AUTH_INFO_NAME,              &MQCFT_STRING ],
+    AuthInfoNames               => [ &MQCACF_AUTH_INFO_NAMES,           &MQCFT_STRING ],
+    AuthInfoType                => [ &MQIA_AUTH_INFO_TYPE,              &MQCFT_INTEGER, $ResponseValues{AuthInfoType} ],
+    LDAPPassword                => [ &MQCA_LDAP_PASSWORD,               &MQCFT_STRING ],
+    LDAPUserName                => [ &MQCA_LDAP_USER_NAME,              &MQCFT_STRING ],
+   },
+
+   #
+   # QueueStatus is new with WebSphere MQ 5.3
+   #
+   QueueStatus =>
+   {
+    ApplTag                     => [ &MQCACF_APPL_TAG,                  &MQCFT_STRING ],
+    ApplType                    => [ &MQIA_APPL_TYPE,                   &MQCFT_INTEGER,                 $ResponseValues{ApplType} ],
+    Browse                      => [ &MQIACF_OPEN_BROWSE,               &MQCFT_INTEGER ],
+    ChannelName                 => [ &MQCACH_CHANNEL_NAME,              &MQCFT_STRING ],
+    Conname                     => [ &MQCACH_CONNECTION_NAME,           &MQCFT_STRING ],
+    CurrentQDepth               => [ &MQIA_CURRENT_Q_DEPTH,             &MQCFT_INTEGER ],
+    InputType                   => [ &MQIACF_OPEN_INPUT_TYPE,           &MQCFT_INTEGER,                 $ResponseValues{QStatusInputType} ],
+    Inquire                     => [ &MQIACF_OPEN_INQUIRE,              &MQCFT_INTEGER ],
+    OpenInputCount              => [ &MQIA_OPEN_INPUT_COUNT,            &MQCFT_INTEGER ],
+    OpenOptions                 => [ &MQIACF_OPEN_OPTIONS,              &MQCFT_INTEGER ],
+    OpenOutputCount             => [ &MQIA_OPEN_OUTPUT_COUNT,           &MQCFT_INTEGER ],
+    Output                      => [ &MQIACF_OPEN_OUTPUT,               &MQCFT_INTEGER ],
+    ProcessId                   => [ &MQIACF_PROCESS_ID,                &MQCFT_INTEGER ],
+    Set                         => [ &MQIACF_OPEN_SET,                  &MQCFT_INTEGER ],
+    QName			=> [ &MQCA_Q_NAME,			&MQCFT_STRING ],
+    ThreadId                    => [ &MQIACF_THREAD_ID,                 &MQCFT_INTEGER ],
+    UncommittedMsgs             => [ &MQIACF_UNCOMMITTED_MSGS,          &MQCFT_INTEGER ],        
+    UserIdentifier              => [ &MQCACF_USER_IDENTIFIER,           &MQCFT_STRING ],
+   },
+
+   #
+   # Authority is a Morgan Stanley extension
+   #
 
    Authority =>
    {

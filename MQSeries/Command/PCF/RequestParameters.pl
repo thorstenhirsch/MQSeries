@@ -30,6 +30,7 @@ package MQSeries::Command::PCF;
     ClusterWorkLoadData         => [ 2034,                               4 ],
     ClusterWorkLoadExit         => [ 2033,                               4 ],
     ClusterWorkLoadLength       => [ 58,                                 3 ],
+    ConfigurationEvent          => [ 51,                                 3 ],
     DeadLetterQName             => [ 2006,                               4 ],
     DefXmitQName                => [ 2025,                               4 ],
     Force                       => [ 1005,                               3 ],
@@ -43,14 +44,17 @@ package MQSeries::Command::PCF;
     RemoteEvent                 => [ 50,                                 3 ],
     RepositoryName              => [ 2035,                               4 ],
     RepositoryNamelist          => [ 2036,                               4 ],
+    SSLCRLNamelist              => [ 2050,                               4 ],
+    SSLCryptoHardware           => [ 2051,                               4 ],
+    SSLKeyRepository            => [ 2049,                               4 ],
     StartStopEvent              => [ 52,                                 3 ],
     TriggerInterval             => [ 25,                                 3 ],
    },
 
    Process =>
    {
-    ApplType                    => [ 1,               			3,		$RequestValues{ApplType} ],
-    ProcessAttrs                => [ 1003,                               5,    $RequestValues{Process} ],
+    ApplType                    => [ 1,               			3,                 $RequestValues{ApplType} ],
+    ProcessAttrs                => [ 1003,                               5,            $RequestValues{Process} ],
     ApplId                      => [ 2001,                               4 ],
     EnvData                     => [ 2007,                               4 ],
     FromProcessName             => [ 3003,                               4 ],
@@ -63,16 +67,16 @@ package MQSeries::Command::PCF;
 
    Queue =>
    {
-    DefBind                     => [ 61,             			3,		$RequestValues{DefBind} ],
-    DefinitionType              => [ 7,                                  3,		$RequestValues{DefinitionType} ],
-    DefInputOpenOption          => [ 4,                                  3,		$RequestValues{DefInputOpenOption} ],
-    MsgDeliverySequence         => [ 16,                                 3,		$RequestValues{MsgDeliverySequence} ],
-    QAttrs                      => [ 1002,                               5,	$RequestValues{Queue} ],
-    QServiceIntervalEvent       => [ 46,                                 3,		$RequestValues{QServiceIntervalEvent} ],
-    QType                       => [ 20,                                 3,		$RequestValues{QType} ],
-    Scope                       => [ 45,                                 3,		$RequestValues{Scope} ],
-    TriggerType                 => [ 28,                                 3,		$RequestValues{TriggerType} ],
-    Usage                       => [ 12,                                 3,		$RequestValues{Usage} ],
+    DefBind                     => [ 61,             			3,                 $RequestValues{DefBind} ],
+    DefinitionType              => [ 7,                                  3,                 $RequestValues{DefinitionType} ],
+    DefInputOpenOption          => [ 4,                                  3,                 $RequestValues{DefInputOpenOption} ],
+    MsgDeliverySequence         => [ 16,                                 3,                 $RequestValues{MsgDeliverySequence} ],
+    QAttrs                      => [ 1002,                               5,            $RequestValues{Queue} ],
+    QServiceIntervalEvent       => [ 46,                                 3,                 $RequestValues{QServiceIntervalEvent} ],
+    QType                       => [ 20,                                 3,                 $RequestValues{QType} ],
+    Scope                       => [ 45,                                 3,                 $RequestValues{Scope} ],
+    TriggerType                 => [ 28,                                 3,                 $RequestValues{TriggerType} ],
+    Usage                       => [ 12,                                 3,                 $RequestValues{Usage} ],
     BackoutRequeueName          => [ 2019,                               4 ],
     BackoutThreshold            => [ 22,                                 3 ],
     BaseQName                   => [ 2002,                               4 ],
@@ -115,16 +119,17 @@ package MQSeries::Command::PCF;
 
    Channel =>
    {
-    ChannelAttrs                => [ 1015,                               5,	$RequestValues{Channel} ],
-    ChannelInstanceAttrs        => [ 1524,                               5,	$RequestValues{Channel} ],
-    ChannelInstanceType         => [ 1523,                               3,		$RequestValues{ChannelInstanceType} ],
-    ChannelTable                => [ 1526,                               3,		$RequestValues{ChannelTable} ],
-    ChannelType                 => [ 1511,                               3,		$RequestValues{ChannelType} ],
-    InDoubt                     => [ 1516,                               3,		$RequestValues{InDoubt} ],
-    MCAType                     => [ 1517,                               3,		$RequestValues{MCAType} ],
-    NonPersistentMsgSpeed       => [ 1562,                               3,		$RequestValues{NonPersistentMsgSpeed} ],
-    PutAuthority                => [ 1508,                               3,		$RequestValues{PutAuthority} ],
-    TransportType               => [ 1501,                               3,		$RequestValues{TransportType} ],
+    ChannelAttrs                => [ 1015,                               5,            $RequestValues{Channel} ],
+    ChannelInstanceAttrs        => [ 1524,                               5,            $RequestValues{Channel} ],
+    ChannelInstanceType         => [ 1523,                               3,                 $RequestValues{ChannelInstanceType} ],
+    ChannelTable                => [ 1526,                               3,                 $RequestValues{ChannelTable} ],
+    ChannelType                 => [ 1511,                               3,                 $RequestValues{ChannelType} ],
+    InDoubt                     => [ 1516,                               3,                 $RequestValues{InDoubt} ],
+    MCAType                     => [ 1517,                               3,                 $RequestValues{MCAType} ],
+    NonPersistentMsgSpeed       => [ 1562,                               3,                 $RequestValues{NonPersistentMsgSpeed} ],
+    PutAuthority                => [ 1508,                               3,                 $RequestValues{PutAuthority} ],
+    TransportType               => [ 1501,                               3,                 $RequestValues{TransportType} ],
+    BatchHeartBeat              => [ 1567,                               3 ],
     BatchInterval               => [ 1564,                               3 ],
     BatchSize                   => [ 1502,                               3 ],
     ChannelDesc                 => [ 3502,                               4 ],
@@ -138,6 +143,7 @@ package MQSeries::Command::PCF;
     FromChannelName             => [ 3007,                               4 ],
     HeartbeatInterval           => [ 1563,                               3 ],
     InitiationQName             => [ 2008,                               4 ],
+    LocalAddress                => [ 3520,                               4 ],
     LongRetryCount              => [ 1507,                               3 ],
     LongRetryInterval           => [ 1506,                               3 ],
     MCAName                     => [ 3507,                               4 ],
@@ -165,6 +171,9 @@ package MQSeries::Command::PCF;
     SeqNumberWrap               => [ 1509,                               3 ],
     ShortRetryCount             => [ 1505,                               3 ],
     ShortRetryInterval          => [ 1504,                               3 ],
+    SSLCipherSpec               => [ 3544,                               4 ],
+    SSLClientAuth               => [ 1568,                               3,                 $RequestValues{SSLClientAuth} ],
+    SSLPeerName                 => [ 3545,                               4 ],
     ToChannelName               => [ 3008,                               4 ],
     TpName                      => [ 3504,                               4 ],
     UserIdentifier              => [ 3517,                               4 ],
@@ -190,8 +199,8 @@ package MQSeries::Command::PCF;
 
    Cluster =>
    {
-    Action                      => [ 1086,                               3,		$RequestValues{Action} ],
-    ClusterQMgrAttrs            => [ 1093,                               5,	$RequestValues{Cluster} ],
+    Action                      => [ 1086,                               3,                 $RequestValues{Action} ],
+    ClusterQMgrAttrs            => [ 1093,                               5,            $RequestValues{Cluster} ],
     Channel                     => [ 3501,                               4 ],
     ClusterName                 => [ 2029,                               4 ],
     ClusterNamelist             => [ 2030,                               4 ],
@@ -200,6 +209,34 @@ package MQSeries::Command::PCF;
     Quiesce                     => [ 1008,                               3 ],
    },
 
+   #
+   # New with WebSphere MQ 5.3
+   #
+   AuthInfo =>
+   {
+    AuthInfoAttrs               => [ 1019,                               5,            $RequestValues{AuthInfo} ],
+    AuthInfoConnName            => [ 2053,                               4 ],
+    AuthInfoDesc                => [ 2046,                               4 ],
+    AuthInfoName                => [ 2045,                               4 ],
+    AuthInfoType                => [ 66,                                 3,                 $RequestValues{AuthInfoType} ],
+    FromAuthInfoName            => [ 3009,                               4 ],
+    LDAPPassword                => [ 2048,                               4 ],
+    LDAPUserName                => [ 2047,                               4 ],
+    ToAuthInfoName              => [ 3010,                               4 ],
+   },
+
+   QueueStatus =>
+   {
+    OpenType                    => [ 1023,                               3,                 $RequestValues{OpenType} ],
+    QName                       => [ 2016,                               4 ],
+    QStatusAttrs                => [ 1026,                               5,            $RequestValues{QStatusAttrs} ],
+    StatusType                  => [ 1103,                               3,                 $RequestValues{StatusType} ],
+   },
+
+
+   #
+   # Used by Morgan Stanley extensions
+   #
    Authority =>
    {
     ObjectType			=> [ 1000,               		3,		$RequestValues{ObjectType} ],

@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 20.4 2002/03/18 20:33:40 biersma Exp $
+# $Id: Base.pm,v 21.4 2002/05/23 13:43:39 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Command::Base;
 
-require 5.004;
+require 5.005;
 
 use strict;
 use Carp;
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 sub new {
 
@@ -622,24 +622,33 @@ sub MQEncodeMQSC {
 		
 	    }
 
+            $type = '' unless (defined $type); # -w cleanness
 	    if ( $type eq 'integer' ) {
 		push(@buffer,"$key($value)");
-	    }
-	    elsif ( $type eq 'string' ) {
-		push(@buffer,"$key('$value')");
-	    }
-	    elsif ( ref $type eq 'ARRAY' ) {
+	    } elsif ( $type eq 'string' ) {
+                #print STDERR "Command [$command], parameter [$parameter]\n";
+                #
+                # Trust IBM to get this wrong... "Display Thread" is
+                # the only MQSC command where, if you ask for a
+                # specific thread name, it has to be quoted, but to
+                # ask for all threads, the asterisk may not be quoted.
+                #
+                if ($command eq 'InquireThread' && 
+                    $parameter eq 'ThreadName' &&
+                    $value eq '*') {
+                    push @buffer, "$key($value)";
+                } else {
+                    push @buffer,"$key('$value')";
+                }
+	    }elsif ( ref $type eq 'ARRAY' ) {
 		if ( $value ) {
 		    push(@buffer,"$key($type->[1])");
-		}
-		else {
+		} else {
 		    push(@buffer,"$key($type->[0])");
 		}
-	    }
-	    elsif ( ref $type eq 'HASH' ) {
+	    } elsif ( ref $type eq 'HASH' ) {
 		push(@buffer,"$key($type->{$value})");
-	    }
-	    else {
+	    } else {
 		push(@buffer,$key);
 	    }
 	} else {
@@ -703,7 +712,8 @@ sub MQEncodeMQSC {
 	push(@buffer,"ALL");
     }
 
-    return join(" ",@buffer);
+    #print STDERR "Returning command [@buffer]\n";
+    return "@buffer";
 }
 
 
@@ -808,7 +818,6 @@ sub MQDecodeMQSC {
     my $origbuffer = $buffer;
 
     while ( $buffer ) {
-
 	my ($key,$value,$realkey,$realvalue);
 	my ($requestvalues);
 	my $valuetype;

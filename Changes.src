@@ -3,6 +3,172 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.18
+
+=head2 Add support for WebSphere MQ 5.3
+
+A number of minor changes have been made to support the 5.3 release
+(now branded WebSphere MQ).
+
+=over 4
+
+=item *
+
+The format of AMQERR01.LOG files has changed: the record separator can
+now contain a filename and line.  Update to C<MQSeries::ErrorLog::Parser>.
+
+=item *
+
+The product name in many message in the AMQERR01.LOG file has changed;
+some error messages have been added and others have minor changes.
+Update to C<MQSeries::ErrorLog::descriptions.pl>.
+
+=item *
+
+The format of FDC files has changed: the product name at the start of
+each record has changed. Update to C<MQSeries::FDC::Parser>, which now
+supports both the old and the new product name.
+
+=item *
+
+Support for AuthInfo objects in C<MQSeries::Command>, mostly through
+changes in the C<MQSeries::Command::PCF::*> tables.
+
+=item 
+
+Support for the new C<InquireQueueStatus> command, mostly through
+changes in the C<MQSeries::Command::PCF::*> tables.
+
+=item *
+
+Support for the new Channel attributes in C<MQSeries::Command>, mostly
+through changes in the C<MQSeries::Command::PCF::*> tables.  The new
+attributes are C<BatchHeartBeat>, C<LocalAddress>, C<SSLCipherSpec>,
+C<SSLClientAuth> and C<SSLPeerName>.
+
+=item *
+
+Support for the new QueueManager attributes in C<MQSeries::Command>,
+mostly through changes in the C<MQSeries::Command::PCF::*> tables.
+The new attributes are C<ConfigurationEvent>, C<SSLKeyRepository>,
+C<SSLCRLNamelist> and C<SSLCryptoHardware>.
+
+=back
+
+=head2 Support ChannelTable reading/writing on Windows NT
+
+Jim Wendorf reported that the C<MQSeries::Config::ChannelTable> file
+did not reliably read and write channel tables on Windows NT.  This
+was due to missing binmode() statements and sort order issues and has
+now been fixed.
+
+=head2 Improved client/server API detection
+
+Edwin Haswell contributed code for improved client vs server API
+support.  The plain "use MQSeries;" code should now work again for
+client installations.
+
+=head2 Add support for MQSC InquireQueueStatus command
+
+The C<MQSeries::Command> class now supports the C<InquireQueueStatus>
+command when using MQSC commands.  This works against mainframe queue
+managers running MQSeries release 5.2 and up.
+
+=head2 Remove support for perl5.004
+
+The MQSeries module now requires perl5.005.  We test internally with
+both perl5.005 and perl5.6.
+
+=head2 Strict argument checking for MQSeries::Command constructor
+
+The MQSeries::Command constructor now performs strict parameter name
+validation and will throw an exception (using confess()) if an invalid
+parameter name is passed.
+
+This has the potential of breaking existing, but buggy, code.  Similar
+changes will be made to many of the other classes and methods in
+upcoming releases.
+
+=head2 Modified message retry handling in MQSeries::Queue Get()
+
+Paul Meekin submitted an interesting bug showing we got message retry
+wrong when the initial data buffer is too large and message conversion
+is required (reason code MQRC_TRUNCATED_MSG_FAILED).  Effectively, we
+were re-using the MQMD returned after the warning, which caused the
+requested coded character set and encoding to be ignored.  This is now
+fixed.
+
+However, this bug also showed that some of the retry logic was
+non-functional; the non-working code has now been removed.  The retry
+logic failed in the following (rare) corner-case:
+
+=over 4
+
+=item * 
+
+You are getting a string message and requesting conversion
+
+=item * 
+
+The data buffer specified is large enough to hold the message before
+conversion
+
+=item *
+
+The message expands during conversion (e.g., Latin-1 to UTF-8)
+
+=item *
+
+The data buffer specified is not large enough to hold the message
+after conversion
+
+=back
+
+It turns out that in this case (when MQCC_WARNING and
+MQRC_CONVERTED_STRING_TOO_BIG is returned) is not retryable.  The only
+thing the application can do, if the message was read under syncpoint,
+is to roll back and try again with a properly sized data buffer.
+
+=head2 Reduced memory usage for MQSeries::Command
+
+The MQSeries::Command module will now delay loading for the
+sub-classes MQSeries::Command::PCF and MQSeries::Command::MQSC until
+either one is actually used.  Under most circumstances, this will save
+a substantial amount of memory.  Apache mod_perl users may want to
+pre-load the relevant sub-class as part of their startup script.
+
+=head2 Support for ClientConn options with MQCONNX
+
+Hirosi Taguti noted that the MQCONNX call did not properly support
+client-connection options.  After he persisted in his bug reports for
+a year, we finally fixed it - which required adding some XS code.
+Note that the syntax for the ClientConn options may be different than
+expected, as the MQCNO 'versions' and 'Options' flags must also be
+accomodated:
+
+  $HConn = MQCONNX($QmgrName, 
+                   { 'ClientConn' => { 'ChannelName'   => 'FOO',
+                                       'TransportType' => 'TCP',
+                                       'ConnectionName' => "hostname(1414)",
+                                     },
+                   },
+                   $CompCode, 
+                   $Reason);
+
+The C<MQSeries::QueueManager> class now uses MQCONNX and supports an
+optional C<ClientConn> parameter to specify these options.
+
+=head2 Support MQ 5.2 CSD03 and CSD04
+
+Various people noted that MQSeries 5.2 CSD03 and CSD04 caused a number
+of tests to break.  This is because the various header files now
+provide two different values for various constants, depending on
+whether you compile in 32-bit mode or 64-bit mode.  As we are not
+running a full C pre-processor, that broke the constant parsing.
+
+We now support these changed header files, though we do not yet
+support the 64-bit client mode on Solaris (patches are welcome).
+
 =head1 Changes for 1.17
 
 =head2 Parameter order for PCF commands
@@ -1146,7 +1312,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 20.4 2002/03/19 22:11:05 biersma Exp $
+# $Id: Changes.src,v 21.9 2002/07/10 12:16:57 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

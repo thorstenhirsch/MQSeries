@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>1.17/src/Changes.src</TITLE> 
+	    <TITLE>1.18/src/Changes.src</TITLE> 
 	</HEAD>
 
 	<BODY>
@@ -10,11 +10,27 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_18">Changes for 1.18</A>
+	<UL>
+
+		<LI><A HREF="#Add_support_for_WebSphere_MQ_5_3">Add support for WebSphere MQ 5.3</A>
+		<LI><A HREF="#Support_ChannelTable_reading_wri">Support ChannelTable reading/writing on Windows NT</A>
+		<LI><A HREF="#Improved_client_server_API_detec">Improved client/server API detection</A>
+		<LI><A HREF="#Add_support_for_MQSC_InquireQueu">Add support for MQSC InquireQueueStatus command</A>
+		<LI><A HREF="#Remove_support_for_perl5_004">Remove support for perl5.004</A>
+		<LI><A HREF="#Strict_argument_checking_for_MQS">Strict argument checking for MQSeries::Command constructor</A>
+		<LI><A HREF="#Modified_message_retry_handling_">Modified message retry handling in MQSeries::Queue Get()</A>
+		<LI><A HREF="#Reduced_memory_usage_for_MQSerie">Reduced memory usage for MQSeries::Command</A>
+		<LI><A HREF="#Support_for_ClientConn_options_w">Support for ClientConn options with MQCONNX</A>
+		<LI><A HREF="#Support_MQ_5_2_CSD03_and_CSD04">Support MQ 5.2 CSD03 and CSD04</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_17">Changes for 1.17</A>
 	<UL>
 
 		<LI><A HREF="#Parameter_order_for_PCF_commands">Parameter order for PCF commands</A>
 		<LI><A HREF="#Final_message_for_mainframe_MQSC">Final message for mainframe MQSC commands</A>
+		<LI><A HREF="#Invalid_handling_of_zero_length_">Invalid handling of zero-length messages and zero-length PCF strings</A>
 		<LI><A HREF="#Rename_NoAutoConnect_flag_for_MQ">Rename NoAutoConnect flag for MQSeries::QueueManager constructor</A>
 		<LI><A HREF="#Rename_NoAutoOpen_flag_for_MQSer">Rename NoAutoOpen flag for MQSeries::Queue constructor</A>
 		<LI><A HREF="#Add_QueueManager_method_to_MQSer">Add QueueManager method to MQSeries::Queue</A>
@@ -180,6 +196,259 @@ perl API, going back as far as the 1.02 release.
 
 <P>
 <HR>
+<H1><A NAME="Changes_for_1_18">Changes for 1.18
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Add_support_for_WebSphere_MQ_5_3">Add support for WebSphere MQ 5.3
+
+</A></H2>
+A number of minor changes have been made to support the 5.3 release (now
+branded WebSphere MQ).
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+The format of AMQERR01.LOG files has changed: the record separator can now
+contain a filename and line. Update to <CODE>MQSeries::ErrorLog::Parser</CODE>.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The product name in many message in the AMQERR01.LOG file has changed; some
+error messages have been added and others have minor changes. Update to <CODE>MQSeries::ErrorLog::descriptions.pl</CODE>.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The format of FDC files has changed: the product name at the start of each
+record has changed. Update to <CODE>MQSeries::FDC::Parser</CODE>, which now supports both the old and the new product name.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for AuthInfo objects in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::PCF::*</CODE> tables.
+
+
+<P>
+
+<DT><STRONG></STRONG><DD>
+Support for the new <CODE>InquireQueueStatus</CODE> command, mostly through changes in the <CODE>MQSeries::Command::PCF::*</CODE> tables.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for the new Channel attributes in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::PCF::*</CODE> tables. The new attributes are <CODE>BatchHeartBeat</CODE>, <CODE>LocalAddress</CODE>, <CODE>SSLCipherSpec</CODE>,
+<CODE>SSLClientAuth</CODE> and <CODE>SSLPeerName</CODE>.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for the new QueueManager attributes in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::PCF::*</CODE> tables. The new attributes are <CODE>ConfigurationEvent</CODE>, <CODE>SSLKeyRepository</CODE>,
+<CODE>SSLCRLNamelist</CODE> and <CODE>SSLCryptoHardware</CODE>.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H2><A NAME="Support_ChannelTable_reading_wri">Support ChannelTable reading/writing on Windows NT
+
+</A></H2>
+Jim Wendorf reported that the <CODE>MQSeries::Config::ChannelTable</CODE> file did not reliably read and write channel tables on Windows NT. This was
+due to missing <CODE>binmode()</CODE> statements and sort order issues and
+has now been fixed.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Improved_client_server_API_detec">Improved client/server API detection
+
+</A></H2>
+Edwin Haswell contributed code for improved client vs server API support.
+The plain ``use MQSeries;'' code should now work again for client
+installations.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Add_support_for_MQSC_InquireQueu">Add support for MQSC InquireQueueStatus command
+
+</A></H2>
+The <CODE>MQSeries::Command</CODE> class now supports the <CODE>InquireQueueStatus</CODE>
+command when using MQSC commands. This works against mainframe queue
+managers running MQSeries release 5.2 and up.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Remove_support_for_perl5_004">Remove support for perl5.004
+
+</A></H2>
+The MQSeries module now requires perl5.005. We test internally with both
+perl5.005 and perl5.6.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Strict_argument_checking_for_MQS">Strict argument checking for MQSeries::Command constructor
+
+</A></H2>
+The MQSeries::Command constructor now performs strict parameter name
+validation and will throw an exception (using <CODE>confess())</CODE> if an
+invalid parameter name is passed.
+
+
+<P>
+
+This has the potential of breaking existing, but buggy, code. Similar
+changes will be made to many of the other classes and methods in upcoming
+releases.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Modified_message_retry_handling_">Modified message retry handling in MQSeries::Queue Get()
+
+</A></H2>
+Paul Meekin submitted an interesting bug showing we got message retry wrong
+when the initial data buffer is too large and message conversion is
+required (reason code MQRC_TRUNCATED_MSG_FAILED). Effectively, we were
+re-using the MQMD returned after the warning, which caused the requested
+coded character set and encoding to be ignored. This is now fixed.
+
+
+<P>
+
+However, this bug also showed that some of the retry logic was
+non-functional; the non-working code has now been removed. The retry logic
+failed in the following (rare) corner-case:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+You are getting a string message and requesting conversion
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The data buffer specified is large enough to hold the message before
+conversion
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The message expands during conversion (e.g., Latin-1 to UTF-8)
+
+
+<P>
+
+<LI><STRONG></STRONG>
+The data buffer specified is not large enough to hold the message after
+conversion
+
+
+<P>
+
+</UL>
+It turns out that in this case (when MQCC_WARNING and
+MQRC_CONVERTED_STRING_TOO_BIG is returned) is not retryable. The only thing
+the application can do, if the message was read under syncpoint, is to roll
+back and try again with a properly sized data buffer.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Reduced_memory_usage_for_MQSerie">Reduced memory usage for MQSeries::Command
+
+</A></H2>
+The MQSeries::Command module will now delay loading for the sub-classes
+MQSeries::Command::PCF and MQSeries::Command::MQSC until either one is
+actually used. Under most circumstances, this will save a substantial
+amount of memory. Apache mod_perl users may want to pre-load the relevant
+sub-class as part of their startup script.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Support_for_ClientConn_options_w">Support for ClientConn options with MQCONNX
+
+</A></H2>
+Hirosi Taguti noted that the MQCONNX call did not properly support
+client-connection options. After he persisted in his bug reports for a
+year, we finally fixed it - which required adding some XS code. Note that
+the syntax for the ClientConn options may be different than expected, as
+the MQCNO 'versions' and 'Options' flags must also be accomodated:
+
+
+<P>
+
+<PRE>  $HConn = MQCONNX($QmgrName, 
+                   { 'ClientConn' =&gt; { 'ChannelName'   =&gt; 'FOO',
+                                       'TransportType' =&gt; 'TCP',
+                                       'ConnectionName' =&gt; &quot;hostname(1414)&quot;,
+                                     },
+                   },
+                   $CompCode, 
+                   $Reason);
+</PRE>
+
+<P>
+
+The <CODE>MQSeries::QueueManager</CODE> class now uses MQCONNX and supports an optional <CODE>ClientConn</CODE> parameter to specify these options.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Support_MQ_5_2_CSD03_and_CSD04">Support MQ 5.2 CSD03 and CSD04
+
+</A></H2>
+Various people noted that MQSeries 5.2 CSD03 and CSD04 caused a number of
+tests to break. This is because the various header files now provide two
+different values for various constants, depending on whether you compile in
+32-bit mode or 64-bit mode. As we are not running a full C pre-processor,
+that broke the constant parsing.
+
+
+<P>
+
+We now support these changed header files, though we do not yet support the
+64-bit client mode on Solaris (patches are welcome).
+
+
+<P>
+
+<P>
+<HR>
 <H1><A NAME="Changes_for_1_17">Changes for 1.17
 
 </A></H1>
@@ -223,6 +492,20 @@ mainframe and get error messages like:
 <P>
 
 then please get in touch and send us the error message.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Invalid_handling_of_zero_length_">Invalid handling of zero-length messages and zero-length PCF strings
+
+</A></H2>
+Peter Giorgilli reported that we had a bug in the XS code that caused us to
+return garbage data when reading zero-length messages. It turns out a
+similar issue caused zero-length PCF strings to be misread for responses
+from little-endian queue managers (e.g. Linux/ia32 and Windows). These
+zero-length string bugs have been corrected throughout all the XS code.
 
 
 <P>

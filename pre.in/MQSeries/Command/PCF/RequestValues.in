@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: RequestValues.in,v 20.1 2002/03/18 20:34:53 biersma Exp $
+# $Id: RequestValues.in,v 21.1 2002/06/07 20:07:06 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -213,6 +213,7 @@ package MQSeries::Command::PCF;
     All                         => &MQIACF_ALL,
     AlterationDate              => &MQCA_ALTERATION_DATE,
     AlterationTime              => &MQCA_ALTERATION_TIME,
+    BatchHeartBeat              => &MQIACH_BATCH_HB,
     BatchInterval               => &MQIACH_BATCH_INTERVAL,
     BatchSize                   => &MQIACH_BATCH_SIZE,
     Batches                     => &MQIACH_BATCHES,
@@ -242,6 +243,7 @@ package MQSeries::Command::PCF;
     LastMsgDate                 => &MQCACH_LAST_MSG_DATE,
     LastMsgTime                 => &MQCACH_LAST_MSG_TIME,
     LastSequenceNumber          => &MQIACH_LAST_SEQ_NUMBER,
+    LocalAddress                => &MQCACH_LOCAL_ADDRESS,
     LongRetriesLeft             => &MQIACH_LONG_RETRIES_LEFT,
     LongRetryCount              => &MQIACH_LONG_RETRY,
     LongRetryInterval           => &MQIACH_LONG_TIMER,
@@ -274,6 +276,9 @@ package MQSeries::Command::PCF;
     ShortRetriesLeft            => &MQIACH_SHORT_RETRIES_LEFT,
     ShortRetryCount             => &MQIACH_SHORT_RETRY,
     ShortRetryInterval          => &MQIACH_SHORT_TIMER,
+    SSLCipherSpec               => &MQCACH_SSL_CIPHER_SPEC,
+    SSLClientAuth               => &MQIACH_SSL_CLIENT_AUTH,
+    SSLPeerName                 => &MQCACH_SSL_PEER_NAME,
     StopRequested               => &MQIACH_STOP_REQUESTED,
     TpName                      => &MQCACH_TP_NAME,
     TransportType               => &MQIACH_XMIT_PROTOCOL_TYPE,
@@ -338,6 +343,12 @@ package MQSeries::Command::PCF;
    {
     Backout                     => &MQIDO_BACKOUT,
     Commit                      => &MQIDO_COMMIT,
+   },
+
+   SSLClientAuth =>
+   {
+    Optional                    => &MQSCA_OPTIONAL,
+    Required                    => &MQSCA_REQUIRED,
    },
 
    #
@@ -426,6 +437,7 @@ package MQSeries::Command::PCF;
 
    ObjectType =>
    {
+    AuthInfo			=> &MQOT_AUTH_INFO,
     Namelist			=> &MQOT_NAMELIST,
     Process			=> &MQOT_PROCESS,
     Queue			=> &MQOT_Q,
@@ -446,9 +458,65 @@ package MQSeries::Command::PCF;
     CurrentChannel		=> &MQOT_CURRENT_CHANNEL,
     SavedChannel		=> &MQOT_SAVED_CHANNEL,
     SvrconnChannel		=> &MQOT_SVRCONN_CHANNEL,
-    ClntconnChannel		=> &MQOT_CLNTCONN_CHANNEL,
+    ClntconnChannel		=> &MQOT_CLNTCONN_CHANNEL,   
    },
 
+   #
+   # AuthInfo
+   #
+   AuthInfo =>
+   {
+    All                         => &MQIACF_ALL,
+    AuthInfoConnName            => &MQCA_AUTH_INFO_CONN_NAME,
+    AuthInfoDesc                => &MQCA_AUTH_INFO_DESC,
+    AuthInfoName                => &MQCA_AUTH_INFO_NAME,
+    AuthInfoType                => &MQIA_AUTH_INFO_TYPE,
+    LDAPPassword                => &MQCA_LDAP_PASSWORD,
+    LDAPUserName                => &MQCA_LDAP_USER_NAME,
+   },
+
+   AuthInfoType =>
+   {
+    CRLLDAP                     => &MQAIT_CRL_LDAP,
+   },
+
+   #
+   # Queue Status
+   #
+   OpenType =>
+   {
+    All                         => &MQQSOT_ALL,
+    Input                       => &MQQSOT_INPUT,
+    Output                      => &MQQSOT_OUTPUT,
+   },
+
+   QStatusAttrs =>
+   {
+    All                         => &MQIACF_ALL,
+    ApplTag                     => &MQCACF_APPL_TAG,
+    ApplType                    => &MQIA_APPL_TYPE,
+    ChannelName                 => &MQCACH_CHANNEL_NAME,
+    Conname                     => &MQCACH_CONNECTION_NAME,
+    CurrentQDepth               => &MQIA_CURRENT_Q_DEPTH,
+    OpenInputCount              => &MQIA_OPEN_INPUT_COUNT,
+    OpenOptions                 => &MQIACF_OPEN_OPTIONS,
+    OpenOutputCount             => &MQIA_OPEN_OUTPUT_COUNT,
+    ProcessId                   => &MQIACF_PROCESS_ID,
+    QName                       => &MQCA_Q_NAME,
+    ThreadId                    => &MQIACF_THREAD_ID,
+    UncommittedMsgs             => &MQIACF_UNCOMMITTED_MSGS,
+    UserIdentifier              => &MQCACF_USER_IDENTIFIER,
+   },
+
+   StatusType =>
+   {
+    Queue                       => &MQIACF_Q_STATUS,
+    Handle                      => &MQIACF_Q_HANDLE,
+   },
+
+   #
+   # Morgan Stanley extensions
+   #
    EntityType =>
    {
     Principal			=> &MQETE_PRINCIPAL,
