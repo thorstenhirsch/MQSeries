@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros 
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -26,6 +26,8 @@ package MQSeries::Command::PCF;
 
     2027                                 => [ "AlterationDate" ],
     2028                                 => [ "AlterationTime" ],
+    2004                			=> [ "CreationDate" ],
+    2005                			=> [ "CreationTime" ],
     2026                                 => [ "ChannelAutoDefExit" ],
     2034                                 => [ "ClusterWorkLoadData" ],
     2033                                 => [ "ClusterWorkLoadExit" ],
@@ -73,6 +75,8 @@ package MQSeries::Command::PCF;
     3011                                 => [ "QNames" ],
     2027                                 => [ "AlterationDate" ],
     2028                                 => [ "AlterationTime" ],
+    2004                			=> [ "CreationDate" ],
+    2005                			=> [ "CreationTime" ],
     2019                                 => [ "BackoutRequeueName" ],
     2002                                 => [ "BaseQName" ],
     2037                                 => [ "ClusterDate" ],
@@ -83,7 +87,7 @@ package MQSeries::Command::PCF;
     2004                                 => [ "CreationDate" ],
     2005                                 => [ "CreationTime" ],
     2008                                 => [ "InitiationQName" ],
-    2012                                 => [ "ProcessName " ],
+    2012                                 => [ "ProcessName" ],
     2013                                 => [ "QDesc" ],
     2032                                 => [ "QMgrIdentifier" ],
     2016                                 => [ "QName" ],
@@ -127,6 +131,8 @@ package MQSeries::Command::PCF;
     3012                                 => [ "ProcessNames" ],
     2027                                 => [ "AlterationDate" ],
     2028                                 => [ "AlterationTime" ],
+    2004                			=> [ "CreationDate" ],
+    2005                			=> [ "CreationTime" ],
     2001                                 => [ "ApplId" ],
     2007                                 => [ "EnvData" ],
     2011                                 => [ "ProcessDesc" ],
@@ -175,6 +181,8 @@ package MQSeries::Command::PCF;
     3505                                 => [ "XmitQName" ],
     2027                                 => [ "AlterationDate" ],
     2028                                 => [ "AlterationTime" ],
+    2004                			=> [ "CreationDate" ],
+    2005                			=> [ "CreationTime" ],
     2029                                 => [ "ClusterName" ],
     2030                                 => [ "ClusterNamelist" ],
     2015                                 => [ "QMgrName" ],
@@ -248,6 +256,8 @@ package MQSeries::Command::PCF;
     3505                                 => [ "XmitQName" ],
     2027                                 => [ "AlterationDate" ],
     2028                                 => [ "AlterationTime" ],
+    2004                			=> [ "CreationDate" ],
+    2005                			=> [ "CreationTime" ],
     2037                                 => [ "ClusterDate" ],
     2029                                 => [ "ClusterName" ],
     2038                                 => [ "ClusterTime" ],
@@ -275,6 +285,8 @@ package MQSeries::Command::PCF;
    {
     2027                                 => [ "AlterationDate" ],
     2028                                 => [ "AlterationTime" ],
+    2004                			=> [ "CreationDate" ],
+    2005                			=> [ "CreationTime" ],
     2009                                 => [ "NamelistDesc" ],
     2010                                 => [ "NamelistName" ],
     2020                                 => [ "Names" ],

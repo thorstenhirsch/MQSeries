@@ -1,7 +1,7 @@
 #
-# $Id: Message.pm,v 13.2 2000/03/23 21:30:56 wpm Exp $
+# $Id: Message.pm,v 14.3 2000/08/15 20:51:48 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -17,7 +17,7 @@ use MQSeries;
 
 use vars qw($VERSION);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 sub new {
 
@@ -45,8 +45,7 @@ sub new {
 	if ( ref $args{Carp} ne "CODE" ) {
 	    carp "Invalid argument: 'Carp' must be a CODE reference\n";
 	    return;
-	}
-	else {
+	} else {
 	    $self->{Carp} = $args{Carp};
 	}
     }
@@ -55,8 +54,7 @@ sub new {
 	if ( ref $args{MsgDesc} eq "HASH" ) {
 	    #$self->{MsgDesc} = $args{MsgDesc};
 	    %MsgDesc = %{$args{MsgDesc}};
-	}
-	else {
+	} else {
 	    $self->{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
 	    return;
 	}
@@ -92,13 +90,11 @@ sub MsgDesc {
     if ( $_[0] ) {
 	if ( exists $self->{MsgDesc}->{$_[0]} ) {
 	    return $self->{MsgDesc}->{$_[0]};
-	}
-	else {
+	} else {
 	    $self->{Carp}->("No such MsgDesc field: $_[0]\n");
 	    return;
 	}
-    }
-    else {
+    } else {
 	return $self->{MsgDesc};
     }
 
@@ -137,8 +133,7 @@ sub BufferLength {
 	    $BufferLength == int($BufferLength)
 	   ) {
 	    $self->{BufferLength} = $BufferLength;
-	}
-	else {
+	} else {
 	    $self->{Carp}->("Invalid argument: 'BufferLength' must be a positive integer.\n");
 	    return undef;
 	}

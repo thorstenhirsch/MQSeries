@@ -1,7 +1,7 @@
 #
-# $Id: XML-Dumper.pm,v 9.2 1999/10/20 13:28:42 wpm Exp $
+# $Id: XML-Dumper.pm,v 14.2 2000/08/15 20:51:52 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -45,16 +45,16 @@ sub PutConvert {
 
 sub GetConvert {
     my $self = shift;
-    my ($buffer) = @_;
+    ($self->{Buffer}) = @_;
     my $data = "";
     my $parser = XML::Parser->new( Style => 'Tree' );
     my $dump = XML::Dumper->new();
 
     eval {
-	my $tree = $parser->parse($buffer);
+	my $tree = $parser->parse($self->{Buffer});
 	$data = $dump->xml2pl($tree);
     };
-    
+
     if ( $@ ) {
 	$self->{Carp}->("Invalid buffer: XML::Dumper::xml2pl failed.\n" . $@);
 	return undef;

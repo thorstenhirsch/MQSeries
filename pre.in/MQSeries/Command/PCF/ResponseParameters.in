@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ResponseParameters.in,v 9.1 1999/10/14 22:06:53 wpm Exp $
+# $Id: ResponseParameters.in,v 14.3 2000/08/15 20:52:16 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -17,6 +17,8 @@ package MQSeries::Command::PCF;
 
     &MQCA_ALTERATION_DATE               => [ "AlterationDate" ],
     &MQCA_ALTERATION_TIME               => [ "AlterationTime" ],
+    &MQCA_CREATION_DATE			=> [ "CreationDate" ],
+    &MQCA_CREATION_TIME			=> [ "CreationTime" ],
     &MQCA_CHANNEL_AUTO_DEF_EXIT         => [ "ChannelAutoDefExit" ],
     &MQCA_CLUSTER_WORKLOAD_DATA         => [ "ClusterWorkLoadData" ],
     &MQCA_CLUSTER_WORKLOAD_EXIT         => [ "ClusterWorkLoadExit" ],
@@ -64,6 +66,8 @@ package MQSeries::Command::PCF;
     &MQCACF_Q_NAMES                     => [ "QNames" ],
     &MQCA_ALTERATION_DATE               => [ "AlterationDate" ],
     &MQCA_ALTERATION_TIME               => [ "AlterationTime" ],
+    &MQCA_CREATION_DATE			=> [ "CreationDate" ],
+    &MQCA_CREATION_TIME			=> [ "CreationTime" ],
     &MQCA_BACKOUT_REQ_Q_NAME            => [ "BackoutRequeueName" ],
     &MQCA_BASE_Q_NAME                   => [ "BaseQName" ],
     &MQCA_CLUSTER_DATE                  => [ "ClusterDate" ],
@@ -74,7 +78,7 @@ package MQSeries::Command::PCF;
     &MQCA_CREATION_DATE                 => [ "CreationDate" ],
     &MQCA_CREATION_TIME                 => [ "CreationTime" ],
     &MQCA_INITIATION_Q_NAME             => [ "InitiationQName" ],
-    &MQCA_PROCESS_NAME                  => [ "ProcessName " ],
+    &MQCA_PROCESS_NAME                  => [ "ProcessName" ],
     &MQCA_Q_DESC                        => [ "QDesc" ],
     &MQCA_Q_MGR_IDENTIFIER              => [ "QMgrIdentifier" ],
     &MQCA_Q_NAME                        => [ "QName" ],
@@ -118,6 +122,8 @@ package MQSeries::Command::PCF;
     &MQCACF_PROCESS_NAMES               => [ "ProcessNames" ],
     &MQCA_ALTERATION_DATE               => [ "AlterationDate" ],
     &MQCA_ALTERATION_TIME               => [ "AlterationTime" ],
+    &MQCA_CREATION_DATE			=> [ "CreationDate" ],
+    &MQCA_CREATION_TIME			=> [ "CreationTime" ],
     &MQCA_APPL_ID                       => [ "ApplId" ],
     &MQCA_ENV_DATA                      => [ "EnvData" ],
     &MQCA_PROCESS_DESC                  => [ "ProcessDesc" ],
@@ -166,6 +172,8 @@ package MQSeries::Command::PCF;
     &MQCACH_XMIT_Q_NAME                 => [ "XmitQName" ],
     &MQCA_ALTERATION_DATE               => [ "AlterationDate" ],
     &MQCA_ALTERATION_TIME               => [ "AlterationTime" ],
+    &MQCA_CREATION_DATE			=> [ "CreationDate" ],
+    &MQCA_CREATION_TIME			=> [ "CreationTime" ],
     &MQCA_CLUSTER_NAME                  => [ "ClusterName" ],
     &MQCA_CLUSTER_NAMELIST              => [ "ClusterNamelist" ],
     &MQCA_Q_MGR_NAME                    => [ "QMgrName" ],
@@ -239,6 +247,8 @@ package MQSeries::Command::PCF;
     &MQCACH_XMIT_Q_NAME                 => [ "XmitQName" ],
     &MQCA_ALTERATION_DATE               => [ "AlterationDate" ],
     &MQCA_ALTERATION_TIME               => [ "AlterationTime" ],
+    &MQCA_CREATION_DATE			=> [ "CreationDate" ],
+    &MQCA_CREATION_TIME			=> [ "CreationTime" ],
     &MQCA_CLUSTER_DATE                  => [ "ClusterDate" ],
     &MQCA_CLUSTER_NAME                  => [ "ClusterName" ],
     &MQCA_CLUSTER_TIME                  => [ "ClusterTime" ],
@@ -266,6 +276,8 @@ package MQSeries::Command::PCF;
    {
     &MQCA_ALTERATION_DATE               => [ "AlterationDate" ],
     &MQCA_ALTERATION_TIME               => [ "AlterationTime" ],
+    &MQCA_CREATION_DATE			=> [ "CreationDate" ],
+    &MQCA_CREATION_TIME			=> [ "CreationTime" ],
     &MQCA_NAMELIST_DESC                 => [ "NamelistDesc" ],
     &MQCA_NAMELIST_NAME                 => [ "NamelistName" ],
     &MQCA_NAMES                         => [ "Names" ],

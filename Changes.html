@@ -10,6 +10,21 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_11">Changes for 1.11</A>
+	<UL>
+
+		<LI><A HREF="#MQSeries_Config_classes">MQSeries::Config::* classes</A>
+		<LI><A HREF="#MQSeries_ErrorLog_classes">MQSeries::ErrorLog::* classes</A>
+		<LI><A HREF="#MQSeries_FDC_classes">MQSeries::FDC::* classes</A>
+		<LI><A HREF="#MQSeries_Message_DeadLetter_ob">MQSeries::Message::DeadLetter object</A>
+		<LI><A HREF="#Use_of_PutConvert_error_checke">Use of PutConvert() error checked properly</A>
+		<LI><A HREF="#MQSeries_Command_CreateObject_">MQSeries::Command->CreateObject method handles lists correctly</A>
+		<LI><A HREF="#All_GetConvert_methods_save_ra">All GetConvert() methods save raw Buffer</A>
+		<LI><A HREF="#MQSeries_PubSub_ModelQName_">MQSeries::PubSub::*, ModelQName DynamicQName configurable</A>
+		<LI><A HREF="#MQSeries_PubSub_AdminMessage_">MQSeries::PubSub::AdminMessage->_TranslatePCF</A>
+		<LI><A HREF="#MQSeries_Queue_Open_was_sile">MQSeries::Queue->Open() was silent on non-retried errors</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_10">Changes for 1.10</A>
 	<UL>
 
@@ -94,6 +109,174 @@
 </A></H1>
 This file documents the changes to each and every release of the MQSeries
 perl API, going back as far as the 1.02 release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_11">Changes for 1.11
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="MQSeries_Config_classes">MQSeries::Config::* classes
+
+</A></H2>
+Two new classes under MQSeries::Config, specifically Machine and QMgr,
+allow read access to the parsed /var/mqm/mqs.ini and
+/var/mqm/qmgrs/*/qm.ini files.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_ErrorLog_classes">MQSeries::ErrorLog::* classes
+
+</A></H2>
+Three new classes under MQSeries::ErrorLog, specifically Tail, Parser, and
+Entry, allow parsing and monitoring of errorlog files
+(/var/mqm/errors/AMQERR0x.LOG, /var/mqm/qmgrs/*/errors/AMQERR0x.LOG).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_FDC_classes">MQSeries::FDC::* classes
+
+</A></H2>
+Three new classes under MQSeries::FDC, specifically Tail, Parser, and
+Entry, allow parsing and monitoring of FDC files (/var/mqm/errors/*.FDC).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Message_DeadLetter_ob">MQSeries::Message::DeadLetter object
+
+</A></H2>
+A new subclass of MQSeries::Message, which implements parsing of the MQDLH,
+has been added to the distribution. This makes it trivial to write dead
+letter queue handler applications in perl.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Use_of_PutConvert_error_checke">Use of PutConvert() error checked properly
+
+</A></H2>
+We only error check the return value of the <CODE>PutConvert()</CODE>
+method is one was actually called. This makes it possible to put empty
+messages (where all of the information you care about is in the header, for
+example).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_CreateObject_">MQSeries::Command->CreateObject method handles lists correctly
+
+</A></H2>
+This method tries very hard not to alter objects whose attributes are
+already correctly set, but the previous version couldn't handle comparing
+attributes whose values were lists. For example, if you give more than one
+exit to the MsgExit parameter of a channel, then the PCF query will return
+a list of values, and this is represented as an ARRAY reference.
+
+
+<P>
+
+The new version will correctly compare the array elements, and thus
+correctly determine whether or not the attributes with multiple values are
+in fact correct. And yes, order is of course important.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="All_GetConvert_methods_save_ra">All GetConvert() methods save raw Buffer
+
+</A></H2>
+In all of the following modules, the <CODE>GetConvert()</CODE> method will
+save the raw buffer, which in gives the developer access to the raw,
+unconverted data, via the MQSeries::Message-&gt;Buffer() method.  
+
+
+<P>
+
+<PRE>  MQSeries::Message::Storable
+  MQSeries::Message::XML-Dumper
+  MQSeries::Message::RulesFormat
+  MQSeries::Message::DeadLetter (new in 1.11 -- see above)
+  MQSeries::Message::PCF
+</PRE>
+
+<P>
+
+<PRE>  MQSeries::Command::Response
+  MQSeries::PubSub::AdminMessage
+</PRE>
+
+<P>
+
+A similar change was made to MQSeries::Message::Event, in the 1.09 release,
+but this has not been done for all of the supported modules in the
+distribution, for consistency (and, because the author happened to need
+this for MQSeries::Message::Storable).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_PubSub_ModelQName_">MQSeries::PubSub::*, ModelQName DynamicQName configurable
+
+</A></H2>
+Previously, the name of the permanent dynamic model queue, and dynamic
+queue name to be created, were simply hardcoded in the object constructor
+for both of
+
+
+<P>
+
+<PRE>  MQSeries::PubSub::Broker
+  MQSeries::PubSub::Stream
+</PRE>
+
+<P>
+
+Both are now configurable via arguments to the constructor.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_PubSub_AdminMessage_">MQSeries::PubSub::AdminMessage->_TranslatePCF
+
+</A></H2>
+This one is hard to explain. The code to parse the PCF admin messages for
+PubSub wasn't handling multiple subscriber identities correctly. It does
+now.  
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Queue_Open_was_sile">MQSeries::Queue->Open() was silent on non-retried errors
+
+</A></H2>
+There was a missing else condition to carp about an MQOPEN failure, if the
+ReasonCode was <STRONG>not</STRONG> in the list of values to be retried. This causes significant confusion,
+since the failure is silent.
 
 
 <P>

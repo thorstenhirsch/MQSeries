@@ -1,7 +1,7 @@
 #
-# $Id: AdminMessage.pm,v 13.1 2000/03/06 16:31:22 wpm Exp $
+# $Id: AdminMessage.pm,v 14.4 2000/08/15 20:51:16 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -23,7 +23,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 #
 # Generate the message contents from the Command
@@ -37,11 +37,11 @@ sub PutConvert {
 sub GetConvert {
 
     my $self = shift;
-    my ($buffer) = @_;
+    ($self->{Buffer}) = @_;
 
     my ($header,$parameters);
 
-    unless ( ($header,$parameters) = MQDecodePCF($buffer) ) {
+    unless ( ($header,$parameters) = MQDecodePCF($self->{Buffer}) ) {
 	$self->{Carp}->("Unable to decode PCF buffer\n");
 	return undef;
     }
@@ -65,17 +65,18 @@ sub _TranslatePCF {
     my ($origheader,$origparams) = @_;
 
     my $header = $origheader;
+    my $index = -1;
 
     my ($parameters);
 
     # Short hand
-    my $Responses = 
+    my $Responses =
       \%MQSeries::PubSub::AdminMessage::Responses;
-    my $ResponseParameters = 
+    my $ResponseParameters =
       \%MQSeries::PubSub::AdminMessage::ResponseParameters;
-    my $RegistrationOptions = 
+    my $RegistrationOptions =
       \%MQSeries::PubSub::AdminMessage::RegistrationOptions;
-    my $PublicationOptions = 
+    my $PublicationOptions =
       \%MQSeries::PubSub::AdminMessage::PublicationOptions;
 
     my %Type2Key =
@@ -104,7 +105,7 @@ sub _TranslatePCF {
 	    # parameters pass through untranslated?  The XS code did
 	    # this, but whined about them.
 	    #
-	    $self->{Carp}->("Missing parameter '$origparam->{Parameter}'\n" . 
+	    $self->{Carp}->("Missing parameter '$origparam->{Parameter}'\n" .
 			    "Not found in %MQSeries::PubSub::AdminMessage::ResponseParameters\n");
 	    $newparameter = $origparam->{Parameter};
 	}
@@ -122,7 +123,7 @@ sub _TranslatePCF {
 	# have the same semantics as that ugly long name next to
 	# them...
 	#
-	if ( 
+	if (
 	    $newparameter eq "RegistrationRegistrationOptions" ||
 	    $newparameter eq "RegistrationOptions"
 	   ) {
@@ -152,10 +153,30 @@ sub _TranslatePCF {
 	}
 
 	#
+	# A few of these parameters we will *always* turn into ARRAY
+	# refs, since we need to maintain a consistent index for each
+	# set of data.  It is possible to get a list of instances,
+	# some of which are missing the CorrelId (for example).
+	#
+	# The Registration QMgrName is always first.
+	#
+	$index++ if $newparameter eq 'RegistrationQMgrName';
+
+	if (
+	    $newparameter eq 'RegistrationQMgrName' ||
+	    $newparameter eq 'RegistrationQName' ||
+	    $newparameter eq 'RegistrationCorrelId' ||
+	    $newparameter eq 'RegistrationUserIdentifier' ||
+	    $newparameter eq 'RegistrationRegistrationOptions' ||
+	    $newparameter eq 'RegistrationTime'
+	   ) {
+	    $parameters->{$newparameter}->[$index] = $newvalue;
+	}
+	#
 	# Some of these parameters will be repeated, to automatically
 	# turn them into ARRAY references.
 	#
-	if ( exists $parameters->{$newparameter} ) {
+	elsif ( exists $parameters->{$newparameter} ) {
 	    if ( ref $parameters->{$newparameter} ne "ARRAY" ) {
 		$parameters->{$newparameter} = [$parameters->{$newparameter}];
 	    }
@@ -287,7 +308,7 @@ would be equivalent to
    $message->CompCode()
 
 But,
-  
+
    $message->Header()
 
 would give you back the entire HASH reference, so you could also get
@@ -367,7 +388,7 @@ The following keys are returned for all publications:
 =item PublicationOptions
 
 The value of this key is a HASH reference, whose keys represent the
-individual PublicationsOptions present.  
+individual PublicationsOptions present.
 
 The only option which is documented to be possibly present is
 MQPUBO_RETAIN_PUBLICATION, which is represented by the string

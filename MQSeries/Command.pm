@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 13.3 2000/04/12 14:22:53 wpm Exp $
+# $Id: Command.pm,v 14.5 2000/08/15 20:51:27 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -23,7 +23,7 @@ use MQSeries::Command::MQSC;
 
 use vars qw($VERSION);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 sub new {
 
@@ -33,8 +33,8 @@ sub new {
 
     my $self =
       {
-       Reason			=> MQRC_NONE,
-       CompCode			=> MQCC_OK,
+       Reason			=> 0,
+       CompCode			=> 0,
        Wait 			=> 60000, # 60 second wait for replies...
        Expiry			=> 600,	# 60 second expiry on requests
        Carp			=> \&carp,
@@ -51,8 +51,7 @@ sub new {
 	if ( ref $args{Carp} ne "CODE" ) {
 	    carp "Invalid argument: 'Carp' must be a CODE reference";
 	    return;
-	}
-	else {
+	} else {
 	    $self->{Carp} = $args{Carp};
 	}
     }
@@ -85,8 +84,7 @@ sub new {
     #
     if ( $args{CommandQueueName} ) {
 	$self->{CommandQueueName} = $args{CommandQueueName};
-    }
-    else {
+    } else {
 	#
 	# Some reasonable defaults.  If we're proxying to a MQSC
 	# queue manager, then this is (in the author's case
@@ -95,8 +93,7 @@ sub new {
 	#
 	if ( $self->{Type} eq 'MQSC' ) {
 	    $self->{CommandQueueName} = "SYSTEM.COMMAND.INPUT";
-	}
-	else {
+	} else {
 	    $self->{CommandQueueName} = "SYSTEM.ADMIN.COMMAND.QUEUE";
 	}
     }
@@ -125,14 +122,12 @@ sub new {
 	if ( ref $args{ProxyQueueManager} ) {
 	    if ( $args{ProxyQueueManager}->isa("MQSeries::QueueManager") ) {
 		$self->{QueueManager} = $args{ProxyQueueManager};
-	    }
-	    else {
+	    } else {
 		$self->{Carp}->("Invalid argument: 'ProxyQueueManager' " .
 				"must be an MQSeries::QueueManager object");
 		return;
 	    }
-	}
-	else {
+	} else {
 	    $self->{QueueManager} = MQSeries::QueueManager->new
 	      (
 	       QueueManager	=> $args{ProxyQueueManager},
@@ -140,19 +135,16 @@ sub new {
 	      ) or return;
 	}
 
-    }
-    else {
+    } else {
 	if ( ref $args{QueueManager} ) {
 	    if ( $args{QueueManager}->isa("MQSeries::QueueManager") ) {
 		$self->{QueueManager} = $args{QueueManager};
-	    }
-	    else {
+	    } else {
 		$self->{Carp}->("Invalid argument: 'QueueManager' " .
 				"must be an MQSeries::QueueManager object");
 		return;
 	    }
-	}
-	else {
+	} else {
 	    $self->{QueueManager} = MQSeries::QueueManager->new
 	      (
 	       QueueManager	=> $args{QueueManager},
@@ -175,36 +167,63 @@ sub new {
 	}
     }
 
-    unless (
-	    $self->{CommandQueue} = MQSeries::Queue->new
-	    (
-	     QueueManager 	=> $self->{QueueManager},
-	     Queue 		=> $self->{CommandQueueName},
-	     Mode 		=> 'output',
-	     Carp 		=> $self->{Carp},
-	     Reason		=> \$self->{"Reason"},
-	     CompCode		=> \$self->{"CompCode"},
-	    )
-	   ) {
-	return;
-    }
+    #
+    # Open the command queue, and assume that the MQSeries::Queue
+    # object will whine appropriately.
+    #
+    $self->{CommandQueue} = MQSeries::Queue->new
+      (
+       QueueManager 			=> $self->{QueueManager},
+       Queue 				=> $self->{CommandQueueName},
+       Mode 				=> 'output',
+       Carp 				=> $self->{Carp},
+       Reason				=> \$self->{"Reason"},
+       CompCode				=> \$self->{"CompCode"},
+      ) || do {
+	  $self->{Carp}->("Unable to instantiate MQSeries::Queue object for $self->{CommandQueueName}");
+	  return;
+      };
 
     #
+    # Open the ReplyToQ
     #
-    #
-    unless (
+    if ( $args{ReplyToQ} ) {
+	if ( ref $args{ReplyToQ} ) {
+	    if ( $args{ReplyToQ}->isa("MQSeries::Queue") ) {
+		$self->{ReplyToQ} = $args{ReplyToQ};
+	    } else {
+		$self->{Carp}->("Invalid argument: 'ReplyToQ' " .
+				"must be an MQSeries::Queue object");
+		return;
+	    }
+	} else {
 	    $self->{ReplyToQ} = MQSeries::Queue->new
-	    (
-	     QueueManager 	=> $self->{QueueManager},
-	     Queue 		=> $self->{ModelQName},
-	     DynamicQName 	=> $self->{DynamicQName},
-	     Mode		=> 'input',
-	     Carp 		=> $self->{Carp},
-	     Reason		=> \$self->{"Reason"},
-	     CompCode		=> \$self->{"CompCode"},
-	    )
-	   ) {
-	return;
+	      (
+	       QueueManager 		=> $self->{QueueManager},
+	       Queue 			=> $args{ReplyToQ},
+	       Mode			=> 'input',
+	       Carp 			=> $self->{Carp},
+	       Reason			=> \$self->{"Reason"},
+	       CompCode			=> \$self->{"CompCode"},
+	      ) || do {
+		  $self->{Carp}->("Unable to instantiate MQSeries::Queue object for $args{ReplyToQ}");
+		  return;
+	      };
+	}
+    } else {
+	$self->{ReplyToQ} = MQSeries::Queue->new
+	  (
+	   QueueManager 		=> $self->{QueueManager},
+	   Queue 			=> $self->{ModelQName},
+	   DynamicQName 		=> $self->{DynamicQName},
+	   Mode				=> 'input',
+	   Carp 			=> $self->{Carp},
+	   Reason			=> \$self->{"Reason"},
+	   CompCode			=> \$self->{"CompCode"},
+	  ) || do {
+	      $self->{Carp}->("Unable to instantiate MQSeries::Queue object for $self->{ModelQName}");
+	      return;
+	  };
     }
 
     return $self;
@@ -221,10 +240,6 @@ sub Reason {
     return $self->{"Reason"};
 }
 
-#
-# XXX: This will remain undocumented in 1.09 *intentionally*, as the
-# author expects to massacre the interface and change it, so use at
-# your own risk.
 #
 # This method will query the object, and if it exists, check the
 # attributes to see if they match, and if they do, do nothing.  That
@@ -254,8 +269,7 @@ sub CreateObject {
 	$Create			= "CreateChannel";
 	$Key			= "ChannelName";
 	$Type			= "$Attrs->{ChannelType} Channel";
-    }
-    elsif ( $Attrs->{QName} ) {
+    } elsif ( $Attrs->{QName} ) {
 	$Inquire		= "InquireQueue";
 	$Create			= "CreateQueue";
 	$Delete			= "DeleteQueue";
@@ -263,16 +277,13 @@ sub CreateObject {
 
 	if ( $Attrs->{QType} eq 'Remote' && not $Attrs->{RemoteQName} ) {
 	    $Type		= "QMgr Alias";
-	}
-	elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {	
+	} elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {	
 	    $Type		= "Transmission Queue";
-	}
-	else {
+	} else {
 	    $Type		= "$Attrs->{QType} Queue";
 	}
 
-    }
-    elsif ( $Attrs->{ProcessName} ) {
+    } elsif ( $Attrs->{ProcessName} ) {
 	$Inquire		= "InquireProcess";
 	$Create			= "CreateProcess";
 	$Key			= "ProcessName";
@@ -314,30 +325,91 @@ sub CreateObject {
 	    # you have to feed a single space to some of these damn
 	    # commands.  Very annoying.
 	    #
-	    # Otherwise, do the comparison.
+	    # Well, actually, more than one special case.  If the
+	    # attribute is a list, then it will be represented as an
+	    # ARRAY reference.  This does complicate things...
 	    #
-	    unless ( $Attrs->{$Attr} =~ /^\s*$/ && $Object->{$Attr} =~ /^\s*$/ ) {
-		if ( $Attrs->{$Attr} =~ /^\d+/ ) {
-		    if ( $Attrs->{$Attr} != $Object->{$Attr} ) {
-			$NeedAttr = $Need = 1;
-		    }
+	    if ( ref $Attrs->{$Attr} ne "ARRAY" ) {
+
+		if ( ref $Object->{$Attr} eq "ARRAY" ) {
+
+		    $NeedAttr = $Need = 1;
+
 		} else {
-		    if ( $Attrs->{$Attr} ne $Object->{$Attr} ) {
-			$NeedAttr = $Need = 1;
+
+		    unless ( $Attrs->{$Attr} =~ /^\s*$/ && $Object->{$Attr} =~ /^\s*$/ ) {
+			if ( $Attrs->{$Attr} =~ /^\d+/ ) {
+			    if ( $Attrs->{$Attr} != $Object->{$Attr} ) {
+				$NeedAttr = $Need = 1;
+			    }
+			} else {
+			    if ( $Attrs->{$Attr} ne $Object->{$Attr} ) {
+				$NeedAttr = $Need = 1;
+			    }
+
+			}
 		    }
+		
 		}
+
+	    } else {
+
+		if ( ref $Object->{$Attr} ne "ARRAY" ) {
+
+		    $NeedAttr = $Need = 1;
+
+		} else {
+
+		    if ( scalar(@{$Attrs->{$Attr}}) != scalar(@{$Object->{$Attr}}) ) {
+
+			$NeedAttr = $Need = 1;
+
+		    } else {
+
+			for ( my $index = 0 ; $index < scalar(@{$Attrs->{$Attr}}) ; $index++ ) {
+			    unless (
+				    $Attrs->{$Attr}->[$index] =~ /^\s*$/ &&
+				    $Object->{$Attr}->[$index] =~ /^\s*$/
+				   ) {
+				if ( $Attrs->{$Attr}->[$index] =~ /^\d+/ ) {
+				    if ( $Attrs->{$Attr}->[$index] != $Object->{$Attr}->[$index] ) {
+					$NeedAttr = $Need = 1;
+				    }
+				} else {
+				    if ( $Attrs->{$Attr}->[$index] ne $Object->{$Attr}->[$index] ) {
+					$NeedAttr = $Need = 1;
+				    }
+				}
+			    }
+			}
+
+		    }
+
+		}
+
 	    }
 
-	    if ( $NeedAttr ) {
-		print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n" .
-		      "Should be '$Attrs->{$Attr}', is '$Object->{$Attr}'\n")
-		  unless $Quiet;
+
+	    if ( $NeedAttr && ! $Quiet ) {
+		print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n");
+
+		if ( ref $Attrs->{$Attr} eq "ARRAY" ) {
+		    print "Should be:\n\t" . join("\n\t",map { qq{'$_'} } @{$Attrs->{$Attr}}) . "\n";
+		} else {
+		    print "Should be: '$Attrs->{$Attr}'\n";
+		}
+		
+		if ( ref $Object->{$Attr} eq "ARRAY") {
+		    print "Currently is:\n\t" . join("\n\t",map { qq{'$_'} } @{$Object->{$Attr}} ) . "\n";
+		} else {
+		    print "Currently is: '$Object->{$Attr}'\n";
+		}
+
 	    }
 
 	}
 
-    }
-    else {
+    } else {
 	print "$Type '$QMgr/$Attrs->{$Key}' is missing\n" unless $Quiet;
     }
 
@@ -360,7 +432,7 @@ sub CreateObject {
 	    $self->ClearQueue
 	      (
 	       QName		=> $Attrs->{QName},
-	      ) or do {
+	      ) || do {
 		  $self->{Carp}->("Unable to clear $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
 				  MQReasonToText($self->Reason()) . "\n");
 		  return;
@@ -373,7 +445,7 @@ sub CreateObject {
 	  (
 	   $Key			=> $Attrs->{$Key},
 	   QType		=> $Object->{QType},
-	  ) or do {
+	  ) || do {
 	      $self->{Carp}->("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
 			      MQReasonToText($self->Reason()) . "\n");
 	      return;
@@ -388,7 +460,7 @@ sub CreateObject {
        $Key			=> $Attrs->{$Key},
        %$Attrs,
        Replace			=> 1,
-      ) or do {
+      ) || do {
 	  $self->{Carp}->("Unable to create $Type '$QMgr/$Attrs->{$Key}'\n" .
 			  MQReasonToText($self->Reason()) . "\n");
 	  return;
@@ -403,17 +475,18 @@ sub CreateObject {
 #
 sub _Command {
 
-    my $self = shift;
-    my ($command,$parameters) = @_;
-    my $key = "";
-    my $multirequest = 0;
+    my $self 			= shift;
+    my $command			= shift;
+    my $parameters	 	= shift;
+    my $key 			= "";
+    my $multirequest 		= 0;
 
     #
     # IMPORTANT: each and every case where we return *must* set a
     # reasonable value for the Reason and CompCode.
     #
-    $self->{"Reason"} = MQRC_NONE;
-    $self->{"CompCode"}= MQCC_OK;
+    $self->{"Reason"} 		= 0;
+    $self->{"CompCode"} 	= 0;
 
     #
     # Allow the 'name' keys to default to '*' if not given.
@@ -597,20 +670,16 @@ sub _Command {
 		if ( $lastcount == 1 ) {
 		    push(@response,$response);
 		    $lastseen = 1;
-		}
-		elsif ( $lastcount == 2 ) {
+		} elsif ( $lastcount == 2 ) {
 		    push(@response,$response);
 		    $MQSCHeader->{LastMsgSeqNumber} = 1;
-		}
-		elsif ( $lastcount >= 3 ) {
+		} elsif ( $lastcount >= 3 ) {
 		    $MQSCHeader->{LastMsgSeqNumber} = $lastcount - 2;
 		}
 
-	    }
-	    elsif ( $count == $lastcount ) {
+	    } elsif ( $count == $lastcount ) {
 		$lastseen = 1;
-	    }
-	    else {
+	    } else {
 
 		#
 		# Ok, now it gets even more complicated (yes, that is
@@ -627,8 +696,7 @@ sub _Command {
 		    my ($oldkey,$newkey) = @{$MQSeries::Command::MQSC::ResponseList{$command}};
 		    push(@{$MQSCParameters->{$newkey}},$response->Parameters($oldkey))
 		      if $response->Parameters($oldkey);
-		}
-		else {
+		} else {
 		    push(@response,$response);
 		}
 	    }
@@ -717,7 +785,7 @@ sub _Command {
 	    #
 	    else {
 		$response[0]->{Header}->{MsgSeqNumber} = 1,
-		$response[0]->{Header}->{Control} = &MQCFC_LAST;
+		  $response[0]->{Header}->{Control} = &MQCFC_LAST;
 		$response[0]->{Header}->{ParameterCount} = 0;
 		delete $response[0]->{Header}->{LastMsgSeqNumber};
 		push(@{$self->{Response}},$response[0]);
@@ -749,8 +817,7 @@ sub _Command {
 	my $names = $self->{Response}->[0]->Parameters($key);
 	if ( ref $names eq 'ARRAY' ) {
 	    return @$names;
-	}
-	else {
+	} else {
 	    return;
 	}
     }
@@ -760,8 +827,7 @@ sub _Command {
     elsif ( $command =~ /^(Inquire|ResetQueue|Escape)/ ) {
 	if ( wantarray ) {
 	    return map { $_->Parameters() } @{$self->{Response}};
-	}
-	else {
+	} else {
 	    return $self->{Response}->[0]->Parameters();
 	}
     }
@@ -772,8 +838,7 @@ sub _Command {
 	if ( $self->{"CompCode"} || $self->{"Reason"} ) {
 	    $self->{Carp}->(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
 	    return;
-	}
-	else {
+	} else {
 	    return 1;
 	}
     }
@@ -803,8 +868,7 @@ sub Responses {
     my $self = shift;
     if ( ref $self->{"Response"} eq "ARRAY" ) {
 	return @{$self->{"Response"}};
-    }
-    else {
+    } else {
 	return;
     }
 }
@@ -1013,7 +1077,10 @@ key/value pairs:
   ===                =====
   QueueManager       String or MQSeries::QueueManager object
   ProxyQueueManager  String or MQSeries::QueueManager object
+  ReplyToQ           String or MQSeries::Queue object
   CommandQueueName   String
+  DynamicQName       String
+  ModelQName	     String
   Type               String ("PCF" or "MQCS")
   Expiry	     Numeric
   Wait               Numeric
@@ -1046,6 +1113,18 @@ QueueManager.
 
 In order to specify the "default" queue manager as the
 ProxyQueueManager, an empty string must be explicitly given.
+
+=item ReplyToQ
+
+The ReplyToQ can be opened by the application, and the MQSeries::Queue
+object passed in to the MQSeries::Command constructor, if so desired,
+os, a fixed queue name can be given.  This is a somewhat advanced
+usage of the API, since the default behavior of opening a temporary
+dynamic queue under the covers is usually prefered, and much simpler.
+
+The responses are retreived from the reply queue using gets by
+CorrelId, so there should be no issue with using a pre-defined, shared
+queue for this, if so desired.
 
 =item CommandQueueName
 
@@ -1085,7 +1164,7 @@ method call made against the ReplyToQ (a dynamic reply queue). and
 should be a time specified in B<milliseconds>.  The default is 60000,
 or 60 seconds.
 
-NOTE: Both the Expiry and Wait defaults may be too for slow or heavily
+NOTE: Both the Expiry and Wait defaults may be too slow for heavily
 loaded queue managers.  Tune them appropriately.
 
 =item ReplyToQMgr

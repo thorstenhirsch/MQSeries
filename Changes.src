@@ -4,6 +4,95 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.11
+
+=head2 MQSeries::Config::* classes
+
+Two new classes under MQSeries::Config, specifically Machine and QMgr,
+allow read access to the parsed /var/mqm/mqs.ini and
+/var/mqm/qmgrs/*/qm.ini files.
+
+=head2 MQSeries::ErrorLog::* classes
+
+Three new classes under MQSeries::ErrorLog, specifically Tail, Parser,
+and Entry, allow parsing and monitoring of errorlog files
+(/var/mqm/errors/AMQERR0x.LOG, /var/mqm/qmgrs/*/errors/AMQERR0x.LOG).
+
+=head2 MQSeries::FDC::* classes
+
+Three new classes under MQSeries::FDC, specifically Tail, Parser, and
+Entry, allow parsing and monitoring of FDC files
+(/var/mqm/errors/*.FDC).
+
+=head2 MQSeries::Message::DeadLetter object
+
+A new subclass of MQSeries::Message, which implements parsing of the
+MQDLH, has been added to the distribution.  This makes it trivial to
+write dead letter queue handler applications in perl.
+
+=head2 Use of PutConvert() error checked properly
+
+We only error check the return value of the PutConvert() method is one
+was actually called.  This makes it possible to put empty messages
+(where all of the information you care about is in the header, for
+example).
+
+=head2 MQSeries::Command->CreateObject method handles lists correctly
+
+This method tries very hard not to alter objects whose attributes are
+already correctly set, but the previous version couldn't handle
+comparing attributes whose values were lists.  For example, if you
+give more than one exit to the MsgExit parameter of a channel, then
+the PCF query will return a list of values, and this is represented as
+an ARRAY reference.
+
+The new version will correctly compare the array elements, and thus
+correctly determine whether or not the attributes with multiple values
+are in fact correct.  And yes, order is of course important.
+
+=head2 All GetConvert() methods save raw Buffer
+
+In all of the following modules, the GetConvert() method will save the
+raw buffer, which in gives the developer access to the raw,
+unconverted data, via the MQSeries::Message->Buffer() method.  
+
+  MQSeries::Message::Storable
+  MQSeries::Message::XML-Dumper
+  MQSeries::Message::RulesFormat
+  MQSeries::Message::DeadLetter (new in 1.11 -- see above)
+  MQSeries::Message::PCF
+
+  MQSeries::Command::Response
+  MQSeries::PubSub::AdminMessage
+
+A similar change was made to MQSeries::Message::Event, in the 1.09
+release, but this has not been done for all of the supported modules
+in the distribution, for consistency (and, because the author happened
+to need this for MQSeries::Message::Storable).
+
+=head2 MQSeries::PubSub::*, ModelQName DynamicQName configurable
+
+Previously, the name of the permanent dynamic model queue, and dynamic
+queue name to be created, were simply hardcoded in the object
+constructor for both of
+
+  MQSeries::PubSub::Broker
+  MQSeries::PubSub::Stream
+
+Both are now configurable via arguments to the constructor.
+
+=head2 MQSeries::PubSub::AdminMessage->_TranslatePCF
+
+This one is hard to explain.  The code to parse the PCF admin messages
+for PubSub wasn't handling multiple subscriber identities correctly.
+It does now.  
+
+=head2 MQSeries::Queue->Open() was silent on non-retried errors
+
+There was a missing else condition to carp about an MQOPEN failure, if
+the ReasonCode was B<not> in the list of values to be retried.  This
+causes significant confusion, since the failure is silent.
+
 =head1 Changes for 1.10
 
 =head2 MQSeries::Command MQSC bugs
@@ -679,9 +768,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 13.5 2000/04/12 14:24:31 wpm Exp $
+# $Id: Changes.src,v 14.10 2000/08/15 20:40:13 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

@@ -1,8 +1,8 @@
 CONFIG
 COPYRIGHT
-Changes.html
 Changes.src
 LICENSE
+MANIFEST
 MQClient/MQSeries.pm.in
 MQClient/MQSeries.xs.in/00header
 MQClient/MQSeries.xs.in/21core
@@ -25,6 +25,11 @@ MQClient/MQSeries.xs.in/42MQSET
 MQClient/Makefile.PL
 MQClient/constants.c.PL
 MQClient/typemap.PL
+MQSeries-Message-DeadLetter/DeadLetter.pm
+MQSeries-Message-DeadLetter/DeadLetter.xs
+MQSeries-Message-DeadLetter/Makefile.PL
+MQSeries-Message-DeadLetter/t/dlq.t
+MQSeries-Message-DeadLetter/typemap
 MQSeries-Message-PCF/Makefile.PL
 MQSeries-Message-PCF/PCF.pm
 MQSeries-Message-PCF/PCF.xs
@@ -66,6 +71,8 @@ MQSeries/Command/PCF/ResponseValues.pl
 MQSeries/Command/PCF/Responses.pl
 MQSeries/Command/Request.pm
 MQSeries/Command/Response.pm
+MQSeries/Config/Machine.pm
+MQSeries/Config/QMgr.pm
 MQSeries/Constants.pl
 MQSeries/Constants/AttributeLength.pl
 MQSeries/Constants/AttributeString.pl
@@ -73,6 +80,13 @@ MQSeries/Constants/ReasonMacro.pl
 MQSeries/Constants/ReasonText.pl
 MQSeries/Constants/StringAttribute.pl
 MQSeries/Constants/ValidPutMsgRecFields.pl
+MQSeries/ErrorLog/Entry.pm
+MQSeries/ErrorLog/Parser.pm
+MQSeries/ErrorLog/Tail.pm
+MQSeries/ErrorLog/descriptions.pl
+MQSeries/FDC/Entry.pm
+MQSeries/FDC/Parser.pm
+MQSeries/FDC/Tail.pm
 MQSeries/Message.pm
 MQSeries/Message/Event.pl
 MQSeries/Message/Event.pm
@@ -82,7 +96,6 @@ MQSeries/Queue.pm
 MQSeries/QueueManager.pm
 Makefile.PL
 README
-README.html
 examples/OO/request-reply-1/reply.pl
 examples/OO/request-reply-1/request.pl
 examples/OO/request-reply-2/reply.pl

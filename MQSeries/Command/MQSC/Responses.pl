@@ -1,7 +1,7 @@
 #
-# $Id: Responses.pl,v 9.2 1999/11/02 23:45:36 wpm Exp $
+# $Id: Responses.pl,v 14.1 2000/08/15 20:51:41 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

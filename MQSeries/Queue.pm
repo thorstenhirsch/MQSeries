@@ -1,7 +1,7 @@
 #
-# $Id: Queue.pm,v 13.1 2000/03/06 16:27:34 wpm Exp $
+# $Id: Queue.pm,v 14.7 2000/08/15 20:51:54 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -25,7 +25,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 sub new {
 
@@ -63,8 +63,7 @@ sub new {
 	if ( ref $args{Carp} ne "CODE" ) {
 	    carp "Invalid argument: 'Carp' must be a CODE reference";
 	    return;
-	}
-	else {
+	} else {
 	    $self->{Carp} = $args{Carp};
 	}
     }
@@ -78,13 +77,11 @@ sub new {
     if ( ref $args{QueueManager} ) {
 	if ( $args{QueueManager}->isa("MQSeries::QueueManager") ) {
 	    $self->{QueueManager} = $args{QueueManager};
-	}
-	else {
+	} else {
 	    $self->{Carp}->("Invalid argument: 'QueueManager' must be an MQSeries::QueueManager object");
 	    return;
 	}
-    }
-    else {
+    } else {
 	$self->{QueueManager} = MQSeries::QueueManager->new
 	  (
 	   QueueManager 		=> $args{QueueManager},
@@ -100,12 +97,10 @@ sub new {
 	    if ( ref $args{$key} ne "CODE" ) {
 		$self->{Carp}->("Invalid argument: '$key' must be a CODE reference");
 		return;
-	    }
-	    else {
+	    } else {
 		$self->{$key} = $args{$key};
 	    }
-	}
-	elsif ( ref $self->{QueueManager}->{$key} eq "CODE" ) {
+	} elsif ( ref $self->{QueueManager}->{$key} eq "CODE" ) {
 	    # 'Inherit' them from the queue manager object
 	    $self->{$key} = $self->{QueueManager}->{$key};
 	}
@@ -119,12 +114,10 @@ sub new {
 	if ( ref $args{Queue} eq "ARRAY" ) {
 	    # Distribution list
 	    $self->{ObjDescPtr}->{ObjectRecs} = $args{Queue};
-	}
-	else {
+	} else {
 	    $self->{ObjDescPtr}->{ObjectName} = $args{Queue};
 	}
-    }
-    else {
+    } else {
 	$self->{Carp}->("Required argument 'Queue' not specified");
 	return;
     }
@@ -143,8 +136,7 @@ sub new {
     #
     if ( $args{CloseOptions} ) {
 	$self->{CloseOptions} = $args{CloseOptions};
-    }
-    else {
+    } else {
 	$self->{CloseOptions} = 0;
     }
 
@@ -155,8 +147,7 @@ sub new {
     if ( exists $args{ObjDesc} ) {
 	if ( ref $args{ObjDesc} eq "HASH" ) {
 	    $self->{ObjDescPtr} = $args{ObjDesc};
-	}
-	else {
+	} else {
 	    $self->{Carp}->("Invalid argument: 'ObjDesc' must be a HASH reference");
 	    return;
 	}
@@ -247,12 +238,10 @@ sub Close {
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	delete $self->{Hobj};
 	return 1;
-    }
-    elsif ( $self->{"Reason"} == MQRC_HCONN_ERROR ) {
+    } elsif ( $self->{"Reason"} == MQRC_HCONN_ERROR ) {
 	delete $self->{Hobj};
 	return 1;
-    }
-    else {
+    } else {
 	$self->{Carp}->("MQCLOSE of $self->{ObjDescPtr}->{ObjectName} on " .
 			qq/$self->{QueueManager}->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
@@ -304,8 +293,7 @@ sub Put {
 
 	$PutMsgOpts = $args{PutMsgOpts};
 
-    }
-    else {
+    } else {
 
 	if ( $args{PutMsgRecs} ) {
 	    $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
@@ -313,8 +301,7 @@ sub Put {
 	
 	if ( $args{Sync} ) {
 	    $PutMsgOpts->{Options} |= MQPMO_SYNCPOINT;
-	}
-	else {
+	} else {
 	    $PutMsgOpts->{Options} |= MQPMO_NO_SYNCPOINT;
 	}
 	
@@ -324,26 +311,29 @@ sub Put {
 	if ( ref $args{PutConvert} ne "CODE" ) {
 	    $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
 	    return;
-	}
-	else {
+	} else {
 	    $buffer = $args{PutConvert}->($args{Message}->Data());
+	    unless ( defined $buffer ) {
+		$self->{Carp}->("Data conversion hook (PutConvert) failed");
+		return;
+	    }
 	}
-    }
-    else {
+    } else {
 	if ( $args{Message}->can("PutConvert") ) {
 	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
-	}
-	elsif ( ref $self->{PutConvert} eq "CODE" ) {
+	    unless ( defined $buffer ) {
+		$self->{Carp}->("Data conversion hook (PutConvert) failed");
+		return;
+	    }
+	} elsif ( ref $self->{PutConvert} eq "CODE" ) {
 	    $buffer = $self->{PutConvert}->($args{Message}->Data());
-	}
-	else {
+	    unless ( defined $buffer ) {
+		$self->{Carp}->("Data conversion hook (PutConvert) failed");
+		return;
+	    }
+	} else {
 	    $buffer = $args{Message}->Data();
 	}
-    }
-
-    unless ( defined $buffer ) {
-	$self->{Carp}->("Data conversion hook (PutConvert) failed");
-	return;
     }
 
     MQPUT(
@@ -358,14 +348,12 @@ sub Put {
 
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	return 1;
-    }
-    elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+    } elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
 	#
 	# What do we do here?  These are 'partial' successes.
 	#
 	return -1;
-    }
-    else {
+    } else {
 	$self->{Carp}->(qq/MQPUT failed (Reason = $self->{"Reason"})/);
 	return;
     }
@@ -403,8 +391,7 @@ sub Get {
 
 	$GetMsgOpts = $args{GetMsgOpts};
 
-    }
-    else {
+    } else {
 
 	$GetMsgOpts = { Options => MQGMO_FAIL_IF_QUIESCING | MQGMO_CONVERT };
 
@@ -415,17 +402,14 @@ sub Get {
 	if ( exists $args{Wait} ) {
 	    if ( $args{Wait} == 0 ) {
 		$GetMsgOpts->{Options} |= MQGMO_NO_WAIT;
-	    }
-	    elsif ( $args{Wait} == -1 ) {
+	    } elsif ( $args{Wait} == -1 ) {
 		$GetMsgOpts->{Options} |= MQGMO_WAIT;
 		$GetMsgOpts->{WaitInterval} = MQWI_UNLIMITED;
-	    }
-	    else {
+	    } else {
 		$GetMsgOpts->{Options} |= MQGMO_WAIT;
 		$GetMsgOpts->{WaitInterval} = $args{Wait};
 	    }
-	}
-	else {
+	} else {
 	    $GetMsgOpts->{Options} |= MQGMO_NO_WAIT;
 	}
 
@@ -477,15 +461,12 @@ sub Get {
 
 	    if ( $args{GetConvert} ) {
 		$data = $args{GetConvert}->($buffer);
-	    }
-	    else {
+	    } else {
 		if ( $args{Message}->can("GetConvert") ) {
 		    $data = $args{Message}->GetConvert($buffer);
-		}
-		elsif ( ref $self->{GetConvert} eq "CODE" ) {
+		} elsif ( ref $self->{GetConvert} eq "CODE" ) {
 		    $data = $self->{GetConvert}->($buffer);
-		}
-		else {
+		} else {
 		    $data = $buffer;
 		}
 	    }
@@ -498,31 +479,26 @@ sub Get {
 	    $args{Message}->Data($data);
 	    return 1;
 
-	}
-	elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
 
 	    if ( $self->{"Reason"} == MQRC_TRUNCATED_MSG_FAILED and not $redone ) {
 		$args{Message}->BufferLength($datalength);
 		$redone = 1;
 		redo GET;
-	    }
-	    elsif ( $self->{"Reason"} == MQRC_CONVERTED_MSG_TOO_BIG and not $redone ) {
+	    } elsif ( $self->{"Reason"} == MQRC_CONVERTED_MSG_TOO_BIG and not $redone ) {
 		$args{Message}->BufferLength(2 * $datalength);
 		$redone = 1;
 		redo GET;
-	    }
-	    else {
+	    } else {
 		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
 		return;
 	    }
 
-	}
-	else {
+	} else {
 
 	    if ( $self->{"Reason"} == MQRC_NO_MSG_AVAILABLE ) {
 		return -1;
-	    }
-	    else {
+	    } else {
 		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
 		return;
 	    }
@@ -548,8 +524,7 @@ sub Backout {
 	  );
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	return 1;
-    }
-    else {
+    } else {
 	$self->{Carp}->(qq/MQBACK failed (Reason = $self->{"Reason"})/);
 	return;
     }
@@ -571,8 +546,7 @@ sub Commit {
 	  );
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	return 1;
-    }
-    else {
+    } else {
 	$self->{Carp}->(qq/MQCMIT failed (Reason = $self->{"Reason"})/);
 	return;
     }
@@ -636,8 +610,7 @@ sub Inquire {
 		return;
 	    }
 	    $values{$newkey} = $ResponseValues->{$value};
-	}
-	else {
+	} else {
 	    $values{$newkey} = $value;
 	}
 
@@ -679,8 +652,7 @@ sub Set {
 		return;
 	    }
 	    $keys{$newkey} = $RequestValues->{$key}->{$value};
-	}
-	else {
+	} else {
 	    $keys{$newkey} = $value;
 	}
 
@@ -716,13 +688,11 @@ sub ObjDesc {
     if ( $_[0] ) {
 	if ( exists $self->{ObjDescPtr}->{$_[0]} ) {
 	    return $self->{ObjDescPtr}->{$_[0]};
-	}
-	else {
+	} else {
 	    $self->{Carp}->("No such ObjDescPtr field: $_[0]");
 	    return;
 	}
-    }
-    else {
+    } else {
 	return $self->{ObjDescPtr};
     }
 
@@ -763,20 +733,16 @@ sub Open {
 	if ( $args{Mode} eq 'input' ) {
 	    $self->{Options} |= MQOO_INPUT_AS_Q_DEF;
 	    $self->{GetEnable} = 1;
-	}
-	elsif ( $args{Mode} eq 'input_exclusive' ) {
+	} elsif ( $args{Mode} eq 'input_exclusive' ) {
 	    $self->{Options} |= MQOO_INPUT_EXCLUSIVE;
 	    $self->{GetEnable} = 1;
-	}
-	elsif ( $args{Mode} eq 'input_shared' ) {
+	} elsif ( $args{Mode} eq 'input_shared' ) {
 	    $self->{Options} |= MQOO_INPUT_SHARED;
 	    $self->{GetEnable} = 1;
-	}
-	elsif ( $args{Mode} eq 'output' ) {
+	} elsif ( $args{Mode} eq 'output' ) {
 	    $self->{Options} |= MQOO_OUTPUT;
 	    $self->{PutEnable} = 1;
-	}
-	else {
+	} else {
 	    $self->{Carp}->("Invalid argument: 'Mode' value $args{Mode} not yet supported");
 	    return;
 	}
@@ -848,6 +814,9 @@ sub Open {
 		    $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), retry timed out/);
 		    return;
 		}
+	    } else {
+		$self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), not retrying./);
+		return;
 	    }
 	
 	} else {
@@ -902,8 +871,7 @@ MQSeries::Queue -- OO interface to the MQSeries Queue objects
 	  or die("Unable to commit changes to queue.\n" .
 		 "CompCode = " . $queue->CompCode() . "\n" .
 		 "Reason = " . $queue->Reason() . "\n");
-    }
-    else {
+    } else {
         $queue->Backout()
 	  or die("Unable to backout changes to queue.\n" .
 		 "CompCode = " . $queue->CompCode() . "\n" .
@@ -1012,6 +980,7 @@ key/value pairs (required keys are marked with a '*'):
   Mode*              		String
   Options*           		MQOPEN 'Options' values
   CloseOptions	     		MQCLOSE 'Options' values
+  DynamicQName			String
   DisableAutoResize  		Boolean
   NoAutoOpen    		Boolean
   ObjDesc            		HASH Reference
@@ -1129,6 +1098,28 @@ If the B<Options> key is specified, then the B<Mode> key may B<NOT> be
 specified.  These are mutually exclusive.  This is a used as-is as the
 Options field in the MQOPEN call.  Refer to the MQI documentation on
 MQOPEN() for more details.
+
+=item CloseOptions
+
+This option allows you to specify the MQCLOSE() Options to be used
+when the perl object destructor closes the queue for you.  Since there
+are many close options to begin with, this is primarily useful for
+creating Permanent Dynamic queues that you want to automatically
+destroy when you are finished with them.
+
+The value specified here will be passed directly to the MQCLOSE()
+call, so it should be specified as:
+
+	CloseOptions	=> MQCO_DELETE_PURGE,
+
+for example.
+
+=item DynamicQName
+
+This is the template string to use when opening a dynamic queue.  This
+is only relevant is the Queue specified is a model queue.  Normally,
+this would be some kind of string ending in a '*', resulting in a
+unique queue name for the application.
 
 =item DisableAutoResize
 

@@ -1,7 +1,7 @@
 #
-# $Id: Request.pm,v 13.3 2000/04/01 00:55:58 wpm Exp $
+# $Id: Request.pm,v 14.3 2000/08/15 20:51:44 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -24,7 +24,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 sub new {
 
@@ -179,6 +179,16 @@ sub _TranslatePCF {
 
     $header->{Command} = $Requests->[0];
     my $RequestParameters = $Requests->[1];
+
+    #
+    # Verify that all of the parameters are known - this finds my typos...
+    # 
+    foreach my $param (keys %$origparams) {
+        next if (defined $RequestParameters->{$param});
+        $self->{'Carp'}->("Unknown parameter '$param' for command '$command' " .
+			"not found in MQSeries::Command::PCF::RequestParameters\n");
+        return;
+    }
 
     foreach my $required ( 1, 0 ) {
 

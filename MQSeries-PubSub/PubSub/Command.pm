@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 13.2 2000/03/31 14:07:36 wpm Exp $
+# $Id: Command.pm,v 14.3 2000/08/15 20:51:19 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,7 +10,7 @@ package MQSeries::PubSub::Command;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 use MQSeries;
 use MQSeries::PubSub::Message;
@@ -23,6 +23,11 @@ sub new {
 
     # Placeholder for appropriate MQSeries::QueueManager object
     my $qmgr;
+
+    # This could be an object attribute, but we don't need it outside
+    # of this function.
+    my $dynamicq = 'SYSTEM.BROKER.REPLYQ.*';
+    my $modelq = 'SYSTEM.DEFAULT.MODEL.PERMDYN.QUEUE';
 
     #
     # Do this first, so we can use the ->isa() method
@@ -99,12 +104,21 @@ sub new {
 	    }
 	}
 	else {
+
+	    if ( $args{DynamicQName} ) {
+		$dynamicq = $args{DynamicQName};
+	    }
+
+	    if ( $args{ModelQName} ) {
+		$modelq = $args{ModelQName};
+	    }
+
 	    unless (
 		    $self->{ReplyQ} = MQSeries::Queue->new
 		    (
 		     QueueManager	=> $qmgr,
-		     Queue 		=> 'SYSTEM.DEFAULT.MODEL.PERMDYN.QUEUE',
-		     DynamicQName	=> 'PUBSUB.BROKER.REPLYQ.*',
+		     Queue 		=> $modelq,
+		     DynamicQName	=> $dynamicq,
 		     Mode		=> 'input',
 		     CloseOptions	=> MQCO_DELETE_PURGE,
 		    )
@@ -386,6 +400,15 @@ MQSeries::PubSub::Command -- base OO class implementing and interface to the MQS
     ) || die;
 
   #
+  # Overriding the default DynamicQName
+  #
+  my $broker = MQSeries::PubSub::Broker->new
+    (
+     QueueManager		=> 'FOO.QMGR',
+     DyamicQName	 	=> 'SOME.APP.PUBSUB.REPLY.*',
+    ) || die;
+
+  #
   # Examples of Stream object instantiation
   #
   my $stream = MQSeries::PubSub::Stream->new
@@ -585,6 +608,8 @@ arguments.
   Key	        Value
   ===           =====
   ReplyQ        String, or MQSeries::Queue object
+  DynamicQName	String
+  ModelQName	String	
   Wait          Numeric
   DatagramOnly  Boolean
 
@@ -612,6 +637,28 @@ out of scope, or the perl process exits.
 
 This queue will be used as the reply queue for request messages sent
 to the broker, or published to a stream queue.
+
+=item DynamicQName
+
+When using the default permanent dynamic queue, the template name
+(DynamicQName) used to open the queue can be customized with this
+argument.  This is relevant if you want a dynamic queue name that
+matches your own object naming conventions, and not the authors.
+
+=item ModelQName
+
+When using the default permanent dynamic queue, the model queue used
+to open the queue can be customized with this argument.  As noted
+above, the default object (SYSTEM.DEFAULT.MODEL.PERMDYN.QUEUE) is not
+present unless you create it, so this will allow you to use an
+existing permanent dynamic model queue, or use an application specific
+model queue, if one exists.
+
+NOTE: With the MQSeries PubSub support pac, temporary dynamic queues
+are not supported for replies to PubSub command messages, since the
+replies are persistent, thus the model must be a permanent dynamic
+model queue.  Note that with MSQI v2.0, which will replace the PubSUb
+support pac broker, this restriction is supposedly lifted.
 
 =item Wait
 

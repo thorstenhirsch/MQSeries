@@ -1,7 +1,7 @@
 #
-# $Id: MQSeries.pm,v 13.1 2000/04/11 21:45:38 wpm Exp $
+# $Id: MQSeries.pm,v 14.5 2000/08/15 20:51:25 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This is intended to be a wrapper routine to include either the
@@ -22,7 +22,7 @@ require DynaLoader;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 BEGIN {
 
@@ -127,6 +127,7 @@ message formats:
   MQSeries::Message::PCF
   MQSeries::Message::RulesFormat
   MQSeries::Message::XML-Dumper
+  MQSeries::Message::DeadLetter
 
 There is also a set of modules which provide an interface to the
 optional Publish/Subscribe system, which is available as a support
@@ -142,6 +143,24 @@ There is also a module which provides an interface to the command
 server PCF messages for MQSeries administration:
 
   MQSeries::Command
+
+There are two sets of classes that help you follow (tail -f style) and
+parse the two kinds of log-files written by MQSeries: the FDC files
+and the error-logs.  These classes allow you to write a log monitoring
+daemon that feeds into syslog or your system management tools.
+
+  MQSeries::ErrorLog::Tail
+  MQSeries::ErrorLog::Parser
+  MQSeries::ErrorLog::Entry
+  MQSeries::FDC::Tail
+  MQSeries::FDC::Parser
+  MQSeries::FDC::Entry
+
+There is a set of classes that parses configuration files (/var/mqm/mqs.ini
+and /var/mqm/qmgrs/*/qm.ini):
+
+  MQSeries::Config::Machine
+  MQSeries::Config::QMgr
 
 See the documentation for each of these individual modules for more
 information.

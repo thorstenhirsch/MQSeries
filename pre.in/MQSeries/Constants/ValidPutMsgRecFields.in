@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ValidPutMsgRecFields.in,v 9.1 1999/10/15 23:14:07 wpm Exp $
+# $Id: ValidPutMsgRecFields.in,v 14.1 2000/08/15 20:52:28 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

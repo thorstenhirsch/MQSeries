@@ -2,10 +2,19 @@
 =head1 INTRODUCTION
 
 This module implements a perl5 API for the IBM MQSeries messaging
-middleware product API (often referred to as the MQI), as well as an
-Object Oriented interface to the MQI, an OO interface to the MQSeries
-administrative commands via PCF or MQSC, and an OO interface to the
-Publish/Subscribe subsystem.
+middleware product API (often referred to as the MQI), as well as:
+
+=over 
+
+=item Object Oriented (OO) interface to the MQI
+
+=item OO interface to the MQSeries administrative commands via PCF or MQSC
+
+=item OO interface to the Publish/Subscribe subsystem
+
+=item OO interface to the various configuration, log, and error files
+
+=back
 
 For more information on the MQSeries product itself, see the IBM
 website at: http://www.ibm.com/software/mqseries
@@ -39,6 +48,7 @@ the author, of course.
   HP-UX 11.0 32bit	5.1			5.00503
   NT 4.0		5.0			AS build 521
   NT 4.0		5.1			AS build 521
+  AIX 4.3.3		5.1			5.00503
  *SuSE Linux 6.3	5.1			5.00503
  *HP-UX 10.20		??			??
  *Redhat Linux 5.2	?? 			??
@@ -60,7 +70,7 @@ for the MQSeries server.
 
 YET ANOTHER NOTE: I do not have an NT 4.0 MQSeries 5.0 queue manager
 against which to test, but the same code works fine for 5.1, so I
-assume it will work.  I would appreciate a positive confirmation is
+assume it will work.  I would appreciate a positive confirmation if
 anyone can test this configuration.
 
 =head1 INSTALLATION
@@ -132,6 +142,7 @@ special MQSeries message types:
   man MQSeries::Message::XML-Dumper
   man MQSeries::Message::PCF
   man MQSeries::Message::RulesFormat
+  man MQSeries::Message::DeadLetter
 
 There is an OO interface to the Command Server:
 
@@ -147,11 +158,24 @@ There is also an interface to the Publish/Subscribe system:
   man MQSeries::PubSub::Message
   man MQSeries::PubSub::AdminMessage
 
+A number of utility classes have been created for parsing the various
+file formats used by the MQSeries product:
+
+  man MQSeries::Config::Machine
+  man MQSeries::Config::QMgr
+  man MQSeries::ErrorLog::Parser
+  man MQSeries::ErrorLog::Tail
+  man MQSeries::ErrorLog::Entry
+  man MQSeries::FDC::Parser
+  man MQSeries::FDC::Tail
+  man MQSeries::FDC::Entry
+
 =head1 AUTHORS
 
-The code is currently maintained and supported by:
+The code is currently maintained and supported by both:
 
   W. Phillip Moore <Phil.Moore@msdw.com>
+  Hildo Biersma <Hildo.Biersma@msdw.com>
 
 I also have to give credit to:
 
@@ -169,8 +193,8 @@ Although, nothing remains of the original code.... (sorry, David :-)
 =cut
 
 #
-# $Id: README,v 13.2 2000/04/11 20:46:05 wpm Exp $
+# $Id: README,v 14.3 2000/08/15 20:51:58 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #

@@ -1,7 +1,7 @@
 #
-# $Id: ResponseValues.pl,v 13.3 2000/03/23 21:11:46 wpm Exp $
+# $Id: ResponseValues.pl,v 14.2 2000/08/15 20:51:40 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -119,6 +119,8 @@ package MQSeries::Command::MQSC;
    {
     DEF    		=> "Default",
     CTX    		=> "Context",
+    ONLYMCA             => "OnlyMCA",
+    ALTMCA              => "AlternateMCA",
    },
 
    TransportType =>

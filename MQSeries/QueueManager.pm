@@ -1,7 +1,7 @@
 #
-# $Id: QueueManager.pm,v 13.1 2000/03/06 16:28:33 wpm Exp $
+# $Id: QueueManager.pm,v 14.3 2000/08/15 20:51:55 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -24,7 +24,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 sub new {
 
@@ -463,20 +463,27 @@ sub Put1 {
 	    return;
 	} else {
 	    $buffer = $args{PutConvert}->($args{Message}->Data());
+	    unless ( defined $buffer ) {
+		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
+		return;
+	    }
 	}
     } else {
 	if ( $args{Message}->can("PutConvert") ) {
 	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
+	    unless ( defined $buffer ) {
+		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
+		return;
+	    }
 	} elsif ( ref $self->{PutConvert} eq "CODE" ) {
 	    $buffer = $self->{PutConvert}->($args{Message}->Data());
+	    unless ( defined $buffer ) {
+		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
+		return;
+	    }
 	} else {
 	    $buffer = $args{Message}->Data();
 	}
-    }
-
-    unless ( defined $buffer ) {
-	$self->{Carp}->("Data conversion hook (PutConvert) failed.");
-	return;
     }
 
     MQPUT1(

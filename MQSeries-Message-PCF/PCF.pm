@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 13.1 2000/03/06 16:32:49 wpm Exp $
+# $Id: PCF.pm,v 14.3 2000/08/15 20:50:58 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,7 +16,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 
@@ -48,11 +48,11 @@ sub new {
 sub GetConvert {
 
     my $self = shift;
-    my $buffer = shift;
+    ($self->{Buffer}) = @_;
 
     my ($header,$parameters);
 
-    unless ( ($header,$parameters) = MQDecodePCF($buffer) ) {
+    unless ( ($header,$parameters) = MQDecodePCF($self->{Buffer}) ) {
 	$self->{Carp}->("Unable to decode PCF Header and Parameters\n");
 	return;
     }

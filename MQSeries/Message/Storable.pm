@@ -1,7 +1,7 @@
 #
-# $Id: Storable.pm,v 9.2 1999/10/14 23:51:28 wpm Exp $
+# $Id: Storable.pm,v 14.2 2000/08/15 20:51:51 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -28,23 +28,22 @@ use vars qw(@ISA);
 sub PutConvert {
     my $self = shift;
     my ($data) = @_;
-    my $buffer = "";
-    eval { $buffer = nfreeze($data); };
+    eval { $self->{Buffer} = nfreeze($data); };
     if ( $@ ) {
 	$self->{Carp}->("Invalid data: Storable::nfreeze failed.\n" . $@);
 	return undef;
     }
     else {
-	return $buffer;
+	return $self->{Buffer};
     }
 
 }
 
 sub GetConvert {
     my $self = shift;
-    my ($buffer) = @_;
+    ($self->{Buffer}) = @_;
     my $data = "";
-    eval { $data = thaw($buffer); };
+    eval { $data = thaw($self->{Buffer}); };
     if ( $@ ) {
 	$self->{Carp}->("Invalid buffer: Storable::thaw failed.\n" . $@);
 	return undef;

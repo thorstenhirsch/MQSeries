@@ -25,14 +25,25 @@
 
 </A></H1>
 This module implements a perl5 API for the IBM MQSeries messaging
-middleware product API (often referred to as the MQI), as well as an Object
-Oriented interface to the MQI, an OO interface to the MQSeries
-administrative commands via PCF or MQSC, and an OO interface to the
-Publish/Subscribe subsystem.
+middleware product API (often referred to as the MQI), as well as:
 
 
 <P>
 
+<DL>
+<DT><STRONG><A NAME="item_Object">Object Oriented (OO) interface to the MQI
+
+</A></STRONG><DD>
+<DT><STRONG><A NAME="item_OO">OO interface to the MQSeries administrative commands via PCF or MQSC
+
+</A></STRONG><DD>
+<DT><STRONG>OO interface to the Publish/Subscribe subsystem
+
+</A></STRONG><DD>
+<DT><STRONG>OO interface to the various configuration, log, and error files
+
+</A></STRONG><DD>
+</DL>
 For more information on the MQSeries product itself, see the IBM website
 at: <A
 HREF="http://www.ibm.com/software/mqseries">http://www.ibm.com/software/mqseries</A>
@@ -84,6 +95,7 @@ bugs in these platforms. Please report problems to the author, of course.
   HP-UX 11.0 32bit      5.1                     5.00503
   NT 4.0                5.0                     AS build 521
   NT 4.0                5.1                     AS build 521
+  AIX 4.3.3             5.1                     5.00503
  *SuSE Linux 6.3        5.1                     5.00503
  *HP-UX 10.20           ??                      ??
  *Redhat Linux 5.2      ??                      ??
@@ -116,7 +128,7 @@ MQSeries server.
 
 YET ANOTHER NOTE: I do not have an NT 4.0 MQSeries 5.0 queue manager
 against which to test, but the same code works fine for 5.1, so I assume it
-will work. I would appreciate a positive confirmation is anyone can test
+will work. I would appreciate a positive confirmation if anyone can test
 this configuration.
 
 
@@ -244,6 +256,7 @@ MQSeries message types:
   man MQSeries::Message::XML-Dumper
   man MQSeries::Message::PCF
   man MQSeries::Message::RulesFormat
+  man MQSeries::Message::DeadLetter
 </PRE>
 
 <P>
@@ -274,17 +287,36 @@ There is also an interface to the Publish/Subscribe system:
 
 <P>
 
+A number of utility classes have been created for parsing the various file
+formats used by the MQSeries product:
+
+
+<P>
+
+<PRE>  man MQSeries::Config::Machine
+  man MQSeries::Config::QMgr
+  man MQSeries::ErrorLog::Parser
+  man MQSeries::ErrorLog::Tail
+  man MQSeries::ErrorLog::Entry
+  man MQSeries::FDC::Parser
+  man MQSeries::FDC::Tail
+  man MQSeries::FDC::Entry
+</PRE>
+
+<P>
+
 <P>
 <HR>
 <H1><A NAME="AUTHORS">AUTHORS
 
 </A></H1>
-The code is currently maintained and supported by:
+The code is currently maintained and supported by both:
 
 
 <P>
 
 <PRE>  W. Phillip Moore &lt;Phil.Moore@msdw.com&gt;
+  Hildo Biersma &lt;Hildo.Biersma@msdw.com&gt;
 </PRE>
 
 <P>

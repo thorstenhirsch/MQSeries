@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 13.2 2000/03/24 20:34:42 wpm Exp $
+# $Id: ResponseParameters.pl,v 14.1 2000/08/15 20:51:39 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

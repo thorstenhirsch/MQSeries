@@ -1,7 +1,7 @@
 #
-# $Id: Response.pm,v 13.1 2000/03/06 16:26:07 wpm Exp $
+# $Id: Response.pm,v 14.4 2000/08/15 20:51:46 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -24,7 +24,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 sub new {
 
@@ -76,7 +76,7 @@ sub PutConvert {
 
 sub GetConvert {
     my $self = shift;
-    my ($buffer) = @_;
+    ($self->{Buffer}) = @_;
 
     my $header = {};
 
@@ -84,7 +84,7 @@ sub GetConvert {
 
 	my ($header,$parameters);
 
-	unless ( ($header,$parameters) = MQDecodePCF($buffer) ) {
+	unless ( ($header,$parameters) = MQDecodePCF($self->{Buffer}) ) {
 	    $self->{Carp}->("Unable to decode PCF buffer\n");
 	    return undef;
 	}
@@ -97,7 +97,7 @@ sub GetConvert {
     }
     else {
 
-	unless ( ($header,$self->{Parameters}) = $self->MQDecodeMQSC($self->{Header},$buffer) ) {
+	unless ( ($header,$self->{Parameters}) = $self->MQDecodeMQSC($self->{Header},$self->{Buffer}) ) {
 	    $self->{Carp}->("Unable to parse MQSeries Command response from message\n");
 	    return undef;
 	}

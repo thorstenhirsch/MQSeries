@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: MQSeries.pm.in,v 13.1 2000/03/06 16:22:29 wpm Exp $
+# $Id: MQSeries.pm.in,v 14.2 2000/08/15 20:49:54 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -22,7 +22,7 @@ require "MQSeries/Constants.pl";
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 #
 # This nonsense is only necessary if you don't have the locale files

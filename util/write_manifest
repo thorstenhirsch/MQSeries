@@ -1,8 +1,8 @@
 #!/ms/dist/perl5/bin/perl
 #
-# $Id: write_manifest,v 9.1 1999/10/14 23:20:35 wpm Exp $
+# $Id: write_manifest,v 14.1 2000/08/15 20:53:20 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This is not used to build the distribution, just to keep that pesky

@@ -1,7 +1,7 @@
 #
-# $Id: Broker.pm,v 13.2 2000/03/31 14:05:33 wpm Exp $
+# $Id: Broker.pm,v 14.4 2000/08/15 20:51:17 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -22,7 +22,7 @@ use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::QueueManager );
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 #
 # All 5 of these PubSub commands must be sent to the Broker.
@@ -266,13 +266,8 @@ sub InquireIdentities {
 
 		    my $value = $parameters->{$key};
 
-		    if ( $maxindex > 1 ) {
-			if ( ref $value eq 'ARRAY' ) {
-			    $identity->{$shortkey} = $value->[$index];
-			}
-		    }
-		    else {
-			$identity->{$shortkey} = $value;
+		    if ( ref $value eq 'ARRAY' ) {
+			$identity->{$shortkey} = $value->[$index];
 		    }
 
 		}
@@ -318,31 +313,29 @@ sub InquireRetainedMessages {
     #
     my $topicstring = join("','",@$topics);
 
-    unless (
-	    $self->RegisterSubscriber
-	    (
-	     MsgDesc		=>
-	     {
-	      # Wait is milliseconds, Expiry is tenths of seconds, but
-	      # multiple this by 10, to give us some breathing room
-	      # (hence /10, not /100)
-	      Expiry 		=> int($self->{Wait}/10),
-	     },
-	     Options		=>
-	     {
-	      Topic		=> $topics,
-	      StreamName	=> $streamname,
-	      RegOpts		=> [qw(
-				       Anon
-				       PubOnReqOnly
-				      )],
-	     },
-	    )
-	   ) {
-	$self->{Carp}->("Unable to RegisterSubscriber\n" .
-			"Reason => " . $self->Reason() . "\n");
-	return;
-    }
+    $self->RegisterSubscriber
+      (
+       MsgDesc		=>
+       {
+	# Wait is milliseconds, Expiry is tenths of seconds, but
+	# multiple this by 10, to give us some breathing room
+	# (hence /10, not /100)
+	Expiry 		=> int($self->{Wait}/10),
+       },
+       Options		=>
+       {
+	Topic		=> $topics,
+	StreamName	=> $streamname,
+	RegOpts		=> [qw(
+			       Anon
+			       PubOnReqOnly
+			      )],
+       },
+      ) || do {
+	  $self->{Carp}->("Unable to RegisterSubscriber\n" .
+			  "Reason => " . $self->Reason() . "\n");
+	  return;
+      };
 
     #
     # Request them all, then get them.  If any of the requests fail
@@ -383,7 +376,7 @@ sub InquireRetainedMessages {
 	    $message = MQSeries::Message->new();
 	}
 	
-	unless ( $self->ReplyQ()->Get( Message 	=> $message ) ) {
+	unless ( $self->ReplyQ()->Get( Message => $message ) ) {
 
 	    $self->{Carp}->("Unable to get message from replyq\n" .
 			    "Reason => " . $self->ReplyQ()->Reason() . "\n");

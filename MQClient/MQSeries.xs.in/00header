@@ -10,10 +10,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: 00header,v 9.4 1999/10/15 16:11:11 wpm Exp $";
+static char rcsid[] = "$Id: 00header,v 14.1 2000/08/15 20:49:56 wpm Exp $";
 
 /*
-  (c) 1999 Morgan Stanley Dean Witter and Co.
+  (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
   See ..../src/LICENSE for terms of distribution.
  */	
 

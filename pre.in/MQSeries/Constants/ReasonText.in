@@ -11,9 +11,9 @@
 #
 #    ..../src/util/extract_reason_codes
 #
-# $Id: ReasonText.in,v 9.1 1999/11/05 00:47:41 wpm Exp $
+# $Id: ReasonText.in,v 14.1 2000/08/15 20:52:25 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

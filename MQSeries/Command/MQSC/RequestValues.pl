@@ -1,7 +1,7 @@
 #
-# $Id: RequestValues.pl,v 13.1 2000/03/23 21:20:48 wpm Exp $
+# $Id: RequestValues.pl,v 14.1 2000/08/15 20:51:36 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

@@ -1,7 +1,7 @@
 #
-# $Id: RulesFormat.pm,v 13.2 2000/04/11 20:47:58 wpm Exp $
+# $Id: RulesFormat.pm,v 14.3 2000/08/15 20:51:08 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 
@@ -118,11 +118,12 @@ sub _OptionsHeader {
 sub GetConvert {
 
     my $self = shift;
-    my ($buffer) = @_;
+    ($self->{Buffer}) = @_;
     my $data = "";
     my $options = "";
 
-    unless ( ($self->{"Header"},$options,$data) = MQDecodeRulesFormat($buffer,length($buffer)) ) {
+    unless ( ($self->{"Header"},$options,$data) =
+	     MQDecodeRulesFormat($self->{Buffer},length($self->{Buffer})) ) {
 	$self->{Carp}->("Unable to decode MQSeries Rules and Format Message\n");
 	return undef;
     }

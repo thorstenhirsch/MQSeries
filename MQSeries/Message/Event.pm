@@ -1,7 +1,7 @@
 #
-# $Id: Event.pm,v 12.2 2000/02/25 09:25:08 wpm Exp $
+# $Id: Event.pm,v 14.1 2000/08/15 20:51:50 wpm Exp $
 #
-# (c) 1999 Morgan Stanley Dean Witter and Co.
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
