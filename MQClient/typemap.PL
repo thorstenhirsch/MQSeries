@@ -1,5 +1,5 @@
 #
-# $Id: typemap.PL,v 23.1 2003/04/10 19:08:57 biersma Exp $
+# $Id: typemap.PL,v 24.1 2003/11/03 16:24:06 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -17,7 +17,7 @@
 #	&string_output, &string_input		for MQCHARn types
 #	&byte_output, &byte_input		for MQBYTE types
 #
-# Other types are not yet supported, and those that arenot relevant
+# Other types are not yet supported, and those that are not relevant
 # are skipped intentionally.  Warnings should be due to new
 # structures, and should be reviewed.
 #
@@ -70,7 +70,7 @@ while ( <> ) {
 	#
 	# A list of known types we don't support.  Ignore them.
 	#
-	next if (grep { $fieldt eq $_ } 
+	next if (grep { $fieldt eq $_ }
                  qw(MQPTR MQMD1 MQHCONN MQPOINTER MQPID MQTID MQHCONFIG));
 
 	if ($fieldt eq 'MQLONG' ||
@@ -102,9 +102,9 @@ while ( <> ) {
 	else {
 	    warn "$0: warning: type $type.$field ($fieldt) not supported\n";
 	}
-	
+
     }
-	
+
 }
 
 
@@ -178,7 +178,7 @@ MQCFIN		T_MQCFIN
 MQCFSL		T_MQCFSL
 MQCFST		T_MQCFST
 
-# Input of the above types: 
+# Input of the above types:
 INPUT
 EOF
 
@@ -224,7 +224,7 @@ sub string_output {
     if ($fieldsize == 1) {
 	$isptr = "&";
     }
-    
+
     return <<"EOF";
 	hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
 		 (newSVpv($isptr\$var.$field, $fieldsize)),$hash);
@@ -242,15 +242,19 @@ sub string_input {
 
     return <<"EOF";
         if (hv_exists((HV*)SvRV(\$arg), \\"$field\\", $fieldnamelen)) {
-	    SV **scalar;
+	    SV        **scalar;
+            STRLEN      StringLength;
+	    const char *StringData;
 
+            /* Need to deal with undersized data.  Only copy supplied bytes. */
 	    scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
+            StringData = SvPV(*scalar, StringLength);
 	    strncpy($isptr\$var.$field,
-		    (char *)SvPV(*scalar, len),
-		    $fieldsize);
+		    StringData,
+                    StringLength > $fieldsize ? $fieldsize : StringLength);
 	}
 
-			  
+
 EOF
 }
 #==============================================================================
@@ -304,12 +308,16 @@ sub byte_input {
 
     return <<"EOF";
         if (hv_exists((HV*)SvRV(\$arg), \\"$field\\", $fieldnamelen)) {
-	    SV **scalar;
+	    SV        **scalar;
+            STRLEN      ByteLength;
+	    const char *ByteData;
 
+            /* Need to deal with undersized data.  Only copy supplied bytes. */
 	    scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
+            ByteData = SvPV(*scalar, ByteLength);
 	    memcpy(\$var.$field,
-		    (char *)SvPV(*scalar, len),
-		    $fieldsize);
+		   ByteData,
+                   ByteLength > $fieldsize ? $fieldsize : ByteLength);
 	}
 EOF
 }

@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 31MQCONNX-v5,v 23.1 2003/04/10 19:07:12 biersma Exp $
+# $Id: 31MQCONNX-v5,v 24.2 2003/08/06 21:15:20 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -18,7 +18,10 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
 	CODE:
         {
 #ifdef MQCNO_VERSION_2
-        MQCD ClientConnOpts = { MQCD_CLIENT_CONN_DEFAULT };
+        MQCD ClientConnOpts  = { MQCD_CLIENT_CONN_DEFAULT };
+#ifdef MQCNO_VERSION_4
+        MQSCO SSLConfigOpts  = { MQSCO_DEFAULT };
+#endif
 
         /* 
            If the ClientConn hash entry is present in the ConnectOpts, 
@@ -28,13 +31,14 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
         if (hv_exists((HV*)SvRV(ST(1)),"ClientConn",10)) {
           SV **cvp, **elem;
           HV *options;
-          int FieldSize, StringLength;
+          int FieldSize;
+          STRLEN StringLength;
           char *String;
 
           /* warn("Using ClientConn options to set MQCD"); */
           ConnectOpts.ClientConnOffset = 0;
           ConnectOpts.ClientConnPtr = &ClientConnOpts;
-          ConnectOpts.Version = MQCNO_VERSION_2;
+          ConnectOpts.Version = MQCNO_VERSION_2; /* But see below */
           cvp = hv_fetch((HV*)SvRV(ST(1)),"ClientConn",10, FALSE);
           if ( !SvROK(*cvp) || ( SvROK(*cvp) &&
                                  SvTYPE(SvRV(*cvp)) != SVt_PVHV ) ) {
@@ -192,11 +196,77 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
           if (elem) {
             ClientConnOpts.HeartbeatInterval = SvIV(*elem);
           }
-        } else {
-          /* warn("ClientConn options not present"); */
-        }
-#endif
+#endif /* MQCNO_VERSION_2 */
+#ifdef MQCNO_VERSION_4 /* Includes MQCNO_VERSION_2 */
+	  /* Version 4 (WMQ 5.3) options: SSLCipherSpec and 
+	   * KeepAliveInterval. (Contributed by Brian Bumpass)
+	   */
+          /* SSLCipherSpec */
+          elem = hv_fetch(options, "SSLCipherSpec", 13, FALSE);
+          if (elem) {
+	    ConnectOpts.Version = MQCNO_VERSION_4;
+	    FieldSize = sizeof(ClientConnOpts.SSLCipherSpec);
+	    String = SvPV(*elem, StringLength);
+	    strncpy(ClientConnOpts.SSLCipherSpec,
+		    String,
+		    StringLength > FieldSize ? FieldSize : StringLength);
+          }
 
+          /* KeepAliveInterval */
+	  elem = hv_fetch(options, "KeepAliveInterval", 17, FALSE);
+          if (elem) {
+	    ConnectOpts.Version = MQCNO_VERSION_4;
+            ClientConnOpts.KeepAliveInterval = SvIV(*elem);
+          }
+#endif /* MQCNO_VERSION_4 */
+#ifdef MQCNO_VERSION_2
+        } else {
+	    /* warn("ClientConn options not present"); */
+        }
+#endif /* MQCNO_VERSION_2 */
+#ifdef MQCNO_VERSION_4
+        /* 
+           SSLConfig represents the hash entry for ConnectOpts 
+	   (Contributed by Brian Bumpass)
+        */
+        if (hv_exists((HV*)SvRV(ST(1)),"SSLConfig",9)) {
+          SV **cvp, **elem;
+          HV *options;
+          int FieldSize;
+	  STRLEN StringLength;
+          char *String;
+
+          /* warn("Using SSLConfig options to set MQSCO"); */
+          ConnectOpts.SSLConfigOffset = 0;
+          ConnectOpts.SSLConfigPtr = &SSLConfigOpts;
+	  ConnectOpts.Version = MQCNO_VERSION_4;
+          cvp = hv_fetch((HV*)SvRV(ST(1)),"SSLConfig",9, FALSE);
+          if ( !SvROK(*cvp) || ( SvROK(*cvp) &&
+                                 SvTYPE(SvRV(*cvp)) != SVt_PVHV ) ) {
+            warn("Invalid data for SSLConfig, not a HASH reference\n");
+            XSRETURN_EMPTY;
+          }
+          options = (HV*)SvRV(*cvp);
+
+          /* Version */
+          elem = hv_fetch(options, "Version", 7, FALSE);
+          if (elem) {
+            SSLConfigOpts.Version = SvIV(*elem);
+          }
+
+          /* KeyRepository */
+          elem = hv_fetch(options, "KeyRepository", 13, FALSE);
+          if (elem) {
+            FieldSize = sizeof(SSLConfigOpts.KeyRepository);
+            String = SvPV(*elem, StringLength);
+            strncpy(SSLConfigOpts.KeyRepository,
+                    String,
+                    StringLength > FieldSize ? FieldSize : StringLength);
+          }
+        } else {
+	    /* warn("SSLConfig options not present"); */
+        }
+#endif /* MQCNO_VERSION_4 */
         MQCONNX(Name,&ConnectOpts,&RETVAL,&CompCode,&Reason);
         }
 	OUTPUT:

@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 34MQPUT-v5,v 23.1 2003/04/10 19:07:26 biersma Exp $
+# $Id: 34MQPUT-v5,v 24.1 2003/08/07 15:53:21 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -39,7 +39,23 @@ MQPUT(Hconn,Hobj,MsgDesc,PutMsgOpts,Msg,CompCode,Reason)
 	sv_setiv(ST(5),(IV)CompCode);
 	sv_setiv(ST(6),(IV)Reason);
 
+	/*
+	 * We set the MQMD version to 2, so users of segmentation or
+	 * grouping won't have to do this manually.
+	 */
+	if (MsgDesc.Version < MQMD_VERSION_2) {
+	  MsgDesc.Version = MQMD_VERSION_2;
+	}
+
 	if ( hv_exists((HV*)SvRV(ST(3)),"PutMsgRecs",10) ) {
+	  /*
+	   * Using the put-msg records (distribution list features)
+	   * requires MQPMO version 2.  We enable that automatically
+	   * if distribution lists are used.
+	   */
+	  if (PutMsgOpts.Version < MQPMO_VERSION_2) {
+	    PutMsgOpts.Version = MQPMO_VERSION_2;
+	  }
 	
 	  /*
 	    We will need this configuration hash, but only

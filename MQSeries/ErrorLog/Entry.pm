@@ -4,7 +4,7 @@
 # (c) 2000-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 23.2 2003/04/10 19:10:03 biersma Exp $
+# $Id: Entry.pm,v 24.1 2003/05/19 21:32:38 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Entry;
@@ -18,7 +18,7 @@ use overload ('""'  => 'as_string',
 
 use vars qw($VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 #
 # ErrorLog::Entry constructor

@@ -4,8 +4,8 @@
 # (c) 2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Trigger.pm,v 23.1 2003/04/10 19:15:06 biersma Exp $
-# 
+# $Id: Trigger.pm,v 24.2 2003/06/19 18:50:07 biersma Exp $
+#
 
 package MQSeries::Message::Trigger;
 
@@ -15,15 +15,15 @@ use Carp;
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Command/PCF/ResponseParameters.pl"; # For ApplType
-my %ApplType = 
+my %ApplType =
   reverse %{ $MQSeries::Command::PCF::ResponseValues{'ApplType'} };
 
 #
-# Conversion routine on get: decode Config Event message into data
+# Conversion routine on get: decode TriggerMonitor message into data
 #
 sub GetConvert {
     my ($this, $buffer) = @_;
@@ -34,11 +34,16 @@ sub GetConvert {
     my $retval = {};
 
     #
-    # The nessage is in MQTM format.  We check the structure id and
-    # version.
+    # The message is in MQTM format.  We check the structure id and
+    # version.  Depending on the queue manager platform, we need to
+    # read numbers in big-endian format (Solaris) or little-endian
+    # format (Linux/Intel).
     #
-    my $type    = $this->_readByte($buffer, 0, 4);
-    my $version = $this->_readNumber($buffer, 4, 4);
+    my $type = $this->_readByte($buffer, 0, 4);
+    my $little_endian = ord($this->_readByte($buffer, 4, 1));
+    my $version = ($little_endian ?
+		   $this->_readLENumber($buffer, 4, 4) :
+		   $this->_readBENumber($buffer, 4, 4));
     confess "Invalid type [$type] (not MQTM_STRUC_ID_ARRAY)"
       unless ($type eq 'TM  ');
     confess "Unexpected version [$version] (not MQTM_VERSION_1)"
@@ -49,7 +54,7 @@ sub GetConvert {
     #
     # Read QName (48), ProcessName (48), TriggerData (64)
     #
-    foreach my $pair ( [ qw(QName 48) ], 
+    foreach my $pair ( [ qw(QName 48) ],
                        [ qw(ProcessName 48) ],
                        [ qw(TriggerData 64) ] ) {
         my ($field, $size) = @$pair;
@@ -64,16 +69,18 @@ sub GetConvert {
     # Read and convert ApplType
     #
     {
-        my $appl_type = $this->_readNumber($buffer, $offset, 4);
+        my $appl_type = ($little_endian ?
+			 $this->_readLENumber($buffer, $offset, 4) :
+			 $this->_readBENumber($buffer, $offset, 4));
         $retval->{ApplType} = $ApplType{$appl_type} ||
           "<unknown ApplType value $appl_type>";
         $offset += 4;
     }
-        
+
     #
     # Read ApplId (256), EnvData (128), UserData (128)
     #
-    foreach my $pair ( [ qw(ApplId 256) ], 
+    foreach my $pair ( [ qw(ApplId 256) ],
                        [ qw(EnvData 128) ],
                        [ qw(UserData 128) ] ) {
         my ($field, $size) = @$pair;
@@ -98,10 +105,22 @@ sub PutConvert {
 
 # ------------------------------------------------------------------------
 
-sub _readNumber {
+#
+# Read number in Big-Endian format (Network order, e.g. Solaris)
+#
+sub _readBENumber {
     my $class = shift;
     my ($data,$offset,$length) = @_;
     return unpack("N", substr($data,$offset,$length));
+}
+
+#
+# Read number in Little-Endian format (VAX order, e.g. Linux/Intel)
+#
+sub _readLENumber {
+    my $class = shift;
+    my ($data,$offset,$length) = @_;
+    return unpack("V", substr($data,$offset,$length));
 }
 
 

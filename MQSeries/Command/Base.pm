@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 23.7 2003/04/23 14:32:36 biersma Exp $
+# $Id: Base.pm,v 24.3 2003/11/03 16:31:04 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 sub new {
 
@@ -346,6 +346,7 @@ sub _UnTranslatePCF {
 	my $paramkey = $ParameterMap->{$origparam->{Parameter}}->[0];
 	my $paramvalue = "";
 
+	#print STDERR "ParamKey: [$origparam->{Parameter}] [$paramkey]\n";
 	if ( exists $origparam->{String} ) {
 	    ( $parameters->{$paramkey} = $origparam->{String} ) =~ s/\s+$//;
 	    next;
@@ -649,11 +650,15 @@ sub MQEncodeMQSC {
                 # the only MQSC command where, if you ask for a
                 # specific thread name, it has to be quoted, but to
                 # ask for all threads, the asterisk may not be quoted.
+		#
+		# The same goes for 'CommandScope'...
                 #
                 if ($command eq 'InquireThread' && 
                     $parameter eq 'ThreadName' &&
                     $value eq '*') {
                     push @buffer, "$key($value)";
+		} elsif ($parameter eq 'CommandScope' && $value eq '*') {
+		    push @buffer, "$key($value)";
                 } else {
                     push @buffer,"$key('$value')";
                 }

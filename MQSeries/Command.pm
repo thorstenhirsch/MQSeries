@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 23.3 2003/04/10 19:09:33 biersma Exp $
+# $Id: Command.pm,v 24.4 2003/11/03 16:30:12 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -23,7 +23,7 @@ use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
 
 use vars qw($VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 sub new {
     my ($proto, %args) = @_;
@@ -468,9 +468,9 @@ sub CreateObject {
 	$Delete			= "DeleteQueue";
 	$Key			= "QName";
 
-	if ( $Attrs->{QType} eq 'Remote' && not $Attrs->{RemoteQName} ) {
+	if ( $Attrs->{QType} eq 'Remote' && $Attrs->{RemoteQName} eq '' ) {
 	    $Type		= "QMgr Alias";
-	} elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {	
+	} elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {
 	    $Type		= "Transmission Queue";
 	} else {
 	    $Type		= "$Attrs->{QType} Queue";
@@ -520,6 +520,21 @@ sub CreateObject {
     my $Changes;
     if ( ref $Object eq 'HASH' ) {
 	$method = $Change;
+
+	#
+	# If an object has been created with QSharingGroupDisposition
+	# 'Group', then a normal 'Inquire' command returns QSPDisp
+	# 'Copy' - which, if the queue manager is up, represents the
+	# object unless it is just being changed on another queue
+	# manager.
+	#
+	# We'll amend that to read QSGDisp 'Group', as that is what
+	# we need to compare against.
+	#
+	if (defined $Object->{'QSharingGroupDisposition'} &&
+	    $Object->{'QSharingGroupDisposition'} eq 'Copy') {
+	    $Object->{'QSharingGroupDisposition'} = 'Group';
+	}
 
 	#
 	# If it exists, let's assume we don't need to create it.  If
@@ -576,23 +591,49 @@ sub CreateObject {
     }
 
     #
-    # If the QType has changed, we'll have to delete the queue first.
+    # If a Queue QType has changed, or any object CouplingStructure or
+    # QSharingGroupDisposition has changed, we'll have to delete the
+    # old object first.
     #
     # NOTE: We do *not* purge, unless the 'Clear' flag is specified.
     # That should be checked out manually, as it will be an odd case
     # anyway.  In any event, this will be somewhat rare.
     #
+    my $delete_first = 0;
     if ($Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType}) {
-
-	print "Deleting $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" 
+	$delete_first = 1;
+    } elsif ($Object) {
+	foreach my $fld (qw(QSharingGroupDisposition 
+			    CouplingStructure)) {
+	    if (defined $Attrs->{$fld} && $Attrs->{$fld} ne $Object->{$fld}) {
+		$delete_first = 1;
+	    }
+	}
+    }
+    if ($delete_first) {
+	print "Deleting $Type $QMgr/$Attrs->{$Key}'\n" 
           unless $Quiet;
+
+	#
+	# If the existing queue is shared, then the delete command
+	# must be sent with CommandScope '*'.
+	#
+	my $need_cmdscope = 0;
+	my $qsgdisp_attr = $Attrs->{QSharingGroupDisposition};
+	if (defined $qsgdisp_attr && 
+	    $qsgdisp_attr =~ m!^(?:Copy|Shared)$!) {
+	    $need_cmdscope = 1;
+	}
 
 	$self->$Delete
 	  (
 	   $Key			=> $Attrs->{$Key},
 	   QType		=> $Object->{QType},
+	   ($need_cmdscope ?
+	    (CommandScope       => '*') : ()
+	   ),
 	   (
-	    $Clear && $Object->{QType} eq 'Local' ?
+	    $Clear && $Key eq 'QName' && $Object->{QType} eq 'Local' ?
 	    ( Purge		=> 1 ) : ()
 	   )
 	  ) || do {
@@ -624,17 +665,47 @@ sub CreateObject {
 	$Changes->{Force} = 1;
     }
 
-    $self->$method
-      (
-       $Key			=> $Changes->{$Key},
-       %$Changes,
-      ) || do {
-	  $self->Carp("Unable to " .
-                      ( $method eq $Change ? "update" : "create" ) .
-                      " $Type '$QMgr/$Changes->{$Key}'\n" .
-                      $self->ReasonText() . "\n");
-	  return;
-      };
+    #
+    # If the QSharingGroupDisposition field is set in the object,
+    # also set it in the changes.
+    #
+    # FIXME: Also for command scope?
+    #
+    my $disp_field = 'QSharingGroupDisposition';
+    if (defined $Object->{$disp_field}) {
+	$Changes->{$disp_field} = $Object->{$disp_field};
+    }
+
+    #
+    # Here's a bit of an ugly hack, but it tends to be required...
+    # you cannot change a queue StorageClass (MF attribute) if the
+    # queue has messages or is in use.  Attempting to do so results in
+    # a partially-updated object.  So if the StorageClass needs to be
+    # changed, and the queue seems open/with messages, perform a
+    # two-step update.
+    #
+    my $Changes2;
+    if ($method ne $Create && 
+	$Key eq 'QName' && defined $Changes->{'StorageClass'} &&
+	scalar(keys %$Changes) > 2) {
+	$Changes2->{'QType'} = $Changes->{'QType'};
+	$Changes2->{$disp_field} = $Changes->{$disp_field}
+	  if (defined $Changes->{$disp_field});
+	$Changes2->{'StorageClass'} = delete $Changes->{'StorageClass'};
+    }
+
+    foreach my $diffs ($Changes, $Changes2) {
+	next unless (defined $diffs); # $Changes2 is optional
+	$self->$method($Key => $Changes->{$Key},
+		       %$diffs,
+		      ) || do {
+	    $self->Carp("Unable to " .
+			( $method eq $Change ? "update" : "create" ) .
+			" $Type '$QMgr/$Changes->{$Key}'\n" .
+			$self->ReasonText() . "\n");
+	    return;
+	};
+    }
 
     return 1;                   # 1: Things changed
 }
@@ -773,6 +844,7 @@ sub _Command {
     my $putresult = $self->{CommandQueue}->
       Put(Message    => $self->{Request},
           PutMsgOpts => $putmsg_options,
+	  Sync       => 0,
          );
 
     #
@@ -844,7 +916,10 @@ sub _Command {
 	# is in.
 	#
 	last if $self->{ReplyToQ}->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE;
-
+	
+	#print STDERR "XXX: Response buffer [$response->{'Buffer'}]\n"
+	#  if ($self->{Type} eq 'MQSC');
+	
         #
         # Ugly hack:
         # - If this is MQSC
@@ -871,6 +946,7 @@ sub _Command {
             $MQSCHeader = { Command => $command };
             next;
         }
+
 
         #
         # FIXME: We probably don't want to keep the response
@@ -952,7 +1028,17 @@ sub _Command {
     # Finally the simple worked or failed commands
     #
     else {
-	if ( $self->{"CompCode"} || $self->{"Reason"} ) {
+	if ($self->{"CompCode"} == 0 && $self->{"Reason"} == 4 &&
+	    $self->{"Buffers"}[-1] =~ /CSQN13[78]I .* command (?:accepted|generated)/) {
+	    #
+	    # Deal with CommandScope for QSGs.  If CompCode=0 and Reason=4,
+	    # and the last response is one of:
+	    # - 'CSQN137I ... command accepted',
+	    # - 'CSQN138I ... command generated',
+	    # this is not an error.
+	    #
+	    return 1;
+	} elsif ( $self->{"CompCode"} || $self->{"Reason"} ) {
             #
             # Save the MQSC ReasonText.  Leave undef (for translation
             # of normal reason code ->text) in other cases.
@@ -1342,7 +1428,7 @@ key/value pairs:
   CommandQueue       MQSeries::Queue object
   DynamicQName       String
   ModelQName	     String
-  Type               String ("PCF" or "MQCS")
+  Type               String ("PCF" or "MQSC")
   Expiry	     Numeric
   Wait               Numeric
   ReplyToQMgr        String

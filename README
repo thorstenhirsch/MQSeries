@@ -67,6 +67,7 @@ to the maintainer.
                         5.3                     ActivePerl 5.8
  *AIX 4.3.3		5.1			5.00503
  *AIX 4.3.3		5.2			5.6.1
+ *AIX 5.1L		5.2			5.6.1
  *SuSE Linux 6.3	5.1			5.00503
  *HP-UX 10.20		??			??
  *HP-UX 11		5.3			5.6.1
@@ -222,7 +223,7 @@ Although, nothing remains of the original code.... (sorry, David :-)
 =cut
 
 #
-# $Id: README,v 23.4 2003/04/17 14:30:27 biersma Exp $
+# $Id: README,v 24.1 2003/11/03 16:27:01 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

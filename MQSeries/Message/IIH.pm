@@ -4,7 +4,7 @@
 # (c) 2002-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: IIH.pm,v 23.2 2003/04/10 19:10:15 biersma Exp $
+# $Id: IIH.pm,v 24.2 2003/10/14 15:57:22 biersma Exp $
 # 
 
 package MQSeries::Message::IIH;
@@ -15,7 +15,7 @@ use Carp;
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 @ISA = qw(MQSeries::Message);
 
 #
@@ -114,7 +114,7 @@ sub Header {
 #
 sub GetConvert {
     my ($this, $buffer) = @_;
-
+    $this->_setEndianess();
     $this->{Buffer} = $buffer;
 
     my $offset = 0;
@@ -163,6 +163,7 @@ sub GetConvert {
 #
 sub PutConvert {
     my ($this, $data) = @_;
+    $this->_setEndianess();
 
     die "IIH data must be a hash-reference or ref to array of hash-references"
       unless (ref $data);
@@ -195,8 +196,13 @@ sub PutConvert {
 
         substr($buffer, $offset, 2) = $this->_writeShort($datalen);
         substr($buffer, $offset+2, 2) = $this->_writeShort(0);
-        substr($buffer, $offset+4, 8) = 
-          $this->_writeString($entry->{Transaction}, 8);
+
+	#
+	# There should only be 1 space between IMS Tran code and the Data
+	#
+        my $tranIDLength = length($entry->{Transaction})+1;
+        substr($buffer, $offset+4,$tranIDLength ) = 
+	  $this->_writeString($entry->{Transaction}, $tranIDLength);
         $buffer .= $entry->{Body};
         $offset += $datalen;
     }
@@ -207,6 +213,10 @@ sub PutConvert {
 
 # ------------------------------------------------------------------------
 
+#-
+# The globals determine how to pack numbers (big/little endian)
+#
+my ($packShort, $packNumber);
 
 sub _readString {
     my $class = shift;
@@ -225,28 +235,28 @@ sub _writeString {
 sub _readNumber {
     my $class = shift;
     my ($data,$offset,$length) = @_;
-    return unpack("N", substr($data,$offset,$length));
+    return unpack($packNumber, substr($data,$offset,$length));
 }
 
 
 sub _writeNumber {
     my $class = shift;
     my ($number) = @_;
-    return pack("N",$number);
+    return pack($packNumber, $number);
 }
 
 
 sub _readShort {
     my $class = shift;
     my ($data,$offset,$length) = @_;
-    return unpack("n", substr($data,$offset,$length));
+    return unpack($packShort, substr($data,$offset,$length));
 }
 
 
 sub _writeShort {
     my $class = shift;
     my ($number) = @_;
-    return pack("n",$number);
+    return pack($packShort, $number);
 }
 
 
@@ -266,6 +276,35 @@ sub _writeByte {
     return $string;
 }
 
+
+#
+# This sub is used to determine if the platform we are running on is
+# Big/Little endian.  If the client platform and server platform have
+# different endian-ness, you can invoke it with:
+#
+# - 0: server is little-endian (Linux/Intel, Windows NT)
+# - 1: server is big-endian (Solaris/SPARC)
+#
+sub _setEndianess {
+    my ($big_endian) = @_;
+
+    if (@_ == 1) {
+	return if (defined $packShort);
+	#
+	# Implicit invocation - base on guess work
+	#
+	$big_endian = pack('N', 1) eq pack('L', 1);
+	#print STDERR "Implicitly set format to " . ($big_endian ? "big" : "little") . " endian\n";
+    }
+
+    if ($big_endian) {
+	$packShort = "n";
+	$packNumber= "N";
+    } else {
+	$packShort = "v";
+	$packNumber= "V";
+    }	
+}
 
 1;
 
@@ -347,6 +386,36 @@ A reference to an array with hash-references, each in the same format
 as before.  I am not sure whether anyone would actually use this...
 
 =back
+
+=head1 _setEndianess
+
+An IMS message contains a number of numerical fields that are encoded
+based on the endian-ness of the queue manager.  In most cases, that is
+the same endian-ness as the client (certainly if both run on the same
+machine), and this module uses that as the default.
+
+If you need to override the guess made by this module, then you can
+invoke the C<_setEndianess> method with 0 if server is little-endian
+(Linux/Intel, Windows NT) and 1 if server is big-endian
+(Solaris/SPARC).
+
+For example, if you run on a Linux/Intel machine, but need to create a
+message for a queue manager running on Solaris:
+
+  MQSeries::Message::IIH->_setEndianess(1);
+  my $message = MQSeries::Message::IIH->
+    new(Header => { Authenticator => 'foobar',
+                    CommitMode    => MQSeries::MQICM_COMMIT_THEN_SEND,
+                    TranState     => MQSeries::MQITS_IN_CONVERSATION,
+                  },
+        Data   => { Transaction => 'ISIC7000',
+                    Body        => '   Blah Blah Blah   ',
+                  },
+        );
+
+=head1 AUTHORS
+
+Hildo Biersma, Jeff Dunn
 
 =head1 SEE ALSO
 

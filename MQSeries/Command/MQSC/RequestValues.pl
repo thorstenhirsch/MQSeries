@@ -1,5 +1,5 @@
 #
-# $Id: RequestValues.pl,v 23.1 2003/04/10 19:09:45 biersma Exp $
+# $Id: RequestValues.pl,v 24.1 2003/11/03 16:32:02 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -149,7 +149,7 @@ package MQSeries::Command::MQSC;
     LDAPUserName                => "LDAPUSER",
    },
 
-   AuthInfoType => 
+   AuthInfoType =>
    {
     CRLLDAP                     => "CRLLDAP",
    },
@@ -202,6 +202,7 @@ package MQSeries::Command::MQSC;
    DefinitionType =>
    {
     Permanent			=> "PERMDYN",
+    Shared			=> "SHAREDYN",
     Temporary			=> "TEMPDYN",
    },
 
@@ -234,7 +235,7 @@ package MQSeries::Command::MQSC;
     OK				=> "OK",
    },
 
-   QSharingGroupDisposition => 
+   QSharingGroupDisposition =>
    {
     All                         => "ALL",
     Copy                        => "COPY",
@@ -563,7 +564,7 @@ package MQSeries::Command::MQSC;
     Required                    => "REQUIRED",
    },
 
-   QStatusAttrs => 
+   QStatusAttrs =>
    {
     All                         => "ALL",
     AddressSpaceId              => "ASID",
@@ -590,7 +591,7 @@ package MQSeries::Command::MQSC;
    # returned by a "display CF Structure" command.  The default for an
    # InquireCfStruct() command is "All".
    #
-   CFStructAttrs => 
+   CFStructAttrs =>
    {
     All                         => "ALL",
     AlterationDate		=> "ALTDATE",
@@ -600,7 +601,7 @@ package MQSeries::Command::MQSC;
     Recovery                    => "RECOVER",
    },
 
-   NamelistType => 
+   NamelistType =>
    {
     None                        => "NONE",
     Queue                       => "QUEUE",

@@ -223,6 +223,7 @@ package MQSeries::Command::PCF;
     MsgRetryInterval		=> [ 1545,                		3 ],
     Msgs			=> [ 1534,         			3 ],
     NetworkPriority		=> [ 1565,                     		3 ],
+    RemoteQMgrName		=> [ 2017,                    		4 ],
     SeqNumberWrap		=> [ 1509,                         	3 ],
     ShortRetriesLeft		=> [ 1541,                       	3 ],
     ShortRetryCount		=> [ 1505,                		3 ],
@@ -230,6 +231,7 @@ package MQSeries::Command::PCF;
     SSLCipherSpec               => [ 3544,                               4 ],
     SSLClientAuth               => [ 1568,                               3,                 $ResponseValues{SSLClientAuth} ],
     SSLPeerName                 => [ 3545,                               4 ],
+    SSLShortPeerName		=> [ 3547,                        	4 ],
     StopRequested		=> [ 1543,                   		3 ],
    },
 

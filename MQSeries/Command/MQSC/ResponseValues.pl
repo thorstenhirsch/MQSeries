@@ -1,5 +1,5 @@
 #
-# $Id: ResponseValues.pl,v 23.1 2003/04/10 19:09:50 biersma Exp $
+# $Id: ResponseValues.pl,v 24.1 2003/11/03 16:36:47 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -50,6 +50,7 @@ package MQSeries::Command::MQSC;
    {
     PREDEFINED 		=> "Predefined",
     PERMDYN	    	=> "Permanent",
+    SHAREDYN		=> "Shared",
     TEMPDYN	    	=> "Temporary",
    },
 
@@ -66,8 +67,8 @@ package MQSeries::Command::MQSC;
     PRIORITY		=> "Priority",
     FIFO		=> "FIFO",
    },
-   
-   QSharingGroupDisposition => 
+
+   QSharingGroupDisposition =>
    {
     COPY                => "Copy",
     GROUP               => "Group",
@@ -238,7 +239,7 @@ package MQSeries::Command::MQSC;
     NONE		=> "None",
    },
 
-   StatusType => 
+   StatusType =>
    {
     HANDLE              => "Handle",
     QUEUE               => "Queue",
@@ -257,12 +258,12 @@ package MQSeries::Command::MQSC;
     REQUIRED            => "Required",
    },
 
-   AuthInfoType => 
+   AuthInfoType =>
    {
     CRLLDAP             => "CRLLDAP",
    },
 
-   NamelistType => 
+   NamelistType =>
    {
     NONE                => "None",
     QUEUE               => "Queue",

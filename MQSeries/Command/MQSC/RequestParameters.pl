@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameters.pl,v 23.2 2003/04/10 19:09:43 biersma Exp $
+# $Id: RequestParameters.pl,v 24.1 2003/11/03 16:31:35 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -79,6 +79,7 @@ package MQSeries::Command::MQSC;
     BackoutRequeueName		=> [ "BOQNAME",		"string" ],
     BackoutThreshold		=> [ "BOTHRESH", 	"integer" ],
     BaseQName			=> [ "TARGQ", 		"string" ],
+    CommandScope                => [ "CMDSCOPE",        "string" ],
     CouplingStructure           => [ "CFSTRUCT",        "string" ],
     DefInputOpenOption		=> [ "DEFSOPT",		$RequestValues{DefInputOpenOption} ],
     DefPersistence		=> [ "DEFPSIST",	$RequestValues{Yes} ],

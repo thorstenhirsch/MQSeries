@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>1.20/src/Changes.src</TITLE> 
+	    <TITLE>1.21/src/Changes.src</TITLE> 
 	</HEAD>
 
 	<BODY>
@@ -10,10 +10,26 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_21">Changes for 1.21</A>
+	<UL>
+
+		<LI><A HREF="#Fixes_for_MQSeries_Message_IIH">Fixes for MQSeries::Message::IIH</A>
+		<LI><A HREF="#Fix_for_MQSeries_Queue_Get_fa">Fix for MQSeries::Queue Get() failure with MQRC_FORMAT_ERROR</A>
+		<LI><A HREF="#Use_version_2_of_MQMD_MQGMO_MQ">Use version 2 of MQMD, MQGMO, MQPMO by default</A>
+		<LI><A HREF="#Handle_too_short_input_data">Handle too-short input data</A>
+		<LI><A HREF="#Add_support_for_SSL_connect_opti">Add support for SSL connect options to MQCONNX and MQSeries::QueueManager</A>
+		<LI><A HREF="#MQSeries_Command_supports_direc">MQSeries::Command supports direct mainframe connectivity</A>
+		<LI><A HREF="#Improve_support_for_WMQ_5_3_queu">Improve support for WMQ 5.3 queue-sharing groups</A>
+		<LI><A HREF="#Support_for_V7_channel_tables_in">Support for V7 channel tables in MQSeries::Config::ChannelTable</A>
+		<LI><A HREF="#Alter_link_libraries_for_AIX">Alter link libraries for AIX</A>
+		<LI><A HREF="#Drop_deprecated_options_methods">Drop deprecated options, methods for MQSeries::Queue</A>
+		<LI><A HREF="#Drop_deprecated_option_for_MQSer">Drop deprecated option for MQSeries::QueueManager</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_20">Changes for 1.20</A>
 	<UL>
 
-		<LI><A HREF="#Improve_MQSeries_Command_PCG_s">Improve MQSeries::Command::PCG support for clusters</A>
+		<LI><A HREF="#Improve_MQSeries_Command_PCF_s">Improve MQSeries::Command::PCF support for clusters</A>
 		<LI><A HREF="#Support_file_handles_in_writeFil">Support file handles in writeFile() for MQSeries::Config::ChannelTable</A>
 		<LI><A HREF="#Support_for_V6_channel_tables_in">Support for V6 channel tables in MQSeries::Config::ChannelTable</A>
 		<LI><A HREF="#New_MQSeries_Message_Trigger_c">New MQSeries::Message::Trigger class</A>
@@ -226,12 +242,192 @@ perl API, going back as far as the 1.02 release.
 
 <P>
 <HR>
+<H1><A NAME="Changes_for_1_21">Changes for 1.21
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Fixes_for_MQSeries_Message_IIH">Fixes for MQSeries::Message::IIH
+
+</A></H2>
+Jeff Dunn contributed patches to the IMBS Bridge Header class
+MQSeries::Message::IIH that make it work on both little-endian and
+big-endian platforms. By default, the module assumes client and server will
+run on platforms with the same endian-ness; this can be overridden if this
+is not the case.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Fix_for_MQSeries_Queue_Get_fa">Fix for MQSeries::Queue Get() failure with MQRC_FORMAT_ERROR
+
+</A></H2>
+When a message has format MQFMT_NONE; sender and receiver run on platforms
+with different endian-ness; and the receiver specifies Get-Message Option
+MQGMO_CONVERT; then MQ returns completion code MQCC_WARNING and reason code
+MQRC_FORMAT_ERROR.
+
+
+<P>
+
+The MQSeries::Queue <CODE>Get()</CODE> method used to treat this as an
+error. In this particular case (Format MQFMT_NONE), the warning can be
+ignored. The method now treats this as a succesful read.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Use_version_2_of_MQMD_MQGMO_MQ">Use version 2 of MQMD, MQGMO, MQPMO by default
+
+</A></H2>
+The MQGET, MQPUT and MQPUT1 functions now use MQMD version 2 and MQGMO
+version2 by default; MQPUT and MQPUT1 now use MQPMO version2 by default if
+a distribution list is specified. Applications using message grouping,
+segmentation, or distribution lists no longer have to specify the MsgDesc,
+GetMsgOpts or PutMsgOpts version explicitly.
+
+
+<P>
+
+It is still possible to set a higher MQMD, MQGMO or MQPMO version
+explicitly. Note that this change will break use of older (pre-5.0) queue
+managers, but as these are over 5 years out of date, this should not
+matter.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Handle_too_short_input_data">Handle too-short input data
+
+</A></H2>
+Howard Muten noted that specifiying a too-short correlation id on MQPUT
+resulted in garbage bytes written to MQ. This turned out to be a generic
+problem, where user-supplied data that was too short was copied in with
+whatever memory contenst was following. This has been fixed in the typemap
+code.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Add_support_for_SSL_connect_opti">Add support for SSL connect options to MQCONNX and MQSeries::QueueManager
+
+</A></H2>
+Brian Bumpass contributed XS code to add support for the SSLConfig options
+to the <CODE>MQCONNX</CODE> call, as well as support for the additional ClientConn parameters
+introduced in WMQ 5.3. These options have also been added to the
+MQSeries::QueueManager class. Use of these options obviously requires a WMQ
+5.3 client with the optional SSL support installed and configured.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_supports_direc">MQSeries::Command supports direct mainframe connectivity
+
+</A></H2>
+The MQSeries::Command class now supports connecting directly to the
+mainframe (z/OS) using client connections. As the default syncpoint
+behavior on MQPUT for this platform is different, this module now
+explicitly specifies MQPMO_NO_SYNCPOINT when writing a message.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Improve_support_for_WMQ_5_3_queu">Improve support for WMQ 5.3 queue-sharing groups
+
+</A></H2>
+On the mainframe (z/OS), WMQ 5.3 supports queue-sharing groups. The
+MQSeries::Command::MQSC classes have been extended to support the following
+features:
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+Add the 'Shared' option to the queue DefinitionType parameter values
+
+
+<P>
+
+<LI><STRONG></STRONG>
+In <CODE>CreateObject(),</CODE> do not alter the object but delete and
+recreate it when either the QSharingGroupDisposition or CFStruct attributes
+has changed.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H2><A NAME="Support_for_V7_channel_tables_in">Support for V7 channel tables in MQSeries::Config::ChannelTable
+
+</A></H2>
+Mike Surikov contributed further patches to support reading and writing of
+channel table files, including fields new with version 7 of this file (WMQ
+5.3). Generation and parsing of the older versions is still supported.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Alter_link_libraries_for_AIX">Alter link libraries for AIX
+
+</A></H2>
+James FitzGibbon contributed some configure options for Makefile.PL to pick
+the right MQ libraries on AIX.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Drop_deprecated_options_methods">Drop deprecated options, methods for MQSeries::Queue
+
+</A></H2>
+The deprecated option <A HREF="#item_NoAutoOpen">NoAutoOpen</A> for the MQSeries::Queue constructor <CODE>new</CODE> is no longer supported.
+
+
+<P>
+
+The deprecated MQSeries::Queue methods <CODE>Commit</CODE>, <CODE>Backout</CODE> and
+<CODE>Pending</CODE> are no longer supported. Obviously, these methods are still supported on
+the MQSeries::QueueManager object.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Drop_deprecated_option_for_MQSer">Drop deprecated option for MQSeries::QueueManager
+
+</A></H2>
+The deprecated option <A HREF="#item_NoAutoConnect">NoAutoConnect</A> for the MQSeries::QueueManager constructor <CODE>new</CODE> is no longer supported.
+
+
+<P>
+
+<P>
+<HR>
 <H1><A NAME="Changes_for_1_20">Changes for 1.20
 
 </A></H1>
 <P>
 <HR>
-<H2><A NAME="Improve_MQSeries_Command_PCG_s">Improve MQSeries::Command::PCG support for clusters
+<H2><A NAME="Improve_MQSeries_Command_PCF_s">Improve MQSeries::Command::PCF support for clusters
 
 </A></H2>
 Minor fixes for the <CODE>InquireClusterQueueManager</CODE> command; add support for <CODE>RefreshCluster</CODE> command. At this time, support for

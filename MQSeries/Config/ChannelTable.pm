@@ -1,5 +1,5 @@
 #
-# $Id: ChannelTable.pm,v 23.4 2003/04/10 20:13:33 biersma Exp $
+# $Id: ChannelTable.pm,v 24.4 2003/08/18 21:36:02 biersma Exp $
 #
 # (c) 2001-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,7 +19,7 @@ use vars qw(
 	    %StrucLength
 	   );
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 @MQCDFields =
   (
@@ -90,6 +90,14 @@ $VERSION = '1.20';
    [qw(	LongRemoteUserIdPtr	Number		4	6	0	)],
    [qw(	MCASecurityId		Byte		40	6	0	)],
    [qw(	RemoteSecurityId	Byte		40	6	0	)],
+
+   [qw(	SSLCipherSpec		String		32	7	1	)],
+   [qw(	SSLPeerNamePtr		Number		4	7	0	)],
+   [qw(	SSLPeerNameLength	Number		4	7	0	)],
+   [qw(	SSLClientAuth		Number		4	7	1	)],
+   [qw(	KeepAliveInterval	Number		4	7	1	)],
+   [qw(	LocalAddress		String		48	7	1	)],
+   [qw(	BatchHeartbeat		Number		4	7	0	)],
   );
 
 #
@@ -159,12 +167,15 @@ $VERSION = '1.20';
    StrucLength			=> 1648,
    ExitNameLength		=> 128,
    ExitDataLength		=> 32,
+   SSLClientAuth		=> 0,
+   KeepAliveInterval		=> 'AUTO',
   );
 
 %StrucLength =
   (
    4				=> 1540,
    6				=> 1648,
+   7				=> 1748,
   );
 
 
@@ -225,16 +236,10 @@ sub readFile {
 	my $previous 		= $class->readNumber($chandef,16,4);
 
 	#
-	# In the V6 table, at least for AMQCLCHL.TAB files generated
-	# on 5.1, there is a bogus first entry in the file.  This has
-	# a zero MCD Length, as well as zero next and previous
-	# pointers.  Skip it.
+	# We go through all entries in the file skipping the one
+	# that has a zero MQCD Length.
 	#
-	if ( $mqcd_length == 0 && $next == 0 && $previous == 0 ) {
-	    $offset += $deflength;
-	} else {
-	    $offset = $next;
-	}
+	$offset += $deflength;
 
 	if ( $args{Debug} ) {
 	    print "Definition length = $deflength\n";
@@ -280,15 +285,32 @@ sub readFile {
 
 	if ( $clntconn->{Version} >= 6 ) {
 
+	    my $mqcd_struct_length = $class->readNumber($mqcd,1492,4);	# MQCD StrucLength
+	    my $exit_strings_length = $class->readNumber($mqcd,$mqcd_struct_length+8,4);	# Undocumented
+	    $mqcd_offset = $mqcd_struct_length;
 	    $mqcd_offset += 68;
 	    $mqcd_offset += 64;	# More 64 unknown spaces
 
 	    my @keys = qw(MsgExit MsgUserData SendExit SendUserData ReceiveExit ReceiveUserData);
-	    my @fields = split("\x01",substr($mqcd,$mqcd_offset));
+	    my @fields = split("\x01",substr($mqcd,$mqcd_offset,$exit_strings_length));
+	    $mqcd_offset += $exit_strings_length;
 
 	    for ( my $index = 0 ; $index < 6 ; $index++ ) {
 		next unless defined $fields[$index];
 		$clntconn->{$keys[$index]} = [split("\x02",$fields[$index])];
+	    }
+
+	    if ( $clntconn->{Version} >= 7 ) {
+		#
+		# KeepAliveInterval: 0xffffffff = 'AUTO'
+		#
+		if ($clntconn->{KeepAliveInterval} = 0xffffffff) {
+		    $clntconn->{KeepAliveInterval} = $SystemDefClntconn{KeepAliveInterval};
+		}
+
+		my $SSLPeerNameLength = $class->readNumber($mqcd, 1684, 4);
+		$clntconn->{SSLPeerName} = $class->readString($mqcd, $mqcd_offset, $SSLPeerNameLength);
+		$mqcd_offset += $SSLPeerNameLength;
 	    }
 
 	}
@@ -321,8 +343,8 @@ sub writeFile {
 	print "\nInside writeFile method\n";
     }
 
-    $version == 3 || $version == 4 || $version == 6 ||
-      confess "Invalid Version '$version': only 3, 4 and 6 are supported\n";
+    $version == 3 || $version == 4 || $version == 6 || $version == 7 ||
+      confess "Invalid Version '$version': only 3, 4, 6 and 7 are supported\n";
 
     #
     # We need to ensure that SYSTEM.DEF.CLNTCONN exists.
@@ -383,9 +405,21 @@ sub writeFile {
     for ( my $index = 0 ; $index <= $#channel ; $index++ ) {
 
 	my $channel = $channel[$index];
-	$channel->{ShortConnectionName} ||= $channel->{ConnectionName};
+	$channel->{ShortConnectionName} ||=
+	  substr($channel->{ConnectionName},0,20);
 
 	my $mqcd = "";
+
+	$channel->{SSLPeerNameLength} = length($channel->{SSLPeerName})
+	  if defined $channel->{SSLPeerName};
+
+	#
+	# KeepAliveInterval: 'AUTO' = 0xffffffff
+	#
+	if (defined $channel->{KeepAliveInterval} &&
+	    lc($channel->{KeepAliveInterval}) eq lc($SystemDefClntconn{KeepAliveInterval})) {
+	    $channel->{KeepAliveInterval} = 0xffffffff;
+	}
 
 	#
 	# First, create a serialized MQCD out of the $channel HASH
@@ -435,11 +469,7 @@ sub writeFile {
 		    my @names = ( ref $channel->{$key} eq "ARRAY" ?
 				  @{$channel->{$key}} :
 				  $channel->{$key} );
-		    foreach my $name ( @names ) {
-			next unless $name;
-			$exitstring .= $class->writeString($name,length($name));
-			$exitstring .= "\x02";
-		    }
+		    $exitstring .= join("\x02", @names);
                 }
 
 		$exitstring .= "\x01";
@@ -454,6 +484,11 @@ sub writeFile {
 	    $mqcd .= $class->writeNumber(time);
 	    $mqcd .= " " x 64;	# More 64 unknown spaces
 	    $mqcd .= $exitstring;
+
+	    if ( $version >= 7 ) {
+		$mqcd .= $class->writeString($channel->{SSLPeerName},
+					     $channel->{SSLPeerNameLength});
+	    }
 
 	} else {
 
@@ -488,28 +523,8 @@ sub writeFile {
         # - Last entry (NULL next pointer)
         # - Any other entry (two pointers)
 	#
-	if ( $index == 0 ) {
-            #
-	    # The first physical entry is the first in the linked
-	    # list, thus no previous pointer.
-            #
-	    $next = $mqcd[$index+1]->{Offset};
-            $prev = 0;
-	} elsif ( $index == $#mqcd ) {
-            #
-	    # The last physical entry has to point back to the first
-	    # one.
-            #
-	    $next = 0;
-	    $prev = $mqcd[$index-1]->{Offset};
-	} else {
-            #
-	    # The default next/previous pointers just go forwards
-	    # through the physical list.
-            #
-	    $next = $mqcd[$index+1]->{Offset};
-	    $prev = $mqcd[$index-1]->{Offset};
-	}
+	$prev = $mqcd[$index-1]->{Offset} if $index > 0;
+	$next = $mqcd[$index+1]->{Offset} if $index < $#mqcd;
 
 	my $mqcd_length = length($mqcd[$index]->{MQCD});
 
@@ -944,11 +959,14 @@ new channel definition.  If a deleted channel definition is not large
 enough to contain the new or modified channel definition then it will
 just append a new channel definition to the end of the file.
 
-Unless the SYSTEM.DEF.CLNTCONN channel has been deleted or modified it
-will be the first channel definition in the file.  The initial value
-of SYSTEM.DEF.CLNTCONN is MQCD_CLIENT_CONN_DEFAULT (in cmqxc.h).
-Initial value of fields in any added channels comes from
-SYSTEM.DEF.CLNTCONN of course.
+The channels are sorted in lexicographic order, with a backwards
+pointer chain.  The entries in the file are therefore in reverse
+order.  Getting the order wrong will cause your MQSeries client
+library to hang, so you must take care not to modify the sort
+algorithm.  There is one default entry in the file,
+SYSTEM.DEF.CLNTCONN, which is initialized from is
+MQCD_CLIENT_CONN_DEFAULT (in cmqxc.h).  Initial value of fields in any
+added channels comes from SYSTEM.DEF.CLNTCONN of course.
 
 Syntax chart:
 
@@ -1017,13 +1035,48 @@ for CLNTCONN channels.  For example, the usage description of the
 MsgExit attribute for channels in the "MQSeries Programmable Systems
 Management" document suggests that MsgExits are B<not> supported for
 CLNTCONNs, yet they are treated specially in the channel table file
-itself.
+itself.  However, see below...
 
 UserIdentifier and Password fields contains data in ciphered form
 provided but not opened by IBM.
 
-If the author ever gets a clear explanation from IBM, this document
-will be amended.
+=head2 IBM on channel table file format
+
+Paul Clarke of IBM was kind enough to comment on the channel table
+file format on the MQSeries mailing list (Friday, August 15, 2003 9:47
+AM).  His comments are reproduced below:
+
+  It is still true that the file does not perform garbage collection
+  although it does defragment. So, you're right the file will never
+  shrink. This has not, until now been viewed as an important
+  requirement. Channel definitions have been treated as relatively
+  static. If you change an attribute the file will only grow if you
+  increase the size of channel entry ie. add another channel
+  exit. Since you should always be storing your channel definitions as
+  an MQSC script file (or generate them with Perl) then it is a simple
+  matter to delete the file and regenerate if you believe it is bigger
+  than necessary.
+
+  As far as MsgExits is concerned, it is true that Msg Exits are not
+  used in a CLNTCONN/SVRCONN connection and not invoked by either of
+  these channel type. The reason is that a MsgExit takes a pointer to
+  the MQXQH structure which is not involved at all in a
+  CLNTCONN/SVRCONN connection. We did debate having an API exit in the
+  client channels which would be passed pointers to the various
+  structures involved in whatever API call was being issued. However,
+  this was superceded by the API crossing exit which does a similar
+  thing but for all connections both local and client. The cause of
+  the confusion is that the channel table is the same format as the
+  channel file. In other words, although I've never used it, I suspect
+  you could use the MSDW Perl module to create a normal channel file
+  full of sender and receiver channels. In this case you clearly would
+  want to be able to add MsgExits.
+
+=head1 AUTHORS
+
+  Phil Moore
+  Hildo Biersma
+  Mike Surikov
 
 =cut
 

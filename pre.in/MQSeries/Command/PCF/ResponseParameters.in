@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: ResponseParameters.in,v 23.3 2003/04/11 16:39:02 biersma Exp $
+# $Id: ResponseParameters.in,v 24.3 2003/06/10 13:02:39 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -214,6 +214,7 @@ package MQSeries::Command::PCF;
     MsgRetryInterval		=> [ &MQIACH_MR_INTERVAL,		&MQCFT_INTEGER ],
     Msgs			=> [ &MQIACH_MSGS,			&MQCFT_INTEGER ],
     NetworkPriority		=> [ &MQIACH_NETWORK_PRIORITY,		&MQCFT_INTEGER ],
+    RemoteQMgrName		=> [ &MQCA_REMOTE_Q_MGR_NAME,		&MQCFT_STRING ],
     SeqNumberWrap		=> [ &MQIACH_SEQUENCE_NUMBER_WRAP,	&MQCFT_INTEGER ],
     ShortRetriesLeft		=> [ &MQIACH_SHORT_RETRIES_LEFT,	&MQCFT_INTEGER ],
     ShortRetryCount		=> [ &MQIACH_SHORT_RETRY,		&MQCFT_INTEGER ],
@@ -221,6 +222,7 @@ package MQSeries::Command::PCF;
     SSLCipherSpec               => [ &MQCACH_SSL_CIPHER_SPEC,           &MQCFT_STRING ],
     SSLClientAuth               => [ &MQIACH_SSL_CLIENT_AUTH,           &MQCFT_INTEGER,                 $ResponseValues{SSLClientAuth} ],
     SSLPeerName                 => [ &MQCACH_SSL_PEER_NAME,             &MQCFT_STRING ],
+    SSLShortPeerName		=> [ &MQCACH_SSL_SHORT_PEER_NAME,	&MQCFT_STRING ],
     StopRequested		=> [ &MQIACH_STOP_REQUESTED,		&MQCFT_INTEGER ],
    },
 

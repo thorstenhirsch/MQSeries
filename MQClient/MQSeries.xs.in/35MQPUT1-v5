@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 35MQPUT1-v5,v 23.1 2003/04/10 19:08:46 biersma Exp $
+# $Id: 35MQPUT1-v5,v 24.2 2003/10/14 16:06:49 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -43,10 +43,17 @@ MQPUT1(Hconn,ObjDesc,MsgDesc,PutMsgOpts,Msg,CompCode,Reason)
 	sv_setiv(ST(6),(IV)Reason);
 
 	/*
+	 * We set the MQMD version to 2, so users of segmentation or
+	 * grouping won't have to do this manually.
+	 */
+	if (MsgDesc.Version < MQMD_VERSION_2) {
+	  MsgDesc.Version = MQMD_VERSION_2;
+	}
+
+	/*
 	  If there is a list of ObjectRecs, then we are dealing with a
 	  distribution list.
 	 */
-
 	if ( hv_exists((HV*)SvRV(ST(1)),"ObjectRecs",10) ) {
 
 	  svp = hv_fetch((HV*)SvRV(ST(1)),"ObjectRecs",10,FALSE);
@@ -68,9 +75,26 @@ MQPUT1(Hconn,ObjDesc,MsgDesc,PutMsgOpts,Msg,CompCode,Reason)
 	  /* Override this, even if it was provided by the user */
 	  ObjDesc.RecsPresent = av_len(ObjectRecs) + 1;
 
-	  /* If this is NOT set, then MQOPEN() will puke.  One more
-	     thing the user doesn't have to care about... */
-	  ObjDesc.Version = MQOD_VERSION_2;
+	  /* 
+	   * If this is NOT set, then MQOPEN() will puke.  One more
+	   * thing the user doesn't have to care about...
+	   *
+	   * PMR 31824,7TD and fix IY49267: MQPUT1 with a distribution
+	   * list returns reason code 2136 except when MQOD_VERSION_3 
+	   * is specified.  As MQOD_VERSION_3 is supproted with 
+	   * queue managers and clients >= 5.1, it is safe to use 
+	   * this when defined.
+	   */
+	  if (ObjDesc.Version < MQOD_VERSION_3) {
+	    ObjDesc.Version = MQOD_VERSION_3;
+	  }
+
+	  /*
+	   * Also force the PMO to version 2...
+	   */
+	  if (PutMsgOpts.Version < MQPMO_VERSION_2) {
+	    PutMsgOpts.Version = MQPMO_VERSION_2;
+	  }
 
 	  if ( (pResponseRecPtr = (PMQRR)malloc( ObjDesc.RecsPresent * sizeof(MQRR) ) ) == NULL ) {
 	    perror("Unable to allocate memory");

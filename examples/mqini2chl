@@ -1,6 +1,6 @@
 #!/ms/dist/perl5/bin/perl5.005
 #
-# $Id: mqini2chl,v 23.1 2003/04/10 19:10:34 biersma Exp $
+# $Id: mqini2chl,v 24.1 2003/07/31 20:39:42 biersma Exp $
 #
 # (c) 2001-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -11,7 +11,7 @@ use English;
 use Getopt::Long;
 
 #use lib "/ms/dev/perl5/MQSeries/1.14-5.005/install/exec/lib/perl5";
-use lib "/ms/dev/perl5/MQSeries/1.14/src";
+use lib "/ms/dev/perl5/MQSeries/1.21/src";
 use MQSeries::Config::ChannelTable;
 
 use vars qw(
@@ -20,7 +20,7 @@ use vars qw(
 
 %Args =
   (
-   version		=> 4,
+   version		=> 7,
   );
 
 GetOptions( \%Args, qw( version=i debug ) ) || usage();
@@ -95,7 +95,7 @@ sub parseInput {
 
 sub usage {
     die <<"EndOfUsage";
-mqini2chl inputfile outputfile [ -version "4 | 6" ] [ -debug ]
+mqini2chl inputfile outputfile [ -version "4 | 6" | "7"] [ -debug ]
 EndOfUsage
 }
 
@@ -107,7 +107,7 @@ mqini2chl - Write an MQSeries client channel table using a text configuration fi
 
 =head1 SYNOPSIS
 
-mqini2chl inputfile outputfile [ -version "4 | 6" ]
+mqini2chl inputfile outputfile [ -version "4 | 6" | "7" ]
 
 =head1 DESCRIPTION
 

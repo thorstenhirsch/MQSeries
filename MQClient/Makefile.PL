@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 23.1 2003/04/10 19:05:59 biersma Exp $
+# $Id: Makefile.PL,v 24.1 2003/05/19 21:41:07 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -92,12 +92,15 @@ else {
 
 if ( $Config{osname} =~ /os390/ ) {
     $libs = "-l\"//'$hlq.SCSQLOAD'\"";
-} elsif ( $Config{osname} =~ /linux|hpux/ ) {
+} elsif ( $Config{osname} =~ /linux|hpux|aix/ ) {
     #
     # On Linux and HP-UX WMQ 5.3 clients, the name of the shared
     # library is different for single- and multi-threaded apps.
     #
-    if ( $Config{usethread} ) {
+    if ( $Config{usethread} ||
+	 $Config{usethreads} ||
+	 $Config{useithreads}
+       ) {
         if ( $apitype eq "MQClient" ) {
             $libs = "$libdir -lmqic_r";
         } else {

@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 23.4 2003/04/10 19:10:20 biersma Exp $
+# $Id: QueueManager.pm,v 24.3 2003/08/06 21:20:29 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -30,20 +30,19 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
     VerifyNamedParams(\%args, [],
-                      [ qw(QueueManager Carp 
+                      [ qw(QueueManager Carp
                            CompCode Reason
-                           GetConvert PutConvert 
+                           GetConvert PutConvert
                            RetryCount RetrySleep RetryReasons
-                           ConnectTimeout ConnectTimeoutSignal 
-                           ClientConn AutoCommit
-                           AutoConnect NoAutoConnect) ]);
+                           ConnectTimeout ConnectTimeoutSignal
+                           ClientConn SSLConfig AutoCommit AutoConnect) ]);
 
     my $self =
       {
@@ -116,8 +115,8 @@ sub new {
     # yada.
     #
     foreach my $connectarg ( qw( RetryCount RetrySleep RetryReasons
-				 ConnectTimeout ConnectTimeoutSignal 
-                                 ClientConn) ) {
+				 ConnectTimeout ConnectTimeoutSignal
+                                 ClientConn SSLConfig) ) {
 	next unless exists $args{$connectarg};
 	$self->{ConnectArgs}->{$connectarg} = $args{$connectarg};
     }
@@ -135,19 +134,8 @@ sub new {
     # Historically, we auto-connected, unless 'NoAutoConnect' was set
     # to 1.  We still auto-connect, but the option is now called
     # 'AutoConnect', and must be set to 0 (false) to avoid
-    # auto-connecting.  We still support the old flag for backwards
-    # compatibility.
+    # auto-connecting.
     #
-    # NOTE: This will become a fatal error in the next release.
-    #
-    if (exists $args{'NoAutoConnect'}) {
-        warn "Use of 'NoAutoConnect' is deprecated and will go away in a later release";
-        if (exists $args{'AutoConnect'}) {
-            $self->{Carp}->("Both 'AutoConnect' and 'NoAutoConnect' specified, ignoring 'NoAutoConnect'");
-        } else {
-            $args{'AutoConnect'} = ($args{'NoAutoConnect'} ? 0 : 1);
-        }
-    }
     unless (exists $args{'AutoConnect'} && $args{'AutoConnect'} == 0) {
         my $result = $self->Connect();
 	foreach my $code ( qw( CompCode Reason )) {
@@ -176,7 +164,7 @@ sub Open {
     if ( exists $args{Options} ) {
 	$self->{Options} = $args{Options};
     } else {
-	$self->{Options} = MQSeries::MQOO_INQUIRE | 
+	$self->{Options} = MQSeries::MQOO_INQUIRE |
           MQSeries::MQOO_FAIL_IF_QUIESCING;
     }
 
@@ -321,7 +309,7 @@ sub Inquire {
 			 @keys,
 			);
 
-    unless ( $self->{"CompCode"} == MQSeries::MQCC_OK && 
+    unless ( $self->{"CompCode"} == MQSeries::MQCC_OK &&
              $self->{"Reason"} == MQSeries::MQRC_NONE ) {
 	$self->{Carp}->("MQINQ call failed. " .
 			qq/CompCode => '$self->{"CompCode"}', / .
@@ -587,10 +575,10 @@ sub Put1 {
 sub Connect {
     my $self = shift;
     my %args = ( %{$self->{ConnectArgs}}, @_ );
-    VerifyNamedParams(\%args, [], 
+    VerifyNamedParams(\%args, [],
                       [ qw(RetryCount RetrySleep RetryReasons
-                           ConnectTimeout ConnectTimeoutSignal 
-                           ClientConn AutoConnect NoAutoConnect) ]);
+                           ConnectTimeout ConnectTimeoutSignal
+                           ClientConn SSLConfig AutoConnect) ]);
 
     return 1 if $self->{Hconn};
 
@@ -666,7 +654,9 @@ sub Connect {
     }
 
     my $mqconnx_opts = {};
-    $mqconnx_opts->{ClientConn} = $args{ClientConn} if ($args{ClientConn});
+    foreach my $opt (qw(ClientConn SSLConfig)) {
+	$mqconnx_opts->{$opt} = $args{$opt} if ($args{$opt});
+    }
   CONNECT:
     {
 
@@ -689,7 +679,7 @@ sub Connect {
 		    #
 		    eval {
 			local $SIG{$self->{ConnectTimeoutSignal}} = sub { die $alarm };
-			$Hconn = MQCONNX($self->{ProxyQueueManager} || 
+			$Hconn = MQCONNX($self->{ProxyQueueManager} ||
                                          $self->{QueueManager},
                                          $mqconnx_opts,
                                          $self->{"CompCode"},
@@ -717,7 +707,7 @@ sub Connect {
 		}
 	    }
 	} else {
-            $Hconn = MQCONNX($self->{ProxyQueueManager} || 
+            $Hconn = MQCONNX($self->{ProxyQueueManager} ||
                              $self->{QueueManager},
                              $mqconnx_opts,
                              $self->{"CompCode"},
@@ -726,7 +716,7 @@ sub Connect {
 	}
 
 
-	if ( $self->{"Reason"} == MQSeries::MQRC_NONE || 
+	if ( $self->{"Reason"} == MQSeries::MQRC_NONE ||
              $self->{"Reason"} == MQSeries::MQRC_ALREADY_CONNECTED ) {
 	    $self->{Hconn} = $Hconn;
 	    $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
@@ -793,7 +783,7 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
   $qmgr->Connect() ||
     die("Unable to connect to queue manager\n" .
 	"CompCode => " . $qmgr->CompCode() . "\n" .
-	"Reason => " . $qmgr->Reason() . 
+	"Reason => " . $qmgr->Reason() .
         " (", MQReasonToText($qmgr->Reason()) . ")\n");
 
   #
@@ -917,9 +907,8 @@ and the connection to the queue manager.  See the section on Error
 Handling in Special Considerations.
 
 NOTE: This parameter used to be called C<NoAutoConnect>, obviously
-with reverse meaning for true and false.  The old behavior is still
-supported for backwards compatibility, though a warning is generated.
-The C<NoAutoConnect> parameter will go away in the next release.
+with reverse meaning for true and false.  The old behavior is no
+longer supported.
 
 =item AutoCommit
 
@@ -943,6 +932,23 @@ C<ChannelName>, C<ConnectionName> and C<MaxMsgLength> are most
 relevant.  See the description of the C<MQCD> parameter structure in
 the Application Programming Reference guide for details on the other
 fields.
+
+=item SSLConfig
+
+For client connections using SSL, the SSL key repository must be
+specified.  Than can be done usign the C<MQSSLKEYR> environment
+variable, but also using the C<MQSCO> data structured specified on the
+MQCONNX.  The C<SSLConfig> parameters provides a way to specify the
+key repositority, and overrides the C<MQSSLKEYR> environment
+variable. The example below shows how it can be used:
+
+  my $qmgr = MQSeries::QueueManager->
+    new(QueueManager => 'some.queue.manager',
+	SSLConfig    => { 'KeyRepository' => '/var/mqm/ssl/key' },
+       );
+
+The C<SSLConfig> option is usually combined with the C<ClientConn>
+parameter documented above.
 
 =item ConnectTimeout
 
@@ -1193,7 +1199,7 @@ somewhat non-conventional, as the OO API is attempting to hide the
 complexity of these underlying data structures.
 
 However, this allows the developer access to the entire ObjDesc, if
-necessary.  
+necessary.
 
 =item PutMsgOpts
 

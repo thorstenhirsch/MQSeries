@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 23.4 2003/05/05 15:30:13 biersma Exp $
+# $Id: Queue.pm,v 24.5 2003/10/16 14:04:07 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -26,7 +26,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 sub new {
     my $proto = shift;
@@ -37,7 +37,7 @@ sub new {
                            Options Mode CompCode Reason
                            PutConvert GetConvert CloseOptions
                            RetrySleep RetryCount RetryReasons
-                           AutoOpen NoAutoOpen DisableAutoResize) ]);
+                           AutoOpen DisableAutoResize) ]);
 
     my %ObjDesc = ();
 
@@ -157,23 +157,6 @@ sub new {
 	    $self->{Carp}->("Invalid argument: 'ObjDesc' must be a HASH reference");
 	    return;
 	}
-    }
-
-    #
-    # Historically, we auto-opened, unless 'NoAutoOpen' was set to 1.
-    # We still auto-open, but the option is now called 'AutoOpen', and
-    # must be set to 0 (false) to avoid auto-opening.  We still
-    # support the old flag for backwards compatibility.
-    #
-    # NOTE: This will becoem a fatal error in the next release.
-    #
-    if (exists $args{'NoAutoOpen'}) {
-        warn "Use of 'NoAutoOpen' is deprecated and will go away in a later release";
-        if (exists $args{'AutoOpen'}) {
-            $self->{Carp}->("Both 'AutoOpen' and 'NoAutoOpen' specified, ignoring 'NoAutoOpen'");
-        } else {
-            $args{'AutoOpen'} = ($args{'NoAutoOpen'} ? 0 : 1);
-        }
     }
 
     #
@@ -347,7 +330,7 @@ sub Put {
         if (($PutMsgOpts->{Options} & $check) == $check) {
             confess "Option Sync => $args{Sync} conflicts with PutMsgOptions";
         }
-        $PutMsgOpts->{Options} = $set;
+        $PutMsgOpts->{Options} |= $set;
     }
 
     $self->{"PutConvertReason"} = 0;
@@ -571,6 +554,11 @@ sub Get {
 	    (
 	     $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
 	     $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_ACCEPTED
+	    ) ||
+	    (
+	     $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
+	     $self->{"Reason"} == MQSeries::MQRC_FORMAT_ERROR &&
+	     $args{Message}->MsgDesc('Format') eq MQSeries::MQFMT_NONE
 	    )) {                # Successful read
 
 	    if ($GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT ||
@@ -669,42 +657,6 @@ sub QueueManager {
     my ($self) = @_;
 
     return $self->{'QueueManager'};
-}
-
-
-#
-# NOTE: It was a mistake to provide these methods at the queue level
-# and then delegate them to the queue manager object, as that confused
-# some developers into thinking the scope of transactions is
-# per-queue.
-#
-# The documentation has been updated to reflect this and all three
-# methods will go away in a future release.
-#
-sub Backout {
-    warn "The MQSeries::Queue->Backout() method is deprecated.  Use MQSeries::QueueManager->Backout() instead.";
-
-    my $self = shift;
-    return unless $self->Open();
-    return $self->{QueueManager}->Backout();
-}
-
-
-sub Commit {
-    warn "The MQSeries::Queue->Commit() method is deprecated.  Use MQSeries::QueueManager->Commit() instead.";
-
-    my $self = shift;
-    return unless $self->Open();
-    return $self->{QueueManager}->Commit();
-}
-
-
-sub Pending {
-    warn "The MQSeries::Queue->Pending() method is deprecated.  Use MQSeries::QueueManager->Pending() instead.";
-
-    my $self = shift;
-    return unless $self->Open();
-    return $self->{QueueManager}->Pending();
 }
 
 
@@ -1288,14 +1240,13 @@ constructor arguments.  The subsequent call to C<Open()> can be error
 checked independently of the C<new()> constructor.
 
 NOTE: This parameter used to be called C<NoAutoOpen>, obviously with
-reverse meaning for true and false.  The old behavior is still
-supported for backwards compatibility, though a warning is generated.
-The C<NoAutoOpen> parameter will go away in the next release.
+reverse meaning for true and false.  The old parameter is no longer
+supported.
 
 =item ObjDesc
 
 The value of this key is a hash reference which sets the key/values of
-the MsgDesc structure.  See the "MQSeries Application Programming
+the ObjDesc structure.  See the "MQSeries Application Programming
 Reference" documentation for the possible keys and values of the MQOD
 structure.
 
@@ -1886,37 +1837,6 @@ and the value of that key in the ObjDesc hash is returned.
 This method takes no arguments, and returns the MQSeries::QueueManager
 object used by the queue.
 
-=head2 Backout
-
-This method takes no arguments, and merely calls MQBACK.  It returns
-true on success, and false on failure.
-
-NOTE: This operation is in reality not specific to the Queue, but
-rather to the Queue Manager connection.  Because the API does not
-require the developer to specifically open a Queue Manager connection
-(via an MQSeries::QueueManager object), but will do so implicitly (see
-the new() documentation above), these methods are provided as part of
-the MQSeries::Queue API.  Note, however, that this does B<NOT> imply
-that syncpoint operations can be performed at the individual Queue
-level.  Transactions are still per-queue manager connection.
-
-NOTE: Applications should generally invoke the Commit() and Backout()
-methods on the queue manager object, not on the queue.  If no queue
-manager object has been created, code like
-
-  $queue->QueueManager()->Backout()
-
-should be used.  The queue-level Commit(), Backout() and Pending()
-methods will go away in the next release.
-
-=head2 Commit
-
-This method takes no arguments, and merely calls MQCMIT.  It returns
-true on success, and false on failure.
-
-NOTE: The same comments for Backout() apply here.  This is really a
-Queue Manager connection operation.
-
 =head2 CompCode
 
 This method returns the MQI Completion Code for the most recent MQI
@@ -1951,14 +1871,6 @@ The individual records are hash references, with two keys: CompCode
 and Reason.  Each provides the specific CompCode and Reason associated
 with the put of the message to each individual queue in the
 distribution list, respectively.
-
-=head2 Pending
-
-This method indicated whether or not there are currently actively
-pending transactions (puts or gets under syncpoint).
-
-NOTE: This method will be dropped in a future release.  See the note
-on the Backout() method for details.
 
 =head1 MQOPEN RETRY SUPPORT
 

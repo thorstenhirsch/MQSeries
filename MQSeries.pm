@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 23.2 2003/04/10 19:09:31 biersma Exp $
+# $Id: MQSeries.pm,v 24.2 2003/08/06 21:24:35 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,7 +24,7 @@ use MQSeries::Config::Machine;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 BEGIN {
     my $server;
@@ -333,6 +333,23 @@ API returns it.
 
 The $ConnectOpts value is a hash reference, with keys corresponding to
 the fields of the MQCO structure.  This is an input value only.
+
+With the $ConnectOpts, two interior data structures can be provided:
+C<ClientConn> and C<SSLConfig>.  These provide access to the C<MQCNO>
+and C<MQSCO> options.  The two data structures can be used
+independently; and example of them used in combination is shown below:
+
+  $coption = { 'ChannelName'    => 'Some.Channel.Name',
+               'TransportType'  => 'TCP',
+   	       'ConnectionName' => 'hostname(port)',
+             };
+  $ssl_option = { 'KeyRepository' => '/var/mqm/ssl/key' };
+  $Hconn = MQCONNX($qmgr_name, { 'ClientConn' => $coption,
+	                         'SSLConfig'  => $ssl_option,
+			       }, $cc, $re);
+
+See the application programming reference for details on the
+additional fields available in the C<ClientConn> data structure.
 
 =head2 MQDISC
 

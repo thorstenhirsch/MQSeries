@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 36MQGET,v 23.1 2003/04/10 19:08:47 biersma Exp $
+# $Id: 36MQGET,v 24.1 2003/08/07 15:53:35 biersma Exp $
 #
 # (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -30,6 +30,17 @@ MQGET(Hconn,Hobj,MsgDesc,GetMsgOpts,Length,CompCode,Reason)
 	if ( (pBuffer = (PMQCHAR)malloc(bufLen)) == NULL ) {
 	  warn("Unable to allocate memory in MQGET!\n");
 	  XSRETURN_EMPTY;
+	}
+
+	/*
+	 * We set the MQMD and MQGMO version to 2, so users of
+	 * segmentation or grouping won't have to do this manually.
+	 */
+	if (MsgDesc.Version < MQMD_VERSION_2) {
+	  MsgDesc.Version = MQMD_VERSION_2;
+	}
+	if (GetMsgOpts.Version < MQGMO_VERSION_2) {
+	  GetMsgOpts.Version = MQGMO_VERSION_2;
 	}
 
 	MQGET(Hconn,Hobj,&MsgDesc,&GetMsgOpts,bufLen,pBuffer,&dataLen,&CompCode,&Reason);
