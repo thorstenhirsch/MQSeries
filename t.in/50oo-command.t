@@ -1,5 +1,5 @@
 #
-# $Id: 50oo-command.t,v 21.1 2002/03/27 15:32:55 wpm Exp $
+# $Id: 50oo-command.t,v 22.1 2002/07/23 20:28:00 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,8 +20,8 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.18;
-use MQSeries::Command 1.18;
+use __APITYPE__::MQSeries 1.19;
+use MQSeries::Command 1.19;
 $loaded = 1;
 print "ok 1\n";
 

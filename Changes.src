@@ -3,6 +3,164 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.19
+
+=head2 API change for Get/Put methods of MQSeries::Queue
+
+In previous releases, specifying the C<PutMsgOpts> with the C<Put>
+method or the C<GetMsgOpts> with the C<Get> method of
+C<MQSeries::Queue> meant that C<Sync>, C<Wait> and C<Convert>
+parameters were ignored.
+
+This has now changed: the C<Sync>, C<Wait> and C<Convert> parameters
+will be honored and be combined with the get/put options specified
+with the C<PutMsgOpts> or C<GetMsgOpts> parameters.
+
+The C<Get> method C<Wait> and C<Convert> parameters will override the
+C<GetMsgOpts> options flag.
+
+The C<Get> and C<Put> method C<Sync> paramater will check the
+C<GetMsgOpts> or C<PutMsgOpts> options flag for compatibility.  If a
+coflicting syncpoint option is already set, a fatal error will be
+raised.  If no conflicting option is set (this means the options flkag
+either has no syncpoint flag set at all, or has the requested flag set
+already), the requested C<Sync> paramater will be added to the options
+flag.
+
+This means the following will now work:
+
+    my $result = $request_queue->
+      Get('Message'    => $get_message,
+          'GetMsgOpts' => 
+          {
+            'Options'  => (MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT |
+                           MQSeries::MQGMO_FAIL_IF_QUIESCING),
+          },
+          'Wait'       => '30s',
+         );
+
+In the past, this would cause the C<Wait> flag to be silently ignored.
+
+This incompatible API change may break your code.  As it significantly
+enhances the safety of your code, this is deemed a price worth paying.
+
+=head2 New MQSeries::Message::ConfigEvent class
+
+WebSphere MQ 5.3 on z/OS can generate configuration change events that
+cannot be read on Unix and NT queue managers - distributed queue
+managers are not able to convert PCF version2 messages.  The
+MQSeries::Message::ConfigEvent class can be used to process such
+messages - highly useful to create an audit log.
+
+=head2 New MQSeries::Message::IIH class
+
+A new class to support IMS Bridge Header (IIH) messages.  This is due
+to Nathan Dupra of Xerox USA.  This class is based on reverse
+engineering and somewhat experimental - feedback on functionality or
+the API is welcome.
+
+=head2 Add support for WebSphere MQ 5.3 on z/OS
+
+A number of minor changes have been made to support MQSeries::Command
+with the 5.3 release (now branded WebSphere MQ) on z/OS.  Note that
+PTF UQ68236 is required - the MQSC output of "Display Queue" is
+invalid without that PTF, leading to errors with the C<InquireQueue>
+method.
+
+=over 4
+
+=item *
+
+Support for AuthInfo objects in C<MQSeries::Command>, mostly through
+changes in the C<MQSeries::Command::MQSC::*> tables.
+
+=item *
+
+Support for CFStruct (Coupling Facility Application Structure) objects
+in C<MQSeries::Command>, mostly through changes in the
+C<MQSeries::Command::MQSC::*> tables.
+
+=item *
+
+Support for the new Channel attributes in C<MQSeries::Command>, mostly
+through changes in the C<MQSeries::Command::MQSC::*> tables.  The new
+attributes are C<BatchHeartBeat>, C<KeepAliveInterval>,
+C<LocalAddress>, C<SSLCipherSpec>, C<SSLClientAuth> and
+C<SSLPeerName>.
+
+=item *
+
+Support for the new QueueManager attributes in C<MQSeries::Command>,
+mostly through changes in the C<MQSeries::Command::MQSC::*> tables.
+The new attributes are C<ConfigurationEvent>, C<ExpiryInterval>,
+C<SSLKeyRepository>, C<SSLCRLNamelist>, C<SSLCryptoHardware> and
+C<SSLTasks>.
+
+=item *
+
+Support for the new Queue attributes in C<MQSeries::Command>,
+mostly through changes in the C<MQSeries::Command::MQSC::*> tables.
+The new attribute is C<PageSetId>.
+
+=item *
+
+Support for the new Namelist attributes in C<MQSeries::Command>,
+mostly through changes in the C<MQSeries::Command::MQSC::*> tables.
+The new attribute is C<NamelistType>.
+
+=back
+
+=head2 New features for MQSeries::Command
+
+The C<MQSeries::Command> constructor now accepts a C<CommandQueue>
+parameter.  This allows you to open an arbitrary queue with arbitary
+options, then use it so send commands.
+
+In addition, a new C<MsgDesc> method for C<MQSeries::Command> can be
+used to fine-tune the message descriptor for outgoing commands.
+
+These new features can be used to open an arbitarry queue and override
+message persistence, as some users requested; internally, we sue it to
+set the accounting options on outgoing messages, which are then
+archived by the WMQ 5.3 configuration events on z/OS.
+
+=head2 Better decoding of MQSC results
+
+Mike Surikov pointed out more bugs in the decoding of MQSC result
+messages in C<MQSeries::Command>.  I've added more fixes...
+
+=head2 Parameter verification for MQSeries::QueueManager
+
+The parameters to the major methods of the C<MQSeries::QueueManager>
+class (C<new>, C<Connect>, C<Close>) are now enforced.  Specifying
+invalid parameter names will lead to a fatal run-time error.
+
+=head2 Parameter verification for MQSeries::Queue
+
+The parameters to the major methods of the C<MQSeries::Queue> class
+(C<new>, C<Open>, C<Get>) are now enforced.  Specifying invalid
+parameter names will lead to a fatal run-time error.
+
+=head2 New 'Convert' option for MQSeries::Queue Get method
+
+The C<Get> method of C<MQSeries::Queue> has a new C<Convert> option.
+This is true by default, but can be set to false if conversion is not
+required.  This is useful when manually converting messages, e.g. WMQ
+5.3 configuration events.
+
+=head2 Deprecated parameters generate a warning if -w is enabled
+
+The deprecated parameters C<NoAutoConnect> for
+C<MQSeries::QueueManager> and C<NoAutoOpen> for C<MQSeries::Queue>
+will generate a warning if -w is enabled.  In the next release, the
+warning becomes mandatory.
+
+=head2 Deprecated methods generate a warning if -w is enabled
+
+The deprecated C<MQSeries::Queue> methods C<Commit>, C<Backout> and
+C<Pending> will generate a warning if -w is enabled.  In the next
+release, the warning becomes mandatory.
+
 =head1 Changes for 1.18
 
 =head2 Add support for WebSphere MQ 5.3
@@ -34,7 +192,7 @@ supports both the old and the new product name.
 Support for AuthInfo objects in C<MQSeries::Command>, mostly through
 changes in the C<MQSeries::Command::PCF::*> tables.
 
-=item 
+=item *
 
 Support for the new C<InquireQueueStatus> command, mostly through
 changes in the C<MQSeries::Command::PCF::*> tables.
@@ -184,7 +342,7 @@ but broke on Windows 2000 (and possibly other platforms).
 
 Joseph Sacco at Starwood Hotels reported that the MQSeries::Command
 suite, when run against a mainframe using MQSC commands, gave annoying
-errors messages because the teminating response line on his mainframe
+errors messages because the terminating response line on his mainframe
 queue manager has a different format from ours.
 
 We now accept both formats.  If you run MQSeries::Command against a
@@ -1312,7 +1470,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 21.9 2002/07/10 12:16:57 biersma Exp $
+# $Id: Changes.src,v 22.5 2002/09/19 18:47:57 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

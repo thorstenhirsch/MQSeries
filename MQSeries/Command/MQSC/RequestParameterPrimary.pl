@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameterPrimary.pl,v 21.1 2002/06/21 16:04:52 biersma Exp $
+# $Id: RequestParameterPrimary.pl,v 22.1 2002/08/07 12:27:44 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -49,6 +49,24 @@ package MQSeries::Command::MQSC;
    CreateStorageClass		=> "StorageClassName",
    DeleteStorageClass		=> "StorageClassName",
    InquireStorageClass		=> "StorageClassName",
+
+   #
+   # AuthInfo commands
+   #
+   ChangeAuthInfo		=> "AuthInfoName",
+   CopyAuthInfo			=> "AuthInfoName",
+   CreateAuthInfo		=> "AuthInfoName",
+   DeleteAuthInfo		=> "AuthInfoName",
+   InquireAuthInfo		=> "AuthInfoName",
+
+   #
+   # Coupling Facility Structure commands
+   #
+   ChangeCFStruct		=> "CFStructName",
+   CopyCFStruct			=> "CFStructName",
+   CreateCFStruct		=> "CFStructName",
+   DeleteCFStruct		=> "CFStructName",
+   InquireCFStruct		=> "CFStructName",
 
   );
 

@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 21.3 2002/06/07 20:05:25 biersma Exp $
+# $Id: Command.pm,v 22.3 2002/09/19 15:00:44 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -23,15 +23,16 @@ use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
 
 use vars qw($VERSION);
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 sub new {
     my ($proto, %args) = @_;
     my $class = ref($proto) || $proto;
     VerifyNamedParams(\%args, 
-                      [ qw(QueueManager) ],
-                      [ qw(Type Carp DynamicQName Expiry Wait
+                      [ ],
+                      [ qw(QueueManager Type Carp DynamicQName Expiry Wait
                            ModelQName StrictMapping
+                           CommandQueue
                            CommandQueueName RealQueueManager
                            ProxyQueueManager ReplyToQMgr ReplyToQ) ]);
 
@@ -47,6 +48,7 @@ sub new {
        DynamicQName		=> 'PERL.COMMAND.*',
        StrictMapping		=> 0,
        Stats                    => {},
+       DefaultMsgDesc           => {},
       };                        # Blessed later - see below
 
     #
@@ -56,7 +58,7 @@ sub new {
     #
     foreach my $param (qw(Carp
                           DynamicQName ModelQName
-                          StrictMapping
+                          StrictMapping CommandQueue
                           CommandQueueName ReplyToQMgr)) {
         $self->{$param} = $args{$param} if (defined $args{$param});
     }
@@ -90,14 +92,39 @@ sub new {
     #
     # Where do we send requests?
     #
+    # - CommandQueue (may set RealQueueManager for message display)
     # - CommandQueueName (may set RealQueueManager for message display)
     # - SYSTEM.COMMAND.INPUT / SYSTEM.ADMIN.COMMAND.QUEUE
     #
-    if ($args{CommandQueueName}) {
+    if ($args{CommandQueue}) {
+        #
+        # This is subject to a number of requirements:
+        # - CommandQueue is an MQSeries::Queue object
+        # - QueueManager, CommandQueueName is omitted
+        # - RealQueueManager is specified
+        # - ProxyQueueManager (= ReplyToQMgr) is optional
+        #
+        unless (ref $args{CommandQueue} &&
+                $args{CommandQueue}->isa("MQSeries::Queue")) {
+            $self->Carp("CommandQueue argument must be an MQSeries::Queue object");
+            return;
+        }
+        foreach my $fld (qw(RealQueueManager)) {
+            next if (defined $args{$fld});
+            $self->Carp("CommandQueue: required argument $fld is missing");
+            return;
+        }
+        foreach my $fld (qw(QueueManager CommandQueueName)) {
+            next unless (defined $args{$fld});
+            $self->Carp("CommandQueue: argument $fld is not allowed");
+            return;
+        }
+    } elsif ($args{CommandQueueName}) {
         #
         # NOTE: This may be distribution-list notation
         #       (queue@xmitqname), in which case the RealQueueManager
-        #       name may specify the target queue manager name.
+        #       name may specify the target queue manager name for
+        #       display purposes.
         #
 	$self->{CommandQueueName} = $args{CommandQueueName};
         if (defined $args{'RealQueueManager'}) {
@@ -122,7 +149,16 @@ sub new {
     # NOTE: This value can be a empty string, to indicate the
     # "default" queue manager.
     #
-    if (exists $args{ProxyQueueManager}) {
+    if ($self->{CommandQueue}) {
+        #
+        # NOTE: Have already verified that RealQueueManager is
+        # present. ProxyQueueManager is optional.
+        #
+        $self->{QueueManager} = $self->{CommandQueue}->QueueManager();
+        if ($args{ProxyQueueManager} && ! $args{ReplyToQMgr}) {
+            $self->{ReplyToQMgr}  = $args{ProxyQueueManager};
+        }
+    } elsif (exists $args{ProxyQueueManager}) {
 	if (ref $args{QueueManager} || $args{QueueManager} eq "") {
 	    $self->Carp("QueueManager must be a non-empty string when ProxyQueueManager is specified");
 	    return;
@@ -186,9 +222,7 @@ sub new {
     # Open the command queue, and assume that the MQSeries::Queue
     # object will whine appropriately.
     #
-    # FIXME: This Reason/CompCode stuff will go away
-    #
-    $self->{CommandQueue} = MQSeries::Queue::->
+    $self->{CommandQueue} ||= MQSeries::Queue::->
       new(QueueManager  => $self->{QueueManager},
           Queue 	=> $self->{CommandQueueName},
           Mode 		=> 'output',
@@ -304,6 +338,18 @@ sub ReasonText {
 
 
 #
+# Set default message-descriptor options
+#
+sub MsgDesc {
+    my ($this, %dft) = @_;
+    while (my ($k, $v) = each %dft) {
+        $this->{DefaultMsgDesc}->{$k} = $v;
+    }
+    return $this->{DefaultMsgDesc};
+}
+
+
+#
 # Don't autoload this....
 #
 sub DESTROY { 1 }
@@ -371,7 +417,8 @@ sub CreateObject {
     my $Type			= "";
 
     my @KeyNames		= qw(ChannelName NamelistName ProcessName 
-                                     QName StorageClassName AuthInfoName);
+                                     QName StorageClassName AuthInfoName
+                                     CFStructName);
     my $KeyCount		= 0;
 
     #
@@ -445,6 +492,12 @@ sub CreateObject {
 	$Change			= "ChangeAuthInfo";
 	$Key			= "AuthInfoName";
 	$Type			= "AuthInfo";
+    } elsif ( $Attrs->{CFStructName} ) {
+	$Inquire		= "InquireCFStruct";
+	$Create			= "CreateCFStruct";
+	$Change			= "ChangeCFStruct";
+	$Key			= "CFStructName";
+	$Type			= "CFStruct";
     }
 
     #
@@ -507,8 +560,8 @@ sub CreateObject {
 
     #
     # If we have any changes, make sure we include the QName/QType,
-    # ChannelName/ChannelType, ProcessName, StorageClass or
-    # AuthInfoName name.
+    # ChannelName/ChannelType, ProcessName, StorageClass,
+    # AuthInfoName or CFStructName.
     # 
     # We must do this here, as user's callbacks will get it wrong...
     #
@@ -630,6 +683,8 @@ sub _Command {
        InquireStorageClassNames	=> 'StorageClassName',       
        InquireAuthInfo          => 'AuthInfoName',
        InquireAuthInfoNames	=> 'AuthInfoName',       
+       InquireCFStruct          => 'CFStructName',
+       InquireCFStructNames     => 'CFStructName',
        InquireThread	        => 'ThreadName',
       );	
 
@@ -657,6 +712,7 @@ sub _Command {
        InquireQueueStatus		=> 'QStatusAttrs',
        InquireStorageClass		=> 'StorageClassAttrs',
        InquireAuthInfo                  => 'AuthInfoAttrs',
+       InquireCFStruct                  => 'CFStructAttrs',
       );
 
     if ( $command2all{$command} ) {
@@ -665,13 +721,43 @@ sub _Command {
 	}
     }
 
+    #
+    # The request message descriptor is computed from the
+    # defaults set in DefaultMsgDesc, plus some hard-wired
+    # constants.
+    #
+    # FIXME: Maybe copy ReplyToQ, ReplyToQMgr and Expiry
+    #        to the default message descriptor and use that?
+    #
+    my $req_msgdesc = 
+      { %{ $self->{DefaultMsgDesc} },
+        ReplyToQ    => $self->{ReplyToQ}->ObjDesc("ObjectName"),
+        ReplyToQMgr => $self->{ReplyToQMgr},
+        Expiry	    => $self->{Expiry},
+      };
+    my $putmsg_options =
+      { Options => MQSeries::MQPMO_FAIL_IF_QUIESCING,
+      };
+
+    #
+    # If identity context / origin context is overridden, make sure
+    # the proper put-message options have been specified.
+    #
+    # Obviously, this is ignored unless the command-queue has been
+    # opened with MQOO_SET_IDENTITY_CONTEXT or MQOO_SET_ALL_CONTEXT.
+    #
+    if (defined $req_msgdesc->{ApplIdentityData} ||
+        defined $req_msgdesc->{UserIdentifier}) {
+        #print STDERR "XXX: Adding set-identity context to PMO\n";
+        $putmsg_options->{Options} |= MQSeries::MQPMO_SET_IDENTITY_CONTEXT;
+    }
+    if (defined $req_msgdesc->{ApplOriginData}) {
+        #print STDERR "XXX: Adding set-all context to PMO\n";
+        $putmsg_options->{Options} |= MQSeries::MQPMO_SET_ALL_CONTEXT;
+    }
+    
     $self->{Request} = MQSeries::Command::Request::->
-      new(MsgDesc 	=>
-          {
-           ReplyToQ 	=> $self->{ReplyToQ}->ObjDesc("ObjectName"),
-           ReplyToQMgr	=> $self->{ReplyToQMgr},
-           Expiry	=> $self->{Expiry},
-          },
+      new(MsgDesc 	=> $req_msgdesc,
           Type		=> $self->{Type},
           Command 	=> $command,
           Parameters 	=> $parameters,
@@ -683,7 +769,10 @@ sub _Command {
              return;
          };
 
-    my $putresult = $self->{CommandQueue}->Put(Message => $self->{Request});
+    my $putresult = $self->{CommandQueue}->
+      Put(Message    => $self->{Request},
+          PutMsgOpts => $putmsg_options,
+         );
 
     #
     # Keep track of stats: no of requests, total bytes, largest
@@ -1207,6 +1296,8 @@ plus the following equivalents for MQSC
 
   Inquire StorageClass
   Inquire StorageClass Names
+  Inquire CFStruct
+  Inquire CFStruct Names
 
 return interesting information.  Most of these will return an array of
 hash references, one for each object matching the query criteria.  For
@@ -1220,7 +1311,7 @@ Note that in an array context, the entire list is returned, but in a
 scalar context, only the first item in the list is returned.
 
 Some of these commands, however, have a simplified return value.  All
-six of:
+seven of:
 
   Inquire AuthInfo Names
   Inquire Channel Names
@@ -1228,6 +1319,7 @@ six of:
   Inquire Process Names
   Inquire Queue Names
   Inquire StorageClass Names
+  Inquire CFStruct Names
 
 simply return an array of strings, containing the names which matched
 the query criteria.
@@ -1243,8 +1335,10 @@ key/value pairs:
   ===                =====
   QueueManager       String or MQSeries::QueueManager object
   ProxyQueueManager  String or MQSeries::QueueManager object
+  RealQueueManager   String
   ReplyToQ           String or MQSeries::Queue object
   CommandQueueName   String
+  CommandQueue       MQSeries::Queue object
   DynamicQName       String
   ModelQName	     String
   Type               String ("PCF" or "MQCS")
@@ -1281,6 +1375,15 @@ QueueManager.
 In order to specify the "default" queue manager as the
 ProxyQueueManager, an empty string must be explicitly given.
 
+=item RealQueueManager
+
+If a remote queue manager is controlled through a proxy, by having the
+C<QueueManager> parameter specify the proxy and the
+C<CommandQueueName> an object descriptor, then by default any output
+will print the queue manager name incorrectly.  The
+C<RealQueueManager> parameter specifies the name used for display
+purposes.
+
 =item ReplyToQ
 
 The ReplyToQ can be opened by the application, and the MQSeries::Queue
@@ -1289,7 +1392,7 @@ os, a fixed queue name can be given.  This is a somewhat advanced
 usage of the API, since the default behavior of opening a temporary
 dynamic queue under the covers is usually prefered, and much simpler.
 
-The responses are retreived from the reply queue using gets by
+The responses are retrieved from the reply queue using gets by
 CorrelId, so there should be no issue with using a pre-defined, shared
 queue for this, if so desired.
 
@@ -1310,6 +1413,60 @@ defaults are then:
   MQSC  => SYSTEM.COMMAND.INPUT."QueueManager"
 
 See "MQSC NOTES" for some examples of how to use this in practice.
+
+Alternatively, the C<CommandQueue> parameter can be used.
+
+=item CommandQueue
+
+For complex set-ups, where a remote queue manager is managed by the
+name of the command queue does not fit the standard scheme, the
+command queue can be opened manually and specified in the
+MQSeries::Command constructor as the C<CommandQueue> parameter.
+
+The C<CommandQueue> parameter must be combined with the
+C<RealQueueManager> parameter.  In the example below, a mainframe
+queue manager C<CSQ1> is managed from the queue manager C<UNIXQM> with
+a non-standard queue name:
+
+    $queue = MQSeries::Queue::->
+      new('QueueManager' => 'UNIXQM',
+          'Queue'        => 'REMOTE.FOR.COMMANDQ.ON.CSQ1',
+          'Mode'         => 'output',
+         ) ||
+      die "Cannot open queue";
+
+    $cmd = MQSeries::Command::->
+      new('ProxyQueueManager' => 'UNIXQM', # Also ReplyToQMgr
+          'RealQueueManager'  => 'CSQ1',   # Displayed in messages
+          'Type'              => "MQSC",
+          'CommandQueue'      => $queue,
+         ) ||
+      die "Cannot create command";
+
+This mechanism can also be used when the command queue needs to be
+opened with special options.  This is typically combined with a call
+to the C<MsgDesc> method:
+
+    my $queue = MQSeries::Queue::->
+      new('QueueManager' => 'UNIXQM',
+          'Queue'        => 'SYSTEM.ADMIN.COMMAND.QUEUE',
+          'Options'      => (MQSeries::MQOO_FAIL_IF_QUIESCING |
+                             MQSeries::MQOO_OUTPUT |
+                             MQSeries::MQOO_SET_IDENTITY_CONTEXT,
+                            ),
+         ) ||
+      die "Cannot open queue";
+
+    $cmd = MQSeries::Command::->
+      new('RealQueueManager' => 'UNIXQM',
+          'Type'             => 'PCF',
+          'CommandQueue'     => $queue,
+         ) ||
+      die "Cannot create command";
+
+    $cmd->MsgDesc('ApplIdentityData' => "MyData",
+                  'UserIdentifier'   => "mqm",
+                 );
 
 =item Type
 
@@ -1480,6 +1637,29 @@ command fails, the Reason() will usually tell you enough about the
 cause of the failure, but if the reason is MQRCCF_CFIN_PARM_ID_ERROR,
 then the parameters in the error message will indicate which Parameter
 key was invalid.
+
+=head2 MsgDesc
+
+In some cases, it is useful or necessary to override specific MQMD
+fields in outgoing request messages.  Examples include manually
+changeing the Persistence field, or changing the message identity or
+origin context.  The MsgDesc method allows you to do so:
+
+  $cmd->MsgDesc('Persistence' => 0);
+
+or
+  
+  $cmd->MsgDesc('ApplIdentityData' => "MyData",
+                'UserIdentifier'   => "mqm",
+               );
+
+Note that setting the message identity or origin context requires you
+to open the command queue with the relevant open options; see the
+description of the C<CommandQueue> parameter to C<new>.
+
+Note that the C<ReplyToQ>, C<ReplyToQMgr> and C<Expiry> fields for the
+request message descriptor can be specified in the constructor C<new>.
+The C<MsgDesc> method is intended for the more obscure options.
 
 =head2 CreateObject
 
@@ -2398,7 +2578,7 @@ The following keys have special value mappings:
 
 =over 4
 
-=item NamelistAttrs
+=item StorageClassAttrs
 
     Key
     ===
@@ -2418,6 +2598,39 @@ The following keys have Boolean values:
 =over 4
 
 =item Replace
+
+=back
+
+=head2 CFStruct Commands
+
+Subsets of the these keys are applicable to the following commands.
+As these are not PCF commands, see the MQSC command reference to see
+which keys are applicable for each each.  Note that the CFStruct
+(Coupling Facility Application Structure) commands are available
+starting with release 5.3 of WebSphere MQ for z/OS.
+
+  Change CFStruct
+  Create CFStruct
+  Delete CFStruct
+  Inquire CFStruct
+  Inquire CFStruct Names
+
+The following keys have special value mappings:
+
+=over 4
+
+=item StorageClassAttrs
+
+    Key
+    ===
+    AlterationDate
+    AlterationTime
+    CFStructDesc
+    CFStructLevel
+    CFStructName
+    Recovery
+
+=back
 
 =back
 
@@ -2535,6 +2748,8 @@ The commands which return a list of names are:
   Inquire Namelist Names
   Inquire Process Names
   Inquire Queue Names
+  Inquire StorageClass Names (z/OS)
+  Inquire CFStruct Names (z/OS)
 
 For example:
 
@@ -2550,6 +2765,7 @@ returned.  This applies to all of the following commands:
 
   Escape
   Inquire AuthInfo
+  Inquire CFStruct
   Inquire Channel
   Inquire Channel Status
   Inquire Cluster Queue Manager
@@ -2557,6 +2773,7 @@ returned.  This applies to all of the following commands:
   Inquire Process
   Inquire Queue
   Inquire Queue Manager
+  Inquire Storage Class
   Reset Queue Statistics
 
 For example:

@@ -1,5 +1,5 @@
 #
-# $Id: ResponseParameters.pl,v 21.2 2002/06/27 16:27:20 biersma Exp $
+# $Id: ResponseParameters.pl,v 22.2 2002/09/19 15:11:03 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -11,18 +11,28 @@ package MQSeries::Command::MQSC;
   (
    QueueManager =>
    {
+    ALTTIME	=> [ "AlterationTime" ],
+    ALTDATE	=> [ "AlterationDate" ],
     AUTHOREV	=> [ "AuthorityEvent", 		$ResponseValues{Enabled} ],
     CCSID	=> [ "CodedCharSetId" ],
     CHAD	=> [ "ChannelAutoDef",		$ResponseValues{Enabled} ],
     CHADEV	=> [ "ChannelAutoDefEvent",	$ResponseValues{Enabled} ],
     CHADEXIT	=> [ "ChannelAutoDefExit" ],
+    CLWLEXIT	=> [ "ClusterWorkLoadExit" ],
+    CLWLDATA	=> [ "ClusterWorkLoadData" ],
+    CLWLLEN 	=> [ "ClusterWorkLoadLength" ],
     CMDLEVEL	=> [ "CommandLevel" ],
     COMMANDQ	=> [ "CommandInputQName" ],
+    CONFIGEV    => [ "ConfigurationEvent",      $ResponseValues{Enabled} ],
     CPILEVEL	=> [ "" ],
     DEADQ	=> [ "DeadLetterQName" ],
     DEFXMITQ	=> [ "DefXmitQName" ],
     DESCR	=> [ "QMgrDesc" ],
     DISTL	=> [ "DistLists",		$ResponseValues{Yes} ],
+    EXPRYINT    => [ "ExpiryInterval" ],
+    IGQ         => [ "IntraGroupQueueing",      $ResponseValues{Enabled} ],
+    IGQAUT      => [ "IntraGroupAuthority",     $ResponseValues{IntraGroupAuthority} ],
+    IGQUSER     => [ "IntraGroupUser" ],
     INHIBTEV	=> [ "InhibitEvent",		$ResponseValues{Enabled} ],
     LOCALEV	=> [ "LocalEvent",		$ResponseValues{Enabled} ],
     MAXHANDS	=> [ "MaxHandles" ],
@@ -31,25 +41,18 @@ package MQSeries::Command::MQSC;
     MAXUMSGS	=> [ "MaxUncommittedMsgs" ],
     PERFMEV	=> [ "PerformanceEvent",	$ResponseValues{Enabled} ],
     PLATFORM	=> [ "Platform", ],
+    QMID	=> [ "QMgrIdentifier" ],
     QMNAME	=> [ "QMgrName" ],
+    QSGNAME     => [ "QSharingGroupName" ],
     REMOTEEV	=> [ "RemoteEvent",		$ResponseValues{Enabled} ],
+    REPOS	=> [ "RepositoryName" ],
+    REPOSNL	=> [ "RepositoryNamelist" ],
+    SSLCRLNL    => [ "SSLCRLNamelist" ],
+    SSLKEYR     => [ "SSLKeyRepository" ],
+    SSLTASKS    => [ "SSLTasks" ],
     STRSTPEV	=> [ "StartStopEvent",		$ResponseValues{Enabled} ],
     SYNCPT	=> [ "SyncPoint",		$ResponseValues{Available} ],
     TRIGINT	=> [ "TriggerInterval" ],
-
-    ALTTIME	=> [ "AlterationTime" ],
-    ALTDATE	=> [ "AlterationDate" ],
-    CLWLEXIT	=> [ "ClusterWorkLoadExit" ],
-    CLWLDATA	=> [ "ClusterWorkLoadData" ],
-    CLWLLEN 	=> [ "ClusterWorkLoadLength" ],
-    QMID	=> [ "QMgrIdentifier" ],
-    REPOS	=> [ "RepositoryName" ],
-    REPOSNL	=> [ "RepositoryNamelist" ],
-
-    IGQ         => [ "IntraGroupQueueing",      $ResponseValues{Enabled} ],
-    IGQAUT      => [ "IntraGroupAuthority",     $ResponseValues{IntraGroupAuthority} ],
-    IGQUSER     => [ "IntraGroupUser" ],
-    QSGNAME     => [ "QSharingGroupName" ],
    },
 
    Process =>
@@ -96,6 +99,7 @@ package MQSeries::Command::MQSC;
     MSGDLVSQ	=> [ "MsgDeliverySequence",	$ResponseValues{MsgDeliverySequence} ],
     OPPROCS	=> [ "OpenOutputCount" ],
     PROCESS	=> [ "ProcessName" ],
+    PSID        => [ "PageSetId" ],
     PUT		=> [ "InhibitPut",		$ResponseValues{Disabled} ],
     QDEPTHHI	=> [ "QDepthHighLimit" ],
     QDEPTHLO	=> [ "QDepthLowLimit" ],
@@ -185,6 +189,7 @@ package MQSeries::Command::MQSC;
     # Most of these are from DISPLAY CHANNEL, but also returned by
     # CHSTATUS, too.  Thus, one hash.
     #
+    BATCHHB     => [ "BatchHeartBeat" ],
     BATCHINT	=> [ "BatchInterval" ],
     BATCHSZ	=> [ "BatchSize" ],
     CHANNEL	=> [ "ChannelName" ],
@@ -194,6 +199,8 @@ package MQSeries::Command::MQSC;
     DESCR	=> [ "ChannelDesc" ],
     DISCINT	=> [ "DiscInterval" ],
     HBINT	=> [ "HeartbeatInterval" ],
+    KAINT       => [ "KeepAliveInterval" ],
+    LOCLADDR    => [ "LocalAddress" ],
     LONGRTY	=> [ "LongRetryCount" ],
     LONGTMR	=> [ "LongRetryInterval" ],
     MAXMSGL	=> [ "MaxMsgLength" ],
@@ -220,6 +227,9 @@ package MQSeries::Command::MQSC;
     SEQWRAP	=> [ "SeqNumberWrap" ],
     SHORTRTY	=> [ "ShortRetryCount" ],
     SHORTTMR	=> [ "ShortRetryInterval" ],
+    SSLCAUTH => => [ "SSLClientAuth",           $ResponseValues{SSLClientAuth} ],
+    SSLCIPH     => [ "SSLCipherSpec" ],
+    SSLPEER     => [ "SSLPeerName" ],
     TPNAME	=> [ "TpName" ],
     TRPTYPE	=> [ "TransportType",		$ResponseValues{TransportType} ],
     USERID	=> [ "UserIdentifier" ],
@@ -244,6 +254,7 @@ package MQSeries::Command::MQSC;
     NAMELIST	=> [ "NamelistName" ],
     NAMCOUNT  	=> [ "NameCount" ],
     NAMES   	=> [ "Names" ],
+    NLTYPE      => [ "NamelistType",            $ResponseValues{NamelistType} ],
     QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
    },
 
@@ -348,6 +359,30 @@ package MQSeries::Command::MQSC;
     URID        => [ "URId" ],
     USERID      => [ "UserIdentifier" ],
    },
+
+   AuthInfo =>
+   {
+    ALTDATE	=> [ "AlterationDate" ],
+    ALTTIME	=> [ "AlterationTime" ],
+    AUTHINFO    => [ "AuthInfoName" ],
+    AUTHTYPE    => [ "AuthInfoType",            $ResponseValues{AuthInfoType} ],
+    CONNAME     => [ "AuthInfoConnName" ],
+    DESCR       => [ "AuthInfoDesc" ],
+    LDAPPWD     => [ "LDAPPassword" ],
+    LDAPUSER    => [ "LDAPUserName" ],
+    QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
+   },
+
+   CFStruct     => 
+   {
+    ALTDATE	=> [ "AlterationDate" ],
+    ALTTIME	=> [ "AlterationTime" ],
+    CFLEVEL     => [ "CFStructLevel" ],
+    CFSTRUCT    => [ "CFStructName" ],
+    DESCR       => [ "CFStructDesc" ],
+    RECOVER     => [ "Recovery",                $ResponseValues{Yes} ],
+   },
+
   );
 
 1;

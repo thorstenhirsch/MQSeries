@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameters.pl,v 21.1 2002/06/21 16:04:30 biersma Exp $
+# $Id: RequestParameters.pl,v 22.1 2002/08/07 12:28:05 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -10,39 +10,47 @@ package MQSeries::Command::MQSC;
 %RequestParameters =
   (
 
+   #
+   # These parameters are used to update specific queue manager
+   # attributes ("ALTER QMGR"), and specify how the values are
+   # encoded.  A related list in RequestValues.pl specifies the
+   # attributes that can be inquired ("DISPLAY QMGR").
+   #
    QueueManager =>
    {
-    Force			=> [ "FORCE" ],
-    QMgrDesc			=> [ "DESCR", 		"string" ],
-    TriggerInterval		=> [ "TRIGINT", 	"integer" ],
-    DeadLetterQName		=> [ "DEADQ", 		"string" ],
-    DefXmitQName		=> [ "DEFXMITQ",	"string" ],
-    MaxHandles			=> [ "MAXHANDS", 	"integer" ],
-    MaxUncommittedMsgs		=> [ "MAXUMSGS", 	"integer" ],
     AuthorityEvent		=> [ "AUTHOREV", 	$RequestValues{Enabled} ],
-    InhibitEvent		=> [ "INHIBTEV",	$RequestValues{Enabled} ],
-    LocalEvent			=> [ "LOCALEV",		$RequestValues{Enabled} ],
-    RemoteEvent			=> [ "REMOTEEV",	$RequestValues{Enabled} ],
-    StartStopEvent		=> [ "STRSTPEV",	$RequestValues{Enabled} ],
-    PerformanceEvent		=> [ "PERFMEV",		$RequestValues{Enabled} ],
-    MaxMsgLength		=> [ "MAXMSGL",		"integer" ],
     ChannelAutoDef		=> [ "CHAD",		$RequestValues{Enabled} ],
     ChannelAutoDefEvent		=> [ "CHADEV",		$RequestValues{Enabled} ],
     ChannelAutoDefExit 		=> [ "CHADEXIT",	"string" ],
-    QMgrAttrs			=> [ "",		$RequestValues{QMgrAttrs} ],
-
     ClusterWorkLoadExit		=> [ "CLWLEXIT",	"string" ],
     ClusterWorkLoadData		=> [ "CLWLDATA",	"string" ],
     ClusterWorkLoadLength	=> [ "CLWLLEN",		"string" ],
-    RepositoryName 		=> [ "REPOS",		"string" ],
-    RepositoryNamelist		=> [ "REPOSNL",		"string" ],
     CodedCharSetId		=> [ "CCSID",		"integer" ],
-
+    ConfigurationEvent          => [ "CONFIGEV",        $RequestValues{Enabled} ],
+    DeadLetterQName		=> [ "DEADQ", 		"string" ],
+    DefXmitQName		=> [ "DEFXMITQ",	"string" ],
+    ExpiryInterval              => [ "EXPRYINT",        "string" ], # OFF / Number
+    Force			=> [ "FORCE" ],
+    InhibitEvent		=> [ "INHIBTEV",	$RequestValues{Enabled} ],
     IntraGroupAuthority         => [ "IGQAUT",          $RequestValues{IntraGroupAuthority} ],
     IntraGroupQueuing           => [ "IGQ",             $RequestValues{Enabled} ], 
     IntraGroupUser              => [ "IGQUSER",         "string" ],
+    LocalEvent			=> [ "LOCALEV",		$RequestValues{Enabled} ],
+    MaxHandles			=> [ "MAXHANDS", 	"integer" ],
+    MaxMsgLength		=> [ "MAXMSGL",		"integer" ],
+    MaxUncommittedMsgs		=> [ "MAXUMSGS", 	"integer" ],
+    PerformanceEvent		=> [ "PERFMEV",		$RequestValues{Enabled} ],
+    QMgrDesc			=> [ "DESCR", 		"string" ],
+    QMgrAttrs			=> [ "",		$RequestValues{QMgrAttrs} ],
     QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
-
+    RemoteEvent			=> [ "REMOTEEV",	$RequestValues{Enabled} ],
+    RepositoryName 		=> [ "REPOS",		"string" ],
+    RepositoryNamelist		=> [ "REPOSNL",		"string" ],
+    SSLCRLNamelist              => [ "SSLCRLNL",        "string" ],
+    SSLKeyRepository            => [ "SSLKEYR",         "string" ],
+    SSLTasks                    => [ "SSLTASKS",        "integer" ],
+    StartStopEvent		=> [ "STRSTPEV",	$RequestValues{Enabled} ],
+    TriggerInterval		=> [ "TRIGINT", 	"integer" ],
    },
 
    Process =>
@@ -134,8 +142,16 @@ package MQSeries::Command::MQSC;
     ChannelType 		=> [ "TYPE",		$RequestValues{ChannelType} ],
    },
 
+   #
+   # These parameters are used to defined or update specific channel
+   # attributes ("DEFINE CHANNEL", "ALTER CHANNEL"), and specify how
+   # the values are encoded.  A related list in RequestValues.pl
+   # specifies the attributes that can be inquired ("DISPLAY CHANNEL").
+   #
    Channel =>
    {
+    AutoStart			=> [ "AUTOSTART",	$RequestValues{Enabled} ],
+    BatchHeartBeat              => [ "BATCHHB",         "integer" ],
     BatchInterval		=> [ "BATCHINT",       	"integer" ],
     BatchSize			=> [ "BATCHSZ",		"integer" ],
     ChannelAttrs 		=> [ "",		$RequestValues{ChannelAttrs} ],
@@ -146,17 +162,22 @@ package MQSeries::Command::MQSC;
     ChannelName			=> [ "CHANNEL",		"string" ],
     ChannelTable		=> [ "CHLTABLE", 	$RequestValues{ChannelTable} ],
     ChannelType 		=> [ "CHLTYPE",		$RequestValues{ChannelType} ],
+    ClusterName			=> [ "CLUSTER",		"string" ],
+    ClusterNamelist		=> [ "CLUSNL",		"string" ],
     CommandScope                => [ "CMDSCOPE",        "string" ],
     ConnectionName		=> [ "CONNAME",		"string" ],
     DataConversion		=> [ "CONVERT",		$RequestValues{Yes} ],
     DataCount			=> [ "DATALEN",		"integer" ],
     DiscInterval		=> [ "DISCINT",		"integer" ],
+    EnvironmentParameters	=> [ "ENVPARM",		"string" ],
     FromChannelName		=> [ "LIKE",		"string" ],
     HeartbeatInterval		=> [ "HBINT",		"integer" ],
     InDoubt 			=> [ "ACTION",		$RequestValues{InDoubt} ],
     InitiationQName 		=> [ "INITQ",		"string" ],
     LongRetryCount		=> [ "LONGRTY",		"integer" ],
     LongRetryInterval		=> [ "LONGTMR",		"integer" ],
+    KeepAliveInterval           => [ "KAINT",           "integer" ],
+    LocalAddress                => [ "LOCLADDR",        "string" ],
     LUName			=> [ "LUNAME",		"string" ],
     MCAName			=> [ "MCANAME",		"string" ],
     MCAType			=> [ "MCATYPE",		$RequestValues{MCAType} ],
@@ -170,7 +191,9 @@ package MQSeries::Command::MQSC;
     MsgRetryUserData		=> [ "MRDATA",		"string" ],
     MsgSeqNumber		=> [ "SEQNUM",		"integer" ],
     MsgUserData			=> [ "MSGDATA",		"string" ],
+    NetworkPriority 		=> [ "NETPRTY",		"integer" ],
     NonPersistentMsgSpeed	=> [ "NPMSPEED",	$RequestValues{NonPersistentMsgSpeed} ],
+    Parameter			=> [ "PARM",		"string" ],
     Password			=> [ "PASSWORD",	"string" ],
     Port			=> [ "PORT",		"integer" ],
     PutAuthority		=> [ "PUTAUT",		$RequestValues{PutAuthority} ],
@@ -187,33 +210,22 @@ package MQSeries::Command::MQSC;
     SeqNumberWrap		=> [ "SEQWRAP",		"integer" ],
     ShortRetryCount		=> [ "SHORTRTY",	"integer" ],
     ShortRetryInterval		=> [ "SHORTTMR",	"integer" ],
+    SSLCipherSpec               => [ "SSLCIPH",         "string" ],
+    SSLClientAuth               => [ "SSLCAUTH",        $RequestValues{SSLClientAuth} ],
+    SSLPeerName                 => [ "SSLPEER",         "string" ],
     ToChannelName		=> [ "CHANNEL",		"string" ],
     TpName			=> [ "TPNAME",		"string" ],
     TransportType		=> [ "TRPTYPE",		$RequestValues{TransportType} ],
     UserIdentifier		=> [ "USERID",		"string" ],
     XmitQName			=> [ "XMITQ",		"string" ],
-
-    #
-    # These are specific to MVS
-    #
-    AutoStart			=> [ "AUTOSTART",	$RequestValues{Enabled} ],
-    EnvironmentParamaters	=> [ "ENVPARM",		"string" ],
-    Parameter			=> [ "PARM",		"string" ],
-    
-    #
-    # New for 5.1/2.1
-    #
-    ClusterName			=> [ "CLUSTER",		"string" ],
-    ClusterNamelist		=> [ "CLUSNL",		"string" ],
-    NetworkPriority 		=> [ "NETPRTY",		"integer" ],
-
    },
 
    Namelist =>
    {
     NamelistName 		=> [ "NAMELIST",	"string" ],
     NamelistDesc		=> [ "DESCR",		"string" ],
-    # XXX - this one may need special support for command-seperated lists
+    NamelistType                => [ "NLTYPE",          $RequestValues{NamelistType} ],
+    # XXX - this one may need special support for comma-separated lists
     Names 			=> [ "NAMES",		"string" ],
 
     Replace			=> [ "",		$RequestValues{Replace} ],
@@ -278,6 +290,40 @@ package MQSeries::Command::MQSC;
     StorageClassAttrs		=> [ "",		$RequestValues{StorageClassAttrs} ],
 
    },
+
+   #
+   # These parameters are used to defined or update specific AuthInfo
+   # attributes ("DEFINE AUTHINFO", "ALTER AUTHINFO"), and specify how
+   # the values are encoded.  A related list in RequestValues.pl
+   # specifies the attributes that can be inquired ("DISPLAY AUTHINFO").
+   #
+   AuthInfo =>
+   {
+    AuthInfoConnName            => [ "CONNAME",         "string" ],
+    AuthInfoDesc                => [ "DESCR",           "string" ],
+    AuthInfoName                => [ "AUTHINFO",        "string" ],
+    AuthInfoType                => [ "AUTHTYPE",        $RequestValues{AuthInfoType} ],
+    LDAPPassword                => [ "LDAPPWD",         "string" ],
+    LDAPUserName                => [ "LDAPUSER",        "string" ],
+    AuthInfoAttrs               => [ "",                $RequestValues{AuthInfoAttrs} ],
+   },
+
+
+   #
+   # These parameters are used to defined or update specific CF Structure
+   # attributes ("DEFINE CFSTRUCT", "ALTER CFSTRUCT"), and specify how
+   # the values are encoded.  A related list in RequestValues.pl
+   # specifies the attributes that can be inquired ("DISPLAY CFSTRUCT").
+   #
+   CFStruct =>
+   {
+    CFStructDesc                => [ "DESCR",           "string", ],
+    CFStructLevel               => [ "CFLEVEL",         "integer" ],
+    CFStructName                => [ "CFSTRUCT",        "string" ],
+    Recovery                    => [ "RECOVER",         $RequestValues{Yes} ],
+    CFStructAttrs               => [ "",                $RequestValues{CFStructAttrs} ],
+   },
+
 
    Trace =>
    {

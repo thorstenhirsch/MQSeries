@@ -5,7 +5,7 @@
 # (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 21.2 2002/06/06 15:07:05 biersma Exp $
+# $Id: Parser.pm,v 22.1 2002/07/23 20:27:36 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -27,7 +27,7 @@ use vars qw(
 
 require "MQSeries/ErrorLog/descriptions.pl";
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 #
 # Constructor

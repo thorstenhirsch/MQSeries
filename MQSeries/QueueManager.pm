@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 21.3 2002/06/06 18:23:28 biersma Exp $
+# $Id: QueueManager.pm,v 22.2 2002/08/07 12:30:27 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -18,6 +18,8 @@ use Carp;
 use Config;
 
 use MQSeries qw(:functions);
+use MQSeries::Utils qw(VerifyNamedParams);
+
 #
 # Well, now that we're using the same constants for the Inquire/Set
 # interface, they no longer are really part of the Command/PCF
@@ -28,12 +30,20 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
+    VerifyNamedParams(\%args, [],
+                      [ qw(QueueManager Carp 
+                           CompCode Reason
+                           GetConvert PutConvert 
+                           RetryCount RetrySleep RetryReasons
+                           ConnectTimeout ConnectTimeoutSignal 
+                           ClientConn AutoCommit
+                           AutoConnect NoAutoConnect) ]);
 
     my $self =
       {
@@ -128,9 +138,13 @@ sub new {
     # auto-connecting.  We still support the old flag for backwards
     # compatibility.
     #
-    # FIXME: Warn for NoAutoConnect usage in later releases, if $^W is on.
+    # NOTE: Will warn for NoAutoConnect usage in later releases,
+    # even if $^W is not set.
     #
     if (exists $args{'NoAutoConnect'}) {
+        if ($^W) {
+            warn "Use of 'NoAutoConnect' is deprecated and will go away in a later release";
+        }
         if (exists $args{'AutoConnect'}) {
             $self->{Carp}->("Both 'AutoConnect' and 'NoAutoConnect' specified, ignoring 'NoAutoConnect'");
         } else {
@@ -154,6 +168,7 @@ sub new {
 sub Open {
     my $self = shift;
     my %args = @_;
+    VerifyNamedParams(\%args, [], [ qw(Options ObjDesc) ]);
 
     $self->{"CompCode"} = MQSeries::MQCC_FAILED;
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
@@ -209,8 +224,8 @@ sub Open {
 
 
 sub Close {
-    my $self = shift;
-    my (%args) = @_;
+    my ($self, %args) = @_;
+    VerifyNamedParams(\%args, [], []);
 
     return 1 unless $self->{Hobj};
 
@@ -279,7 +294,6 @@ sub Reasons {
 
 
 sub Inquire {
-
     my $self = shift;
     my (@args) = @_;
 
@@ -576,6 +590,10 @@ sub Put1 {
 sub Connect {
     my $self = shift;
     my %args = ( %{$self->{ConnectArgs}}, @_ );
+    VerifyNamedParams(\%args, [], 
+                      [ qw(RetryCount RetrySleep RetryReasons
+                           ConnectTimeout ConnectTimeoutSignal 
+                           ClientConn AutoConnect NoAutoConnect) ]);
 
     return 1 if $self->{Hconn};
 
@@ -903,8 +921,9 @@ Handling in Special Considerations.
 
 NOTE: This parameter used to be called C<NoAutoConnect>, obviously
 with reverse meaning for true and false.  The old behavior is still
-supported for backwards compatibility.  Future release will start
-issuing a warning and eventually C<NoAutoConnect> will go away.
+supported for backwards compatibility, though a warning is generated
+if C<-w> is on.  Future release will start issuing a warning and
+eventually C<NoAutoConnect> will go away.
 
 =item AutoCommit
 
@@ -1020,7 +1039,8 @@ value to the constructor, for example:
     ) || die "Unable to open queue: CompCode => $CompCode, Reason => $Reason\n";
 
 But, this is ugly (authors opinion, but then, he gets to write the
-docs, too).
+docs, too).  Use the C<AutoConnect> option instead to separate C<new>
+and C<Connect>.
 
 =item RetryCount
 
@@ -1047,7 +1067,7 @@ HASH, then the keys are the reason codes (and the values ignored).
 
 This method takes no arguments, and merely calls MQCONNX() to connect
 to the queue manager.  The various options are all set via the
-MQSeries::Queue constructor (see above).
+MQSeries::QueueManager constructor (see above).
 
 This method is called automatically by the constructor, unless the
 C<AutoConnect> argument is specified and set to false.

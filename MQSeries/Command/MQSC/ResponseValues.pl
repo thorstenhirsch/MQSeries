@@ -1,5 +1,5 @@
 #
-# $Id: ResponseValues.pl,v 21.2 2002/06/27 12:00:00 biersma Exp $
+# $Id: ResponseValues.pl,v 22.1 2002/08/07 12:29:50 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -249,6 +249,26 @@ package MQSeries::Command::MQSC;
     EXCL                => "Exclusive",
     NO                  => "No",
     SHARED              => "Shared",
+   },
+
+   SSLClientAuth =>
+   {
+    OPTIONAL            => "Optional",
+    REQUIRED            => "Required",
+   },
+
+   AuthInfoType => 
+   {
+    CRLLDAP             => "CRLLDAP",
+   },
+
+   NamelistType => 
+   {
+    NONE                => "None",
+    QUEUE               => "Queue",
+    Q                   => "Queue",
+    CLUSTER             => "Cluster",
+    AUTHINFO            => "AuthInfo",
    },
 
  );

@@ -1,5 +1,5 @@
 #
-# $Id: Responses.pl,v 21.1 2002/06/21 16:04:39 biersma Exp $
+# $Id: Responses.pl,v 22.2 2002/09/19 15:11:23 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -51,6 +51,18 @@ package MQSeries::Command::MQSC;
    InquireNamelist		=> $ResponseParameters{Namelist},
    InquireNamelistNames		=> $ResponseParameters{Namelist},
 
+   ChangeAuthInfo		=> $ResponseParameters{AuthInfo},
+   CreateAuthInfo		=> $ResponseParameters{AuthInfo},
+   DeleteAuthInfo		=> $ResponseParameters{AuthInfo},
+   InquireAuthInfo		=> $ResponseParameters{AuthInfo},
+   InquireAuthInfoNames		=> $ResponseParameters{AuthInfo},
+
+   ChangeCFStruct		=> $ResponseParameters{CFStruct},
+   CreateCFStruct		=> $ResponseParameters{CFStruct},
+   DeleteCFStruct		=> $ResponseParameters{CFStruct},
+   InquireCFStruct		=> $ResponseParameters{CFStruct},
+   InquireCFStructNames		=> $ResponseParameters{CFStruct},
+
    InquireStorageClass		=> $ResponseParameters{StorageClass},
    InquireStorageClassNames	=> $ResponseParameters{StorageClass},
 
@@ -74,6 +86,7 @@ package MQSeries::Command::MQSC;
    InquireChannelNames		=> [ qw(ChannelName ChannelNames) ],
    InquireNamelistNames		=> [ qw(NamelistName NamelistNames) ],
    InquireStorageClassNames	=> [ qw(StorageClassName StorageClassNames) ],
+   InquireAuthInfoNames		=> [ qw(AuthInfoName AuthInfoNames) ],
   );
 
 1;

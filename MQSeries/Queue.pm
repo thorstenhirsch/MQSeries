@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 21.3 2002/05/09 18:28:45 biersma Exp $
+# $Id: Queue.pm,v 22.4 2002/09/19 18:40:30 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries qw(:functions);
 use MQSeries::QueueManager;
-use MQSeries::Utils qw(ConvertUnit);
+use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
 
 #
 # Well, now that we're using the same constants for the Inquire/Set
@@ -26,12 +26,18 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
+    VerifyNamedParams(\%args, [], 
+                      [ qw(Carp QueueManager Queue ObjDesc DynamicQName
+                           Options Mode CompCode Reason
+                           PutConvert GetConvert CloseOptions
+                           RetrySleep RetryCount RetryReasons
+                           AutoOpen NoAutoOpen DisableAutoResize) ]);
 
     my %ObjDesc = ();
 
@@ -159,9 +165,13 @@ sub new {
     # must be set to 0 (false) to avoid auto-opening.  We still
     # support the old flag for backwards compatibility.
     #
-    # FIXME: Warn for NoAutoOpen usage in later releases, if $^W is on.
+    # NOTE: Will warn for NoAutoOpen usage in later releases,
+    # even if $^W is not set.
     #
     if (exists $args{'NoAutoOpen'}) {
+        if ($^W) {
+            warn "Use of 'NoAutoOpen' is deprecated and will go away in a later release";
+        }
         if (exists $args{'AutoOpen'}) {
             $self->{Carp}->("Both 'AutoOpen' and 'NoAutoOpen' specified, ignoring 'NoAutoOpen'");
         } else {
@@ -315,26 +325,32 @@ sub Put {
     }
 
     if ( $args{PutMsgOpts} ) {
-
 	unless ( ref $args{PutMsgOpts} eq 'HASH' ) {
 	    $self->{Carp}->("Invalid PutMsgOpts argument; must be a HASH reference");
 	    return;
 	}
 
 	$PutMsgOpts = $args{PutMsgOpts};
-
     } else {
-
 	if ( $args{PutMsgRecs} ) {
 	    $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
 	}
-	
-	if ( $args{Sync} ) {
-	    $PutMsgOpts->{Options} |= MQSeries::MQPMO_SYNCPOINT;
-	} else {
-	    $PutMsgOpts->{Options} |= MQSeries::MQPMO_NO_SYNCPOINT;
-	}
-	
+    }
+
+    #
+    # Support Sync flag, but check it does not conflict with
+    # user-specified PutMsgOpts.
+    #
+    if (defined $args{Sync}) {
+        my $set = MQSeries::MQPMO_SYNCPOINT;
+        my $check = MQSeries::MQPMO_NO_SYNCPOINT;
+        unless ($args{Sync}) {  # No syncpoint: reverse set/check
+            ($set, $check) = ($check, $set);
+        }
+        if (($PutMsgOpts->{Options} & $check) == $check) {
+            confess "Option Sync => $args{Sync} conflicts with PutMsgOptions";
+        }
+        $PutMsgOpts->{Options} = $set;
     }
 
     $self->{"PutConvertReason"} = 0;
@@ -353,7 +369,7 @@ sub Put {
 	}
     } else {
 	if ( $args{Message}->can("PutConvert") ) {
-	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
+ 	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
 	    unless ( defined $buffer ) {
 		$self->{"PutConvertReason"} = 1;
 		$self->{Carp}->("Data conversion hook (PutConvert) failed");
@@ -410,9 +426,26 @@ sub Put {
 }
 
 
+#
+# Get a message from a queue.   This returns with three-values logic:
+#   1: successfully read
+#   0: failure (see $queue->Reason())
+#  -1: no message available 
+#
+# Hash with named parameters:
+# - Message: MQSeries::Message object
+# - Sync: syncpoint (boolean; default: 0)
+# - Wait: wait interval (1/1000 second; strings with 's' and 'm' supported)
+# - GetMsgOpts: ref to hash with get-message options
+# - GetConvert: ref to get-conversion function
+# - Convert: message conversion (boolean; default: 1)
+# - DisableAutoResize
+#
 sub Get {
-    my $self = shift;
-    my %args = @_;
+    my ($self, %args) = @_;
+    VerifyNamedParams(\%args, [], 
+                      [ qw(Convert DisableAutoResize GetConvert 
+                           GetMsgOpts Message Sync Wait) ]);
 
     return unless $self->Open();
 
@@ -426,47 +459,72 @@ sub Get {
 	return;
     }
 
-    unless ( ref $args{Message} and $args{Message}->isa("MQSeries::Message") )  {
+    unless (ref $args{Message} and $args{Message}->isa("MQSeries::Message")) {
 	$self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
 	return;
     }
 
-    if ( $args{GetMsgOpts} ) {
-
-	unless ( ref $args{GetMsgOpts} eq 'HASH' ) {
+    #
+    # Allow user to set get-message options, but still
+    # add in Wait/Convert/Sync later.
+    #
+    if ($args{GetMsgOpts}) {
+	unless (ref $args{GetMsgOpts} eq 'HASH') {
 	    $self->{Carp}->("Invalid GetMsgOpts argument; must be a HASH reference");
 	    return;
 	}
 
 	$GetMsgOpts = $args{GetMsgOpts};
-
-    } else {
-
-	$GetMsgOpts = { Options => MQSeries::MQGMO_FAIL_IF_QUIESCING | 
-                                   MQSeries::MQGMO_CONVERT };
-
-	if ( $args{Sync} ) {
-	    $GetMsgOpts->{Options} |= MQSeries::MQGMO_SYNCPOINT;
-	}
-
-	if ( exists $args{Wait} ) {
-            my $value = ConvertUnit('Wait', $args{'Wait'});
-	    if ( $value == 0 ) {
-		$GetMsgOpts->{Options} |= MQSeries::MQGMO_NO_WAIT;
-	    } elsif ( $value == -1 ) {
-		$GetMsgOpts->{Options} |= MQSeries::MQGMO_WAIT;
-		$GetMsgOpts->{WaitInterval} = MQSeries::MQWI_UNLIMITED;
-	    } else {
-		$GetMsgOpts->{Options} |= MQSeries::MQGMO_WAIT;
-		$GetMsgOpts->{WaitInterval} = $value;
-	    }
-        } else {
-	    $GetMsgOpts->{Options} |= MQSeries::MQGMO_NO_WAIT;
-	}
-
     }
 
-    if ( $args{GetConvert} && ref $args{GetConvert} ne "CODE" ) {
+    my $options_flag = $GetMsgOpts->{Options}  ||
+      MQSeries::MQGMO_FAIL_IF_QUIESCING;
+
+    if (defined $args{Convert}) {
+        if ($args{Convert}) {
+            $options_flag |= MQSeries::MQGMO_CONVERT;
+        } else {                # Possibly override GetMsgOpts
+            $options_flag &= (~MQSeries::MQGMO_CONVERT);
+        }
+    } else {                    # Default = convert
+        $options_flag |= MQSeries::MQGMO_CONVERT;
+    }
+            
+    if (defined $args{Sync}) {  # Compare against GetMsgOptions, if specified
+        my @check;
+        if ($args{Sync}) {
+            @check = (MQSeries::MQGMO_NO_SYNCPOINT,
+                      MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT);
+            $options_flag |= MQSeries::MQGMO_SYNCPOINT;
+        } else {
+            @check = (MQSeries::MQGMO_SYNCPOINT,
+                      MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT);
+        }
+        foreach my $opt (@check) {
+            if (($options_flag & $opt) == $opt) {
+                confess "GetMsgOptions specifies a syncpoint option not compatible with 'Sync' => $args{Sync}";
+            }
+        }
+    }
+
+    if (exists $args{Wait}) {
+        my $value = ConvertUnit('Wait', $args{'Wait'});
+        if ($value == 0) {
+            $options_flag &= (~MQSeries::MQGMO_WAIT);
+            $options_flag |= MQSeries::MQGMO_NO_WAIT; # No-op: NO_WAIT = zero
+        } elsif ($value == -1) {
+            $options_flag |= MQSeries::MQGMO_WAIT;
+            $GetMsgOpts->{WaitInterval} = MQSeries::MQWI_UNLIMITED;
+        } else {
+            $options_flag |= MQSeries::MQGMO_WAIT;
+            $GetMsgOpts->{WaitInterval} = $value;
+        }
+    } else {
+        $options_flag |= MQSeries::MQGMO_NO_WAIT; # No-op: NO_WAIT = zero
+    }
+    $GetMsgOpts->{Options} = $options_flag;
+
+    if ($args{GetConvert} && ref $args{GetConvert} ne "CODE") {
 	$self->{Carp}->("Invalid argument: 'GetConvert' must be a CODE reference");
 	return;
     }
@@ -599,7 +657,11 @@ sub Get {
 		return;
 	    }
 	}
-    }
+    }                           # End while
+
+    #
+    # NOTREACHED
+    #
 }
 
 
@@ -623,6 +685,10 @@ sub QueueManager {
 # methods will go away in a future release.
 #
 sub Backout {
+    if ($^W) {
+        warn "The MQSeries::Queue->Backout() method is deprecated.  Use MQSeries::QueueManager->Backout() instead.";
+    }
+
     my $self = shift;
     return unless $self->Open();
     return $self->{QueueManager}->Backout();
@@ -630,6 +696,10 @@ sub Backout {
 
 
 sub Commit {
+    if ($^W) {
+        warn "The MQSeries::Queue->Commit() method is deprecated.  Use MQSeries::QueueManager->Commit() instead.";
+    }
+
     my $self = shift;
     return unless $self->Open();
     return $self->{QueueManager}->Commit();
@@ -637,7 +707,12 @@ sub Commit {
 
 
 sub Pending {
+    if ($^W) {
+        warn "The MQSeries::Queue->Pending() method is deprecated.  Use MQSeries::QueueManager->Pending() instead.";
+    }
+
     my $self = shift;
+    return unless $self->Open();
     return $self->{QueueManager}->Pending();
 }
 
@@ -787,6 +862,9 @@ sub ObjDesc {
 sub Open {
     my $self = shift;
     my %args = ( %{$self->{OpenArgs}}, @_ );
+    VerifyNamedParams(\%args, [],
+                      [ qw(Mode Options
+                           RetryCount RetrySleep RetryReasons) ]);
 
     return 1 if $self->{Hobj};
 
@@ -814,7 +892,6 @@ sub Open {
     # If the Mode is given, then we have a few defaults to choose from
     #
     if ( exists $args{Mode} ) {
-
 	if ( $args{Mode} eq 'input' ) {
 	    $self->{Options} |= MQSeries::MQOO_INPUT_AS_Q_DEF;
 	    $self->{GetEnable} = 1;
@@ -831,7 +908,6 @@ sub Open {
 	    $self->{Carp}->("Invalid argument: 'Mode' value $args{Mode} not yet supported");
 	    return;
 	}
-	
     }
 
     #
@@ -848,7 +924,6 @@ sub Open {
     }
 
     if ( $args{RetryReasons} ) {
-
 	unless (
 		ref $args{RetryReasons} eq "ARRAY" ||
 		ref $args{RetryReasons} eq "HASH"
@@ -862,12 +937,10 @@ sub Open {
 	} else {
 	    $self->{RetryReasons} = { map { $_ => 1 } @{$args{RetryReasons}} };
 	}
-
     }
 
   OPEN:
     {
-
 	#
 	# Open the Queue
 	#
@@ -908,7 +981,6 @@ sub Open {
 	    $self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
 	    return;
 	}
-
     }
 }
 
@@ -1224,10 +1296,11 @@ constructur will then fail only if there is a problem parsing the
 constructor arguments.  The subsequent call to C<Open()> can be error
 checked independently of the C<new()> constructor.
 
-NOTE: This parameter used to be called C<AutoOpen>, obviously
-with reverse meaning for true and false.  The old behavior is still
-supported for backwards compatibility.  Future release will start
-issuing a warning and eventually C<NoAutoOpen> will go away.
+NOTE: This parameter used to be called C<AutoOpen>, obviously with
+reverse meaning for true and false.  The old behavior is still
+supported for backwards compatibility, though a warning is generated
+if C<-w> is on.  Future release will start issuing a warning and
+eventually C<NoAutoOpen> will go away.
 
 =item ObjDesc
 
@@ -1299,11 +1372,6 @@ See also the section "CONVERSION PRECEDENCE" in the
 MQSeries::QueueManager documentation.
 
 =item CompCode, Reason
-
-WARNING: These keys are deprecated, and their use no longer
-encouraged.  They are left in place only for backwards compabitility.
-
-See the docs for the NoAutoOpen argument, and the Open() method.
 
 When the constructor encounters an error, it returns nothing, and you
 can not make method calls off of a non-existent object.  Thus, you do
@@ -1424,8 +1492,8 @@ must be an MQSeries::Message object.
 =item PutMsgOpts
 
 This option allows the programmer complete control over the PutMsgOpts
-structure passed to the MQPUT() call.  If this option is specified,
-then the Sync option is simply ignored.
+structure passed to the MQPUT() call.  This may conflict with the
+'Sync' option; see below.
 
 The default options specified by the OO API are
 
@@ -1452,11 +1520,17 @@ MQSeries(3).
 =item Sync
 
 This is a flag to indicate that the Syncpoint option is to be used,
-and the message(s) not committed to the queue until an MQBACK or
-MQCOMM call is made.  These are both wrapped with the queue manager
-Backout() and Commit() methods respectively.
+and the message(s) not committed to the queue until an MQBACK, MQCOMM
+or MQDISC call is made.  These are both wrapped with the queue manager
+Backout(), Commit() and Disconnect() methods respectively.
 
 The value is simply interpreted as true or false.
+
+If the C<Sync> option is combined with the C<PutMsgOpts> option, the
+C<Options> field in the C<PutMsgOpts> is checked for compatibility.
+If the C<Sync> flag is true and the C<PutMsgOpts> specifies
+MQPMO_NO_SYNCPOINT, or vice versa, a fatal error is raised.  If no
+conflict exists, the C<Sync> flag amends the C<PutMsgOpts>.
 
 =item PutConvert
 
@@ -1479,6 +1553,7 @@ following key/value pairs (required keys are marked with a '*'):
     Sync               Boolean
     DisableAutoResize  Boolean
     GetConvert         CODE Reference
+    Convert            Boolean (default: 1)
 
 The return value of Get() is either 1, 0 or -1.  Success or failure
 can still be interpreted in a Boolean context, with the following
@@ -1501,22 +1576,13 @@ invalid or improperly formatted message.  This is akin to an error
 encountered while parsing the body of the message.
 
 By default, the Get() method will also handle the message buffer size
-being too small for two very specific cases.
+being too small for one very specific case.
 
-Case 1:  Reason == MQRC_TRUNCATED_MSG_FAILED
+Reason == MQRC_TRUNCATED_MSG_FAILED
 
 In this case, the BufferLength of the Message object is reset to the
 DataLength value returned by the MQGET() call, and the MQGET() call is
 redone.
-
-Case 2:  Reason == MQRC_CONVERTED_MSG_TOO_BIG
-
-In this case, the BufferLength of the Message object is reset to
-B<twice> the DataLength value returned by the MQGET() call, and the
-MQGET() call is redone.  Doubling the size is probably overkill, but
-there is no deterministic way of finding the actual size required.
-Since most of the conversions are character set mappings, we are
-assuming that double will always be sufficient.
 
 Note that this functionality can be disabled, if not desired, by
 specifying DisableAutoResize as an argument to either the
@@ -1536,7 +1602,9 @@ message.  See MQSeries::Message documentation for more details.
 
 This option allows the programmer complete control over the GetMsgOpts
 structure passed to the MQGET() call.  If this option is specified,
-then the Sync, and Wait options are simply ignored.
+then the C<Sync>, C<Wait> and C<Convert> options may modify the
+'Options' field in the get-message options or raise a fatal error; see
+below.
 
 The default options specified by the OO API are
 
@@ -1555,7 +1623,8 @@ and the value is set as the WaitInterval in the GetMsgOpts structure.
 
 Remember, if a numeric value is specified, it is interpreted by the
 API as a number of milliseconds, not seconds (the rest of the OO-API
-uses seconds).
+uses seconds).  Therefore, a symbolic value like "30s" or "2m" 
+is preferred.
 
 If the value is 0, then the MQGMO_NO_WAIT option is used.
 
@@ -1569,6 +1638,10 @@ NOTE: MQWI_UNLIMITED should be used with caution, as applications
 which block forever can prevent queue managers from shutting down
 elegantly, in some cases.
 
+If the C<Wait> option is combined with the C<GetMsgOpts> option, it
+will override the MQGMO_WAIT or MQGMO_NO_WAIT flag set in the
+C<GetMsgOpts>.
+
 =item Sync
 
 This is a flag to indicate that the Syncpoint option is to be used,
@@ -1577,6 +1650,24 @@ MQCMIT call is made.  These are both wrapped with the Backout() and
 Commit() methods respectively.
 
 The value is simply interpreted as true or false.
+
+If the C<Sync> option is combined with the C<GetMsgOpts> option, the
+C<Options> field in the C<GettMsgOpts> is checked for compatibility.
+If the C<Sync> flag is true and the C<GettMsgOpts> specifies
+MQGMO_NO_SYNCPOINT, or vice versa, a fatal error is raised.  If no
+conflict exists, the C<Sync> flag amends the C<GettMsgOpts>.
+
+=item Convert
+
+This is a flag to indicate that the conversion option is to be used.
+The value is simply interpreted as true or false; if omitted, the
+default is true.
+
+The only reason to turn this option off is when trying to read binary
+messages (MQFMT_NONE) generated in a different encoding.
+
+If the C<Convert> option is combined with the C<GetMsgOpts> option, it
+will override the MQGMO_CONVERT flag set in the C<GetMsgOpts>.
 
 =item DisableAutoResize
 

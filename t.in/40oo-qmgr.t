@@ -1,5 +1,5 @@
 #
-# $Id: 40oo-qmgr.t,v 21.1 2002/03/27 15:32:53 wpm Exp $
+# $Id: 40oo-qmgr.t,v 22.2 2002/09/19 15:29:17 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,8 +20,8 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.18;
-use MQSeries::QueueManager 1.18;
+use __APITYPE__::MQSeries 1.19;
+use MQSeries::QueueManager 1.19;
 $loaded = 1;
 print "ok 1\n";
 
@@ -47,14 +47,14 @@ $QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
 }
 
 #
-# Test the NoAutoConnect mechanism
+# Test the AutoConnect mechanism
 #
 {
 
     my $qmgr = MQSeries::QueueManager->new
       (
        QueueManager 	=> $QMgrName,
-       NoAutoConnect	=> 1,
+       AutoConnect	=> 0,
       );
     unless ( ref $qmgr && $qmgr->isa("MQSeries::QueueManager") ) {
 	print "not ok 3\n";

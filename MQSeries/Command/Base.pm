@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 21.4 2002/05/23 13:43:39 biersma Exp $
+# $Id: Base.pm,v 22.3 2002/08/07 12:27:00 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 sub new {
 
@@ -712,7 +712,7 @@ sub MQEncodeMQSC {
 	push(@buffer,"ALL");
     }
 
-    #print STDERR "Returning command [@buffer]\n";
+    #print STDERR "MQEncodeMQSC: Returning command [@buffer]\n";
     return "@buffer";
 }
 
@@ -720,6 +720,7 @@ sub MQEncodeMQSC {
 sub MQDecodeMQSC {
     my $self = shift;
     my ($oldheader,$buffer) = @_;
+    #print STDERR "DecodeMQSC: Have buffer [$buffer]\n";
 
     my $command = $oldheader->{"Command"};
     # XXX - I think we should be initializing this to the oldheader
@@ -768,6 +769,8 @@ sub MQDecodeMQSC {
     # - The message looks like CSQxxxxx *XYZZY or CSQxxxx /XYZZY
     # - The message code is not CSQM4xxI, which is the normal message
     #   return
+    # - The message code is documented to be followed bya csect name
+    #   (CSQ9018E, CSQ9022I, CSQ9023E, CSQ9029E)
     #
     # NOTE: In MQ 5.2 for OS/390, the *XYZZY occurs in CSQM409I, but this
     #       did not occur in previous version.  Hence, we have to take
@@ -778,6 +781,16 @@ sub MQDecodeMQSC {
 		      [\*/]\w+\s*               # The leading * or / is the key
 		      (.*)
 		     }x ) {
+	$newheader =
+	  {
+	   "ReasonText"		=> $1,
+	  };
+	return $newheader;
+    } elsif ( $buffer =~ m{
+                           ^(?:CSQ9018E|CSQ9022I|CSQ9023E|CSQ9029E) \s+
+                           \S+ \s+ \S+ \s+
+                           ((?:ENDING|\'|FAILURE).*)
+                          }x ) {
 	$newheader =
 	  {
 	   "ReasonText"		=> $1,

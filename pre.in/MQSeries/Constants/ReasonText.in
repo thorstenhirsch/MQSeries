@@ -11,7 +11,7 @@
 #
 #    ..../src/util/extract_reason_codes
 #
-# $Id: ReasonText.in,v 21.2 2002/07/08 15:37:53 biersma Exp $
+# $Id: ReasonText.in,v 22.1 2002/09/19 15:12:15 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -228,6 +228,10 @@ package MQSeries::Constants;
    &MQRC_CODED_CHAR_SET_ID_ERROR    => "Coded character set identifier parameter not valid.",
    &MQRC_COD_NOT_VALID_FOR_XCF_Q    => "COD report option not valid for XCF queue.",
    &MQRC_COMMAND_TYPE_ERROR         => "Command type not valid.",
+   &MQRC_CONFIG_CHANGE_OBJECT       => "Change Object",
+   &MQRC_CONFIG_CREATE_OBJECT       => "Create Object",
+   &MQRC_CONFIG_DELETE_OBJECT       => "Delete Object",
+   &MQRC_CONFIG_REFRESH_OBJECT      => "Refresh Object",
    &MQRC_CONNECTION_BROKEN          => "Connection to queue manager lost.",
    &MQRC_CONNECTION_ERROR           => "Error processing MQCONN call.",
    &MQRC_CONNECTION_NOT_AUTHORIZED  => "Not authorized for connection.",

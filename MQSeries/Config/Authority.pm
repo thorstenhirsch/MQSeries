@@ -4,7 +4,7 @@
 # (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Authority.pm,v 21.1 2002/03/27 15:32:28 wpm Exp $
+# $Id: Authority.pm,v 22.1 2002/07/23 20:27:30 biersma Exp $
 #
 
 package MQSeries::Config::Authority;
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($VERSION);
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 use MQSeries qw(:functions);
 use MQSeries::Config::Machine;  # For localqmgrs()

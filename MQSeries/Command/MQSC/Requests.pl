@@ -1,5 +1,5 @@
 #
-# $Id: Requests.pl,v 21.1 2002/06/21 16:01:27 biersma Exp $
+# $Id: Requests.pl,v 22.1 2002/08/07 12:33:37 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -98,7 +98,7 @@ package MQSeries::Command::MQSC;
    StopChannel			=> [ "STOP",      	$RequestParameters{Channel} ],
 
    #
-   # New commands we need to add support for
+   # Namelist commands
    #
    ChangeNamelist		=> [ "ALTER",		$RequestParameters{Namelist} ],
    CreateNamelist		=> [ "DEFINE",		$RequestParameters{Namelist} ],
@@ -106,12 +106,18 @@ package MQSeries::Command::MQSC;
    InquireNamelist		=> [ "DISPLAY",		$RequestParameters{Namelist} ],
    InquireNamelistNames		=> [ "DISPLAY",		$RequestParameters{Namelist} ],
 
+   #
+   # Cluster commands
+   #
    InquireClusterQueueManager	=> [ "DISPLAY",		$RequestParameters{Cluster} ],
    ResumeQueueManagerCluster	=> [ "RESUME QMGR",	$RequestParameters{Cluster} ],
    SuspendQueueManagerCluster	=> [ "SUSPEND QMGR",	$RequestParameters{Cluster} ],
    RefreshCluster		=> [ "REFRESH",		$RequestParameters{Cluster} ],
    ResetCluster			=> [ "RESET",		$RequestParameters{Cluster} ],
 
+   #
+   # Security commands
+   #
    ChangeSecurity		=> [
 				    "CHANGE SECURITY",	
 				    $RequestParameters{Security},
@@ -128,7 +134,10 @@ package MQSeries::Command::MQSC;
 				    "RVERIFY SECURITY",
 				    $RequestParameters{Security},
 				   ],
-   
+
+   #
+   # Storage Class Commands
+   #
    ChangeStorageClass		=> [ "ALTER",		$RequestParameters{StorageClass} ],
    CreateStorageClass		=> [ "DEFINE",		$RequestParameters{StorageClass} ],
    DeleteStorageClass		=> [ "DELETE",		$RequestParameters{StorageClass} ],
@@ -154,6 +163,27 @@ package MQSeries::Command::MQSC;
    
    InquireThread		=> [ "DISPLAY",		$RequestParameters{InquireThread} ],
    ResolveInDoubt		=> [ "RESOLVE",		$RequestParameters{ResolveInDoubt}],
+
+   #
+   # AuthInfo Commands
+   #
+   ChangeAuthInfo		=> [ "ALTER",     	$RequestParameters{AuthInfo} ],
+   CopyAuthInfo			=> [ "DEFINE",     	$RequestParameters{AuthInfo} ],
+   CreateAuthInfo		=> [ "DEFINE", 	     	$RequestParameters{AuthInfo} ],
+   DeleteAuthInfo		=> [ "DELETE",     	$RequestParameters{AuthInfo} ],
+   InquireAuthInfo		=> [ "DISPLAY",      	$RequestParameters{AuthInfo},
+				     $RequestArgs{AuthInfo}, ],
+   InquireAuthInfoNames		=> [ "DISPLAY",      	$RequestParameters{AuthInfo} ],
+
+   #
+   # CFStruct Commands
+   #
+   ChangeCFStruct		=> [ "ALTER",     	$RequestParameters{CFStruct} ],
+   CreateCFStruct		=> [ "DEFINE", 	     	$RequestParameters{CFStruct} ],
+   DeleteCFStruct		=> [ "DELETE",     	$RequestParameters{CFStruct} ],
+   InquireCFStruct		=> [ "DISPLAY",      	$RequestParameters{CFStruct},
+				     $RequestArgs{CFStruct}, ],
+   InquireCFStructNames		=> [ "DISPLAY",      	$RequestParameters{CFStruct} ],
 
   );
 

@@ -1,5 +1,5 @@
 #
-# $Id: RequestValues.pl,v 21.2 2002/06/27 11:59:34 biersma Exp $
+# $Id: RequestValues.pl,v 22.2 2002/08/07 12:28:41 biersma Exp $
 #
 # (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -28,43 +28,58 @@ package MQSeries::Command::MQSC;
 
    Replace			=> [ "NOREPLACE",	"REPLACE" ],
 
+   #
+   # These parameters are used to determine what attributes must be
+   # returned by a "display queue manager" command.  The default for
+   # an InquireQueueManager() command is "All".
+   #
    QMgrAttrs =>
    {
     All				=> "ALL",
-    QMgrName			=> "QMNAME",
-    QMgrDesc			=> "DESCR",
-    Platform			=> "PLATFORM",
-    CommandLevel		=> "CMDLEVEL",
-    TriggerInterval		=> "TRIGINT",
-    DeadLetterQName		=> "DEADQ",
-    MaxPriority			=> "MAXPRTY",
-    CommandInputQName		=> "COMMANDQ",
-    DefXmitQName		=> "DEFXMITQ",
-    CodedCharSetId		=> "CCSID",
-    MaxHandles			=> "MAXHANDS",
-    MaxUncommittedMsgs		=> "MAXUMSGS",
-    MaxMsgLength		=> "MAXMSGL",
-    DistLists			=> "DISTL",
-    SyncPoint			=> "SYNCPT",
+    AlterationDate              => "ALTDATE",
+    AlterationTime              => "ALTTIME",
     AuthorityEvent		=> "AUTHOREV",
-    InhibitEvent		=> "INHIBTEV",
-    LocalEvent			=> "LOCALEV",
-    RemoteEvent			=> "REMOTEEV",
-    StartStopEvent		=> "STRSTPEV",
-    PerformanceEvent		=> "PERFMEV",
     ChannelAutoDef		=> "CHAD",
     ChannelAutoDefEvent		=> "CHADEV",
     ChannelAutoDefExit		=> "CHADEXIT",
-
-    ClusterWorkLoadExit		=> "CLWLEXIT",
     ClusterWorkLoadData		=> "CLWLDATA",
+    ClusterWorkLoadExit		=> "CLWLEXIT",
     ClusterWorkLoadLength	=> "CLWLLEN",
+    CodedCharSetId		=> "CCSID",
+    CommandInputQName		=> "COMMANDQ",
+    CommandLevel		=> "CMDLEVEL",
+    ConfigurationEvent          => "CONFIGEV",
+    DeadLetterQName		=> "DEADQ",
+    DefXmitQName		=> "DEFXMITQ",
+    DistLists			=> "DISTL",
+    ExpiryInterval              => "EXPRYINT",
+    InhibitEvent		=> "INHIBTEV",
+    LocalEvent			=> "LOCALEV",
+    MaxHandles			=> "MAXHANDS",
+    MaxMsgLength		=> "MAXMSGL",
+    MaxPriority			=> "MAXPRTY",
+    MaxUncommittedMsgs		=> "MAXUMSGS",
+    PerformanceEvent		=> "PERFMEV",
+    Platform			=> "PLATFORM",
+    QMgrDesc			=> "DESCR",
     QMgrIdentifier		=> "QMID",
+    QMgrName			=> "QMNAME",
+    RemoteEvent			=> "REMOTEEV",
     RepositoryName		=> "REPOS",
     RepositoryNamelist		=> "REPOSNL",
-
+    SSLCRLNamelist              => "SSLCRLNL",
+    SSLKeyRepository            => "SSLKEYR",
+    SSLTasks                    => "SSLTASKS",
+    StartStopEvent		=> "STRSTPEV",
+    SyncPoint			=> "SYNCPT",
+    TriggerInterval		=> "TRIGINT",
    },
 
+   #
+   # These parameters are used to determine what attributes must be
+   # returned by a "display queue" command.  The default for an
+   # InquireQueue() command is "All".
+   #
    QAttrs =>
    {
     All				=> "ALL",
@@ -80,12 +95,16 @@ package MQSeries::Command::MQSC;
     DefinitionType		=> "DEFTYPE",
     DistLists			=> "DISTL",
     HardenGetBackout		=> "HARDENBO",
+    IndexType			=> "INDXTYPE",
     InhibitGet			=> "GET",
     InhibitPut			=> "PUT",
     InitiationQName		=> "INITQ",
     MaxMsgLength		=> "MAXMSGL",
     MaxQDepth			=> "MAXDEPTH",
     MsgDeliverySequence		=> "MSGDLVSQ",
+    OpenInputCount		=> "IPPROCS",
+    OpenOutputCount		=> "OPPROCS",
+    PageSetId                   => "PSID",
     ProcessName			=> "PROCESS",
     QDepthHighEvent		=> "QDPHIEV",
     QDepthHighLimit		=> "QDEPTHHI",
@@ -97,12 +116,13 @@ package MQSeries::Command::MQSC;
     QServiceInterval		=> "QSVCINT",
     QServiceIntervalEvent 	=> "QSVCIEV",
     QSharingGroupDisposition    => "QSGDISP",
-    QType			=> "TYPE",
+    QType			=> "QTYPE",
     RemoteQMgrName		=> "RQMNAME",
     RemoteQName			=> "RNAME",
     RetentionInterval		=> "RETINTVL",
     Scope 			=> "SCOPE",
     Shareability		=> "SHARE",
+    StorageClass		=> "STGCLASS",
     TriggerControl		=> "TRIGGER",
     TriggerData			=> "TRIGDATA",
     TriggerDepth		=> "TRIGDPTH",
@@ -110,15 +130,28 @@ package MQSeries::Command::MQSC;
     TriggerType			=> "TRIGTYPE",
     Usage			=> "USAGE",
     XmitQName			=> "XMITQ",
-    OpenInputCount		=> "IPPROCS",
-    OpenOutputCount		=> "OPPROCS",
+   },
 
-    #
-    # These are specific to MQSC, and are not part of PCF (yet)
-    #
-    IndexType			=> "INDXTYPE",
-    StorageClass		=> "STGCLASS",
+   #
+   # These parameters are used to determine what attributes must be
+   # returned by a "display auth info" command.  The default for an
+   # InquireAuthInfo() command is "All".
+   #
+   AuthInfoAttrs =>
+   {
+    All				=> "ALL",
+    AlterationDate              => "ALTDATE",
+    AlterationTime              => "ALTTIME",
+    AuthInfoConnName            => "CONNAME",
+    AuthInfoDesc                => "DESCR",
+    AuthInfoType                => "AUTHTYPE",
+    LDAPPassword                => "LDAPPWD",
+    LDAPUserName                => "LDAPUSER",
+   },
 
+   AuthInfoType => 
+   {
+    CRLLDAP                     => "CRLLDAP",
    },
 
    ApplType =>
@@ -300,13 +333,17 @@ package MQSeries::Command::MQSC;
     Saved			=> "SAVED",
    },
 
+   #
+   # These parameters are used to determine what attributes must be
+   # returned by a "display channel" command.  The default for an
+   # InquireChannel() command is "All".
+   #
    ChannelAttrs =>
    {
     All				=> "ALL",
     AlterationDate		=> "ALTDATE",
     AlterationTime		=> "ALTTIME",
-    ClusterName 		=> "CLUSTER",
-    ClusterNamelist		=> "CLUSNL",
+    BatchHeartBeat              => "BATCHHB",
     BatchInterval		=> "BATCHINT",
     BatchSize			=> "BATCHSZ",
     Batches			=> "BATCHES",
@@ -322,6 +359,8 @@ package MQSeries::Command::MQSC;
     ChannelStartTime		=> "CHSTATI",
     ChannelStatus		=> "",
     ChannelType			=> "CHLTYPE",
+    ClusterName 		=> "CLUSTER",
+    ClusterNamelist		=> "CLUSNL",
     ConnectionName		=> "CONNAME",
     CurrentLUWID		=> "CURLUWID",
     CurrentMsgs			=> "CURMSGS",
@@ -330,10 +369,12 @@ package MQSeries::Command::MQSC;
     DiscInterval		=> "DISCINT",
     HeartbeatInterval		=> "HBINT",
     InDoubtStatus		=> "INDOUBT",
+    KeepAliveInterval           => "KAINT",
     LastLUWID			=> "LSTLUWID",
     LastMsgDate			=> "LSTMSGDA",
     LastMsgTime			=> "LSTMSGTI",
     LastSequenceNumber		=> "LSTSEQNO",
+    LocalAddress                => "LOCLADDR",
     LongRetriesLeft		=> "LONGRTS",
     LongRetryCount		=> "LONGRTY",
     LongRetryInterval		=> "LONGTMR",
@@ -366,6 +407,9 @@ package MQSeries::Command::MQSC;
     ShortRetriesLeft		=> "SHORTRTS",
     ShortRetryCount		=> "SHORTRTY",
     ShortRetryInterval		=> "SHORTTMR",
+    SSLCipherSpec               => "SSLCIPH",
+    SSLClientAuth               => "SSLCAUTH",
+    SSLPeerName                 => "SSLPEER",
     StopRequested		=> "STOPREQ",
     TpName			=> "TPNAME",
     TransportType		=> "TRPTYPE",
@@ -384,6 +428,7 @@ package MQSeries::Command::MQSC;
     All				=> "ALL",
     NamelistName 		=> "NAMELIST",
     NamelistDesc		=> "DESCR",
+    NamelistType                => "NLTYPE",
     Names			=> "NAMES",
     AlterationDate		=> "ALTDATE",
     AlterationTime 		=> "ALTTIME",
@@ -512,6 +557,12 @@ package MQSeries::Command::MQSC;
     Output                      => "OUTPUT",
    },
 
+   SSLClientAuth =>
+   {
+    Optional                    => "OPTIONAL",
+    Required                    => "REQUIRED",
+   },
+
    QStatusAttrs => 
    {
     All                         => "ALL",
@@ -533,6 +584,31 @@ package MQSeries::Command::MQSC;
     URId                        => "URID",
     UserIdentifier              => "USERID",
    },
+
+   #
+   # These parameters are used to determine what attributes must be
+   # returned by a "display CF Structure" command.  The default for an
+   # InquireCfStruct() command is "All".
+   #
+   CFStructAttrs => 
+   {
+    All                         => "ALL",
+    AlterationDate		=> "ALTDATE",
+    AlterationTime		=> "ALTTIME",
+    CFStructDesc                => "DESCR",
+    CFStructLevel               => "CFLEVEL",
+    Recovery                    => "RECOVER",
+   },
+
+   NamelistType => 
+   {
+    None                        => "NONE",
+    Queue                       => "QUEUE",
+    Cluster                     => "CLUSTER",
+    AuthInfo                    => "AUTHINFO",
+   },
+
+
   );
 
 1;

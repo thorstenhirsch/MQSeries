@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>1.18/src/Changes.src</TITLE> 
+	    <TITLE>1.19/src/Changes.src</TITLE> 
 	</HEAD>
 
 	<BODY>
@@ -10,6 +10,22 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_19">Changes for 1.19</A>
+	<UL>
+
+		<LI><A HREF="#API_change_for_Get_Put_methods_o">API change for Get/Put methods of MQSeries::Queue</A>
+		<LI><A HREF="#New_MQSeries_Message_ConfigEve">New MQSeries::Message::ConfigEvent class</A>
+		<LI><A HREF="#New_MQSeries_Message_IIH_class">New MQSeries::Message::IIH class</A>
+		<LI><A HREF="#Add_support_for_WebSphere_MQ_5_3">Add support for WebSphere MQ 5.3 on z/OS</A>
+		<LI><A HREF="#New_features_for_MQSeries_Comma">New features for MQSeries::Command</A>
+		<LI><A HREF="#Better_decoding_of_MQSC_results">Better decoding of MQSC results</A>
+		<LI><A HREF="#Parameter_verification_for_MQSer">Parameter verification for MQSeries::QueueManager</A>
+		<LI><A HREF="#Parameter_verification_for_MQSer">Parameter verification for MQSeries::Queue</A>
+		<LI><A HREF="#New_Convert_option_for_MQSerie">New 'Convert' option for MQSeries::Queue Get method</A>
+		<LI><A HREF="#Deprecated_parameters_generate_a">Deprecated parameters generate a warning if -w is enabled</A>
+		<LI><A HREF="#Deprecated_methods_generate_a_wa">Deprecated methods generate a warning if -w is enabled</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_18">Changes for 1.18</A>
 	<UL>
 
@@ -196,6 +212,253 @@ perl API, going back as far as the 1.02 release.
 
 <P>
 <HR>
+<H1><A NAME="Changes_for_1_19">Changes for 1.19
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="API_change_for_Get_Put_methods_o">API change for Get/Put methods of MQSeries::Queue
+
+</A></H2>
+In previous releases, specifying the <CODE>PutMsgOpts</CODE> with the <CODE>Put</CODE>
+method or the <CODE>GetMsgOpts</CODE> with the <CODE>Get</CODE> method of
+<CODE>MQSeries::Queue</CODE> meant that <CODE>Sync</CODE>, <CODE>Wait</CODE> and <CODE>Convert</CODE>
+parameters were ignored.
+
+
+<P>
+
+This has now changed: the <CODE>Sync</CODE>, <CODE>Wait</CODE> and <CODE>Convert</CODE> parameters will be honored and be combined with the get/put options
+specified with the <CODE>PutMsgOpts</CODE> or <CODE>GetMsgOpts</CODE> parameters.
+
+
+<P>
+
+The <CODE>Get</CODE> method <CODE>Wait</CODE> and <CODE>Convert</CODE> parameters will override the
+<CODE>GetMsgOpts</CODE> options flag.
+
+
+<P>
+
+The <CODE>Get</CODE> and <CODE>Put</CODE> method <CODE>Sync</CODE> paramater will check the
+<CODE>GetMsgOpts</CODE> or <CODE>PutMsgOpts</CODE> options flag for compatibility. If a coflicting syncpoint option is already
+set, a fatal error will be raised. If no conflicting option is set (this
+means the options flkag either has no syncpoint flag set at all, or has the
+requested flag set already), the requested <CODE>Sync</CODE> paramater will be added to the options flag.
+
+
+<P>
+
+This means the following will now work:
+
+
+<P>
+
+<PRE>    my $result = $request_queue-&gt;
+      Get('Message'    =&gt; $get_message,
+          'GetMsgOpts' =&gt; 
+          {
+            'Options'  =&gt; (MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT |
+                           MQSeries::MQGMO_FAIL_IF_QUIESCING),
+          },
+          'Wait'       =&gt; '30s',
+         );
+</PRE>
+
+<P>
+
+In the past, this would cause the <CODE>Wait</CODE> flag to be silently ignored.
+
+
+<P>
+
+This incompatible API change may break your code. As it significantly
+enhances the safety of your code, this is deemed a price worth paying.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="New_MQSeries_Message_ConfigEve">New MQSeries::Message::ConfigEvent class
+
+</A></H2>
+WebSphere MQ 5.3 on z/OS can generate configuration change events that
+cannot be read on Unix and NT queue managers - distributed queue managers
+are not able to convert PCF version2 messages. The
+MQSeries::Message::ConfigEvent class can be used to process such messages -
+highly useful to create an audit log.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="New_MQSeries_Message_IIH_class">New MQSeries::Message::IIH class
+
+</A></H2>
+A new class to support IMS Bridge Header (IIH) messages. This is due to
+Nathan Dupra of Xerox USA. This class is based on reverse engineering and
+somewhat experimental - feedback on functionality or the API is welcome.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Add_support_for_WebSphere_MQ_5_3">Add support for WebSphere MQ 5.3 on z/OS
+
+</A></H2>
+A number of minor changes have been made to support MQSeries::Command with
+the 5.3 release (now branded WebSphere MQ) on z/OS. Note that PTF UQ68236
+is required - the MQSC output of ``Display Queue'' is invalid without that
+PTF, leading to errors with the <CODE>InquireQueue</CODE>
+method.
+
+
+<P>
+
+<UL>
+<LI><STRONG></STRONG>
+Support for AuthInfo objects in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::MQSC::*</CODE> tables.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for CFStruct (Coupling Facility Application Structure) objects in <CODE>MQSeries::Command</CODE>, mostly through changes in the
+<CODE>MQSeries::Command::MQSC::*</CODE> tables.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for the new Channel attributes in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::MQSC::*</CODE> tables. The new attributes are <CODE>BatchHeartBeat</CODE>, <CODE>KeepAliveInterval</CODE>,
+<CODE>LocalAddress</CODE>, <CODE>SSLCipherSpec</CODE>, <CODE>SSLClientAuth</CODE> and
+<CODE>SSLPeerName</CODE>.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for the new QueueManager attributes in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::MQSC::*</CODE> tables. The new attributes are <CODE>ConfigurationEvent</CODE>, <CODE>ExpiryInterval</CODE>,
+<CODE>SSLKeyRepository</CODE>, <CODE>SSLCRLNamelist</CODE>, <CODE>SSLCryptoHardware</CODE> and
+<CODE>SSLTasks</CODE>.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for the new Queue attributes in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::MQSC::*</CODE> tables. The new attribute is <CODE>PageSetId</CODE>.
+
+
+<P>
+
+<LI><STRONG></STRONG>
+Support for the new Namelist attributes in <CODE>MQSeries::Command</CODE>, mostly through changes in the <CODE>MQSeries::Command::MQSC::*</CODE> tables. The new attribute is <CODE>NamelistType</CODE>.
+
+
+<P>
+
+</UL>
+<P>
+<HR>
+<H2><A NAME="New_features_for_MQSeries_Comma">New features for MQSeries::Command
+
+</A></H2>
+The <CODE>MQSeries::Command</CODE> constructor now accepts a <CODE>CommandQueue</CODE>
+parameter. This allows you to open an arbitrary queue with arbitary
+options, then use it so send commands.
+
+
+<P>
+
+In addition, a new <CODE>MsgDesc</CODE> method for <CODE>MQSeries::Command</CODE> can be used to fine-tune the message descriptor for outgoing commands.
+
+
+<P>
+
+These new features can be used to open an arbitarry queue and override
+message persistence, as some users requested; internally, we sue it to set
+the accounting options on outgoing messages, which are then archived by the
+WMQ 5.3 configuration events on z/OS.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Better_decoding_of_MQSC_results">Better decoding of MQSC results
+
+</A></H2>
+Mike Surikov pointed out more bugs in the decoding of MQSC result messages
+in <CODE>MQSeries::Command</CODE>. I've added more fixes...
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Parameter_verification_for_MQSer">Parameter verification for MQSeries::QueueManager
+
+</A></H2>
+The parameters to the major methods of the <CODE>MQSeries::QueueManager</CODE>
+class (<CODE>new</CODE>, <CODE>Connect</CODE>, <A HREF="#item_Close">Close</A>) are now enforced. Specifying invalid parameter names will lead to a fatal
+run-time error.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Parameter_verification_for_MQSer">Parameter verification for MQSeries::Queue
+
+</A></H2>
+The parameters to the major methods of the <CODE>MQSeries::Queue</CODE> class (<CODE>new</CODE>, <CODE>Open</CODE>, <CODE>Get</CODE>) are now enforced. Specifying invalid parameter names will lead to a fatal
+run-time error.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="New_Convert_option_for_MQSerie">New 'Convert' option for MQSeries::Queue Get method
+
+</A></H2>
+The <CODE>Get</CODE> method of <CODE>MQSeries::Queue</CODE> has a new <CODE>Convert</CODE> option. This is true by default, but can be set to false if conversion is
+not required. This is useful when manually converting messages, e.g. WMQ
+5.3 configuration events.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Deprecated_parameters_generate_a">Deprecated parameters generate a warning if -w is enabled
+
+</A></H2>
+The deprecated parameters <A HREF="#item_NoAutoConnect">NoAutoConnect</A> for
+<CODE>MQSeries::QueueManager</CODE> and <A HREF="#item_NoAutoOpen">NoAutoOpen</A> for <CODE>MQSeries::Queue</CODE>
+will generate a warning if -w is enabled. In the next release, the warning
+becomes mandatory.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Deprecated_methods_generate_a_wa">Deprecated methods generate a warning if -w is enabled
+
+</A></H2>
+The deprecated <CODE>MQSeries::Queue</CODE> methods <CODE>Commit</CODE>, <CODE>Backout</CODE> and
+<CODE>Pending</CODE> will generate a warning if -w is enabled. In the next release, the warning
+becomes mandatory.
+
+
+<P>
+
+<P>
+<HR>
 <H1><A NAME="Changes_for_1_18">Changes for 1.18
 
 </A></H1>
@@ -238,7 +501,7 @@ Support for AuthInfo objects in <CODE>MQSeries::Command</CODE>, mostly through c
 
 <P>
 
-<DT><STRONG></STRONG><DD>
+<LI><STRONG></STRONG>
 Support for the new <CODE>InquireQueueStatus</CODE> command, mostly through changes in the <CODE>MQSeries::Command::PCF::*</CODE> tables.
 
 
@@ -474,7 +737,7 @@ hash key ordering happened to work on Solaris, but broke on Windows 2000
 </A></H2>
 Joseph Sacco at Starwood Hotels reported that the MQSeries::Command suite,
 when run against a mainframe using MQSC commands, gave annoying errors
-messages because the teminating response line on his mainframe queue
+messages because the terminating response line on his mainframe queue
 manager has a different format from ours.
 
 

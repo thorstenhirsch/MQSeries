@@ -521,7 +521,7 @@ package MQSeries::Command::PCF;
    {
     Queue                       => 1105,
     Handle                      => 1104,
-   },
+   },    
 
    #
    # Morgan Stanley extensions

@@ -96,8 +96,11 @@ MQSeries/FDC/Entry.pm
 MQSeries/FDC/Parser.pm
 MQSeries/FDC/Tail.pm
 MQSeries/Message.pm
+MQSeries/Message/ConfigEvent.pl
+MQSeries/Message/ConfigEvent.pm
 MQSeries/Message/Event.pl
 MQSeries/Message/Event.pm
+MQSeries/Message/IIH.pm
 MQSeries/Message/Storable.pm
 MQSeries/Queue.pm
 MQSeries/QueueManager.pm
@@ -130,6 +133,7 @@ pre.in/MQSeries/Constants/ReasonMacro.in
 pre.in/MQSeries/Constants/ReasonText.in
 pre.in/MQSeries/Constants/StringAttribute.in
 pre.in/MQSeries/Constants/ValidPutMsgRecFields.in
+pre.in/MQSeries/Message/ConfigEvent.in
 pre.in/MQSeries/Message/Event.in
 t.in/10constants.t
 t.in/20convert.t
