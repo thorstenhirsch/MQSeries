@@ -3,7 +3,6 @@ COPYRIGHT
 Changes.html
 Changes.src
 LICENSE
-MANIFEST
 MQClient/MQSeries.pm.in
 MQClient/MQSeries.xs.in/00header
 MQClient/MQSeries.xs.in/21core

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 12.4 2000/03/03 17:40:32 wpm Exp $
+# $Id: Makefile.PL,v 13.1 2000/03/30 19:45:26 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -99,7 +99,7 @@ else {
 # There may very well be other platforms on which we need -lthread.
 #
 if ( $Config{osname} =~ /solaris/ ) {
-    $libs .= " -lpthread -lthread";
+    $libs .= " -lthread";
 }
 
 #

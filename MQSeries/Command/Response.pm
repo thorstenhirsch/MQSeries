@@ -1,5 +1,5 @@
 #
-# $Id: Response.pm,v 12.1 2000/02/03 19:39:55 wpm Exp $
+# $Id: Response.pm,v 13.1 2000/03/06 16:26:07 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,7 +24,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 sub new {
 

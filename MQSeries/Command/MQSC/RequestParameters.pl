@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameters.pl,v 9.2 1999/11/02 23:45:09 wpm Exp $
+# $Id: RequestParameters.pl,v 13.1 2000/03/23 21:20:30 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -72,7 +72,7 @@ package MQSeries::Command::MQSC;
     DistLists			=> [ "DISTL",		$RequestValues{Yes} ],
     Force			=> [ "FORCE" ],
     FromQName			=> [ "LIKE",		"string" ],
-    HardenGetBackout		=> [ "HARDENBO", 	$RequestValues{HardenGetBackout} ],
+    HardenGetBackout		=> [ "", 		$RequestValues{HardenGetBackout} ],
     InhibitGet			=> [ "GET", 		$RequestValues{Enabled} ],
     InhibitPut			=> [ "PUT",		$RequestValues{Enabled} ],
     InitiationQName		=> [ "INITQ",		"string" ],

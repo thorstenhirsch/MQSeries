@@ -1,5 +1,5 @@
 #
-# $Id: Message.pm,v 12.2 2000/02/25 09:21:31 wpm Exp $
+# $Id: Message.pm,v 13.2 2000/03/23 21:30:56 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -17,7 +17,7 @@ use MQSeries;
 
 use vars qw($VERSION);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 sub new {
 
@@ -128,13 +128,15 @@ sub BufferLength {
 
     my $self = shift;
 
-    if ( my $BufferLength = $_[0] ) {
+    if ( scalar @_ > 0 ) {
+
+	my $BufferLength = $_[0];
+
 	if (
-	    $BufferLength =~ /^\d+$/ and
-	    $BufferLength > 0 and
+	    $BufferLength >= 0 and
 	    $BufferLength == int($BufferLength)
 	   ) {
-	    $self->{BufferLength} = $_[0];
+	    $self->{BufferLength} = $BufferLength;
 	}
 	else {
 	    $self->{Carp}->("Invalid argument: 'BufferLength' must be a positive integer.\n");

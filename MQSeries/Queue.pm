@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 12.3 2000/03/03 16:45:42 wpm Exp $
+# $Id: Queue.pm,v 13.1 2000/03/06 16:27:34 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -25,7 +25,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 sub new {
 

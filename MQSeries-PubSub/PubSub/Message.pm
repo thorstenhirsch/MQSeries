@@ -1,5 +1,5 @@
 #
-# $Id: Message.pm,v 12.1 2000/02/03 19:44:34 wpm Exp $
+# $Id: Message.pm,v 13.1 2000/03/06 16:31:01 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -17,7 +17,7 @@ use vars qw(
 
 use MQSeries::Message::RulesFormat;
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 @ISA = qw(MQSeries::Message::RulesFormat);
 

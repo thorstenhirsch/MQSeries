@@ -1,5 +1,5 @@
 #
-# $Id: PCF.pm,v 12.1 2000/02/03 19:38:38 wpm Exp $
+# $Id: PCF.pm,v 13.1 2000/03/06 16:26:35 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -9,7 +9,7 @@ package MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 #
 # Note -- the order is important, so resist the anal retentive urge to

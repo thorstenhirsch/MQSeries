@@ -1,5 +1,5 @@
 #
-# $Id: Request.pm,v 12.1 2000/02/03 19:39:08 wpm Exp $
+# $Id: Request.pm,v 13.3 2000/04/01 00:55:58 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,7 +24,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 sub new {
 
@@ -208,16 +208,24 @@ sub _TranslatePCF {
 	    # $paramtype requires a string list (MQCFT_STRING_LIST),
 	    # then make the value into a single entry array.
 	    #
+	    # NOTE: We forcibly quote the values to force them into
+	    # strings, otherwise SvPOK() will complain about integers,
+	    # which can of course be represented as strings.  This
+	    # might just be a bad choice on my part in the XS code.
+	    #
 	    if ( $paramtype == MQCFT_STRING || $paramtype == MQCFT_STRING_LIST ) {
 		if ( ref $origvalue eq "ARRAY" ) {
-		    $newparameter->{Strings} = $origvalue;
+		    $newparameter->{Strings} = [];
+		    foreach my $value ( @$origvalue ) {
+			push(@{$newparameter->{Strings}},"$value");
+		    }
 		}
 		else {
 		    if ( $paramtype == MQCFT_STRING_LIST ) {
-			$newparameter->{Strings} = [$origvalue];
+			$newparameter->{Strings} = ["$origvalue"];
 		    }
 		    else {
-			$newparameter->{String} = $origvalue;
+			$newparameter->{String} = "$origvalue";
 		    }
 		}
 	    }
@@ -338,7 +346,7 @@ sub MQEncodeMQSC {
 		my ($subkey,$subvalues) = ($key->{Key},$key->{Values});
 
 		unless ( $parameters->{$subkey} ) {
-		    $self->{Carp}->("Require parameter '$subkey' for command '$command' missing\n");
+		    $self->{Carp}->("Required parameter '$subkey' for command '$command' missing\n");
 		    return;
 		}
 

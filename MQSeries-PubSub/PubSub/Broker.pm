@@ -1,5 +1,5 @@
 #
-# $Id: Broker.pm,v 12.1 2000/02/03 19:42:57 wpm Exp $
+# $Id: Broker.pm,v 13.2 2000/03/31 14:05:33 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::QueueManager );
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 #
 # All 5 of these PubSub commands must be sent to the Broker.
@@ -53,7 +53,7 @@ sub RequestUpdate {
 }
 
 #
-# Extended commands. 
+# Extended commands.
 #
 
 #
@@ -104,11 +104,11 @@ sub InquireTopics {
     my $self = shift;
     my (%args) = @_;
 
-    $args{Type} = "Publishers" 
+    $args{Type} = "Publishers"
       unless exists $args{Type};
-    $args{StreamName} = "SYSTEM.BROKER.DEFAULT.STREAM" 
+    $args{StreamName} = "SYSTEM.BROKER.DEFAULT.STREAM"
       unless exists $args{StreamName};
-    
+
     unless ( $args{Type} eq 'Publishers' || $args{Type} eq 'Subscribers' ) {
 	$self->{Carp}->("Invalid argument 'Type': must be either 'Publishers' or 'Subscribers'");
 	return;
@@ -131,17 +131,17 @@ sub _InquireAttribute {
     my $qmgrname = $args{QMgrName} || $self->{QueueManager};
     my $streamname = $args{StreamName} || "SYSTEM.BROKER.ADMIN.STREAM";
 
-    my ($topic) = ($prefix . 
+    my ($topic) = ($prefix .
 		   $self->_BlankPadName($qmgrname,MQ_Q_MGR_NAME_LENGTH) .
 		   $suffix);
-    
+
     my (@message) = $self->InquireRetainedMessages
       (
        Topic 		=> $topic,
        StreamName	=> $streamname,
        MsgClass		=> "MQSeries::PubSub::AdminMessage",
       );
-    
+
     unless ( @message ) {
 	# Don't carp -- InquireRetainedMessages will, if the error isn't ignorable
 	return;
@@ -195,37 +195,37 @@ sub InquireIdentities {
 	return;
     }
 
-    my ($admintopic) = ( 
+    my ($admintopic) = (
 			( $anonymous ? "MQ/SA/" : "MQ/S/" ) .
 			$self->_BlankPadName($qmgrname,MQ_Q_MGR_NAME_LENGTH) .
 			"/$type" .
 			( $anonymous ? "/AllIdentities" : "/Identities" )
 		       );
-    
-    my ($adminregexp) = ( 
+
+    my ($adminregexp) = (
 			 ( $anonymous ? "MQ/SA/" : "MQ/S/" ) .
 			 "[^/]+/$type" .
 			 ( $anonymous ? "/AllIdentities" : "/Identities" )
 			);
-    
+
     my (@message) = $self->InquireRetainedMessages
       (
        Topic		=> "$admintopic/$querytopic",
        StreamName	=> $streamname,
        MsgClass		=> "MQSeries::PubSub::AdminMessage",
       );
-    
+
     return unless @message;
-    
+
     my (@result) = ();
-    
+
     foreach my $message ( @message ) {
 
 	my $result = {};
 	
-	foreach my $key ( 
+	foreach my $key (
 			 qw(
-			    StreamName 
+			    StreamName
 			    Topic
 			    PublishTimestamp
 			    BrokerCount
@@ -239,7 +239,7 @@ sub InquireIdentities {
 	$result->{Topic} =~ s:$adminregexp/::;
 
 	if ( my $count = $message->Parameters("RegistrationQMgrName") ) {
-	    
+
 	    my $maxindex = ref $count eq 'ARRAY' ? scalar @$count : 1;
 
 	    my (@identity) = ();
@@ -249,7 +249,7 @@ sub InquireIdentities {
 		my $identity = {};
 
 		my $parameters = $message->Parameters();
-	    
+
 		foreach my $key (
 				 qw(
 				    RegistrationQMgrName
@@ -318,7 +318,7 @@ sub InquireRetainedMessages {
     #
     my $topicstring = join("','",@$topics);
 
-    unless ( 
+    unless (
 	    $self->RegisterSubscriber
 	    (
 	     MsgDesc		=>
@@ -332,12 +332,12 @@ sub InquireRetainedMessages {
 	     {
 	      Topic		=> $topics,
 	      StreamName	=> $streamname,
-	      RegOpts		=> [qw( 
+	      RegOpts		=> [qw(
 				       Anon
 				       PubOnReqOnly
 				      )],
 	     },
-	    ) 
+	    )
 	   ) {
 	$self->{Carp}->("Unable to RegisterSubscriber\n" .
 			"Reason => " . $self->Reason() . "\n");
@@ -384,15 +384,15 @@ sub InquireRetainedMessages {
 	}
 	
 	unless ( $self->ReplyQ()->Get( Message 	=> $message ) ) {
-	    
+
 	    $self->{Carp}->("Unable to get message from replyq\n" .
 			    "Reason => " . $self->ReplyQ()->Reason() . "\n");
 	    $self->{"Reason"} = $self->ReplyQ()->Reason();
 	    $self->{"CompCode"} = $self->ReplyQ()->CompCode();
 	    $errors++;
 	    last;
-	    
-	} 
+
+	}
 	
 	last if $self->ReplyQ()->Reason() == MQRC_NO_MSG_AVAILABLE;
 	push(@message,$message);

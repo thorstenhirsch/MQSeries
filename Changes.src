@@ -4,6 +4,42 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.10
+
+=head2 MQSeries::Command MQSC bugs
+
+Thanks to yet another data length limitation, the string
+"INITIALIZING" is too long for OS/390 to display, so this gets
+truncated to "INITIALIZI", for output of the InquireChannelStatus()
+command, only on that platform.  The API can parse this correctly now.
+
+The IndexType values weren't properly mapped on either requests or
+responses.  Now they are.
+
+The HardenGetBackout paremeter was incorrectly encoded in MQSC.  It is
+now.
+
+=head2 MQSeries::Message allows BufferLength of 0
+
+This is one that came back to haunt me, as I thought I had fixed this
+way back in 1.04.  If you attempt to create an MQSeries::Message with
+a BufferLength of zero, you actually get one with the default value of
+32K.  This is bad, if you are writing some code to say, browse a queue
+and just get all of the headers, as you end up getting some of the
+data, too.  The code does the right thing now, and properly accepts a
+BufferLength of 0.
+
+=head2 MQSeries::Command->CreateObject enhancements and documentation
+
+I added a new key (Clear) to indicate that when replacing a Local
+queue with another QType, the Local queue should be cleared before
+being deleted.
+
+There are also a couple of examples in the SYNOPSIS section, and
+documentation for the new method call.  This can now be considered
+production, and is no longer experimental.  The author uses this call
+almost exclusively, in new development, for creating objects.
+
 =head1 Changes for 1.09
 
 =head2 Support for Win32
@@ -643,7 +679,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 12.5 2000/03/06 15:56:46 wpm Exp $
+# $Id: Changes.src,v 13.5 2000/04/12 14:24:31 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

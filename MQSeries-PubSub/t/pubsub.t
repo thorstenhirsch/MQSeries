@@ -1,5 +1,5 @@
 #
-# $Id: pubsub.t,v 12.1 2000/02/03 19:45:16 wpm Exp $
+# $Id: pubsub.t,v 13.1 2000/03/06 16:32:00 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -10,8 +10,8 @@ BEGIN {
     require "../util/parse_headers";
 }
 
-BEGIN { 
-    $| = 1; 
+BEGIN {
+    $| = 1;
     if ( $::has_mqrfh ) {
 	print "1..1\n";
     }
@@ -22,10 +22,10 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use MQSeries::PubSub::Broker 		1.09;
-use MQSeries::PubSub::Stream 		1.09;
-use MQSeries::PubSub::Message 		1.09;
-use MQSeries::PubSub::AdminMessage 	1.09;
+use MQSeries::PubSub::Broker 		1.10;
+use MQSeries::PubSub::Stream 		1.10;
+use MQSeries::PubSub::Message 		1.10;
+use MQSeries::PubSub::AdminMessage 	1.10;
 $loaded = 1;
 print "ok 1\n";
 
@@ -34,4 +34,4 @@ print "ok 1\n";
 # are no syntax errors in any of the PubSub related files.
 #
 # A real test suite for the PubSub API will require a lot of work.
-# 
+#

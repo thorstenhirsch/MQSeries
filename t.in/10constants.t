@@ -1,5 +1,5 @@
 #
-# $Id: 10constants.t,v 12.1 2000/03/06 14:08:27 wpm Exp $
+# $Id: 10constants.t,v 13.1 2000/03/06 16:23:36 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,7 +19,7 @@ print("1..",
       "\n");
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries;
+use __APITYPE__::MQSeries 1.10;
 $loaded = 1;
 print "ok 1\n";
 

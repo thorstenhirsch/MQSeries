@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 12.3 2000/03/03 17:39:28 wpm Exp $
+# $Id: Command.pm,v 13.3 2000/04/12 14:22:53 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -23,7 +23,7 @@ use MQSeries::Command::MQSC;
 
 use vars qw($VERSION);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 sub new {
 
@@ -234,7 +234,7 @@ sub CreateObject {
 
     my $self 			= shift;
     my (%args)			= @_;
-    my ($Verify,$Quiet,$Attrs)  = @args{qw(Verify Quiet Attrs)};
+    my ($Verify,$Quiet,$Clear,$Attrs)  = @args{qw(Verify Quiet Clear Attrs)};
 
     my $QMgr			= (
 				   $self->{RealQueueManager} ||
@@ -356,11 +356,23 @@ sub CreateObject {
     #
     if ( $Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType} ) {
 
+	if ( $Clear && $Object->{QType} eq 'Local' ) {
+	    $self->ClearQueue
+	      (
+	       QName		=> $Attrs->{QName},
+	      ) or do {
+		  $self->{Carp}->("Unable to clear $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
+				  MQReasonToText($self->Reason()) . "\n");
+		  return;
+	      };
+	}
+
 	print "Deleting $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" unless $Quiet;
 
 	$self->$Delete
 	  (
 	   $Key			=> $Attrs->{$Key},
+	   QType		=> $Object->{QType},
 	  ) or do {
 	      $self->{Carp}->("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
 			      MQReasonToText($self->Reason()) . "\n");
@@ -544,7 +556,7 @@ sub _Command {
 
 	if ( $command eq 'InquireChannelStatus' ) {
 	    if (
-		$self->{Type} eq 'PCF' && 
+		$self->{Type} eq 'PCF' &&
 		$self->{"Reason"} == MQRCCF_CHL_STATUS_NOT_FOUND
 	       ) {
 		$response->{Parameters}->{ChannelStatus} = 'NotFound';
@@ -692,7 +704,7 @@ sub _Command {
 	    #
 	    # Yank back the last response, and set its control value
 	    # to MQCFC_LAST
-	    # 
+	    #
 	    if ( scalar(@{$self->{Response}}) ) {
 		my $response = pop(@{$self->{Response}});
 		$response->{Header}->{Control} = &MQCFC_LAST;
@@ -860,6 +872,32 @@ MQSeries::Command - OO interface to the Programmable Commands
 
   }
 
+  #
+  # High-level wrapper method: CreateObject
+  #
+  $command->CreateObject
+    (
+     Attrs		=>
+     {
+      QName		=> 'FOO.BAR.REQUEST',
+      QType		=> 'Local',
+      MaxQDepth		=> '50000',
+      MaxMsgLength	=> '20000',
+     }
+    ) || die "CreateObject: " . MQReasonToText($command->Reason()) . "\n";
+
+  $command->CreateObject
+    (
+     Clear		=> 1,
+     Attrs		=>
+     {
+      QName		=> 'FOO.BAR.REPLY',
+      QType		=> 'Remote',
+      RemoteQName	=> 'FOO.BAR.REPLY',
+      RemoteQMgrName	=> 'SAT1',
+     }
+    ) || die "CreateObject: " . MQReasonToText($command->Reason()) . "\n";
+
 =head1 DESCRIPTION
 
 The MQSeries::Command class implements an interface to the
@@ -1007,7 +1045,7 @@ definition which routes to the command queue on the desired
 QueueManager.
 
 In order to specify the "default" queue manager as the
-ProxyQueueManager, an empty string must be explicitly given.  
+ProxyQueueManager, an empty string must be explicitly given.
 
 =item CommandQueueName
 
@@ -1112,11 +1150,11 @@ For example:
     );
 
 Now, the CompCode and Reason are available, even if the constructor
-fails, in which case it would normally return nothing.                                      
+fails, in which case it would normally return nothing.
 
 =item Reason
 
-See CompCode above.  
+See CompCode above.
 
 =back
 
@@ -1136,6 +1174,79 @@ Normally, the data of interest is returned from the method in
 question, but the individual responses are available via this method.
 This returns a list of MQSeries::Command::Response objects, one for
 each individual message recieved.
+
+=head2 CreateObject
+
+This is a generic "wrapper" method for creating any generic MQSeries
+object.  The arguments to this method are a hash, with the following
+key/value pairs:
+
+  Key                Value
+  ===                =====
+  Attrs		     HASH reference
+  Verify	     Boolean
+  Clear              Boolean
+  Quiet              Boolean
+
+The key/value pairs in the Attrs argument are passed directly to the
+corresponding CreateQueue(), CreateChannel(), or CreateProcess()
+method.  However, there is more to this than just creating the object.
+For clarity, this discussion will use creation of a queue as an
+example.
+
+First, InquireQueue is called to see if the object already exists.  If
+it does not exist, then the object is simply created, with the
+specified attributes.
+
+If it does exist, and the QType matches, then the actual object
+attributes are compared against those passed to the CreateObject
+method, and if they match, then no action is taken, and the object is
+not modified.
+
+If it does exist, but of a different QType, then the existing object
+is deleted, and the new object created as requested.
+
+The idea here is to match the modification of the object conditional
+on the need for modifying the object.  If the same CreateObject method
+call, with the same arguments, is called twice, then the second method
+invocation should be a noop, as far as the actual MQSeries object is
+concerned.
+
+=over
+
+=item Attrs
+
+As discussed above, this is a HASH reference, whose key/value pairs
+are used to determine what type of object is being created or updated,
+and those key/value pairs are passed as-is to the appropriate Create*
+method call for the specified MQSeries object type.
+
+=item Verify
+
+If this key has a true value, then no changes will actually be
+implemented.  They will merely be reported via test messages on
+stdout.
+
+=item Quiet
+
+CreateObject is by default rather chatty about what it is doing, but
+all of the messages, other than errors, can be suppressed if this key
+has a true value.
+
+=item Clear
+
+Normally, when a Local queue is being replaced with another QType
+(eg. Remote or Alias), then the Local queue is not cleared before
+being deleted.  If there are messages on the queue, this will cause an
+error.  If the queue needs to be cleared, then this key must be passed
+with a true value.
+
+This is a seperate option due to the inherit danger of destroying data
+accidentally.  If you really want to clear the queues before
+recreating them as another QType, you will have to be explicitl about
+it.
+
+=back
 
 =head1 COMMAND REQUESTS
 
@@ -1181,7 +1292,7 @@ string.
 
 ANOTHER NOTE: if you pass a simple scalar string where a string list
 is explicitly required (as opposed to optional), then the API will
-create a list of one string for you.  
+create a list of one string for you.
 
 =item (integer)
 
@@ -1226,9 +1337,9 @@ See the documentation for each of the for the specific list.
   Reset Channel
   Resolve Channel
   Start Channel
-  Start Channel Initiator 
-  Start Channel Listener 
-  Stop Channel 
+  Start Channel Initiator
+  Start Channel Listener
+  Stop Channel
 
 The following keys have special value mappings:
 
@@ -1384,11 +1495,11 @@ The following keys have Boolean values:
 
 =over 4
 
-=item Replace    		  
+=item Replace
 
-=item DataConversion 		  
+=item DataConversion
 
-=item Quiesce   		
+=item Quiesce
 
 =back
 
@@ -1397,11 +1508,11 @@ The following keys have Boolean values:
 Subsets of the these keys are applicable to the following commands.
 See the documentation for each of the for the specific list.
 
-  Change Namelist 
-  Copy Namelist 
-  Create Namelist 
-  Delete Namelist 
-  Inquire Namelist 
+  Change Namelist
+  Copy Namelist
+  Create Namelist
+  Delete Namelist
+  Inquire Namelist
   Inquire Namelist Names
 
 The following keys have special value mappings:
@@ -1424,7 +1535,7 @@ The following keys have Boolean values:
 
 =over 4
 
-=item Replace    		  
+=item Replace
 
 =back
 
@@ -1444,7 +1555,7 @@ The following keys have special value mappings:
 
 =over 4
 
-=item ApplType    		(integer)  
+=item ApplType    		(integer)
 
     Key				Macro
     ===				=====
@@ -1483,7 +1594,7 @@ The following keys have Boolean values:
 
 =over 4
 
-=item Replace    		  
+=item Replace
 
 =back
 
@@ -1503,9 +1614,9 @@ See the documentation for each of the for the specific list.
 
 The following keys have special value mappings:
 
-=over 4 
+=over 4
 
-=item DefBind  			(integer)  
+=item DefBind  			(integer)
 
     Key				Macro
     ===				=====
@@ -1519,14 +1630,14 @@ The following keys have special value mappings:
     Permanent                   MQQDT_PERMANENT_DYNAMIC
     Temporary                   MQQDT_TEMPORARY_DYNAMIC
 
-=item DefInputOpenOption    	(integer)  
+=item DefInputOpenOption    	(integer)
 
     Key				Macro
     ===				=====
     Exclusive                   MQOO_INPUT_EXCLUSIVE
     Shared                      MQOO_INPUT_SHARED
 
-=item MsgDeliverySequence    	(integer)  
+=item MsgDeliverySequence    	(integer)
 
     Key				Macro
     ===				=====
@@ -1597,7 +1708,7 @@ The following keys have special value mappings:
     Usage                       MQIA_USAGE
     XmitQName                   MQCA_XMIT_Q_NAME
 
-=item QServiceIntervalEvent    	(integer)  
+=item QServiceIntervalEvent    	(integer)
 
     Key				Macro
     ===				=====
@@ -1605,7 +1716,7 @@ The following keys have special value mappings:
     None                        MQQSIE_NONE
     OK                          MQQSIE_OK
 
-=item QType    			(integer)  
+=item QType    			(integer)
 
     Key				Macro
     ===				=====
@@ -1616,14 +1727,14 @@ The following keys have special value mappings:
     Model                       MQQT_MODEL
     Remote                      MQQT_REMOTE
 
-=item Scope    			(integer)  
+=item Scope    			(integer)
 
     Key				Macro
     ===				=====
     Cell                        MQSCO_CELL
     QMgr                        MQSCO_Q_MGR
 
-=item TriggerType    		(integer)  
+=item TriggerType    		(integer)
 
     Key				Macro
     ===				=====
@@ -1632,7 +1743,7 @@ The following keys have special value mappings:
     First                       MQTT_FIRST
     None                        MQTT_NONE
 
-=item Usage    			(integer)  
+=item Usage    			(integer)
 
     Key				Macro
     ===				=====
@@ -1645,31 +1756,31 @@ The following keys have Boolean values:
 
 =over 4
 
-=item Replace    		  
+=item Replace
 
-=item Force    			  
+=item Force
 
-=item InhibitPut    		  
+=item InhibitPut
 
-=item DefPersistence    	 
+=item DefPersistence
 
-=item InhibitGet    		 
+=item InhibitGet
 
-=item Shareability    		  
+=item Shareability
 
-=item HardenGetBackout    	 
+=item HardenGetBackout
 
-=item DistLists    		  
+=item DistLists
 
-=item TriggerControl    	  
+=item TriggerControl
 
-=item QDepthMaxEvent    	 
+=item QDepthMaxEvent
 
-=item QDepthHighEvent    	  
+=item QDepthHighEvent
 
-=item QDepthLowEvent    	  
+=item QDepthLowEvent
 
-=item Purge			
+=item Purge
 
 =back
 
@@ -1684,7 +1795,7 @@ See the documentation for each of the for the specific list.
 
 The following keys have special value mappings:
 
-=over 4 
+=over 4
 
 =item QMgrAttrs			(integer list)
 
@@ -1730,23 +1841,23 @@ The following keys have Boolean values:
 
 =over 4
 
-=item Force    			  
+=item Force
 
-=item AuthorityEvent    	  
+=item AuthorityEvent
 
-=item InhibitEvent    		  
+=item InhibitEvent
 
-=item LocalEvent    		  
+=item LocalEvent
 
-=item RemoteEvent    		 
+=item RemoteEvent
 
-=item StartStopEvent    	  
+=item StartStopEvent
 
-=item PerformanceEvent    	  
+=item PerformanceEvent
 
-=item ChannelAutoDef    	  
+=item ChannelAutoDef
 
-=item ChannelAutoDefEvent    	  
+=item ChannelAutoDefEvent
 
 =back
 
@@ -1829,7 +1940,7 @@ The following keys have Boolean values:
 
 =over 4
 
-=item Quiesce   		
+=item Quiesce
 
 =back
 
@@ -2033,7 +2144,7 @@ The following keys can be interpreted in a Boolean context:
 
 =item DistLists
 
-=item SyncPoint 
+=item SyncPoint
 
 =back
 

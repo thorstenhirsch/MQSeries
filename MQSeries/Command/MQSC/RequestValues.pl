@@ -1,5 +1,5 @@
 #
-# $Id: RequestValues.pl,v 12.1 2000/02/24 09:24:13 wpm Exp $
+# $Id: RequestValues.pl,v 13.1 2000/03/23 21:20:48 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -195,6 +195,7 @@ package MQSeries::Command::MQSC;
    IndexType =>
    {
     CorrelId			=> "CORRELID",
+    MsgToken			=> "MSGTOKEN",
     MsgId			=> "MSGID",
     None			=> "NONE",
    },

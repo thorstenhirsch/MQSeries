@@ -1,5 +1,5 @@
 #
-# $Id: ResponseParameters.pl,v 9.2 1999/11/02 23:45:49 wpm Exp $
+# $Id: ResponseParameters.pl,v 13.2 2000/03/24 20:34:42 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -69,20 +69,20 @@ package MQSeries::Command::MQSC;
     CRTIME	=> [ "CreationTime" ],
     CURDEPTH	=> [ "CurrentQDepth" ],
     DEFPRTY	=> [ "DefPriority" ],
-    DEFPSIST	=> [ "DefPersistence" ],
+    DEFPSIST	=> [ "DefPersistence",		$ResponseValues{Yes} ],
     DEFSOPT	=> [ "DefInputOpenOption",	$ResponseValues{DefInputOpenOption} ],
     DEFTYPE	=> [ "DefinitionType",		$ResponseValues{DefinitionType} ],
     DESCR	=> [ "QDesc" ],
     DISTL	=> [ "DistLists",		$ResponseValues{Yes} ],
     GET		=> [ "InhibitGet",		$ResponseValues{Enabled} ],
-    INDXTYPE	=> [ "IndexType" ],
+    INDXTYPE	=> [ "IndexType",		$ResponseValues{IndexType} ],
     INITQ	=> [ "InitiationQName" ],
     IPPROCS	=> [ "OpenInputCount" ],
     MAXDEPTH	=> [ "MaxQDepth" ],
     MAXMSGL	=> [ "MaxMsgLength" ],
     MSGDLVSQ	=> [ "MsgDeliverySequence",	$ResponseValues{MsgDeliverySequence} ],
     OPPROCS	=> [ "OpenOutputCount" ],
-    PROCESS	=> [ "ProcessName " ],
+    PROCESS	=> [ "ProcessName" ],
     PUT		=> [ "InhibitPut",		$ResponseValues{Enabled} ],
     QDEPTHHI	=> [ "QDepthHighLimit" ],
     QDEPTHLO	=> [ "QDepthLowLimit" ],
@@ -123,7 +123,7 @@ package MQSeries::Command::MQSC;
     CLUSTIME  	=> [ "ClusterTime" ],
     DEFBIND	=> [ "DefBind",			$ResponseValues{DefBind} ],
     QMID   	=> [ "QMgrIdentifier" ],
-    
+
    },
 
    Channel =>
@@ -179,7 +179,7 @@ package MQSeries::Command::MQSC;
     MCAUSER	=> [ "MCAUserIdentifier" ],
     MODENAME	=> [ "ModeName" ],
     MREXIT	=> [ "MsgRetryExit" ],
-    MRDATA	=> [ "MsgRetryUserData" ], 
+    MRDATA	=> [ "MsgRetryUserData" ],
     MRRTY	=> [ "MsgRetryCount" ],
     MRTMT	=> [ "MsgRetryInterval" ],
     MSGDATA	=> [ "MsgUserData" ],
@@ -244,7 +244,7 @@ package MQSeries::Command::MQSC;
     IFCID	=> [ "EventId" ],
    },
 
-   Cluster => 
+   Cluster =>
    {
     ALTDATE	=> [ "AlterationDate" ],
     ALTTIME	=> [ "AlterationTime" ],

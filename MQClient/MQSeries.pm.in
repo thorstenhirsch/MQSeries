@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: MQSeries.pm.in,v 12.1 2000/02/03 19:30:16 wpm Exp $
+# $Id: MQSeries.pm.in,v 13.1 2000/03/06 16:22:29 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ require "MQSeries/Constants.pl";
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 #
 # This nonsense is only necessary if you don't have the locale files
@@ -36,7 +36,7 @@ $VERSION = '1.09';
 # condition true.
 #
 if ( "__LOCALE__" ne "" ) {
-    
+
     #
     # We'll need some default values of the LANG and NLSPATH environment
     # variables, or the MQI will not report errors properly.
@@ -46,15 +46,14 @@ if ( "__LOCALE__" ne "" ) {
 	    warn "Invalid LANG specification.  Reverting to 'C'.\n";
 	    $ENV{LANG} = 'C';
 	}
-    }
-    else {
+    } else {
 	$ENV{LANG} = 'C';
     }
-    
+
     unless ( defined $ENV{NLSPATH} ) {
 	$ENV{NLSPATH} = "__LOCALE__/%L/LC_MESSAGES/%N.cat";
     }
-    
+
 }
 
 # Items to export into callers namespace by default. Note: do not
@@ -148,13 +147,13 @@ sub AUTOLOAD {
 }
 
 #
-# Special case handling of those pesky strings of NULLs.  
+# Special case handling of those pesky strings of NULLs.
 #
-my %_constant_null = 
+my %_constant_null =
   (
    __CONSTANT_NULL__
   );
-    
+
 sub constant_null {
     my ($constant) = @_;
     return exists $_constant_null{$constant} ? $_constant_null{$constant} : undef;

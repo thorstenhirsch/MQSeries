@@ -1,5 +1,5 @@
 #
-# $Id: ResponseValues.pl,v 9.2 1999/11/02 23:45:58 wpm Exp $
+# $Id: ResponseValues.pl,v 13.3 2000/03/23 21:11:46 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -85,11 +85,13 @@ package MQSeries::Command::MQSC;
    {
     BINDING		=> "Binding",
     INITIALIZING 	=> "Initializing",
+    # Special spelling for OS/390 :-(
+    INITIALIZI	 	=> "Initializing",
     PAUSED 		=> "Paused",
     REQUESTING 		=> "Requesting",
     RETRYING 		=> "Retrying",
     RUNNING 		=> "Running",
-    STARTING		=> "Starting", 
+    STARTING		=> "Starting",
     STOPPED 		=> "Stopped",
     STOPPING 		=> "Stopping",
     INACTIVE		=> "Inactive",
@@ -186,6 +188,14 @@ package MQSeries::Command::MQSC;
    {
     NORMAL		=> "Normal",
     REPOS               => "Repository",
+   },
+
+   IndexType =>
+   {
+    CORRELID		=> "CorrelId",
+    MSGTOKEN		=> "MsgToken",
+    MSGID		=> "MsgId",
+    NONE		=> "None",
    },
 
  );

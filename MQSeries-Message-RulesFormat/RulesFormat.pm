@@ -1,5 +1,5 @@
 #
-# $Id: RulesFormat.pm,v 12.1 2000/02/03 19:41:55 wpm Exp $
+# $Id: RulesFormat.pm,v 13.2 2000/04/11 20:47:58 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,7 +19,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 
@@ -33,7 +33,7 @@ sub new {
     my $class = ref($proto) || $proto;
     my %args = @_;
 
-    my %MsgDesc = 
+    my %MsgDesc =
       (
        Format	=> MQFMT_RF_HEADER,
       );
@@ -125,13 +125,13 @@ sub GetConvert {
     unless ( ($self->{"Header"},$options,$data) = MQDecodeRulesFormat($buffer,length($buffer)) ) {
 	$self->{Carp}->("Unable to decode MQSeries Rules and Format Message\n");
 	return undef;
-    } 
+    }
 
     unless ( $self->{"Options"} = $self->_DecodeOptions($options) ) {
 	$self->{Carp}->("Unable to parse NameValueString from Rules and Format Message\n");
 	return undef;
     }
-      
+
     return $data;
 
 }

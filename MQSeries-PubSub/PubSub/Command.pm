@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 12.1 2000/02/03 19:44:01 wpm Exp $
+# $Id: Command.pm,v 13.2 2000/03/31 14:07:36 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -10,7 +10,7 @@ package MQSeries::PubSub::Command;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 use MQSeries;
 use MQSeries::PubSub::Message;
@@ -85,23 +85,23 @@ sub new {
 		$self->{ReplyQ} = $args{ReplyQ};
 	    }
 	    else {
-		unless ( 
+		unless (
 			$self->{ReplyQ} = MQSeries::Queue->new
 			(
 			 QueueManager	=> $qmgr,
 			 Queue 		=> $args{ReplyQ},
 			 Mode		=> 'input',
-			) 
+			)
 		       ) {
 		    $self->{Carp}->("Unable to create ReplyQ MQSeries::Queue object\n");
 		    return;
-		} 
+		}
 	    }
 	}
 	else {
 	    unless (
 		    $self->{ReplyQ} = MQSeries::Queue->new
-		    ( 
+		    (
 		     QueueManager	=> $qmgr,
 		     Queue 		=> 'SYSTEM.DEFAULT.MODEL.PERMDYN.QUEUE',
 		     DynamicQName	=> 'PUBSUB.BROKER.REPLYQ.*',
@@ -111,7 +111,7 @@ sub new {
 		   ) {
 		$self->{Carp}->("Unable to create ReplyQ MQSeries::Queue object\n");
 		return;
-	    } 
+	    }
 	}
     }
 
@@ -137,7 +137,7 @@ sub _Command {
     #
     # Build the options argument...
     #
-    my $options = 
+    my $options =
       {
        Command 		=> $command,
       };
@@ -167,7 +167,7 @@ sub _Command {
     # Build the default MsgDesc plus anything passed by the caller.
     # For example, the Expiry, CorrelId, etc...
     #
-    my $msgdesc = 
+    my $msgdesc =
       {
        MsgType		=> $self->{DatagramOnly} ? MQMT_DATAGRAM : MQMT_REQUEST,
       };
@@ -188,7 +188,7 @@ sub _Command {
     if ( $msgdesc->{MsgType} == MQMT_REQUEST ) {
 	
 	if ( $self->{DatagramOnly} ) {
-	    $self->{Carp}->(ref $self . " object initialized for DATAGRAM use only.\n" . 
+	    $self->{Carp}->(ref $self . " object initialized for DATAGRAM use only.\n" .
 			    "Unable to send requests.\n");
 	    return;
 	}
@@ -231,7 +231,7 @@ sub _Command {
     # and set CompCode and Reason.
     #
     my $putmethod = "Put";
-    my $putargs = 
+    my $putargs =
       {
        Message			=> $request,
       };
@@ -245,16 +245,16 @@ sub _Command {
     }
 
     if ( $self->isa("MQSeries::PubSub::Stream") ) {
-	$putargs = 
-	  { 
+	$putargs =
+	  {
 	   %$putargs,
 	   Sync			=> $args{Sync},
 	  };
     }
     else {
 	# Must be an MQSeries::PubSub::Broker then...
-	$putargs = 
-	  { 
+	$putargs =
+	  {
 	   %$putargs,
 	   Queue		=> 'SYSTEM.BROKER.CONTROL.QUEUE',
 	  };
@@ -354,8 +354,8 @@ MQSeries::PubSub::Command -- base OO class implementing and interface to the MQS
   # Plain and simple (usually sufficient)
   #
   my $broker = MQSeries::PubSub::Broker->new
-    ( 
-     QueueManager 		=> 'FOO.QMGR' 
+    (
+     QueueManager 		=> 'FOO.QMGR',
     ) || die;
 
   #
@@ -387,7 +387,7 @@ MQSeries::PubSub::Command -- base OO class implementing and interface to the MQS
 
   #
   # Examples of Stream object instantiation
-  # 
+  #
   my $stream = MQSeries::PubSub::Stream->new
     (
      QueueManager		=> $broker,
@@ -396,7 +396,7 @@ MQSeries::PubSub::Command -- base OO class implementing and interface to the MQS
 
   #
   # Command examples
-  #  
+  #
   # RegisterPublisher, single topic
   #
   $broker->RegisterPublisher
@@ -414,7 +414,7 @@ MQSeries::PubSub::Command -- base OO class implementing and interface to the MQS
   #
   $broker->RegisterSubscriber
     (
-     Options			=> 
+     Options			=>
      {
       Topic			=> [qw(
 				       Some/Topic/Of/Interest
@@ -443,7 +443,7 @@ MQSeries::PubSub::Command -- base OO class implementing and interface to the MQS
 
   #
   # RegisterSubscriber, with your own replyQ
-  #  
+  #
   my $replyq = MQSeries::Queue->new
     (
      QueueManager		=> $broker,
@@ -548,7 +548,7 @@ MQSeries::PubSub::Broker object.
 
 MQSeries::PubSub::Broker objects are subclassed from
 MQSeries::QueueManager, and therefore all of the latter methods are
-available. 
+available.
 
 MQSeries::PubSub::Stream objects are subclassed from MQSeries::Queue,
 and therefore all of the latter methods are available.  However, it
@@ -600,7 +600,7 @@ assumed to have been instantiated for input.
 If not given (and if DatagramOnly is omitted), the constructor will
 open a permanent dynamic queue, using the
 SYSTEM.DEFAULT.MODEL.PERMDYN.QUEUE model queue, and
-PUBSUB.BROKER.REPLYQ.* as a DynamicQName template.  
+PUBSUB.BROKER.REPLYQ.* as a DynamicQName template.
 
 NOTE: This queue is not a default object created by the MQSeries
 product, so it will need to be created by the MQSeries administrators
@@ -686,15 +686,15 @@ For example:
 
       my $message = MQSeries::PubSub::Message->new() || die;
       my $result = $broker->ReplyQ()->Get
-        ( 
+        (
          Message 		=> $message,
          Wait			=> 1000,
         );
- 
+
       next if $result > 1; # -1 means MQRC_NO_MSG_AVAILABLE -- see MQSeries::Queue::Get docs
-     
+
       # Do something useful with $message->Data(), perhaps
-    
+
   }
 
 =head1 COMMAND SYNTAX
@@ -791,7 +791,7 @@ prefixed with "MQPS".  This must be omitted, as the
 MQSeries::PubSub::Message objects will prepend it appropriately, and
 strip it when retreiving these messages.
 
-See below for a summary of each individual PubSub commands options.  
+See below for a summary of each individual PubSub commands options.
 
 =item Sync
 
@@ -799,7 +799,7 @@ This option is passed directly to the MQSeries::Queue->Put() method,
 and it can only really be used when sending datagrams.  Obviously, if
 you are sending requests, then you can not use syncpoint since the put
 of the request, and subsequent get of the response all happens within
-a single subroutine call.  
+a single subroutine call.
 
 This option is really only relevant if MsgDesc->{MsgType} ==
 MQMT_DATAGRAM, and then the method call (eg. the
@@ -823,46 +823,46 @@ the "MQSeries PubSub User's Guide".
 
 NOTE: that the docs list the "Command" key as required, but you will
 notice it is omitted here.  Since the method names all map directly to
-the actual command name, this API adds that key for you.  
+the actual command name, this API adds that key for you.
 
 =head2 RegisterPublisher (Broker)
 
-  Required keys: 
-	Topic 
-  Optional keys: 
+  Required keys:
+	Topic
+  Optional keys:
 	RegOpts, StreamName, QMgrName, QName
 
 =head2 RegisterSubscriber (Broker)
 
-  Required parameters: 
-	Topic 
-  Optional parameters: 
+  Required parameters:
+	Topic
+  Optional parameters:
 	RegOpts, StreamName, QMgrName, QName
 
 =head2 DeregisterPublisher (Broker)
 
-  Optional parameters: 
+  Optional parameters:
 	RegOpts, StreamName, Topic, QMgrName, QName
 
 =head2 DeregisterSubscriber (Broker)
 
-  Optional parameters: 
+  Optional parameters:
 	RegOpts, StreamName, Topic, QMgrName, QName
 
 =head2 RequestUpdate (Broker)
 
-  Required parameters: 
-	Topic 
-  Optional parameters: 
+  Required parameters:
+	Topic
+  Optional parameters:
 	RegOpts, StreamName, QMgrName, QName
 
 =head2 Publish (Stream)
 
-  Required parameters: 
-	Topic 
-  Optional parameters: 
-	RegOpts, PubOpts, StreamName, 
-	QMgrName, QName, PubTime, SeqNum, 
+  Required parameters:
+	Topic
+  Optional parameters:
+	RegOpts, PubOpts, StreamName,
+	QMgrName, QName, PubTime, SeqNum,
 	StringData, IntData
 
 Data can be published in any arbitrary string format, using the Data
@@ -875,9 +875,9 @@ wrong.
 
 =head2 DeletePublication (Stream)
 
-  Required parameters: 
-	Topic 
-  Optional parameters: 
+  Required parameters:
+	Topic
+  Optional parameters:
 	DelOpts, StreamName
 
 =head1 EXTENDED COMMANDS
@@ -1055,12 +1055,12 @@ matches the value specified in the method argument list.
 =item Topic
 
 The Topic for which this entry contains publisher or subscriber
-information.  
+information.
 
 =item StreamName
 
 The StreamName for which this entry contains publisher or subscriber
-information.  
+information.
 
 =item BrokerCount
 
@@ -1104,7 +1104,7 @@ following keys:
   CorrelId
 
 NOTE: These are the same as the Parameter identifiers documented in
-the IBM docs with the string "Registration" prepended.   
+the IBM docs with the string "Registration" prepended.
 
 =over 4
 
@@ -1134,7 +1134,7 @@ For publishers, the following keys may be present:
   Local			MQREGO_LOCAL
   DirectReq		MQREGO_DIRECT_REQUEST
   CorrelAsId		MQREGO_CORREL_ID_AS_IDENTITY
-  
+
 For subscribers, the following keys may be present:
 
   Key			Option
@@ -1158,7 +1158,7 @@ Publisher's or subscriber's correlation identifier.
 This is a 48-byte character string of hexadecimal characters
 representing the contents of the 24-byte binary correlation
 identifier. Each character in the string is in the range 0 through 9
-or A through F. 
+or A through F.
 
 This parameter is present only if the publisher's or subscriber's
 identity includes a correlation identifier.
