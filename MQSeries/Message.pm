@@ -1,7 +1,7 @@
 #
-# $Id: Message.pm,v 15.1 2000/08/16 00:41:32 wpm Exp $
+# $Id: Message.pm,v 16.3 2001/01/05 21:45:55 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,15 +9,14 @@ package MQSeries::Message;
 
 require 5.004;
 
-use strict qw(vars refs);
+use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 
 use vars qw($VERSION);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 sub new {
 

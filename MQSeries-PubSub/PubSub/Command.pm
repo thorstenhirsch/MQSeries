@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 15.2 2000/10/18 15:19:17 biersma Exp $
+# $Id: Command.pm,v 16.3 2001/01/05 21:43:29 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,9 +10,9 @@ package MQSeries::PubSub::Command;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::PubSub::Message;
 use MQSeries::Utils qw(ConvertUnit);
 
@@ -130,7 +130,7 @@ sub new {
 		     Queue 		=> $modelq,
 		     DynamicQName	=> $dynamicq,
 		     Mode		=> 'input',
-		     CloseOptions	=> MQCO_DELETE_PURGE,
+		     CloseOptions	=> MQSeries::MQCO_DELETE_PURGE,
 		    )
 		   ) {
 		$self->{Carp}->("Unable to create ReplyQ MQSeries::Queue object\n");
@@ -155,8 +155,8 @@ sub _Command {
     # Initialize these to something reasonable.  That is, assume
     # failure.
     #
-    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
-    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQSeries::MQCC_FAILED;
 
     #
     # Build the options argument...
@@ -193,7 +193,9 @@ sub _Command {
     #
     my $msgdesc =
       {
-       MsgType		=> $self->{DatagramOnly} ? MQMT_DATAGRAM : MQMT_REQUEST,
+       MsgType		=> ($self->{DatagramOnly} ? 
+                            MQSeries::MQMT_DATAGRAM : 
+                            MQSeries::MQMT_REQUEST),
       };
 
     if ( exists $args{MsgDesc} ) {
@@ -209,7 +211,7 @@ sub _Command {
     # the replyq.  Also, if the object was created as DatagramOnly,
     # and the MsgType was overriden back to request, then implode.
     #
-    if ( $msgdesc->{MsgType} == MQMT_REQUEST ) {
+    if ( $msgdesc->{MsgType} == MQSeries::MQMT_REQUEST ) {
 	
 	if ( $self->{DatagramOnly} ) {
 	    $self->{Carp}->(ref $self . " object initialized for DATAGRAM use only.\n" .
@@ -228,7 +230,7 @@ sub _Command {
     # Important sanity check.  If you are sending a request, then you
     # can't do the put in syncpoint.
     #
-    if ( $msgdesc->{MsgType} == MQMT_REQUEST && $args{Sync} ) {
+    if ( $msgdesc->{MsgType} == MQSeries::MQMT_REQUEST && $args{Sync} ) {
 	$self->{Carp}->("Unable to send PubSub requests in syncpoint\n");
 	return;
     }
@@ -291,14 +293,14 @@ sub _Command {
     # If we sent a datagram, then we're done.  No further error
     # checking.
     #
-    return $request if $msgdesc->{MsgType} == MQMT_DATAGRAM;
+    return $request if $msgdesc->{MsgType} == MQSeries::MQMT_DATAGRAM;
 
     #
     # Reset these to assume failure, since a successful Put1() call
     # will set them to assume success.
     #
-    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
-    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQSeries::MQCC_FAILED;
 
     my $response = MQSeries::PubSub::Message->new
       (
@@ -335,7 +337,8 @@ sub _Command {
     $self->{CompCode} = $response->Options('CompCode');
     $self->{Response} = $response;
 
-    if ( $self->{Reason} == MQCC_OK && $self->{CompCode} == MQRC_NONE ) {
+    if ( $self->{Reason} == MQSeries::MQCC_OK && 
+         $self->{CompCode} == MQSeries::MQRC_NONE ) {
 	return 1;
     }
     else {

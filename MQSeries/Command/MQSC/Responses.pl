@@ -1,7 +1,7 @@
 #
-# $Id: Responses.pl,v 14.1 2000/08/15 20:51:41 wpm Exp $
+# $Id: Responses.pl,v 16.2 2001/01/05 21:45:36 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -12,12 +12,14 @@ package MQSeries::Command::MQSC;
    ChangeQueueManager 		=> $ResponseParameters{QueueManager}, 
    InquireQueueManager 		=> $ResponseParameters{QueueManager}, 
    PingQueueManager 		=> $ResponseParameters{QueueManager}, 
+
    ChangeProcess 		=> $ResponseParameters{Process}, 
    CopyProcess 			=> $ResponseParameters{Process}, 
    CreateProcess 		=> $ResponseParameters{Process}, 
    DeleteProcess 		=> $ResponseParameters{Process}, 
    InquireProcess 		=> $ResponseParameters{Process}, 
    InquireProcessNames 		=> $ResponseParameters{Process}, 
+
    ChangeQueue 			=> $ResponseParameters{Queue}, 
    ClearQueue 			=> $ResponseParameters{Queue}, 
    CopyQueue 			=> $ResponseParameters{Queue}, 
@@ -26,6 +28,7 @@ package MQSeries::Command::MQSC;
    InquireQueue 		=> $ResponseParameters{Queue}, 
    InquireQueueNames 		=> $ResponseParameters{Queue}, 
    ResetQueueStatistics 	=> $ResponseParameters{Queue}, 
+
    ChangeChannel 		=> $ResponseParameters{Channel}, 
    CopyChannel 			=> $ResponseParameters{Channel}, 
    CreateChannel 		=> $ResponseParameters{Channel}, 
@@ -48,9 +51,10 @@ package MQSeries::Command::MQSC;
    InquireNamelistNames		=> $ResponseParameters{Namelist},
 
    InquireStorageClass		=> $ResponseParameters{StorageClass},
-   InquireTrace			=> $ResponseParameters{Trace},
-   InquireClusterQueueManager	=> $ResponseParameters{Cluster},
 
+   InquireTrace			=> $ResponseParameters{Trace},
+
+   InquireClusterQueueManager	=> $ResponseParameters{Cluster},
   );
 
 %ResponseList =

@@ -1,7 +1,7 @@
 #
-# $Id: AdminMessage.pm,v 15.1 2000/08/16 00:41:16 wpm Exp $
+# $Id: AdminMessage.pm,v 16.3 2001/01/05 21:43:26 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,11 +9,10 @@ package MQSeries::PubSub::AdminMessage;
 
 require 5.004;
 
-use strict qw(vars refs);
+use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQDecodePCF);
 
@@ -23,7 +22,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 #
 # Generate the message contents from the Command
@@ -81,8 +80,8 @@ sub _TranslatePCF {
 
     my %Type2Key =
       (
-       &MQCFT_STRING		=> 'String',
-       &MQCFT_INTEGER		=> 'Value',
+       MQSeries::MQCFT_STRING		=> 'String',
+       MQSeries::MQCFT_INTEGER		=> 'Value',
       );
 
     unless ( exists $Responses->{$origheader->{Command}} ) {
@@ -111,7 +110,7 @@ sub _TranslatePCF {
 	}
 
 	$newvalue = $origparam->{$Type2Key{$origparam->{Type}}};
-	$newvalue =~ s/\s+$// if $origparam->{Type} == MQCFT_STRING;
+	$newvalue =~ s/\s+$// if $origparam->{Type} == MQSeries::MQCFT_STRING;
 
 	#
 	# Convert the RegistrationRegistrationOptions (what a *vile*

@@ -1,7 +1,7 @@
 #
-# $Id: Queue.pm,v 15.7 2000/10/30 18:14:21 wpm Exp $
+# $Id: Queue.pm,v 16.3 2001/01/05 21:46:01 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,11 +9,10 @@ package MQSeries::Queue;
 
 require 5.004;
 
-use strict qw(vars refs);
+use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::QueueManager;
 use MQSeries::Utils qw(ConvertUnit);
 
@@ -27,7 +26,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 sub new {
 
@@ -43,7 +42,7 @@ sub new {
     #
     my $self =
       {
-       Options		=> MQOO_FAIL_IF_QUIESCING,
+       Options		=> MQSeries::MQOO_FAIL_IF_QUIESCING,
        ObjDescPtr 	=> \%ObjDesc,
        Carp 		=> \&carp,
        RetryCount	=> 0,
@@ -51,7 +50,7 @@ sub new {
        RetryReasons	=> {
 			    map { $_ => 1 }
 			    (
-			     MQRC_OBJECT_IN_USE,
+			     MQSeries::MQRC_OBJECT_IN_USE,
 			    )
 			   },
        OpenArgs		=> {},
@@ -233,8 +232,8 @@ sub Close {
 
     return 1 unless $self->{Hobj};
 
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+    $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     if ( $args{Options} ) {
 	$self->{CloseOptions} = $args{Options};
@@ -247,10 +246,10 @@ sub Close {
 	    $self->{"CompCode"},
 	    $self->{"Reason"},
 	   );
-    if ( $self->{"CompCode"} == MQCC_OK ) {
+    if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
 	delete $self->{Hobj};
 	return 1;
-    } elsif ( $self->{"Reason"} == MQRC_HCONN_ERROR ) {
+    } elsif ( $self->{"Reason"} == MQSeries::MQRC_HCONN_ERROR ) {
 	delete $self->{Hobj};
 	return 1;
     } else {
@@ -276,12 +275,12 @@ sub Put {
 
     return unless $self->Open();
 
-    $self->{"CompCode"} 	= MQCC_FAILED;
-    $self->{"Reason"} 		= MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} 	= MQSeries::MQCC_FAILED;
+    $self->{"Reason"} 		= MQSeries::MQRC_UNEXPECTED_ERROR;
 
     my $PutMsgOpts =
       {
-       Options			=> MQPMO_FAIL_IF_QUIESCING,
+       Options			=> MQSeries::MQPMO_FAIL_IF_QUIESCING,
       };
 
     my $buffer = "";
@@ -312,9 +311,9 @@ sub Put {
 	}
 	
 	if ( $args{Sync} ) {
-	    $PutMsgOpts->{Options} |= MQPMO_SYNCPOINT;
+	    $PutMsgOpts->{Options} |= MQSeries::MQPMO_SYNCPOINT;
 	} else {
-	    $PutMsgOpts->{Options} |= MQPMO_NO_SYNCPOINT;
+	    $PutMsgOpts->{Options} |= MQSeries::MQPMO_NO_SYNCPOINT;
 	}
 	
     }
@@ -372,18 +371,18 @@ sub Put {
              );
     }
 
-    if ( $self->{"CompCode"} == MQCC_FAILED ) {
+    if ( $self->{"CompCode"} == MQSeries::MQCC_FAILED ) {
 	$self->{Carp}->(qq/MQPUT failed (Reason = $self->{"Reason"})/);
 	return;
     } else {
 
-	if ( $PutMsgOpts->{Options} & MQPMO_SYNCPOINT ) {
+	if ( $PutMsgOpts->{Options} & MQSeries::MQPMO_SYNCPOINT ) {
 	    $self->{QueueManager}->{_Pending}->{Put}++;
 	}
 	
-	if ( $self->{"CompCode"} == MQCC_OK ) {
+	if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
 	    return 1;
-	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
 	    # What do we do here?  These are 'partial' successes.
 	    return -1;
 	}
@@ -399,8 +398,8 @@ sub Get {
 
     return unless $self->Open();
 
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+    $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     my $GetMsgOpts = {};
 
@@ -425,25 +424,26 @@ sub Get {
 
     } else {
 
-	$GetMsgOpts = { Options => MQGMO_FAIL_IF_QUIESCING | MQGMO_CONVERT };
+	$GetMsgOpts = { Options => MQSeries::MQGMO_FAIL_IF_QUIESCING | 
+                                   MQSeries::MQGMO_CONVERT };
 
 	if ( $args{Sync} ) {
-	    $GetMsgOpts->{Options} |= MQGMO_SYNCPOINT;
+	    $GetMsgOpts->{Options} |= MQSeries::MQGMO_SYNCPOINT;
 	}
 
 	if ( exists $args{Wait} ) {
             my $value = ConvertUnit('Wait', $args{'Wait'});
 	    if ( $value == 0 ) {
-		$GetMsgOpts->{Options} |= MQGMO_NO_WAIT;
+		$GetMsgOpts->{Options} |= MQSeries::MQGMO_NO_WAIT;
 	    } elsif ( $value == -1 ) {
-		$GetMsgOpts->{Options} |= MQGMO_WAIT;
-		$GetMsgOpts->{WaitInterval} = MQWI_UNLIMITED;
+		$GetMsgOpts->{Options} |= MQSeries::MQGMO_WAIT;
+		$GetMsgOpts->{WaitInterval} = MQSeries::MQWI_UNLIMITED;
 	    } else {
-		$GetMsgOpts->{Options} |= MQGMO_WAIT;
+		$GetMsgOpts->{Options} |= MQSeries::MQGMO_WAIT;
 		$GetMsgOpts->{WaitInterval} = $value;
 	    }
         } else {
-	    $GetMsgOpts->{Options} |= MQGMO_NO_WAIT;
+	    $GetMsgOpts->{Options} |= MQSeries::MQGMO_NO_WAIT;
 	}
 
     }
@@ -488,17 +488,17 @@ sub Get {
 	# we'll try anyway.
 	#
 	if (
-	    $self->{"CompCode"} == MQCC_OK ||
+	    $self->{"CompCode"} == MQSeries::MQCC_OK ||
 	    (
-	     $self->{"CompCode"} == MQCC_WARNING &&
-	     $self->{"Reason"} == MQRC_TRUNCATED_MSG_ACCEPTED
+	     $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
+	     $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_ACCEPTED
 	    )
 	   ) {
 
 	    if (
-		$GetMsgOpts->{Options} & MQGMO_SYNCPOINT ||
+		$GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT ||
 		(
-		 $GetMsgOpts->{Options} & MQGMO_SYNCPOINT_IF_PERSISTENT &&
+		 $GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT &&
 		 $args{Message}->MsgDesc('Persistence')
 		)
 	       ) {
@@ -536,13 +536,13 @@ sub Get {
 
 	    return 1;
 
-	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
 
-	    if ( $self->{"Reason"} == MQRC_TRUNCATED_MSG_FAILED and not $redone ) {
+	    if ( $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_FAILED and not $redone ) {
 		$args{Message}->BufferLength($datalength);
 		$redone = 1;
 		redo GET;
-	    } elsif ( $self->{"Reason"} == MQRC_CONVERTED_MSG_TOO_BIG and not $redone ) {
+	    } elsif ( $self->{"Reason"} == MQSeries::MQRC_CONVERTED_MSG_TOO_BIG and not $redone ) {
 		$args{Message}->BufferLength(2 * $datalength);
 		$redone = 1;
 		redo GET;
@@ -553,7 +553,7 @@ sub Get {
 
 	} else {
 
-	    if ( $self->{"Reason"} == MQRC_NO_MSG_AVAILABLE ) {
+	    if ( $self->{"Reason"} == MQSeries::MQRC_NO_MSG_AVAILABLE ) {
 		return -1;
 	    } else {
 		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
@@ -600,13 +600,13 @@ sub Inquire {
     my $self = shift;
     my (@args) = @_;
 
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+    $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     my (@keys) = ();
 
     my $ForwardMap = $MQSeries::Command::PCF::RequestValues{Queue};
-    my $ReverseMap = $MQSeries::Command::PCF::_Responses{&MQCMD_INQUIRE_Q}->[1];
+    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQSeries::MQCMD_INQUIRE_Q}->[1];
 
     foreach my $key ( @args ) {
 
@@ -627,7 +627,7 @@ sub Inquire {
 			 @keys,
 			);
 
-    unless ( $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE ) {
+    unless ( $self->{"CompCode"} == MQSeries::MQCC_OK && $self->{"Reason"} == MQSeries::MQRC_NONE ) {
 	$self->{Carp}->("MQINQ call failed. " .
 			qq(CompCode => '$self->{"CompCode"}', ) .
 			qq(Reason => '$self->{"Reason"}'\n));
@@ -635,8 +635,8 @@ sub Inquire {
     }
 
     # In case the data parsing fails...
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+    $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     my (%values) = ();
 
@@ -658,8 +658,8 @@ sub Inquire {
 
     }
 
-    $self->{"CompCode"} = MQCC_OK;
-    $self->{"Reason"} = MQRC_NONE;
+    $self->{"CompCode"} = MQSeries::MQCC_OK;
+    $self->{"Reason"} = MQSeries::MQRC_NONE;
 
     return %values;
 
@@ -670,8 +670,8 @@ sub Set {
     my $self = shift;
     my (%args) = @_;
 
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+    $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     my (%keys) = ();
 
@@ -708,7 +708,7 @@ sub Set {
 	  %keys,
 	 );
 
-    unless ( $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE ) {
+    unless ( $self->{"CompCode"} == MQSeries::MQCC_OK && $self->{"Reason"} == MQSeries::MQRC_NONE ) {
 	$self->{Carp}->("MQSET call failed. " .
 			qq/CompCode => '$self->{"CompCode"}', / .
 			qq/Reason => '$self->{"Reason"}'\n/);
@@ -747,8 +747,8 @@ sub Open {
 
     return 1 if $self->{Hobj};
 
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+    $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     my $retrycount = 0;
 
@@ -773,16 +773,16 @@ sub Open {
     if ( exists $args{Mode} ) {
 
 	if ( $args{Mode} eq 'input' ) {
-	    $self->{Options} |= MQOO_INPUT_AS_Q_DEF;
+	    $self->{Options} |= MQSeries::MQOO_INPUT_AS_Q_DEF;
 	    $self->{GetEnable} = 1;
 	} elsif ( $args{Mode} eq 'input_exclusive' ) {
-	    $self->{Options} |= MQOO_INPUT_EXCLUSIVE;
+	    $self->{Options} |= MQSeries::MQOO_INPUT_EXCLUSIVE;
 	    $self->{GetEnable} = 1;
 	} elsif ( $args{Mode} eq 'input_shared' ) {
-	    $self->{Options} |= MQOO_INPUT_SHARED;
+	    $self->{Options} |= MQSeries::MQOO_INPUT_SHARED;
 	    $self->{GetEnable} = 1;
 	} elsif ( $args{Mode} eq 'output' ) {
-	    $self->{Options} |= MQOO_OUTPUT;
+	    $self->{Options} |= MQSeries::MQOO_OUTPUT;
 	    $self->{PutEnable} = 1;
 	} else {
 	    $self->{Carp}->("Invalid argument: 'Mode' value $args{Mode} not yet supported");
@@ -836,14 +836,14 @@ sub Open {
 			  $self->{"Reason"},
 			 );
 
-	if ( $self->{"CompCode"} == MQCC_OK ) {
+	if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
 	    $self->{Hobj} = $Hobj;
 	    return 1;
-	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
 	    # This is when Reason == MQRC_MULTIPLE_REASONS
 	    $self->{Hobj} = $Hobj;
 	    return -1;
-	} elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
+	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_FAILED ) {
 
 	    if ( exists $self->{RetryReasons}->{$self->{"Reason"}} ) {
 		if ( $retrycount < $self->{RetryCount} ) {

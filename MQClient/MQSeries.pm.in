@@ -1,18 +1,17 @@
 #-*-perl-*-
 #
-# $Id: MQSeries.pm.in,v 15.2 2000/11/14 21:13:05 wpm Exp $
+# $Id: MQSeries.pm.in,v 16.3 2001/01/05 21:42:37 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package __APITYPE__::MQSeries;
 
 use strict;
-use English;
 use Config;
 use Carp;
-use vars qw( $VERSION @ISA @EXPORT $AUTOLOAD );
+use vars qw( $VERSION @ISA @EXPORT %EXPORT_TAGS $AUTOLOAD );
 
 require Exporter;
 require DynaLoader;
@@ -22,7 +21,7 @@ require "MQSeries/Constants.pl";
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 #
 # This nonsense is only necessary if you don't have the locale files
@@ -56,44 +55,52 @@ if ( "__LOCALE__" ne "" ) {
 
 }
 
-# Items to export into callers namespace by default. Note: do not
-# export names by default without a very good reason. Use EXPORT_OK
-# instead.  Do not simply export all your public
-# functions/methods/constants.
+BEGIN {
+    %EXPORT_TAGS = 
+      ( 'functions' => [ qw(
+                            MQCONN
+                            MQCONNX
+                            MQDISC
+                            MQOPEN
+                            MQCLOSE
+                            MQPUT
+                            MQPUT1
+                            MQGET
+                            MQINQ
+                            MQSET
+                            MQBEGIN
+                            MQCMIT
+                            MQBACK
 
-@EXPORT = qw(
+                            MQReasonToStrings
+                            MQReasonToText
+                            MQReasonToMacro
+                           )
+                         ],
+        'constants' => [ qw(
+                            __CONSTANTS__
+                           ) ],
+      );
 
-	     MQCONN
-	     MQCONNX
-	     MQDISC
-	     MQOPEN
-	     MQCLOSE
-	     MQPUT
-	     MQPUT1
-	     MQGET
-	     MQINQ
-	     MQSET
-	     MQBEGIN
-	     MQCMIT
-	     MQBACK
+    #
+    # Build 'all' list and make routines known in @EXPORT
+    #
+    $EXPORT_TAGS{'all'} = [ map { @$_ } values %EXPORT_TAGS ];
+    Exporter::export_tags('all');
+}
 
-	     MQReasonToStrings
-	     MQReasonToText
-             MQReasonToMacro
-
-	     __CONSTANTS__
-
-	    );
 
 sub MQReasonToText {
     my ($reason) = @_;
     return (MQReasonToStrings($reason))[0];
 }
 
+
 sub MQReasonToMacro {
     my ($reason) = @_;
     return (MQReasonToStrings($reason))[1];
 }
+
 
 sub MQReasonToStrings {
     my ($reason) = @_;
@@ -102,6 +109,7 @@ sub MQReasonToStrings {
 	    $MQSeries::Constants::ReasonMacro{$reason}
 	   );
 }
+
 
 #
 # This AUTOLOAD function looks for the constant first via the

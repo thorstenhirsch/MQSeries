@@ -1,12 +1,13 @@
 #
-# $Id: PCF.pm,v 15.6 2000/11/13 22:05:46 wpm Exp $
+# $Id: PCF.pm,v 16.4 2001/02/02 20:39:09 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Command::PCF;
 
+use strict;
 use vars qw(
 	    $VERSION
 	    @ISA
@@ -14,9 +15,9 @@ use vars qw(
 
 @ISA = qw(MQSeries::Command);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
-use MQSeries;
+use MQSeries qw(:functions);
 
 #
 # Note -- the order is important, so resist the anal retentive urge to
@@ -55,7 +56,7 @@ sub _LastSeen {
     my $self = shift;
     my ($last) = reverse @{$self->{Response}};
     return unless ref $last && $last->isa("MQSeries::Command::Response");
-    return unless $last->Header("Control") == MQCFC_LAST;
+    return unless $last->Header("Control") == MQSeries::MQCFC_LAST;
     return 1;
 
 }
@@ -80,10 +81,11 @@ sub _ProcessResponses {
 	# message.
 	#
 	if (
-	    $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE &&
+	    $self->{"CompCode"} == MQSeries::MQCC_OK && 
+            $self->{"Reason"} == MQSeries::MQRC_NONE &&
 	    (
-	     $response->Header("CompCode") != MQCC_OK ||
-	     $response->Header("Reason") != MQRC_NONE
+	     $response->Header("CompCode") != MQSeries::MQCC_OK ||
+	     $response->Header("Reason") != MQSeries::MQRC_NONE
 	    )
 	   ) {
 	    $self->{"CompCode"} = $response->Header("CompCode");
@@ -93,11 +95,19 @@ sub _ProcessResponses {
 	#
 	# Yet another special case....
 	#
+	# So, what's going on here?  MQRCCF_CHL_STATUS_NOT_FOUND is
+	# not really an error, per se.  It just means that there is no
+	# available status information for that channel (i.e. its not
+	# active).  So, we fake it...  We make the command appear to
+	# have succeeded, and the feed back the status "NotFound".
+	#
 	if (
 	    $command eq 'InquireChannelStatus'  &&
-	    $self->{"Reason"} == MQRCCF_CHL_STATUS_NOT_FOUND
+	    $self->{"Reason"} == MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND
 	   ) {
 	    $response->{Parameters}->{ChannelStatus} = 'NotFound';
+	    $response->{Header}->{CompCode} = MQSeries::MQCC_OK;
+	    $response->{Header}->{Reason} = MQSeries::MQRC_NONE;
 	}
 
     }

@@ -1,7 +1,7 @@
 #
-# $Id: Broker.pm,v 15.1 2000/08/16 00:41:17 wpm Exp $
+# $Id: Broker.pm,v 16.3 2001/01/05 21:43:27 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,9 +9,8 @@ package MQSeries::PubSub::Broker;
 
 use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::PubSub::Command;
@@ -22,7 +21,7 @@ use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::QueueManager );
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 #
 # All 5 of these PubSub commands must be sent to the Broker.
@@ -125,14 +124,15 @@ sub _InquireAttribute {
     my $key = shift;
     my (%args) = @_;
 
-    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
-    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQSeries::MQCC_FAILED;
 
     my $qmgrname = $args{QMgrName} || $self->{QueueManager};
     my $streamname = $args{StreamName} || "SYSTEM.BROKER.ADMIN.STREAM";
 
     my ($topic) = ($prefix .
-		   $self->_BlankPadName($qmgrname,MQ_Q_MGR_NAME_LENGTH) .
+		   $self->_BlankPadName($qmgrname, 
+                                        MQSeries::MQ_Q_MGR_NAME_LENGTH) .
 		   $suffix);
 
     my (@message) = $self->InquireRetainedMessages
@@ -181,8 +181,8 @@ sub InquireIdentities {
     my $self 		= shift;
     my (%args) 		= @_;
 
-    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
-    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQSeries::MQCC_FAILED;
 
     my $type		= $args{Type} 		|| "Subscribers";
     my $qmgrname 	= $args{QMgrName} 	|| $self->{QueueManager};
@@ -197,7 +197,8 @@ sub InquireIdentities {
 
     my ($admintopic) = (
 			( $anonymous ? "MQ/SA/" : "MQ/S/" ) .
-			$self->_BlankPadName($qmgrname,MQ_Q_MGR_NAME_LENGTH) .
+			$self->_BlankPadName($qmgrname,
+                                             MQSeries::MQ_Q_MGR_NAME_LENGTH) .
 			"/$type" .
 			( $anonymous ? "/AllIdentities" : "/Identities" )
 		       );
@@ -298,8 +299,8 @@ sub InquireRetainedMessages {
     my $self = shift;
     my (%args) = @_;
 
-    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
-    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQSeries::MQCC_FAILED;
 
     my $topics = ref $args{Topic} eq 'ARRAY' ? $args{Topic} : [$args{Topic}];
     my $streamname = $args{StreamName} || "SYSTEM.BROKER.ADMIN.STREAM";
@@ -351,7 +352,8 @@ sub InquireRetainedMessages {
 	    StreamName		=> $streamname,
 	   },
 	  );
-	if ( $self->Reason() != MQRC_NONE && $self->Reason() != MQRCCF_NO_RETAINED_MSG ) {
+	if ( $self->Reason() != MQSeries::MQRC_NONE && 
+             $self->Reason() != MQSeries::MQRCCF_NO_RETAINED_MSG ) {
 	    $self->{Carp}->("RequestUpdate failed\n" .
 			    "Topic 	=> '$topic'\n" .
 			    "StreamName => '$streamname'\n" .
@@ -387,7 +389,7 @@ sub InquireRetainedMessages {
 
 	}
 	
-	last if $self->ReplyQ()->Reason() == MQRC_NO_MSG_AVAILABLE;
+	last if $self->ReplyQ()->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE;
 	push(@message,$message);
 	
     }
@@ -406,7 +408,8 @@ sub InquireRetainedMessages {
        },
       );
 
-    if ( $self->Reason() != MQRC_NONE && $self->Reason() != MQRCCF_NOT_REGISTERED ) {
+    if ( $self->Reason() != MQSeries::MQRC_NONE && 
+         $self->Reason() != MQSeries::MQRCCF_NOT_REGISTERED ) {
 	$self->{Carp}->("Unable to DeregisterSubscriber\n" .
 			"Reason   => " . $self->Reason() . "\n");
 	$errors++;
@@ -439,6 +442,6 @@ See above.
 
 =head1 SEE ALSO
 
-  MQSeries::PubSub::Command(3)
+  MQSeries(3), MQSeries::PubSub::Command(3)
 
 =cut

@@ -2,10 +2,10 @@
 # MQSeries::ErrorLog::Parser.pm - Parse error-log files into error-log
 #                                 entry objects
 #
-# (c) 2000 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 15.1 2000/08/16 00:56:20 wpm Exp $
+# $Id: Parser.pm,v 16.2 2001/01/05 21:45:48 wpm Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -27,7 +27,7 @@ use vars qw(
 
 require "MQSeries/ErrorLog/descriptions.pl";
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 #
 # Constructor

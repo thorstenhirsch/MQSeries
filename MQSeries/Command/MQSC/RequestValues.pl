@@ -1,7 +1,7 @@
 #
-# $Id: RequestValues.pl,v 15.1 2000/11/13 18:54:22 biersma Exp $
+# $Id: RequestValues.pl,v 16.4 2001/01/08 15:30:38 biersma Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -13,6 +13,8 @@ package MQSeries::Command::MQSC;
    Yes				=> [ "NO",		"YES" ],
 
    Enabled 			=> [ "DISABLED",	"ENABLED" ],
+
+   Disabled 			=> [ "ENABLED",	        "DISABLED" ],
 
    HardenGetBackout		=> [ "NOHARDENBO",	"HARDENBO" ],
 
@@ -91,6 +93,7 @@ package MQSeries::Command::MQSC;
     QDepthLowLimit		=> "QDEPTHLO",
     QDepthMaxEvent		=> "QDPMAXEV",
     QDesc			=> "DESCR",
+    QName                       => "",
     QServiceInterval		=> "QSVCINT",
     QServiceIntervalEvent 	=> "QSVCIEV",
     QType			=> "TYPE",
@@ -148,16 +151,39 @@ package MQSeries::Command::MQSC;
     AlterationTime		=> "ALTTIME",
    },
 
-   Scope =>
+   ChannelDisposition =>
    {
-    QMgr			=> "QMGR",
-    Cell			=> "CELL",
+    All                         => "ALL",
+    Private                     => "PRIVATE",
+    Shared                      => "SHARED",
    },
 
    DefInputOpenOption =>
    {
     Exclusive			=> "EXCL",
     Shared			=> "SHARED",
+   },
+
+   DefinitionType =>
+   {
+    Permanent			=> "PERMDYN",
+    Temporary			=> "TEMPDYN",
+   },
+
+   IndexType =>
+   {
+    CorrelId			=> "CORRELID",
+    MsgToken			=> "MSGTOKEN",
+    MsgId			=> "MSGID",
+    None			=> "NONE",
+   },
+
+   IntraGroupAuthority =>
+   {
+    AltIGQ                      => "ALTIGQ",
+    Context                     => "CTX",
+    Default                     => "DEF",
+    OnlyIGQ                     => "ONLYIGQ",
    },
 
    MsgDeliverySequence =>
@@ -173,6 +199,22 @@ package MQSeries::Command::MQSC;
     OK				=> "OK",
    },
 
+   QSharingGroupDisposition => 
+   {
+    All                         => "ALL",
+    Copy                        => "COPY",
+    Group                       => "GROUP",
+    Live                        => "LIVE",
+    Private                     => "PRIVATE",
+    QMgr                        => "QMGR",
+   },
+
+   Scope =>
+   {
+    QMgr			=> "QMGR",
+    Cell			=> "CELL",
+   },
+
    TriggerType =>
    {
     None			=> "NONE",
@@ -185,21 +227,6 @@ package MQSeries::Command::MQSC;
    {
     Normal			=> "NORMAL",
     XMITQ			=> "XMITQ",
-   },
-
-   DefinitionType =>
-   {
-    Predefined			=> "",
-    Permanent			=> "PERMDYN",
-    Temporary			=> "TEMPDYN",
-   },
-
-   IndexType =>
-   {
-    CorrelId			=> "CORRELID",
-    MsgToken			=> "MSGTOKEN",
-    MsgId			=> "MSGID",
-    None			=> "NONE",
    },
 
    QType =>
@@ -238,6 +265,8 @@ package MQSeries::Command::MQSC;
    {
     Default			=> "DEF",
     Context			=> "CTX",
+    AlternateMCA                => "ALTMCA",
+    OnlyMCA                     => "ONLYMCA",
    },
 
    InDoubt =>

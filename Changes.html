@@ -10,6 +10,21 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_13">Changes for 1.13</A>
+	<UL>
+
+		<LI><A HREF="#Support_for_MQSeries_version_5_2">Support for MQSeries version 5.2 on the mainframe</A>
+		<LI><A HREF="#MQSeries_QueueManager_AutoCommi">MQSeries::QueueManager AutoCommit off by default</A>
+		<LI><A HREF="#Un_bloat_the_code">Un-bloat the code</A>
+		<LI><A HREF="#MQSeries_Command_InquireChanne">MQSeries::Command->InquireChannelStatus handles MQRCCF_CHL_STATUS_NOT_FOUND more elegantly</A>
+		<LI><A HREF="#MQSeries_Message_RulesFormat_t">MQSeries::Message::RulesFormat tolerant of leading whitespace</A>
+		<LI><A HREF="#MQSeries_Message_XML_Dumper_re">MQSeries::Message::XML-Dumper removed</A>
+		<LI><A HREF="#Bug_in_Extended_PCF_Command_Inq">Bug in Extended PCF Command "InquireAuthority" fixed</A>
+		<LI><A HREF="#Minor_bug_in_handling_of_CompCod">Minor bug in handling of CompCode/Reason values from MQSC Commands</A>
+		<LI><A HREF="#MQSeries_Command_ReasonText_do">MQSeries::Command->ReasonText documented</A>
+		<LI><A HREF="#MQSeries_Command_CreateObject_">MQSeries::Command->CreateObject takes Force argument</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_12">Changes for 1.12</A>
 	<UL>
 
@@ -126,6 +141,172 @@
 </A></H1>
 This file documents the changes to each and every release of the MQSeries
 perl API, going back as far as the 1.02 release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_13">Changes for 1.13
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Support_for_MQSeries_version_5_2">Support for MQSeries version 5.2 on the mainframe
+
+</A></H2>
+The MQSeries::Command class now supports MQSeries version 5.2 on the
+mainframe. This includes support for the new QSharingGroup,
+CouplingFacility, CommandScope and IntraGroupQueueing keywords; and the new
+ResetQueueStatistics method, which returns the same results as the Unix
+(PCF) version. The new DisplayQueueStatus MQSC command is not yet
+supported.
+
+
+<P>
+
+Support for MQSeries 5.2 on Unix has also been tested; however, as this
+worked without changes, none were made.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_QueueManager_AutoCommi">MQSeries::QueueManager AutoCommit off by default
+
+</A></H2>
+As warned when we deployed 1.12, MQSeries::QueueManager's AutoCommit
+functionality is disabled by default now. If you want pending transactions
+to be automatically committed when your disconnect, you must set AutoCommit
+in your code.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Un_bloat_the_code">Un-bloat the code
+
+</A></H2>
+The MQSeries modules were becoming a serious memory hog, largely due to the
+import/export of all constants in modules the included MQSeries.  
+
+
+<P>
+
+The MQSeries moduly now optionally allows importing just the functions,
+then referring to constants using an MQSeries:: prefix. This has been done
+throughout the MQSeries library internally, leading to a space saving of
+some 3 MB for programs using MQSeries::Command.
+
+
+<P>
+
+This change is fully backwards-compatible. There is no impact on programs
+using the MQSeries module, though these can reduce their memory footprint
+(if desired) by selectively importing the required MQSeries functions.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_InquireChanne">MQSeries::Command->InquireChannelStatus handles MQRCCF_CHL_STATUS_NOT_FOUND more elegantly
+
+</A></H2>
+The code has always tried to make a missing channel status appear to be a
+successful command, and to return the ``ChannelStatus'' value of
+``NotFound'', since this is not really an error. Unfortunately, we broke
+this when we reorganized the MQSeries::Command code for 1.12.
+
+
+<P>
+
+The CompCode and Reason will now be reset to MQCC_OK and MQRC_NONE, as well
+as returning a ChannelStatus of ``NotFound''.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Message_RulesFormat_t">MQSeries::Message::RulesFormat tolerant of leading whitespace
+
+</A></H2>
+In the NameValueString of the MQRFH message, that is. According to IBM (I
+checked), there is nothing in the spec or the code of the pubsub
+<CODE>broker(s)</CODE> that will prohibit the user of leading whitespace in
+the MQRFH NameValueString, so the perl API needs to be tolerant of the
+same.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Message_XML_Dumper_re">MQSeries::Message::XML-Dumper removed
+
+</A></H2>
+As this module did not compile, it probably wasn't used by anyone.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Bug_in_Extended_PCF_Command_Inq">Bug in Extended PCF Command "InquireAuthority" fixed
+
+</A></H2>
+The keyword in the hash tables used to map strings to PCF macros had a bug.
+Principal was mispelled, causing any query of permissions that involved
+principals to fail.
+
+
+<P>
+
+This was guaranteed to impact only MSDW....
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Minor_bug_in_handling_of_CompCod">Minor bug in handling of CompCode/Reason values from MQSC Commands
+
+</A></H2>
+These are really hex values, and we were pretending that they were decimal.
+This generates warning when the values are used for numerical comparisons.
+
+
+<P>
+
+The CompCode and Reason values are now ``eval''ed as hex, and thus
+converted to decimal values.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_ReasonText_do">MQSeries::Command->ReasonText documented
+
+</A></H2>
+This method returns either the MQReasonToText value for the commandd reason
+code, or the ReasonText returned by MQSC. It wasn't documented. It is now.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_CreateObject_">MQSeries::Command->CreateObject takes Force argument
+
+</A></H2>
+You can't pass Force as an object attribute, since it is supported by
+ChangeFoo but not by CreateFoo commands, in general. The specification of
+Force is not an argument to CreateObject itself, and should not be passed
+as a key in the Attrs hash.
 
 
 <P>

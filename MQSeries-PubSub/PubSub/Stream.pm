@@ -1,7 +1,7 @@
 #
-# $Id: Stream.pm,v 15.1 2000/08/16 00:41:21 wpm Exp $
+# $Id: Stream.pm,v 16.3 2001/01/05 21:43:32 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,9 +9,8 @@ package MQSeries::PubSub::Stream;
 
 use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::PubSub::Command;
@@ -20,7 +19,7 @@ use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::Queue );
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 sub Publish {
     my $self = shift;

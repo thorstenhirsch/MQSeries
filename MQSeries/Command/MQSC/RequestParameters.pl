@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameters.pl,v 15.1 2000/11/13 18:53:57 biersma Exp $
+# $Id: RequestParameters.pl,v 16.4 2001/01/08 15:30:14 biersma Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,9 +16,9 @@ package MQSeries::Command::MQSC;
     QMgrDesc			=> [ "DESCR", 		"string" ],
     TriggerInterval		=> [ "TRIGINT", 	"integer" ],
     DeadLetterQName		=> [ "DEADQ", 		"string" ],
+    DefXmitQName		=> [ "DEFXMITQ",	"string" ],
     MaxHandles			=> [ "MAXHANDS", 	"integer" ],
     MaxUncommittedMsgs		=> [ "MAXUMSGS", 	"integer" ],
-    DefXmitQName		=> [ "DEFXMITQ",	"string" ],
     AuthorityEvent		=> [ "AUTHOREV", 	$RequestValues{Enabled} ],
     InhibitEvent		=> [ "INHIBTEV",	$RequestValues{Enabled} ],
     LocalEvent			=> [ "LOCALEV",		$RequestValues{Enabled} ],
@@ -37,6 +37,11 @@ package MQSeries::Command::MQSC;
     RepositoryName 		=> [ "REPOS",		"string" ],
     RepositoryNamelist		=> [ "REPOSNL",		"string" ],
     CodedCharSetId		=> [ "CCSID",		"integer" ],
+
+    IntraGroupAuthority         => [ "IGQAUT",          $RequestValues{IntraGroupAuthority} ],
+    IntraGroupQueuing           => [ "IGQ",             $RequestValues{Enabled} ], 
+    IntraGroupUser              => [ "IGQUSER",         "string" ],
+    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
 
    },
 
@@ -65,6 +70,7 @@ package MQSeries::Command::MQSC;
     BackoutRequeueName		=> [ "BOQNAME",		"string" ],
     BackoutThreshold		=> [ "BOTHRESH", 	"integer" ],
     BaseQName			=> [ "TARGQ", 		"string" ],
+    CouplingStructure           => [ "CFSTRUCT",        "string" ],
     DefInputOpenOption		=> [ "DEFSOPT",		$RequestValues{DefInputOpenOption} ],
     DefPersistence		=> [ "DEFPSIST",	$RequestValues{Yes} ],
     DefPriority			=> [ "DEFPRTY", 	"integer" ],
@@ -73,8 +79,8 @@ package MQSeries::Command::MQSC;
     Force			=> [ "FORCE" ],
     FromQName			=> [ "LIKE",		"string" ],
     HardenGetBackout		=> [ "", 		$RequestValues{HardenGetBackout} ],
-    InhibitGet			=> [ "GET", 		$RequestValues{Enabled} ],
-    InhibitPut			=> [ "PUT",		$RequestValues{Enabled} ],
+    InhibitGet			=> [ "GET", 		$RequestValues{Disabled} ],
+    InhibitPut			=> [ "PUT",		$RequestValues{Disabled} ],
     InitiationQName		=> [ "INITQ",		"string" ],
     MaxMsgLength		=> [ "MAXMSGL", 	"integer" ],
     MaxQDepth			=> [ "MAXDEPTH",	"integer" ],
@@ -89,6 +95,7 @@ package MQSeries::Command::MQSC;
     QName			=> [ "QUEUE",		"string" ],
     QServiceInterval		=> [ "QSVCINT",		"integer" ],
     QServiceIntervalEvent 	=> [ "QSVCIEV",		$RequestValues{QServiceIntervalEvent} ],
+    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
     QType			=> [ "TYPE",		$RequestValues{QType} ],
     RemoteQMgrName		=> [ "RQMNAME", 	"string" ],
     RemoteQName			=> [ "RNAME",		"string" ],
@@ -132,11 +139,13 @@ package MQSeries::Command::MQSC;
     BatchSize			=> [ "BATCHSZ",		"integer" ],
     ChannelAttrs 		=> [ "",		$RequestValues{ChannelAttrs} ],
     ChannelDesc			=> [ "DESCR",		"string" ],
+    ChannelDisposition          => [ "CHLDISP",         $RequestValues{ChannelDisposition} ],
     ChannelInstanceAttrs 	=> [ "",		$RequestValues{ChannelAttrs} ],
     ChannelInstanceType		=> [ "",		$RequestValues{ChannelInstanceType} ],
     ChannelName			=> [ "CHANNEL",		"string" ],
     ChannelTable		=> [ "CHLTABLE", 	$RequestValues{ChannelTable} ],
     ChannelType 		=> [ "CHLTYPE",		$RequestValues{ChannelType} ],
+    CommandScope                => [ "CMDSCOPE",        "string" ],
     ConnectionName		=> [ "CONNAME",		"string" ],
     DataConversion		=> [ "CONVERT",		$RequestValues{Yes} ],
     DataCount			=> [ "DATALEN",		"integer" ],
@@ -165,6 +174,7 @@ package MQSeries::Command::MQSC;
     Port			=> [ "PORT",		"integer" ],
     PutAuthority		=> [ "PUTAUT",		$RequestValues{PutAuthority} ],
     QMgrName			=> [ "QMNAME",		"string" ],
+    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
     Quiesce 			=> [ "MODE",		$RequestValues{Quiesce} ],
     ReceiveExit			=> [ "RCVEXIT",		"string" ],
     ReceiveUserData		=> [ "RCVDATA",		"string" ],
@@ -207,11 +217,18 @@ package MQSeries::Command::MQSC;
 
     Replace			=> [ "",		$RequestValues{Replace} ],
     
+    CommandScope                => [ "CMDSCOPE",        "string" ],
     FromNamelistName		=> [ "LIKE",		"string" ],
+    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
     ToNamelistName 		=> [ "NAMELIST",	"string" ],
 
     NamelistAttrs		=> [ "",		$RequestValues{NamelistAttrs} ],
 
+   },
+
+   ResetQueueStatistics =>
+   {
+    QName                       => [ "QSTATS",          "string" ],
    },
 
    Security =>

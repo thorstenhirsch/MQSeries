@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 15.6 2000/11/13 22:05:27 wpm Exp $
+# $Id: Base.pm,v 16.7 2001/02/21 22:13:08 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,11 +9,10 @@ package MQSeries::Command::Base;
 
 require 5.004;
 
-use strict qw(vars refs);
+use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::Command;
 use MQSeries::Command::PCF;
 use MQSeries::Command::MQSC;
@@ -22,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 sub new {
 
@@ -32,8 +31,8 @@ sub new {
 
     my %MsgDesc =
       (
-       MsgType 	=> $class =~ /::Request/ ? MQMT_REQUEST : MQMT_REPLY,
-       Format 	=> $args{Type} eq 'MQSC' ? MQFMT_STRING : MQFMT_ADMIN,
+       MsgType 	=> $class =~ /::Request/ ? MQSeries::MQMT_REQUEST : MQSeries::MQMT_REPLY,
+       Format 	=> $args{Type} eq 'MQSC' ? MQSeries::MQFMT_STRING : MQSeries::MQFMT_ADMIN,
       );
 
     if ( exists $args{MsgDesc} ) {
@@ -135,8 +134,8 @@ sub _TranslatePCF {
     my $command = $header->{Command};
 
     ($header->{Type}) = ( $self->isa("MQSeries::Command::Response") ?
-			  &MQCFT_RESPONSE :
-			  &MQCFT_COMMAND );
+			  MQSeries::MQCFT_RESPONSE :
+			  MQSeries::MQCFT_COMMAND );
 
     my $parameters = [];
 
@@ -243,7 +242,8 @@ sub _TranslatePCF {
 	# which can of course be represented as strings.  This
 	# might just be a bad choice on my part in the XS code.
 	#
-	if ( $paramtype == MQCFT_STRING || $paramtype == MQCFT_STRING_LIST ) {
+	if ( $paramtype == MQSeries::MQCFT_STRING || 
+             $paramtype == MQSeries::MQCFT_STRING_LIST ) {
 	    if ( ref $origvalue eq "ARRAY" ) {
 		$newparameter->{Strings} = [];
 		foreach my $value ( @$origvalue ) {
@@ -252,7 +252,7 @@ sub _TranslatePCF {
 		}
 	    } else {
 		my $newvalue = length($origvalue) == 0 ? " " : "$origvalue";
-		if ( $paramtype == MQCFT_STRING_LIST ) {
+		if ( $paramtype == MQSeries::MQCFT_STRING_LIST ) {
 		    $newparameter->{Strings} = ["$newvalue"];
 		} else {
 		    $newparameter->{String} = "$newvalue";
@@ -260,7 +260,7 @@ sub _TranslatePCF {
 	    }
 	}
 
-	if ( $paramtype == MQCFT_INTEGER ) {
+	if ( $paramtype == MQSeries::MQCFT_INTEGER ) {
 	    if ( ref $ValueMap ) {
 		unless ( exists $ValueMap->{$origvalue} ) {
 		    $self->{Carp}->("Unknown value '$origvalue' for " .
@@ -273,7 +273,7 @@ sub _TranslatePCF {
 	    }
 	}
 
-	if ( $paramtype == MQCFT_INTEGER_LIST ) {
+	if ( $paramtype == MQSeries::MQCFT_INTEGER_LIST ) {
 	    foreach my $value ( @$origvalue ) {
 		if ( ref $ValueMap ) {
 		    unless ( exists $ValueMap->{$value} ) {
@@ -552,9 +552,7 @@ sub ReasonText {
 
 
 sub MQEncodeMQSC {
-
-    my $self = shift;
-    my ($command,$parameters) = @_;
+    my ($self, $command, $parameters) = @_;
     my @buffer = ();
     my @parameters = ();
     my %skipparam = ();
@@ -569,7 +567,7 @@ sub MQEncodeMQSC {
 	return;
     }
 
-    my ($requestname,$requestparameters,$requestargs) =
+    my ($requestname, $requestparameters, $requestargs) =
       @{$MQSeries::Command::MQSC::Requests{$command}};
 
     push(@buffer,$requestname);
@@ -584,8 +582,7 @@ sub MQEncodeMQSC {
 			    keys %$parameters
 			   )
 		      );
-    }
-    else {
+    } else {
 	@parameters = keys %$parameters;
     }
 
@@ -593,7 +590,7 @@ sub MQEncodeMQSC {
 
 	next if $skipparam{$parameter};
 
-	unless ( $requestparameters->{$parameter} ) {
+	unless (defined $requestparameters->{$parameter} ) {
 	    $self->{Carp}->("No such parameter '$parameter' for command '$command'\n");
 	    return;
 	}
@@ -616,7 +613,7 @@ sub MQEncodeMQSC {
 		    return;
 		}
 
-		unless ( $subvalues->{$parameters->{$subkey}} ) {
+		unless (defined $subvalues->{$parameters->{$subkey}} ) {
 		    $self->{Carp}->("Unknown value '$parameters->{$subkey}' for parameter '$subkey'\n");
 		    return;
 		}
@@ -656,7 +653,7 @@ sub MQEncodeMQSC {
 		if ( ref $value eq 'ARRAY' ) {
 		    if ( scalar(@$value) ) {
 			foreach my $string ( @$value ) {
-			    unless ( $type->{$string} ) {
+			    unless (defined $type->{$string} ) {
 				$self->{Carp}->("Unknown value '$string' for parameter '$parameter'\n");
 				return;
 			    }
@@ -710,12 +707,10 @@ sub MQEncodeMQSC {
     }
 
     return join(" ",@buffer);
-
 }
 
 
 sub MQDecodeMQSC {
-
     my $self = shift;
     my ($oldheader,$buffer) = @_;
 
@@ -745,30 +740,35 @@ sub MQDecodeMQSC {
     # done.  There are no parameters, so just return the header.
     #
     if ( $buffer =~ m{
-		      ^CSQN\S+\s+			# Message ID
+		      ^CSQN\S+\s+               # Message ID
 		      COUNT=\s+(\d+),\s* 	# LastMsgSeqNumber
 		      RETURN=(\w+),\s* 		# CompCode
 		      REASON=(\w+) 		# Reason
 		     }x ) {
 	$newheader =
 	  {
-	   LastMsgSeqNumber	=> $1,
-	   "CompCode"		=> $2,
-	   "Reason"		=> $3,
+	   "LastMsgSeqNumber"	=> $1,
+	   "CompCode"		=> eval "0x$2",
+	   "Reason"		=> eval "0x$3",
 	  };
-	# This could be done in the regexp, with a bit of thought, I
-	# suppose....
-	$newheader->{"CompCode"} =~ s/0+(\d{1})$/$1/;
-	$newheader->{"Reason"} =~ s/0+(\d{1})$/$1/;
 	return $newheader;
     }
 
     #
     # Look for the error feedback...
     #
+    # We recognize this because:
+    # - The message looks like CSQxxxxx *XYZZY
+    # - The message code is not CSQM4xxI, which is the normal message
+    #   return
+    #
+    # NOTE: In MQ 5.2 for OS/390, the *XYZZY occurs in CSQM409I, but this
+    #       did not occur in previous version.  Hence, we have to take
+    #       care not to assume any *XYZZY is an error.
+    #
     if ( $buffer =~ m{
-		      ^\S+\s+	# Message ID
-		      \*\w+\s*	# The leading * is the key
+		      ^(?!CSQM4\d\dI)\S+\s+	# Message ID
+		      \*\w+\s*	                # The leading * is the key
 		      (.*)
 		     }x ) {
 	$newheader =
@@ -797,6 +797,12 @@ sub MQDecodeMQSC {
     # Strip off any trailing white noise, er, space
     #
     $buffer =~ s/\s+$//;
+
+    #
+    # In MQ 5.2 for OS/390, there is also a leading *<QMgrName>
+    # at the start of the buffer, so we strip that off here.
+    #
+    $buffer =~ s!^\*\S+\s+!!;
 
     #
     # This is used solely for debugging, since we strip $buffer to
@@ -900,13 +906,12 @@ sub MQDecodeMQSC {
 		}
 	    }
 	} else {
-	    if ( $requestvalues and not ref $requestvalues) {
+	    if (defined $requestvalues and not ref $requestvalues) {
 		$realvalue = $requestvalues;
 	    }
 	}
 
 	$parameters->{$realkey} = $realvalue;
-	
     }
 
     return ($newheader,$parameters);

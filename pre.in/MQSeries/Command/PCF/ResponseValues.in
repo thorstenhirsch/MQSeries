@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ResponseValues.in,v 15.5 2000/10/27 20:16:59 wpm Exp $
+# $Id: ResponseValues.in,v 16.3 2001/02/05 16:44:03 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -149,6 +149,7 @@ package MQSeries::Command::PCF;
     DOS				=> &MQAT_DOS,
     IMS				=> &MQAT_IMS,
     MVS				=> &MQAT_MVS,
+    NSK                         => &MQAT_NSK,
     OS2				=> &MQAT_OS2,
     OS400			=> &MQAT_OS400,
     UNIX			=> &MQAT_UNIX,
@@ -217,7 +218,7 @@ package MQSeries::Command::PCF;
 
    EntityType =>
    {
-    Prinicipal			=> &MQETE_PRINCIPAL,
+    Principal			=> &MQETE_PRINCIPAL,
     Group			=> &MQETE_GROUP,
    },
 

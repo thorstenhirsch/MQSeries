@@ -1,7 +1,7 @@
 #
-# $Id: ResponseValues.pl,v 14.2 2000/08/15 20:51:40 wpm Exp $
+# $Id: ResponseValues.pl,v 16.2 2001/01/05 21:45:35 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -27,6 +27,13 @@ package MQSeries::Command::MQSC;
     AVAILABLE		=> 1,
    },
 
+   ChannelDisposition =>
+   {
+    ALL                 => "All",
+    PRIVATE             => "Private",
+    SHARED              => "Shared",
+   },
+
    DefInputOpenOption =>
    {
     EXCL    		=> "Exclusive",
@@ -40,10 +47,28 @@ package MQSeries::Command::MQSC;
     TEMPDYN	    	=> "Temporary",
    },
 
+   IntraGroupAuthority =>
+   {
+    ALTIGQ              => "AltIGQ",
+    CTX                 => "Context",
+    DEF                 => "Default",
+    ONLYIGQ             => "OnlyIGQ",
+   },
+
    MsgDeliverySequence =>
    {
     PRIORITY		=> "Priority",
     FIFO		=> "FIFO",
+   },
+   
+   QSharingGroupDisposition => 
+   {
+    ALL                 => "All",
+    COPY                => "Copy",
+    GROUP               => "Group",
+    LIVE                => "Live",
+    PRIVATE             => "Private",
+    QMGR                => "QMgr",
    },
 
    QServiceIntervalEvent =>
@@ -125,24 +150,27 @@ package MQSeries::Command::MQSC;
 
    TransportType =>
    {
+    DECNET    		=> "DECNET",
     LU62    		=> "LU62",
-    TCP    		=> "TCP",
     NETBIOS    		=> "NetBIOS",
     SPX    		=> "SPX",
+    TCP    		=> "TCP",
+    UDP    		=> "UDP",
    },
 
    ApplType =>
    {
-    MVS 		=> "MVS",
+    CICS    		=> "CICS",
+    DOS    		=> "DOS",
     IMS 		=> "IMS",
-    VMS 		=> "VMS",
+    MVS 		=> "MVS",
+    NSK                 => "NSK",
     OS400		=> "OS400",
     OS2 		=> "OS2",
-    WINDOWSNT    	=> "Win32",
-    DOS    		=> "DOS",
-    WINDOWS    		=> "Win16",
     UNIX    		=> "UNIX",
-    CICS    		=> "CICS",
+    VMS 		=> "VMS",
+    WINDOWS    		=> "Win16",
+    WINDOWSNT    	=> "Win32",
    },
 
    ClusterQType =>

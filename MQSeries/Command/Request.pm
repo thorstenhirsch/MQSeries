@@ -1,7 +1,7 @@
 #
-# $Id: Request.pm,v 15.3 2000/10/24 01:09:36 wpm Exp $
+# $Id: Request.pm,v 16.3 2001/01/05 21:45:39 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,9 +9,8 @@ package MQSeries::Command::Request;
 
 require 5.004;
 
-use strict qw(vars refs);
+use strict;
 use Carp;
-use English;
 
 use MQSeries::Command::Base;
 use MQSeries::Message;
@@ -23,7 +22,7 @@ use vars qw(@ISA $VERSION);
 	  MQSeries::Message
 	 );
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 1;
 

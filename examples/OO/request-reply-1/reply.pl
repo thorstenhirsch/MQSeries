@@ -1,8 +1,8 @@
 #!/ms/dist/perl5/bin/perl5.005
 #
-# $Id: reply.pl,v 14.1 2000/08/15 20:52:00 wpm Exp $
+# $Id: reply.pl,v 16.2 2001/01/05 21:46:08 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code sends requests to a queue, and listens for responses on a
@@ -57,7 +57,7 @@ while ( 1 ) {
        Wait	=> $::pollrate,
       ) || die "Error occured while waiting for requests\n";
 
-    if ( $::requestq->Reason() == &MQRC_NO_MSG_AVAILABLE ) {
+    if ( $::requestq->Reason() == MQRC_NO_MSG_AVAILABLE ) {
 	print "Timed out waiting for requests.  Retrying...\n";
 	next;
     } 

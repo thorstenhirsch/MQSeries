@@ -1,8 +1,8 @@
 #!/ms/dist/perl5/bin/perl5.005
 #
-# $Id: amqspsda.pl,v 14.1 2000/08/15 20:56:37 wpm Exp $
+# $Id: amqspsda.pl,v 16.1 2001/01/05 21:46:13 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

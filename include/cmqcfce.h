@@ -1,7 +1,11 @@
 /*
  * Extensions for the PCF Command Set
  *
- * $Id: cmqcfce.h,v 15.4 2000/10/27 17:15:14 wpm Exp $
+ * $Id: cmqcfce.h,v 16.2 2001/01/05 21:46:19 wpm Exp $
+ *
+ * (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+ * See ..../src/LICENSE for terms of distribution.
+ *
  */
 
 #if !defined(MQCFCE_INCLUDED)

@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: RequestParameterOrder.in,v 15.2 2000/11/13 20:32:39 wpm Exp $
+# $Id: RequestParameterOrder.in,v 16.2 2001/03/12 15:33:52 biersma Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -17,6 +17,11 @@ package MQSeries::Command::PCF;
 
 %RequestParameterOrder =
   (
+   CopyQueue                    =>
+   {
+    Required                    => [qw( FromQName ToQName Type )],
+   },
+
    DeleteQueue			=>
    {
     Optional			=> [qw( QType Purge )],

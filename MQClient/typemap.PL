@@ -1,7 +1,7 @@
 #
-# $Id: typemap.PL,v 15.1 2000/09/18 14:50:43 wpm Exp $
+# $Id: typemap.PL,v 16.1 2001/01/05 21:43:02 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # Script to generate a typemap from the MQSeries header files

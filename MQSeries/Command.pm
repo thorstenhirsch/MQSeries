@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 15.7 2000/11/13 21:57:24 wpm Exp $
+# $Id: Command.pm,v 16.10 2001/03/02 17:43:38 biersma Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,11 +9,10 @@ package MQSeries::Command;
 
 require 5.004;
 
-use strict qw(vars refs);
+use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::Command::Request;
@@ -24,7 +23,7 @@ use MQSeries::Utils qw(ConvertUnit);
 
 use vars qw($VERSION);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 sub new {
 
@@ -269,7 +268,7 @@ sub DataParameters {
     my @parameters;
 
     foreach my $response ( @{$self->{Response}} ) {
-	next if $response->Header('CompCode') == MQCC_FAILED;
+	next if $response->Header('CompCode') == MQSeries::MQCC_FAILED;
 	push(@parameters,$response->Parameters());
     }
 
@@ -284,7 +283,7 @@ sub ErrorParameters {
     my @parameters;
 
     foreach my $response ( @{$self->{Response}} ) {
-	next if $response->Header('CompCode') != MQCC_FAILED;
+	next if $response->Header('CompCode') != MQSeries::MQCC_FAILED;
 	push(@parameters,$response->Parameters());
     }
 
@@ -329,7 +328,8 @@ sub CreateObject {
 
     my $self 			= shift;
     my (%args)			= @_;
-    my ($Verify,$Quiet,$Clear,$Attrs)  = @args{qw(Verify Quiet Clear Attrs)};
+    my ($Verify,$Quiet,$Clear,$Attrs,$Force) =
+      @args{qw(Verify Quiet Clear Attrs Force)};
 
     my $QMgr			= (
 				   $self->{RealQueueManager} ||
@@ -421,7 +421,9 @@ sub CreateObject {
     # XXX -- shouldn't we be checking for no such object specifically?
     # Of course we should...
     #
-    if ( $self->Reason() && $self->Reason() != MQRC_UNKNOWN_OBJECT_NAME ) {
+    if ( $self->Reason() && 
+         $self->Reason() != MQSeries::MQRC_UNKNOWN_OBJECT_NAME &&
+         $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND) {
 	$self->{Carp}->("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
 	return;
     }
@@ -595,6 +597,21 @@ sub CreateObject {
 	print( ($method eq $Change ? "Updating" : "Creating") . " $Type '$QMgr/$Attrs->{$Key}'\n");
     }
 
+    #
+    # Force can only be specified when changing queue objects, but not
+    # when creating them.  Therefore, this is passed as an argument to
+    # CreateObject, and not as an "attribute".  Note that Force and
+    # Replace aren't really object attributes anyway; they are options
+    # to the command server, and thus our treatement of them is really
+    # a better design.
+    #
+    # Take that, IBM... ;-)
+    #
+    if ( $Force && $Key eq 'QName' && $Attrs->{'QType'} ne 'Model' && 
+         $method eq $Change ) {
+	$Attrs->{Force} = 1;
+    }
+
     $self->$method
       (
        $Key			=> $Attrs->{$Key},
@@ -608,15 +625,14 @@ sub CreateObject {
       };
 
     return 1;
-
 }
+
 
 #
 # This method codes the basic request/reply logic common to both PCF
 # and MQSC command formats.
 #
 sub _Command {
-
     my $self 			= shift;
     my $command			= shift;
     my $parameters	 	= shift;
@@ -689,8 +705,8 @@ sub _Command {
        Carp 		=> $self->{Carp},
        StrictMapping	=> $self->{StrictMapping},
       ) || do {
-	  $self->{"CompCode"} = MQCC_FAILED;
-	  $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+	  $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+	  $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 	  return;
       };
 
@@ -704,8 +720,8 @@ sub _Command {
 
     my $MQSCHeader = { Command => $command };
 
+    my @response_buffers;
     while ( 1 ) {
-	
 	my $response = MQSeries::Command::Response->new
 	  (
 	   MsgDesc 		=>
@@ -716,8 +732,8 @@ sub _Command {
 	   Header		=> $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
 	   StrictMapping	=> $self->{StrictMapping},
 	  ) || do {
-	      $self->{"CompCode"} = MQCC_FAILED;
-	      $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+	      $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+	      $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 	      return;
 	  };
 	
@@ -740,7 +756,37 @@ sub _Command {
 	# essential for MQSC, but PCF tells us when the last response
 	# is in.
 	#
-	last if $self->{ReplyToQ}->Reason() == &MQRC_NO_MSG_AVAILABLE;
+	last if $self->{ReplyToQ}->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE;
+
+        #
+        # Ugly hack:
+        # - If this is MQSC
+        # - We are asking for an InquireChannelStatus/DeleteChannel,
+        #   which gives us a count message, then a 'command accepted'
+        #   message, then the real data that we care about
+        # - This is that 'command accepted' message
+        # Then bin the message.
+        #
+        push @response_buffers, $response->{'Buffer'};
+        if ($self->{Type} eq 'MQSC' &&
+            ($command eq 'InquireChannelStatus' ||
+             $command eq 'DeleteChannel') &&
+            scalar(@{$self->{Response}}) <= 2 &&
+            "@response_buffers" =~ m!\bCSQM[A-Z][A-Z][A-Z][A-Z]\b.*\bACCEPTED\s*$!s) {
+            #print STDERR "Skipping response [@response_buffers]\n";
+
+            #
+            # Reset the responses so far.  We must reset the 'reusable'
+            # header as well, as the next response may have a different
+            # count, return or reason code.
+            #
+            $self->{Response} = [];
+            @response_buffers = ();
+            $MQSCHeader = { Command => $command };
+            next;
+        } else {
+            #print STDERR "Keeping response [@response_buffers]\n";
+        }
 
 	push(@{$self->{Response}},$response);
 
@@ -748,7 +794,6 @@ sub _Command {
 	$MQSCHeader = $response->Header() if $self->{Type} eq 'MQSC';
 
 	last if $self->_LastSeen();
-
     }
 
     #
@@ -757,8 +802,10 @@ sub _Command {
     # If we didn't see the last message, then return the empty list.
     #
     unless ( $self->_LastSeen() ) {
-	$self->{"CompCode"} = MQCC_FAILED if $self->{"CompCode"} == MQCC_OK;
-	$self->{"Reason"} = MQRC_UNEXPECTED_ERROR if $self->{"Reason"} == MQRC_NONE;
+	$self->{"CompCode"} = MQSeries::MQCC_FAILED 
+          if $self->{"CompCode"} == MQSeries::MQCC_OK;
+	$self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR 
+          if $self->{"Reason"} == MQSeries::MQRC_NONE;
 	$self->{Carp}->("Last response message never seen\n");
 	return;
     }
@@ -827,6 +874,7 @@ sub _Command {
 
 }
 
+
 sub Responses {
     my $self = shift;
     if ( ref $self->{"Response"} eq "ARRAY" ) {
@@ -836,9 +884,11 @@ sub Responses {
     }
 }
 
+
 1;
 
 __END__
+
 
 =head1 NAME
 
@@ -1217,6 +1267,19 @@ made by the API.
 This method will return the MQI Reason for the most recent MQI call
 made by the API.
 
+=head2 ReasonText
+
+This method will return different strings depending on whether the
+command is MQSC or PCF.  For MQSC, the command server sends back some
+text explaining the reason code, and for PCF, we simply call
+MQReasonToText on the reason code and return that instead.
+
+MQSC sends back far less information encoded into the reason than PCF
+does, and the interesting information is usually found in the
+ReasonText.  Therefore, this method should be used when raising
+exceptions, in order to get the most descriptive explanation for any
+given error.
+
 =head2 Responses
 
 Normally, the data of interest is returned from the method in
@@ -1259,6 +1322,7 @@ key/value pairs:
   Verify	     Boolean
   Clear              Boolean
   Quiet              Boolean
+  Force	             Boolean
 
 The key/value pairs in the Attrs argument are passed directly to the
 corresponding CreateQueue(), CreateChannel(), or CreateProcess()
@@ -1317,6 +1381,18 @@ This is a seperate option due to the inherit danger of destroying data
 accidentally.  If you really want to clear the queues before
 recreating them as another QType, you will have to be explicitl about
 it.
+
+=item Force
+
+This option will be passed to the Change* method, if the object
+already exists and is of type Queue, forcing changes to be applied to
+objects which are currently in use.  It is ignored for the other
+object types.  Note that this should B<not> be passed as a key to the
+Attrs hash, since this is not really an object attribute.
+
+If Force is given as an Attrs key, and the underlying Create* method
+is called, since the object does not already exist, then the command
+server will return an error.
 
 =back
 

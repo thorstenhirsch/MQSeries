@@ -1,7 +1,7 @@
 #
-# $Id: DeadLetter.pm,v 15.1 2000/08/16 00:41:11 wpm Exp $
+# $Id: DeadLetter.pm,v 16.3 2001/01/05 21:43:03 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,17 +9,16 @@ package MQSeries::Message::DeadLetter;
 
 use strict;
 use Carp;
-use English;
 
 use DynaLoader;
 use Exporter;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 
@@ -35,7 +34,7 @@ sub new {
 
     my %MsgDesc =
       (
-       Format	=> MQFMT_DEAD_LETTER_HEADER,
+       Format	=> MQSeries::MQFMT_DEAD_LETTER_HEADER,
       );
 
     #

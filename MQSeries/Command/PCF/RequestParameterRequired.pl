@@ -10,9 +10,9 @@
 #
 # and for the evil hackery used to generate this, see:
 #
-#    ..../src/util/flatten_macros 
+#    ..../src/util/flatten_macros
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;

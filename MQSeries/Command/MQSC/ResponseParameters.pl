@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 14.1 2000/08/15 20:51:39 wpm Exp $
+# $Id: ResponseParameters.pl,v 16.4 2001/01/05 21:52:05 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -45,6 +45,11 @@ package MQSeries::Command::MQSC;
     QMID	=> [ "QMgrIdentifier" ],
     REPOS	=> [ "RepositoryName" ],
     REPOSNL	=> [ "RepositoryNamelist" ],
+
+    IGQ         => [ "IntraGroupQueueing",      $ResponseValues{Enabled} ],
+    IGQAUT      => [ "IntraGroupAuthority",     $ResponseValues{IntraGroupAuthority} ],
+    IGQUSER     => [ "IntraGroupUser" ],
+    QSGNAME     => [ "QSharingGroupName" ],
    },
 
    Process =>
@@ -59,12 +64,17 @@ package MQSeries::Command::MQSC;
 
     ALTTIME	=> [ "AlterationTime" ],
     ALTDATE	=> [ "AlterationDate" ],
+
+    QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
    },
 
    Queue =>
    {
     BOQNAME	=> [ "BackoutRequeueName" ],
     BOTHRESH	=> [ "BackoutThreshold" ],
+    CFSTRUCT    => [ "CouplingStructure" ],
+    CHLDISP     => [ "ChannelDisposition" ],
+    CMDSCOPE    => [ "CommandScope" ],
     CRDATE	=> [ "CreationDate" ],
     CRTIME	=> [ "CreationTime" ],
     CURDEPTH	=> [ "CurrentQDepth" ],
@@ -75,6 +85,9 @@ package MQSeries::Command::MQSC;
     DESCR	=> [ "QDesc" ],
     DISTL	=> [ "DistLists",		$ResponseValues{Yes} ],
     GET		=> [ "InhibitGet",		$ResponseValues{Enabled} ],
+    IGQ         => [ "IntraGroupQueueing" ],
+    IGQAUT      => [ "IntraGroupAuthority" ],
+    IGQUSER     => [ "IntraGroupUser" ],
     INDXTYPE	=> [ "IndexType",		$ResponseValues{IndexType} ],
     INITQ	=> [ "InitiationQName" ],
     IPPROCS	=> [ "OpenInputCount" ],
@@ -93,6 +106,8 @@ package MQSeries::Command::MQSC;
     QSVCIEV	=> [ "QServiceIntervalEvent",   $ResponseValues{QServiceIntervalEvent} ],
     TYPE	=> [ "QType",  			$ResponseValues{QType} ],
     QUEUE	=> [ "QName" ],
+    QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
+    QSGNAME     => [ "QSharingGroupName" ],
     RETINTVL	=> [ "RetentionInterval" ],
     RNAME	=> [ "RemoteQName" ],
     RQMNAME	=> [ "RemoteQMgrName" ],
@@ -124,6 +139,14 @@ package MQSeries::Command::MQSC;
     DEFBIND	=> [ "DefBind",			$ResponseValues{DefBind} ],
     QMID   	=> [ "QMgrIdentifier" ],
 
+    # 
+    # ResetQueueStatistics (For MVS version of MQ release 5.2 and up)
+    #
+    HIQDEPTH    => [ "HighQDepth" ],
+    MSGSIN      => [ "MsgEnqCount" ],
+    MSGSOUT     => [ "MsgDeqCount" ],
+    RESETINT    => [ "TimeSinceReset" ],
+    QSTATS      => [ "QName" ],
    },
 
    Channel =>
@@ -209,6 +232,8 @@ package MQSeries::Command::MQSC;
     CLUSNL   	=> [ "ClusterNamelist" ],
     NETPRTY 	=> [ "NetworkPriority" ],
 
+    CHLDISP     => [ "ChannelDisposition",      $ResponseValues{ChannelDisposition} ],
+    QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
    },
 
    Namelist =>
@@ -219,6 +244,7 @@ package MQSeries::Command::MQSC;
     NAMELIST	=> [ "NamelistName" ],
     NAMCOUNT  	=> [ "NamelistCount" ],
     NAMES   	=> [ "Names" ],
+    QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
    },
 
    StorageClass =>

@@ -4,6 +4,95 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.13
+
+=head2 Support for MQSeries version 5.2 on the mainframe
+
+The MQSeries::Command class now supports MQSeries version 5.2 on the
+mainframe.  This includes support for the new QSharingGroup,
+CouplingFacility, CommandScope and IntraGroupQueueing keywords; and
+the new ResetQueueStatistics method, which returns the same results
+as the Unix (PCF) version.  The new DisplayQueueStatus MQSC command is not
+yet supported.
+
+Support for MQSeries 5.2 on Unix has also been tested; however, as 
+this worked without changes, none were made.
+
+=head2 MQSeries::QueueManager AutoCommit off by default
+
+As warned when we deployed 1.12, MQSeries::QueueManager's AutoCommit
+functionality is disabled by default now.  If you want pending
+transactions to be automatically committed when your disconnect, you
+must set AutoCommit in your code.
+
+=head2 Un-bloat the code
+
+The MQSeries modules were becoming a serious memory hog, largely due
+to the import/export of all constants in modules the included
+MQSeries.  
+
+The MQSeries moduly now optionally allows importing just the
+functions, then referring to constants using an MQSeries:: prefix.
+This has been done throughout the MQSeries library internally, leading
+to a space saving of some 3 MB for programs using MQSeries::Command.
+
+This change is fully backwards-compatible.  There is no impact on
+programs using the MQSeries module, though these can reduce their
+memory footprint (if desired) by selectively importing the required
+MQSeries functions.
+
+=head2 MQSeries::Command->InquireChannelStatus handles MQRCCF_CHL_STATUS_NOT_FOUND more elegantly
+
+The code has always tried to make a missing channel status appear to
+be a successful command, and to return the "ChannelStatus" value of
+"NotFound", since this is not really an error.  Unfortunately, we
+broke this when we reorganized the MQSeries::Command code for 1.12.
+
+The CompCode and Reason will now be reset to MQCC_OK and MQRC_NONE,
+as well as returning a ChannelStatus of "NotFound".
+
+=head2 MQSeries::Message::RulesFormat tolerant of leading whitespace
+
+In the NameValueString of the MQRFH message, that is.  According to
+IBM (I checked), there is nothing in the spec or the code of the
+pubsub broker(s) that will prohibit the user of leading whitespace in
+the MQRFH NameValueString, so the perl API needs to be tolerant of the
+same.
+
+=head2 MQSeries::Message::XML-Dumper removed
+
+As this module did not compile, it probably wasn't used by anyone.
+
+=head2 Bug in Extended PCF Command "InquireAuthority" fixed
+
+The keyword in the hash tables used to map strings to PCF macros had a
+bug.  Principal was mispelled, causing any query of permissions that
+involved principals to fail.
+
+This was guaranteed to impact only MSDW....
+
+=head2 Minor bug in handling of CompCode/Reason values from MQSC Commands
+
+These are really hex values, and we were pretending that they were
+decimal.  This generates warning when the values are used for
+numerical comparisons.
+
+The CompCode and Reason values are now "eval"ed as hex, and thus
+converted to decimal values.
+
+=head2 MQSeries::Command->ReasonText documented
+
+This method returns either the MQReasonToText value for the commandd
+reason code, or the ReasonText returned by MQSC.  It wasn't
+documented.  It is now.
+
+=head2 MQSeries::Command->CreateObject takes Force argument
+
+You can't pass Force as an object attribute, since it is supported by
+ChangeFoo but not by CreateFoo commands, in general.  The
+specification of Force is not an argument to CreateObject itself, and
+should not be passed as a key in the Attrs hash.
+
 =head1 Changes for 1.12
 
 =head2 MQSeries::Command->Responses
@@ -924,9 +1013,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 15.9 2000/11/13 22:30:31 wpm Exp $
+# $Id: Changes.src,v 16.9 2001/02/21 22:13:43 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

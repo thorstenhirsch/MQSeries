@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: fake_mm,v 14.1 2000/08/15 20:53:12 wpm Exp $
+# $Id: fake_mm,v 16.1 2001/01/05 21:46:54 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

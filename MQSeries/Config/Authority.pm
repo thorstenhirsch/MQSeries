@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::Authority.pm - Parse Unix authority files
 #
-# (c) 2000 Morgan Stanley Dean Witter and Co.
+# (c) 2000, 2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Authority.pm,v 15.7 2000/10/31 14:05:57 biersma Exp $
+# $Id: Authority.pm,v 16.4 2001/01/02 16:50:21 biersma Exp $
 #
 
 package MQSeries::Config::Authority;
@@ -14,9 +14,9 @@ use Carp;
 
 use vars qw($VERSION);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
-use MQSeries;                   # For constants
+use MQSeries qw(:functions);
 use MQSeries::Config::Machine;  # For localqmgrs()
 
 #
@@ -27,26 +27,26 @@ my %auth_bit_to_name =
    #
    # Admin Rights
    #
-   &MQZAO_CREATE		   => 'crt',
-   &MQZAO_DELETE		   => 'dlt',
-   &MQZAO_DISPLAY		   => 'dsp',
-   &MQZAO_CHANGE		   => 'chg',
-   &MQZAO_CLEAR			   => 'clr',
+   MQSeries::MQZAO_CREATE		    => 'crt',
+   MQSeries::MQZAO_DELETE		    => 'dlt',
+   MQSeries::MQZAO_DISPLAY		    => 'dsp',
+   MQSeries::MQZAO_CHANGE		    => 'chg',
+   MQSeries::MQZAO_CLEAR		    => 'clr',
    
    #
    # MQI Rights
    #
-   &MQZAO_CONNECT		   => 'connect',
-   &MQZAO_BROWSE		   => 'browse',
-   &MQZAO_INPUT			   => 'get',
-   &MQZAO_OUTPUT		   => 'put',
-   &MQZAO_INQUIRE		   => 'inq',
-   &MQZAO_SET			   => 'set',
-   &MQZAO_PASS_IDENTITY_CONTEXT	   => 'passid',
-   &MQZAO_PASS_ALL_CONTEXT	   => 'passall',
-   &MQZAO_SET_IDENTITY_CONTEXT	   => 'setid',
-   &MQZAO_SET_ALL_CONTEXT	   => 'setall',
-   &MQZAO_ALTERNATE_USER_AUTHORITY => 'altusr',
+   MQSeries::MQZAO_CONNECT		    => 'connect',
+   MQSeries::MQZAO_BROWSE		    => 'browse',
+   MQSeries::MQZAO_INPUT		    => 'get',
+   MQSeries::MQZAO_OUTPUT		    => 'put',
+   MQSeries::MQZAO_INQUIRE		    => 'inq',
+   MQSeries::MQZAO_SET			    => 'set',
+   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    => 'passid',
+   MQSeries::MQZAO_PASS_ALL_CONTEXT	    => 'passall',
+   MQSeries::MQZAO_SET_IDENTITY_CONTEXT	    => 'setid',
+   MQSeries::MQZAO_SET_ALL_CONTEXT	    => 'setall',
+   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY => 'altusr',
   );
 my %auth_name_to_bit = reverse %auth_bit_to_name;
 
@@ -58,26 +58,26 @@ my %auth_bit_to_pcf =
    #
    # Admin Rights
    #
-   &MQZAO_CREATE		   => 'Create',
-   &MQZAO_DELETE		   => 'Delete',
-   &MQZAO_DISPLAY		   => 'Display',
-   &MQZAO_CHANGE		   => 'Change',
-   &MQZAO_CLEAR			   => 'Clear',
+   MQSeries::MQZAO_CREATE		    => 'Create',
+   MQSeries::MQZAO_DELETE		    => 'Delete',
+   MQSeries::MQZAO_DISPLAY		    => 'Display',
+   MQSeries::MQZAO_CHANGE		    => 'Change',
+   MQSeries::MQZAO_CLEAR		    => 'Clear',
    
    #
    # MQI Rights
    #
-   &MQZAO_CONNECT		   => 'Connect',
-   &MQZAO_BROWSE		   => 'Browse',
-   &MQZAO_INPUT			   => 'Input',
-   &MQZAO_OUTPUT		   => 'Output',
-   &MQZAO_INQUIRE		   => 'Inquire',
-   &MQZAO_SET			   => 'Set',
-   &MQZAO_PASS_IDENTITY_CONTEXT	   => 'PassId',
-   &MQZAO_PASS_ALL_CONTEXT	   => 'PassAll',
-   &MQZAO_SET_IDENTITY_CONTEXT	   => 'SetId',
-   &MQZAO_SET_ALL_CONTEXT	   => 'SetAll',
-   &MQZAO_ALTERNATE_USER_AUTHORITY => 'AlternateUser',
+   MQSeries::MQZAO_CONNECT		    => 'Connect',
+   MQSeries::MQZAO_BROWSE		    => 'Browse',
+   MQSeries::MQZAO_INPUT		    => 'Input',
+   MQSeries::MQZAO_OUTPUT		    => 'Output',
+   MQSeries::MQZAO_INQUIRE		    => 'Inquire',
+   MQSeries::MQZAO_SET			    => 'Set',
+   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    => 'PassId',
+   MQSeries::MQZAO_PASS_ALL_CONTEXT	    => 'PassAll',
+   MQSeries::MQZAO_SET_IDENTITY_CONTEXT	    => 'SetId',
+   MQSeries::MQZAO_SET_ALL_CONTEXT	    => 'SetAll',
+   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY => 'AlternateUser',
   );
 
 #
@@ -439,9 +439,13 @@ sub _parse_authfile {
             return 0;
         }
         my $entity = $1;
+        #
+        # If an entity occurs multiple times in the same file 
+        # (which the IBM OAM never does, typically the result of manual
+        #  editing), the permissions are effectively ORed.
+        #
         if (defined $entities->{$entity}) {
-            $this->{'Carp'}->("Entity [$entity] occurs twice in [$authfile]");
-            return 0;
+            $this->{'Carp'}->("Entity [$entity] occurs twice in [$authfile], ORing access");
         }
 
         #
@@ -459,19 +463,13 @@ sub _parse_authfile {
         next if ($permission == 0);
 
         #
-        # Store the permission number for the entity
-        # (to be queried later), and store the entity
-        # under all the valid permission bits.
+        # Store the permission number for the entity (to be queried later),
+        # taking care to perform the logical OR for duplicate entities.
         #
-        $entities->{$entity} = $permission;
+        $entities->{$entity} ||= 0;
+        $entities->{$entity} |= $permission;
         my $used = 0;
         while (my ($bit, $name) = each %auth_bit_to_name) {
-            #
-            # Skip bits that are set but not relevant for this type
-            #
-            #next if (defined $type && 
-            #         ($object_type_to_bits{$type} & $bit) == 0);
-
             if (($permission & $bit) == $bit) {
                 $used |= $bit;
             }
@@ -592,13 +590,16 @@ MQSeries::Config::Authority -- Interface to parse authority files
 =head1 DESCRIPTION
 
 The MQSeries::Config::Authority class is an interface to the authority
-files in /var/mqm/qmgrs/XYZ/auth/.  This class will parse authority
-files for specific objects and take into account the @aclass and
-@class files.  Objects created then provide access to the entities
-(Unix groups or principals) that have access to the object, allow you
-to query whether an entity has specific access levels, or to create
-command input that will allow you to recreate the access settings at a
-later date.
+files in /var/mqm/qmgrs/XYZ/auth/, for MQSeries versions 5.0 and 5.1
+on Unix.  It will not work with MQSeries 5.2 and higher, as those
+store the authority information in a queue.
+
+This class will parse authority files for specific objects and take
+into account the @aclass and @class files.  Objects created then
+provide access to the entities (Unix groups or principals) that have
+access to the object, allow you to query whether an entity has
+specific access levels, or to create command input that will allow you
+to recreate the access settings at a later date.
 
 The MQSeries::Config::Authority class will cache the parsed @aclass
 and @class authority files across multiple authority files for
@@ -686,6 +687,11 @@ the entity holds 'connect' authority, the string includes '+connect',
 otherwise it will include '-connect'.  In order to keep the string
 short, the combined authority values 'all', 'allcmd' and 'allmqi' will
 be used when appropriate.
+
+=head1 BUGS
+
+This module only works with MQSeries versions 5.0 and 5.1 on Unix.
+Version 5.2 is not supported.
 
 =head1 SEE ALSO
 

@@ -1,8 +1,8 @@
 #!/ms/dist/perl5/bin/perl
 #
-# $Id: flatten_macros,v 15.2 2000/10/25 19:24:09 wpm Exp $
+# $Id: flatten_macros,v 16.2 2001/01/05 21:51:22 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # NOTE: this file is just a tool to flatten all of the MQ* macros in
@@ -34,6 +34,8 @@ unless ( @infiles = split(/\n+/,qx{find pre.in -type f -name '*.in' -print}) ) {
 foreach my $infile ( @infiles ) {
     $maxlen = length($infile) if length($infile) > $maxlen;
 }
+
+$thisyear = (localtime())[5] + 1900;
 
 warn "Flattening MQSeries macros...\n";
 
@@ -81,9 +83,9 @@ foreach my $infile ( @infiles ) {
 #
 # and for the evil hackery used to generate this, see:
 #
-#    ..../src/util/flatten_macros 
+#    ..../src/util/flatten_macros
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-$thisyear Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 EndOfWarning

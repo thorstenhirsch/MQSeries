@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 15.3 2000/10/24 01:05:15 wpm Exp $
+# $Id: Makefile.PL,v 16.1 2001/01/05 21:42:58 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

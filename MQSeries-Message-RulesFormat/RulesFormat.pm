@@ -1,7 +1,7 @@
 #
-# $Id: RulesFormat.pm,v 15.1 2000/08/16 00:41:14 wpm Exp $
+# $Id: RulesFormat.pm,v 16.4 2001/01/11 22:47:31 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,17 +9,16 @@ package MQSeries::Message::RulesFormat;
 
 use strict;
 use Carp;
-use English;
 
 use DynaLoader;
 use Exporter;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 
@@ -35,7 +34,7 @@ sub new {
 
     my %MsgDesc =
       (
-       Format	=> MQFMT_RF_HEADER,
+       Format	=> MQSeries::MQFMT_RF_HEADER,
       );
 
     #
@@ -170,7 +169,7 @@ sub _DecodeOptions {
 	my ($key,$value) = (undef,undef);
 
 	if ( $options =~ s{
-			   ^$prefix(\S+)
+			   ^\s*$prefix(\S+)
 			   \s+
 			   (
 			    \"([^\"]|\"{2})+\"

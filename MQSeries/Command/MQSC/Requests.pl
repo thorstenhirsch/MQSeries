@@ -1,7 +1,7 @@
 #
-# $Id: Requests.pl,v 14.1 2000/08/15 20:51:37 wpm Exp $
+# $Id: Requests.pl,v 16.2 2001/01/05 21:43:44 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -45,10 +45,9 @@ package MQSeries::Command::MQSC;
    InquireQueueNames		=> [ "DISPLAY",      	$RequestParameters{InquireQueueNames} ],
 
    #
-   # Not available in MQSC, it appears
+   # Available from release 5.2 on MVS, not before
    #
-   ResetQueueStatistics		=> "",
-
+   ResetQueueStatistics		=> [ "RESET",           $RequestParameters{ResetQueueStatistics} ],
 
    #
    # Channel commands

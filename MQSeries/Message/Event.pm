@@ -1,7 +1,7 @@
 #
-# $Id: Event.pm,v 15.1 2000/08/16 00:58:15 wpm Exp $
+# $Id: Event.pm,v 16.3 2001/01/05 21:45:56 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,11 +9,10 @@ package MQSeries::Message::Event;
 
 require 5.004;
 
-use strict qw(vars refs);
+use strict;
 use Carp;
-use English;
 
-use MQSeries;
+use MQSeries qw(:functions);
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQDecodePCF);
 
@@ -21,7 +20,7 @@ require "MQSeries/Message/Event.pl";
 
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 @ISA = qw(MQSeries::Message);
 
 sub PutConvert {
@@ -67,11 +66,11 @@ sub _TranslatePCF {
     my $ResponseParameters = \%MQSeries::Message::Event::ResponseParameters;
 
     if ( 
-	$header->{Type} != MQCFT_EVENT ||
+	$header->{Type} != MQSeries::MQCFT_EVENT ||
 	(
-	 $header->{Command} != MQCMD_Q_MGR_EVENT &&
-	 $header->{Command} != MQCMD_PERFM_EVENT &&
-	 $header->{Command} != MQCMD_CHANNEL_EVENT
+	 $header->{Command} != MQSeries::MQCMD_Q_MGR_EVENT &&
+	 $header->{Command} != MQSeries::MQCMD_PERFM_EVENT &&
+	 $header->{Command} != MQSeries::MQCMD_CHANNEL_EVENT
 	)
        ) {
 	$self->{Carp}->("Not an MQSeries performance event\n");
@@ -96,11 +95,11 @@ sub _TranslatePCF {
 	# MQCFT_INTEGER_LIST types.
 	#
 	
-	if ( $origparam->{Type} == MQCFT_STRING ) {
+	if ( $origparam->{Type} == MQSeries::MQCFT_STRING ) {
 	    ( $parameters->{$key} = $origparam->{String} ) =~ s/\s+$//;
 	}
 
-	if ( $origparam->{Type} == MQCFT_INTEGER ) {
+	if ( $origparam->{Type} == MQSeries::MQCFT_INTEGER ) {
 	    $parameters->{$key} = $origparam->{Value};
 	}
 

@@ -1,7 +1,7 @@
 #
-# $Id: MQSeries.pm,v 15.4 2000/10/18 15:37:48 biersma Exp $
+# $Id: MQSeries.pm,v 16.5 2001/02/07 18:19:11 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This is intended to be a wrapper routine to include either the
@@ -15,14 +15,14 @@ require 5.004;
 
 use strict;
 use Carp;
-use vars qw($VERSION @ISA @EXPORT);
+use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS);
 
 require Exporter;
 require DynaLoader;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 BEGIN {
 
@@ -53,12 +53,14 @@ BEGIN {
        ) {
 	require "MQServer/MQSeries.pm";
 	import MQServer::MQSeries;
-	@EXPORT = @MQServer::MQSeries::EXPORT;
+	*EXPORT = *MQServer::MQSeries::EXPORT;
+	*EXPORT_TAGS = *MQServer::MQSeries::EXPORT_TAGS;
 	$MQSeries::Mode = "Server";
     } else {
 	require "MQClient/MQSeries.pm";
 	import MQClient::MQSeries;
-	@EXPORT = @MQClient::MQSeries::EXPORT;
+	*EXPORT = *MQClient::MQSeries::EXPORT;
+	*EXPORT_TAGS = *MQClient::MQSeries::EXPORT_TAGS;
 	$MQSeries::Mode = "Client";
     }
 
@@ -126,7 +128,6 @@ message formats:
   MQSeries::Message::Event
   MQSeries::Message::PCF
   MQSeries::Message::RulesFormat
-  MQSeries::Message::XML-Dumper
   MQSeries::Message::DeadLetter
 
 There is also a set of modules which provide an interface to the
@@ -181,6 +182,95 @@ Where data structures are required, this interface uses a hash
 reference. The keys in the hash are structure element names. If an
 element is not specified in the hash, a default value will be
 used. Output elements are updated in the hash as necessary.
+
+=head2 Basic Module Usage
+
+By default, this module will export all functions and MQSeries
+constants into the caller's namespace.  This may bloat that module's
+memory usage by some 400 Kbyte.  For that reason, you can also request
+to only export the functions.  To use macros, you would then either
+import them individually or refer to them using the MQSeries:: prefix.
+
+This leads to the following C<use> statements:
+
+=over 4
+
+=item use MQSeries;
+
+The default: export functions and constants.
+
+=item use MQSeries qw(:functions);
+
+Export just the functions.  This should be the way most modules
+import MQSeries, as it saves 400Kbyte per module importing MQSeries.
+In order to use a macro, e.g. C<MQCC_FAILED>, you could either add it to the
+list on the C<use> statement, or refer to C<MQSeries::MQCC_FAILED>.
+
+=item use MQSeries qw(:constants);
+
+Export just the constants; not very useful.
+
+=item use MQSeries qw(:all);
+
+The same as the default: export functions and constants.
+
+=back
+
+=head2 Server vs. Client API
+
+Compiled MQSeries applications, such as those written in C or C++,
+have to decide at compile/link time which of the two API styles to
+use: server (shared memory, same host) or client (TCP/IP, same or
+remote host).  Perl applications can make this decision at runtime,
+dynamically.
+
+By default, the MQSeries module will try to dynamically determine
+whether or not the localhost has any queue managers installed, and if
+so, use the "server" API, otherwise, it will use the "client" API.
+
+This will Do The Right Thing (tm) for most applications, unless you
+want to connect directly to a remote queue manager from a host which
+is running other queue managers locally.  Since the existence of
+locally installed queue managers will result in the use of the
+"server" API, attempts to connect to the remote queue managers will
+fail with a Reason Code of 2058.
+
+To workaround this problem, you can force the use of either the server
+or client API explictly by using one of the following use statements.
+
+=over 4
+
+=item use MQClient::MQSeries;
+
+This will force the use of the client API, regardless of whether or
+not there are queue managers on the localhost.
+
+=item use MQServer::MQSeries;
+
+This will force the use of the server API, and thus only allow
+connections only to queue managers on the same machine.  This normally
+is not necessary, since the API should detect existence of local queue
+manager and default to this flavor of access.
+
+The author uses this in one and only one special case: the automated
+script that installs a queue manager, and then customizes it.  When
+the script first runs, there is usually no local queue manager, but it
+will need to connect to it using the server API once it is created.
+
+=back
+
+Of course, you can combine the various import options, for example the
+following is perfectly valid:
+
+  use MQClient::MQSeries qw(:functions);
+
+B<NOTE>: The perl API, when compiled and installed, will normally
+build both the server and client extensions, but on some platforms one
+or the other is not available.  For example, we currently only support
+the client API on IRIX, and only the server API on OS/390.  Whether or
+not the server and/or client options are even available depends on how
+the MQSeries perl API was compiled and installed.  Consult your
+administrator (or whoever built this extension) for such details.
 
 =head1 SUBROUTINES
 

@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_config,v 15.1 2000/09/14 20:12:21 wpm Exp $
+# $Id: parse_config,v 16.1 2001/01/05 21:46:56 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # Parse our config file to get the parameters we need

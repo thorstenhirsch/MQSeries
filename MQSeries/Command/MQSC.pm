@@ -1,12 +1,13 @@
 #
-# $Id: MQSC.pm,v 15.4 2000/11/13 18:44:46 wpm Exp $
+# $Id: MQSC.pm,v 16.6 2001/01/05 21:43:38 wpm Exp $
 #
-# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Command::MQSC;
 
+use strict;
 use vars qw(
 	    $VERSION
 	    @ISA
@@ -14,9 +15,9 @@ use vars qw(
 
 @ISA = qw(MQSeries::Command);
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
-use MQSeries;
+use MQSeries qw(:functions);
 
 #
 # Note -- the order is important, so resist the anal retentive urge to
@@ -36,59 +37,57 @@ require "MQSeries/Command/MQSC/Responses.pl";
 # This is a bit wierd....  well, all of the MQSC stuff is wierd....
 # I'll try to stop whining all over the comments.
 #
+# The MQSC response starts with an indicator of the total number of
+# messages, then has data messages, then ends on an end line.  This
+# basically checks whether the total number of messages, as indicated
+# up front, has been received.
+#
 sub _LastSeen {
-
     my $self = shift;
 
-    return unless $self->{Response}->[0] && $self->{Response}->[0]->Header('LastMsgSeqNumber') == scalar @{$self->{Response}};
-    return 1;
+    return unless ($self->{Response}->[0] && 
+                   $self->{Response}->[0]->Header('LastMsgSeqNumber') == scalar @{$self->{Response}});
 
+    return 1;
 }
 
-sub _ProcessResponses {
 
+sub _ProcessResponses {
     my $self = shift;
     my $command = shift;
 
     my $MQSCHeader = { Command => $command };
+
+    my $MQSCMsgDesc = {};
     my $MQSCParameters = {};
 
     #
     # Key difference with PCF: we are going to toss out some of the
     # responses, and reset the Response array.
     #
-    my @response = ();
+    my @responses;
 
     $self->{Buffers} = [];
 
     foreach my $response ( @{$self->{Response}} ) {
-	
 	#
 	# XXX -- Special hack to collect raw text
 	#
 	push(@{$self->{Buffers}},$response->{Buffer});
 
 	#
-	# Some MQSC commands return 2 batches of responses.
-	# DISPLAY CHSTATUS sends us one saying "COMMAND ACCEPTED",
-	# which we really don't care about.
-	#
-	if ( $response->ReasonText() =~ /COMMAND.*ACCEPTED/si ) {
-	    next;
-	}
-
-	#
 	# Let the object-wide compcode and reason be the first
 	# non-zero result found in all of the messages.  This is
 	# *usually* good enough, but the data will be available via
-	# Response() is you want to parse the full header for each
+	# Response() if you want to parse the full header for each
 	# message.
 	#
 	if (
-	    $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE &&
+	    $self->{"CompCode"} == MQSeries::MQCC_OK && 
+            $self->{"Reason"} == MQSeries::MQRC_NONE &&
 	    (
-	     $response->Header("CompCode") != MQCC_OK ||
-	     $response->Header("Reason") != MQRC_NONE
+	     $response->Header("CompCode") != MQSeries::MQCC_OK ||
+	     $response->Header("Reason") != MQSeries::MQRC_NONE
 	    )
 	   ) {
 	    $self->{"CompCode"} = $response->Header("CompCode");
@@ -104,7 +103,7 @@ sub _ProcessResponses {
 		$response->ReasonText() =~ /no chstatus found/mi
 	       ) {
 		$response->{Parameters}->{ChannelStatus} = 'NotFound';
-		$self->{"Reason"} = MQRCCF_CHL_STATUS_NOT_FOUND;
+		$self->{"Reason"} = MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND;
 	    }
 	}
 
@@ -123,29 +122,40 @@ sub _ProcessResponses {
 	    my ($oldkey,$newkey) = @{$MQSeries::Command::MQSC::ResponseList{$command}};
 	    push(@{$MQSCParameters->{$newkey}},$response->Parameters($oldkey))
 	      if $response->Parameters($oldkey);
+	    # Save the last response's MsgDesc.  See below...
+	    $MQSCMsgDesc = $response->MsgDesc();
 	} else {
-	    push(@response,$response);
+	    push(@responses, $response);
 	}
-
-    }
+    }                           # End foreach: response
 
     #
     # For these commands, we create a fake response message, and feed
-    # that back.
+    # that back.  These are:
+    #
+    # InquireProcessNames
+    # InquireQueueNames
+    # InquireChannelNames
+    # InquireNamelistNames
+    #
+    # We're ignoring the raw responses above, and simply extracting
+    # the single key we care about, and creating a fake response with
+    # one parameter, and one value (an ARRAY ref of values,
+    # eg. QNames).
     #
     if ( $MQSeries::Command::MQSC::ResponseList{$command} ) {
-	$response = MQSeries::Command::Response->new
+	my $response = MQSeries::Command::Response->new
 	  (
-	   MsgDesc		=> $response->MsgDesc(),
+	   MsgDesc		=> $MQSCMsgDesc,
 	   Header		=> $MQSCHeader,
 	   Parameters		=> $MQSCParameters,
 	   Type			=> $self->{Type},
 	  ) || do {
-	      $self->{"CompCode"} = MQCC_FAILED;
-	      $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+	      $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+	      $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 	      return;
 	  };
-	push(@response,$response);
+	push(@responses, $response);
     }
 
     #
@@ -158,12 +168,12 @@ sub _ProcessResponses {
     # And yes, we're violating the OO concept of using methods
     # to get at data members.  We're somewhat incestuous here...
     #
-    if ( @response ) {
+    if ( @responses ) {
 	my $responsecount = 0;
-	foreach my $response ( @response ) {
+	foreach my $response ( @responses ) {
 	    if ( keys %{$response->{Parameters}} ) {
 		$response->{Header}->{MsgSeqNumber} = ++$responsecount;
-		$response->{Header}->{Control} = &MQCFC_NOT_LAST;
+		$response->{Header}->{Control} = MQSeries::MQCFC_NOT_LAST;
 		$response->{Header}->{ParameterCount} = scalar keys %{$response->{Parameters}};
 		delete $response->{Header}->{LastMsgSeqNumber};
 		push(@{$self->{Response}},$response);
@@ -175,7 +185,7 @@ sub _ProcessResponses {
 	#
 	if ( scalar(@{$self->{Response}}) ) {
 	    my $response = pop(@{$self->{Response}});
-	    $response->{Header}->{Control} = &MQCFC_LAST;
+	    $response->{Header}->{Control} = MQSeries::MQCFC_LAST;
 	    push(@{$self->{Response}},$response);
 	}
 	#
@@ -184,16 +194,16 @@ sub _ProcessResponses {
 	# multiple responses, but none have parameters.
 	#
 	else {
-	    $response[0]->{Header}->{MsgSeqNumber} = 1,
-	      $response[0]->{Header}->{Control} = &MQCFC_LAST;
-	    $response[0]->{Header}->{ParameterCount} = 0;
-	    delete $response[0]->{Header}->{LastMsgSeqNumber};
-	    push(@{$self->{Response}},$response[0]);
+	    $responses[0]->{Header}->{MsgSeqNumber} = 1;
+            $responses[0]->{Header}->{Control} = MQSeries::MQCFC_LAST;
+	    $responses[0]->{Header}->{ParameterCount} = 0;
+	    delete $responses[0]->{Header}->{LastMsgSeqNumber};
+	    push(@{$self->{Response}}, $responses[0]);
 	}
     }
 
     return 1;
-
 }
+
 
 1;
