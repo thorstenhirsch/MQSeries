@@ -4,6 +4,44 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.14
+
+=head2 Support for a compare-callback method in CreateObject
+
+The CreateObject method of MQSeries::Command now supports an optional
+call-back to perform the comparison of object attributes.  This is
+only useful in obscure circumstances.
+
+=head2 Support for StorageClass objects in MQSC commands
+
+The StorageClass object type (as used on the OS/390 version of
+MQSeries) is now supported by the MQSeries::Command class.
+
+=head2 MQSeries::Command::Base->GetConvert preserves original message Buffer
+
+In order to add some statistics gathering code to the command API, the
+MQSeries::Command::Response objects will not keep the unconverted PCF
+data structures in the Buffer attribute of the object, allowing direct
+manipulation of the data, of necessary.
+
+We need to be able to measure the absolute size of the original
+message, since we are trying to gather metrics on the load placed on
+MQSeries systems by administrative tools thatuse this API.
+
+=head2 MQSeries::QueueManager ConnectTimeout logic fixed
+
+This is one of this "how did this ever work?" bugs.
+
+The logic to test the support for fork() in the current perl build was
+wrong.  This has been fixed, and the retry logic tested successfully.
+
+=head2 MQSeries::Config::Machine re-parsing bug
+
+This code is clever, and re-parses mqs.ini whenever it changes so that
+long running daemons wil automatically detect new queue manager
+installation.  However, the method name was incorrect, and this
+resulted in a fatal runtime error.  Oops.
+
 =head1 Changes for 1.13
 
 =head2 Support for MQSeries version 5.2 on the mainframe
@@ -1013,7 +1051,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 16.9 2001/02/21 22:13:43 wpm Exp $
+# $Id: Changes.src,v 17.6 2001/06/07 14:42:18 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

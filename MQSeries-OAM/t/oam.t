@@ -1,5 +1,5 @@
 #
-# $Id: oam.t,v 16.2 2001/01/05 21:43:24 wpm Exp $
+# $Id: oam.t,v 17.1 2001/03/14 00:19:48 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ BEGIN {
 }
 
 END { print "not ok 1\n" unless $loaded; }
-use MQSeries::OAM 1.13;
+use MQSeries::OAM 1.14;
 $loaded = 1;
 print "ok 1\n";
 

@@ -1,5 +1,5 @@
 #
-# $Id: PCF.pm,v 16.4 2001/02/02 20:39:09 wpm Exp $
+# $Id: PCF.pm,v 17.1 2001/03/14 00:20:01 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,7 +15,7 @@ use vars qw(
 
 @ISA = qw(MQSeries::Command);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 use MQSeries qw(:functions);
 

@@ -1,5 +1,5 @@
 #
-# $Id: Response.pm,v 16.3 2001/01/05 21:45:40 wpm Exp $
+# $Id: Response.pm,v 17.1 2001/03/14 00:20:03 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ use vars qw(@ISA $VERSION);
 	  MQSeries::Message
 	 );
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 1;
 

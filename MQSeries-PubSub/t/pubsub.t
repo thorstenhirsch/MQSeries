@@ -1,5 +1,5 @@
 #
-# $Id: pubsub.t,v 16.2 2001/01/05 21:43:33 wpm Exp $
+# $Id: pubsub.t,v 17.1 2001/03/14 00:19:55 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,10 +22,10 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use MQSeries::PubSub::Broker 		1.13;
-use MQSeries::PubSub::Stream 		1.13;
-use MQSeries::PubSub::Message 		1.13;
-use MQSeries::PubSub::AdminMessage 	1.13;
+use MQSeries::PubSub::Broker 		1.14;
+use MQSeries::PubSub::Stream 		1.14;
+use MQSeries::PubSub::Message 		1.14;
+use MQSeries::PubSub::AdminMessage 	1.14;
 $loaded = 1;
 print "ok 1\n";
 

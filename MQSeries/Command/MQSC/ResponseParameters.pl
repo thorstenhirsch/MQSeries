@@ -1,5 +1,5 @@
 #
-# $Id: ResponseParameters.pl,v 16.4 2001/01/05 21:52:05 wpm Exp $
+# $Id: ResponseParameters.pl,v 17.1 2001/04/06 18:42:41 biersma Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -250,10 +250,11 @@ package MQSeries::Command::MQSC;
    StorageClass =>
    {
     STGCLASS	=> [ "StorageClassName" ],
-    PSID	=> [ "PageSetId" ],
     ALTTIME	=> [ "AlterationTime" ],
     ALTDATE	=> [ "AlterationDate" ],
     DESCR	=> [ "StorageClassDesc" ],
+    PSID	=> [ "PageSetId" ],
+    QSGDISP     => [ "QSharingGroupDisposition", $ResponseValues{QSharingGroupDisposition} ],
     XCFGNAME	=> [ "XCFGroupName" ],
     XCFMNAME	=> [ "XCFMemberName" ],
    },

@@ -6,7 +6,7 @@
 # (c) 2000-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 16.2 2001/01/05 21:45:54 wpm Exp $
+# $Id: Tail.pm,v 17.1 2001/03/14 00:20:15 wpm Exp $
 #
 
 package MQSeries::FDC::Tail;
@@ -19,7 +19,7 @@ use MQSeries::FDC::Parser;
 
 use vars qw($VERSION);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 #
 # The FDC logs are watched based on the following assumptions:

@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 16.10 2001/03/02 17:43:38 biersma Exp $
+# $Id: Command.pm,v 17.9 2001/06/07 13:07:44 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -23,10 +23,9 @@ use MQSeries::Utils qw(ConvertUnit);
 
 use vars qw($VERSION);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 sub new {
-
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
@@ -42,6 +41,7 @@ sub new {
        ModelQName		=> 'SYSTEM.DEFAULT.MODEL.QUEUE',
        DynamicQName		=> 'PERL.COMMAND.*',
        StrictMapping		=> 0,
+       Stats                    => {},
       };
 
     #
@@ -61,7 +61,7 @@ sub new {
     #
     if ( $args{Type} ) {
 	unless ( $args{Type} eq 'PCF' or $args{Type} eq 'MQSC' ) {
-	    $self->{Carp}->("Invalid argument: 'Type' must be one of: PCF MQSC");
+	    $self->Carp("Invalid argument: 'Type' must be one of: PCF MQSC");
 	    return;
 	}
 	$self->{Type} = $args{Type};
@@ -73,7 +73,7 @@ sub new {
     #
     if ( $class =~ /::(PCF|MQSC)$/ ) {
 	if ( $self->{Type} ne $1 ) {
-	    $self->{Carp}->("Invalid argument: 'Type' $self->{Type} does not match $class");
+	    $self->Carp("Invalid argument: 'Type' $self->{Type} does not match $class");
 	    return;
 	}
     } else {
@@ -129,7 +129,7 @@ sub new {
     if ( exists $args{ProxyQueueManager} ) {
 	
 	if ( ref $args{QueueManager} || $args{QueueManager} eq "" ) {
-	    $self->{Carp}->("QueueManager must be a non-empty string when ProxyQueueManager is specified");
+	    $self->Carp("QueueManager must be a non-empty string when ProxyQueueManager is specified");
 	    return;
 	}
 
@@ -145,8 +145,8 @@ sub new {
 	    if ( $args{ProxyQueueManager}->isa("MQSeries::QueueManager") ) {
 		$self->{QueueManager} = $args{ProxyQueueManager};
 	    } else {
-		$self->{Carp}->("Invalid argument: 'ProxyQueueManager' " .
-				"must be an MQSeries::QueueManager object");
+		$self->Carp("Invalid argument: 'ProxyQueueManager' " .
+                            "must be an MQSeries::QueueManager object");
 		return;
 	    }
 	} else {
@@ -162,8 +162,8 @@ sub new {
 	    if ( $args{QueueManager}->isa("MQSeries::QueueManager") ) {
 		$self->{QueueManager} = $args{QueueManager};
 	    } else {
-		$self->{Carp}->("Invalid argument: 'QueueManager' " .
-				"must be an MQSeries::QueueManager object");
+		$self->Carp("Invalid argument: 'QueueManager' " .
+                            "must be an MQSeries::QueueManager object");
 		return;
 	    }
 	} else {
@@ -211,7 +211,7 @@ sub new {
        Reason				=> \$self->{"Reason"},
        CompCode				=> \$self->{"CompCode"},
       ) || do {
-	  $self->{Carp}->("Unable to instantiate MQSeries::Queue object for $self->{CommandQueueName}");
+	  $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{CommandQueueName}");
 	  return;
       };
 
@@ -223,8 +223,8 @@ sub new {
 	    if ( $args{ReplyToQ}->isa("MQSeries::Queue") ) {
 		$self->{ReplyToQ} = $args{ReplyToQ};
 	    } else {
-		$self->{Carp}->("Invalid argument: 'ReplyToQ' " .
-				"must be an MQSeries::Queue object");
+		$self->Carp("Invalid argument: 'ReplyToQ' " .
+                            "must be an MQSeries::Queue object");
 		return;
 	    }
 	} else {
@@ -237,7 +237,7 @@ sub new {
 	       Reason			=> \$self->{"Reason"},
 	       CompCode			=> \$self->{"CompCode"},
 	      ) || do {
-		  $self->{Carp}->("Unable to instantiate MQSeries::Queue object for $args{ReplyToQ}");
+		  $self->Carp("Unable to instantiate MQSeries::Queue object for $args{ReplyToQ}");
 		  return;
 	      };
 	}
@@ -252,7 +252,7 @@ sub new {
 	   Reason			=> \$self->{"Reason"},
 	   CompCode			=> \$self->{"CompCode"},
 	  ) || do {
-	      $self->{Carp}->("Unable to instantiate MQSeries::Queue object for $self->{ModelQName}");
+	      $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{ModelQName}");
 	      return;
 	  };
     }
@@ -261,8 +261,13 @@ sub new {
 
 }
 
-sub DataParameters {
 
+#
+# FIXME: This uses the cached response object.  We probably want
+#        to keep track of this info another way, or get rid of
+#        this method call altogether.
+#
+sub DataParameters {
     my $self = shift;
 
     my @parameters;
@@ -273,8 +278,8 @@ sub DataParameters {
     }
 
     return @parameters;
-
 }
+
 
 sub ErrorParameters {
 
@@ -291,20 +296,33 @@ sub ErrorParameters {
 
 }
 
+
 sub CompCode {
     my $self = shift;
     return $self->{"CompCode"};
 }
+
 
 sub Reason {
     my $self = shift;
     return $self->{"Reason"};
 }
 
+
+sub ReasonText {
+    my $self = shift;
+    if (defined $self->{'ReasonText'}) {
+        return $self->{'ReasonText'};
+    }
+    return MQReasonToText($self->{"Reason"});
+}
+
+
 #
 # Don't autoload this....
 #
 sub DESTROY { 1 }
+
 
 #
 # This AUTOLOAD will allow any random method to be interpreted as a
@@ -319,17 +337,22 @@ sub AUTOLOAD {
     return $self->_Command($name,{@_});
 }
 
+
 #
 # This method will query the object, and if it exists, check the
 # attributes to see if they match, and if they do, do nothing.  That
 # is, its a conditional creation of the given object.
 #
 sub CreateObject {
+    my ($self, %args) = @_;
+    my ($Verify, $Quiet, $Clear, $Attrs, $Force, $Callback) =
+      @args{qw(Verify Quiet Clear Attrs Force Callback)};
+    $Callback ||= \&_CompareAttributes;
 
-    my $self 			= shift;
-    my (%args)			= @_;
-    my ($Verify,$Quiet,$Clear,$Attrs,$Force) =
-      @args{qw(Verify Quiet Clear Attrs Force)};
+    unless (ref $Callback eq 'CODE') {
+        $self->Carp("'Callback' parameter must be a subroutine reference");
+        return;
+    }
 
     my $QMgr			= (
 				   $self->{RealQueueManager} ||
@@ -348,7 +371,8 @@ sub CreateObject {
     my $Key			= "";
     my $Type			= "";
 
-    my @KeyNames		= qw(ChannelName NamelistName ProcessName QName);
+    my @KeyNames		= qw(ChannelName NamelistName ProcessName 
+                                     QName StorageClassName);
     my $KeyCount		= 0;
 
     #
@@ -365,7 +389,7 @@ sub CreateObject {
     $KeyCount-- if exists $Attrs->{QName} && exists $Attrs->{ProcessName};
 
     if ( $KeyCount != 1  ) {
-	$self->{Carp}->("CreateObject: Unable to determine object type.\n" .
+	$self->Carp("CreateObject: Unable to determine object type.\n" .
 			(
 			 $KeyCount == 0
 			 ? "One of the following must be specified:\n"
@@ -410,6 +434,12 @@ sub CreateObject {
 	$Change			= "ChangeProcess";
 	$Key			= "ProcessName";
 	$Type			= "Process";
+    } elsif ( $Attrs->{StorageClassName} ) {
+	$Inquire		= "InquireStorageClass";
+	$Create			= "CreateStorageClass";
+	$Change			= "ChangeStorageClass";
+	$Key			= "StorageClassName";
+	$Type			= "StorageClass";
     }
 
     #
@@ -424,12 +454,12 @@ sub CreateObject {
     if ( $self->Reason() && 
          $self->Reason() != MQSeries::MQRC_UNKNOWN_OBJECT_NAME &&
          $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND) {
-	$self->{Carp}->("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
+	$self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
 	return;
     }
 
+    my $Changes;
     if ( ref $Object eq 'HASH' ) {
-
 	$method = $Change;
 
 	#
@@ -437,128 +467,33 @@ sub CreateObject {
 	# any of the attributes are wrong, we'll then say we "Need"
 	# it.
 	#
-	$Need = 0;
+        $Changes = $Callback->($Attrs, $Object, \&_CompareOneAttribute);
+	$Need = scalar(keys %$Changes);
 
-	foreach my $Attr ( sort keys %$Attrs ) {
-
-	    #
-	    # Don't bother comparing Attrs passed in which don't get
-	    # returned by the Inquire commands, eg. Replace, Force and
-	    # others that make no sense.
-	    #
-	    next unless exists $Object->{$Attr};
-
-	    my $NeedAttr = 0;
-
-	    #
-	    # One special case -- we don't need this attribute is they
-	    # are both empty and/or white space.  Bear in mind that
-	    # you have to feed a single space to some of these damn
-	    # commands.  Very annoying.
-	    #
-	    # Well, actually, more than one special case.  If the
-	    # attribute is a list, then it will be represented as an
-	    # ARRAY reference.  This does complicate things...
-	    #
-	    # First, check to see if we've been fed an array with only
-	    # one element.  If so, flatten it.  This greatly
-	    # simplifies the comparison, since the query will not
-	    # return an ARRAY if there is only one element of any
-	    # given attribute.
-	    #
-	    if (
-		ref $Attrs->{$Attr} eq "ARRAY" &&
-		scalar @{$Attrs->{$Attr}} == 1
-	       ) {
-		$Attrs->{$Attr} = $Attrs->{$Attr}->[0];
-	    }
-
-	    if ( ref $Attrs->{$Attr} ne "ARRAY" ) {
-
-		if ( ref $Object->{$Attr} eq "ARRAY" ) {
-
-		    $NeedAttr = $Need = 1;
-
-		} else {
-
-		    unless ( $Attrs->{$Attr} =~ /^\s*$/ && $Object->{$Attr} =~ /^\s*$/ ) {
-			if ( $Attrs->{$Attr} =~ /^\d+/ ) {
-			    if ( $Attrs->{$Attr} != $Object->{$Attr} ) {
-				$NeedAttr = $Need = 1;
-			    }
-			} else {
-			    if ( $Attrs->{$Attr} ne $Object->{$Attr} ) {
-				$NeedAttr = $Need = 1;
-			    }
-
-			}
-		    }
-		
-		}
-
-	    } else {
-
-		if ( ref $Object->{$Attr} ne "ARRAY" ) {
-
-		    $NeedAttr = $Need = 1;
-
-		} else {
-
-		    if ( scalar(@{$Attrs->{$Attr}}) != scalar(@{$Object->{$Attr}}) ) {
-
-			$NeedAttr = $Need = 1;
-
-		    } else {
-
-			for ( my $index = 0 ; $index < scalar(@{$Attrs->{$Attr}}) ; $index++ ) {
-			    unless (
-				    $Attrs->{$Attr}->[$index] =~ /^\s*$/ &&
-				    $Object->{$Attr}->[$index] =~ /^\s*$/
-				   ) {
-				if ( $Attrs->{$Attr}->[$index] =~ /^\d+/ ) {
-				    if ( $Attrs->{$Attr}->[$index] != $Object->{$Attr}->[$index] ) {
-					$NeedAttr = $Need = 1;
-				    }
-				} else {
-				    if ( $Attrs->{$Attr}->[$index] ne $Object->{$Attr}->[$index] ) {
-					$NeedAttr = $Need = 1;
-				    }
-				}
-			    }
-			}
-
-		    }
-
-		}
-
-	    }
-
-	    if ( $NeedAttr && ! $Quiet ) {
-
+        unless ($Quiet) {
+            foreach my $Attr (sort keys %$Changes) {
 		print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n");
 
-		if ( ref $Attrs->{$Attr} eq "ARRAY" ) {
+		if (ref $Attrs->{$Attr} eq "ARRAY") {
 		    print "Should be:\n\t" . join("\n\t",map { qq{'$_'} } @{$Attrs->{$Attr}}) . "\n";
 		} else {
 		    print "Should be: '$Attrs->{$Attr}'\n";
 		}
 		
-		if ( ref $Object->{$Attr} eq "ARRAY") {
+		if (ref $Object->{$Attr} eq "ARRAY") {
 		    print "Currently is:\n\t" . join("\n\t",map { qq{'$_'} } @{$Object->{$Attr}} ) . "\n";
 		} else {
 		    print "Currently is: '$Object->{$Attr}'\n";
 		}
-
 	    }
-
 	}
-
     } else {
 	print "$Type '$QMgr/$Attrs->{$Key}' is missing\n" unless $Quiet;
 	$method = $Create;
+        $Changes = $Callback->($Attrs);
     }
 
-    unless ( $Need ) {
+    unless ($Need) {
 	print "$Type '$QMgr/$Attrs->{$Key}' is correctly configured\n" unless $Quiet;
 	return 1;
     }
@@ -566,14 +501,30 @@ sub CreateObject {
     return 1 if $Verify;
 
     #
-    # If the QType has changed, we'll have to delete it first.  NOTE:
-    # We do *not* purge.  That should be checked out manually, as it
-    # will be an odd case anyway.  In any event, this will be somewhat
-    # rare.
+    # If we have any changes, make sure we include the QName/QType,
+    # ChannelName/ChannelType, ProcessName or StorageClass name.
+    # 
+    # We must do this here, as user's callbacks will get it wrong...
     #
-    if ( $Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType} ) {
+    if (keys %$Changes) {
+        $Changes->{$Key} = $Attrs->{$Key};
+        if ($Key eq 'QName') {
+            $Changes->{'QType'} = $Attrs->{'QType'};
+        } elsif ($Key eq 'ChannelName') {
+            $Changes->{'ChannelType'} = $Attrs->{'ChannelType'};
+        }
+    }
 
-	print "Deleting $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" unless $Quiet;
+    #
+    # If the QType has changed, we'll have to delete the queue first.
+    # NOTE: We do *not* purge.  That should be checked out manually,
+    # as it will be an odd case anyway.  In any event, this will be
+    # somewhat rare.
+    #
+    if ($Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType}) {
+
+	print "Deleting $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" 
+          unless $Quiet;
 
 	$self->$Delete
 	  (
@@ -584,8 +535,8 @@ sub CreateObject {
 	    ( Purge		=> 1 ) : ()
 	   )
 	  ) || do {
-	      $self->{Carp}->("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
-			      MQReasonToText($self->Reason()) . "\n");
+	      $self->Carp("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
+			      $self->ReasonText() . "\n");
 	      return;
 	  };
 
@@ -607,20 +558,20 @@ sub CreateObject {
     #
     # Take that, IBM... ;-)
     #
-    if ( $Force && $Key eq 'QName' && $Attrs->{'QType'} ne 'Model' && 
+    if ( $Force && $Key eq 'QName' && $Changes->{'QType'} ne 'Model' && 
          $method eq $Change ) {
-	$Attrs->{Force} = 1;
+	$Changes->{Force} = 1;
     }
 
     $self->$method
       (
-       $Key			=> $Attrs->{$Key},
-       %$Attrs,
+       $Key			=> $Changes->{$Key},
+       %$Changes,
       ) || do {
-	  $self->{Carp}->("Unable to " .
-			  ( $method eq $Change ? "update" : "create" ) .
-			  " $Type '$QMgr/$Attrs->{$Key}'\n" .
-			  MQReasonToText($self->Reason()) . "\n");
+	  $self->Carp("Unable to " .
+                      ( $method eq $Change ? "update" : "create" ) .
+                      " $Type '$QMgr/$Changes->{$Key}'\n" .
+                      $self->ReasonText() . "\n");
 	  return;
       };
 
@@ -646,6 +597,13 @@ sub _Command {
     $self->{"CompCode"} 	= 0;
 
     #
+    # We set the ReasonText if we get a MQSC response message with an
+    # error.  In other cases, we'll use MQReasonToText on the Reason
+    # field.
+    #
+    delete $self->{"ReasonText"};
+
+    #
     # Allow the 'name' keys to default to '*' if not given.
     #
     my %command2name =
@@ -660,6 +618,8 @@ sub _Command {
        InquireChannel		=> 'ChannelName',
        InquireChannelNames	=> 'ChannelName',
        InquireChannelStatus	=> 'ChannelName',
+       InquireStorageClass	=> 'StorageClassName',
+       InquireStorageClassNames	=> 'StorageClassName',       
       );	
 
     if ( $command2name{$command} ) {
@@ -683,6 +643,7 @@ sub _Command {
        InquireProcess			=> 'ProcessAttrs',
        InquireQueue			=> 'QAttrs',
        InquireQueueManager		=> 'QMgrAttrs',
+       InquireStorageClass		=> 'StorageClassAttrs',
       );
 
     if ( $command2all{$command} ) {
@@ -710,7 +671,21 @@ sub _Command {
 	  return;
       };
 
-    unless ( $self->{CommandQueue}->Put( Message => $self->{Request} ) ) {
+    my $putresult = $self->{CommandQueue}->Put(Message => $self->{Request});
+
+    #
+    # Keep track of stats: no of requests, total bytes, largest
+    #
+    {
+        $self->{'Stats'}->{'NoRequests'}++;
+        my $put_size = length($self->{'Request'}->Buffer());
+        $self->{'Stats'}->{'RequestBytes'} += $put_size;
+        $self->{'Stats'}->{'MaxRequest'} = $put_size
+          if (! defined $self->{'Stats'}->{'MaxRequest'} ||
+              $put_size > $self->{'Stats'}->{'MaxRequest'});
+    }
+
+    unless ($putresult) {
 	$self->{"CompCode"} = $self->{CommandQueue}->CompCode();
 	$self->{"Reason"} = $self->{CommandQueue}->Reason();
 	return;
@@ -743,11 +718,23 @@ sub _Command {
 	   Wait		=> $self->{Wait},
 	  );
 
-	unless ( $getresult ) {
+        #
+        # Stats again: keep track of no replies, total bytes, largest
+        #
+        {
+            $self->{'Stats'}->{'NoResponses'}++;
+            my $get_size = length($response->Buffer());
+            $self->{'Stats'}->{'ResponseBytes'} += $get_size;
+            $self->{'Stats'}->{'MaxResponse'} = $get_size
+              if (! defined $self->{'Stats'}->{'MaxResponse'} ||
+                  $get_size > $self->{'Stats'}->{'MaxResponse'});
+        }
+
+	unless ($getresult) {
 	    $self->{"CompCode"} = $self->{ReplyToQ}->CompCode();
 	    $self->{"Reason"} = $self->{ReplyToQ}->Reason();
-	    $self->{Carp}->("MQGET from ReplyQ failed.\n" .
-			    "Reason => " . MQReasonToText($self->{"Reason"}) . "\n");
+	    $self->Carp("MQGET from ReplyQ failed.\n" .
+                        "Reason => " . MQReasonToText($self->{"Reason"}) . "\n");
 	    return;
 	}
 	
@@ -773,7 +760,6 @@ sub _Command {
              $command eq 'DeleteChannel') &&
             scalar(@{$self->{Response}}) <= 2 &&
             "@response_buffers" =~ m!\bCSQM[A-Z][A-Z][A-Z][A-Z]\b.*\bACCEPTED\s*$!s) {
-            #print STDERR "Skipping response [@response_buffers]\n";
 
             #
             # Reset the responses so far.  We must reset the 'reusable'
@@ -784,11 +770,13 @@ sub _Command {
             @response_buffers = ();
             $MQSCHeader = { Command => $command };
             next;
-        } else {
-            #print STDERR "Keeping response [@response_buffers]\n";
         }
 
-	push(@{$self->{Response}},$response);
+        #
+        # FIXME: We probably don't want to keep the response
+        #        objects around.
+        #
+	push(@{$self->{Response}}, $response);
 
 	# Have to "reuse" the header.... blegh.
 	$MQSCHeader = $response->Header() if $self->{Type} eq 'MQSC';
@@ -806,7 +794,7 @@ sub _Command {
           if $self->{"CompCode"} == MQSeries::MQCC_OK;
 	$self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR 
           if $self->{"Reason"} == MQSeries::MQRC_NONE;
-	$self->{Carp}->("Last response message never seen\n");
+	$self->Carp("Last response message never seen\n");
 	return;
     }
 
@@ -854,7 +842,7 @@ sub _Command {
 	    $self->{"CompCode"} ||
 	    ( $self->{"Reason"} != 0 && $self->{"Reason"} != 4 )
 	   ) {
-	    $self->{Carp}->(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
+	    $self->Carp(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
 	    return;
 	} else {
 	    return 1;
@@ -865,23 +853,185 @@ sub _Command {
     #
     else {
 	if ( $self->{"CompCode"} || $self->{"Reason"} ) {
-	    $self->{Carp}->(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
+            #
+            # Save the MQSC ReasonText.  Leave undef (for translation
+            # of normal reason code ->text) in other cases.
+            #
+            if (defined $MQSCHeader &&
+                defined $MQSCHeader->{'ReasonText'}) {
+                $self->{'Reason'} = 8; # Often corrupted, so sanitize
+                $self->{'ReasonText'} = "@{ $MQSCHeader->{'ReasonText'} }";
+            }
+	    $self->Carp(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
 	    return;
 	} else {
 	    return 1;
 	}
     }
-
 }
 
 
+#
+# This routine is the default call-back invoked by the CreateObject
+# method.  It compares the requested attributes with the attributes
+# found, then returns a list of attributes that need to be changed.
+#
+# Parameters:
+# - Ref to hash with requested attributes, as passed to CreateObject
+# - Ref to hash with attributes found (undef if object doesn't exist)
+# - Ref to built-in "compare one attribute" function
+# Returns:
+# - Ref to hash with requested changes
+#
+sub _CompareAttributes {
+    my ($request, $found, $cmp_sub) = @_;
+    $found ||= {};
+
+    my $retval = {};
+    foreach my $attr (sort keys %$request) {
+        #
+        # Don't bother comparing Attrs passed in which don't get
+        # returned by the Inquire commands, eg. Replace, Force and
+        # others that make no sense.
+        #
+        next unless exists $found->{$attr};
+
+        my $NeedAttr = $cmp_sub->($attr, $request->{$attr}, $found->{$attr});
+        if ($NeedAttr) {
+            $retval->{$attr} = $request->{$attr};
+        }
+    }                           # End foreach: attribute
+
+    return $retval;
+}
+
+
+#
+# Helper routine: compare one attribute, handling the scalar/array
+# cases as well as the whitespace issues.
+#
+# Parameters:
+# - Attribute name
+# - Requested value
+# - Object value / undef
+# Returns:
+# - 0: unchanged, 1: changed
+#
+sub _CompareOneAttribute {
+    my ($name, $request, $found) = @_;
+
+    my $diff = 0;
+
+    #
+    # One special case -- we don't need this attribute is they are
+    # both empty and/or white space.  Bear in mind that you have
+    # to feed a single space to some of these damn commands.  Very
+    # annoying.
+    #
+    # Well, actually, more than one special case.  If the
+    # attribute is a list, then it will be represented as an ARRAY
+    # reference.  This does complicate things...
+    #
+    # First, check to see if we've been fed an array with only one
+    # element.  If so, flatten it.  This greatly simplifies the
+    # comparison, since the query will not return an ARRAY if
+    # there is only one element of any given attribute.
+    #
+    if (ref $request eq "ARRAY" &&
+        scalar @$request == 1) {
+        $request = $request->[0];
+    }
+
+    if (ref $request ne "ARRAY") {
+        if (ref $found eq "ARRAY" ) {
+            $diff = 1;
+        } elsif ($request !~ /^\s*$/ || $found !~ /^\s*$/ ) {
+            if ($request =~ /^\d+\s*$/ ) { # Assume both numeric
+                if ($request != $found) {
+                    $diff = 1;
+                }               
+            } else {            # Text
+                if ($request ne $found) {
+                    $diff = 1;
+                }
+            }
+        } else {
+            # Both blank, ignore
+        }
+    } else {                    # Array case
+        if (ref $found ne "ARRAY") {
+            $diff = 1;
+        } elsif (scalar(@$request) != scalar(@$found)) {
+            $diff = 1;
+        } else {                # Both arrays, same size - compare elements
+            for (my $index = 0; $index < scalar(@$request); $index++ ) {
+                next if ($request->[$index] =~ /^\s*$/ &&
+                         $found->[$index] =~ /^\s*$/); 
+                if ($request->[$index] =~ /^\d+/ ) {
+                    if ($request->[$index] != $found->[$index] ) {
+                        $diff = 1;
+                    }
+                } else {        # Text
+                    if ($request->[$index] ne $found->[$index] ) {
+                        $diff = 1;
+                    }
+                }
+            }               # End foreach: element
+        }                   # End else: Arrays same size
+    }                       # End if: scalar/array
+    return $diff;
+}
+
+
+#
+# FIXME: We want to get rid of this (and of all the response message
+# buffering, unless a 'KeepResponses' options is given).  For now,
+# we'll alert whenever this method is being used, as a prelude to
+# fixing this.
+#
 sub Responses {
     my $self = shift;
+
+    $self->Carp("MQSeries::Command - Responses() being invoked");
+
     if ( ref $self->{"Response"} eq "ARRAY" ) {
 	return @{$self->{"Response"}};
     } else {
 	return;
     }
+}
+
+
+#
+# Internal helper routine: Issue a warning message using the
+# 'Carp' reference
+#
+sub Carp {
+    my ($self, $message) = @_;
+
+    $self->{'Carp'}->($message);
+    return $self;
+}
+
+
+#
+# Return the usage statistics
+#
+sub GetStatistics {
+    my ($self) = @_;
+
+    return { %{ $self->{'Stats'} } };
+}
+
+
+#
+# Wipe the statistics so far
+#
+sub ResetStatistics {
+    my ($self) = @_;
+
+    $self->{'Stats'} = {};
+    return $self;
 }
 
 
@@ -1039,6 +1189,11 @@ producing data responses:
   Inquire Queue Names
   Reset Queue Statistics
 
+plus the following equivalents for MQSC
+
+  Inquire StorageClass
+  Inquire StorageClass Names
+
 return interesting information.  Most of these will return an array of
 hash references, one for each object matching the query criteria.  For
 example.  The specific keys are documented in the section of the IBM
@@ -1051,12 +1206,13 @@ Note that in an array context, the entire list is returned, but in a
 scalar context, only the first item in the list is returned.
 
 Four of these commands, however, have a simplified return value.  All
-four of:
+five of:
 
   Inquire Channel Names
   Inquire Namelist Names
   Inquire Process Names
   Inquire Queue Names
+  Inquire StorageClass Names
 
 simply return an array of strings, containing the names which matched
 the query criteria.
@@ -1323,6 +1479,7 @@ key/value pairs:
   Clear              Boolean
   Quiet              Boolean
   Force	             Boolean
+  Callback           CODE reference
 
 The key/value pairs in the Attrs argument are passed directly to the
 corresponding CreateQueue(), CreateChannel(), or CreateProcess()
@@ -1393,6 +1550,25 @@ Attrs hash, since this is not really an object attribute.
 If Force is given as an Attrs key, and the underlying Create* method
 is called, since the object does not already exist, then the command
 server will return an error.
+
+=item Callback
+
+This optional argument allows you to provide an object comparison
+subroutine, instead of relying on the built-in function.  This is
+virtually never required, unless your request contains some 'meta'
+attributes that translate to multiple or different MQSeries
+attributes.
+
+The C<Callback> parameter must be a reference to a subroutine that
+receives three parameters: a reference to the requested attributes, a
+reference to the attributes found in the object, and a reference to a
+subroutine that compares two single attribute values.  The return
+value from the subroutine must be a reference to a hash with those
+attribute names and values that actually should be changed.
+
+Please see the source code of C<MQSeries::Command>, specifically the
+C<_CompareAttributes> method, for the default callback.  Any callback
+you provide must behave in a similar way.
 
 =back
 
@@ -1472,7 +1648,7 @@ here.  For all others, the IBM documentation is sufficient.
 =head2 Channel Commands
 
 Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the for the specific list.
+See the documentation for each of the commands for the specific list.
 
   Change Channel
   Copy Channel
@@ -1654,7 +1830,7 @@ The following keys have Boolean values:
 =head2 Namelist Commands
 
 Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the for the specific list.
+See the documentation for each of the commands for the specific list.
 
   Change Namelist
   Copy Namelist
@@ -1690,7 +1866,7 @@ The following keys have Boolean values:
 =head2 Process Commands
 
 Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the for the specific list.
+See the documentation for each of the commands for the specific list.
 
   Change Process
   Copy Process
@@ -1749,7 +1925,7 @@ The following keys have Boolean values:
 =head2 Queue Commands
 
 Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the for the specific list.
+See the documentation for each of the commands for the specific list.
 
   Change Queue
   Clear Queue
@@ -1935,7 +2111,7 @@ The following keys have Boolean values:
 =head2 Queue Manager Commands
 
 Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the for the specific list.
+See the documentation for each of the commands for the specific list.
 
   Change Queue Manager
   Inquire Queue Manager
@@ -2009,10 +2185,49 @@ The following keys have Boolean values:
 
 =back
 
+=head2 StorageClass Commands
+
+Subsets of the these keys are applicable to the following commands.
+As these are not PCF commands, see the MQSC command reference to see
+which keys are applicable for each each.
+
+  Change StorageClass
+  Create StorageClass
+  Delete StorageClass
+  Inquire StorageClass
+  Inquire StorageClass Names
+
+The following keys have special value mappings:
+
+=over 4
+
+=item NamelistAttrs
+
+    Key
+    ===
+    AlterationDate
+    AlterationTime
+    PageSetId
+    QSharingGroupDisposition
+    StorageClassDesc
+    StorageClassName 
+    XCFGroupName
+    XCFMemberName
+
+=back
+
+The following keys have Boolean values:
+
+=over 4
+
+=item Replace
+
+=back
+
 =head2 Cluster Commands
 
 Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the for the specific list.
+See the documentation for each of the commands for the specific list.
 
   Inquire Cluster Queue Manager
   Refresh Cluster

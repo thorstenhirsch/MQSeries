@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameters.pl,v 16.4 2001/01/08 15:30:14 biersma Exp $
+# $Id: RequestParameters.pl,v 17.2 2001/04/06 18:44:00 biersma Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -57,6 +57,7 @@ package MQSeries::Command::MQSC;
     FromProcessName		=> [ "LIKE",		"string" ],
     ProcessDesc			=> [ "DESCR",		"string" ],
     ProcessAttrs		=> [ "",		$RequestValues{ProcessAttrs} ],
+    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
    },
 
    InquireQueueNames =>
@@ -115,7 +116,7 @@ package MQSeries::Command::MQSC;
     QAttrs			=> [ "",		$RequestValues{QAttrs} ],
 
     #
-    # These are specific to , and are not part of PCF (yet)
+    # These are specific to MQSC, and are not part of PCF (yet)
     #
     IndexType			=> [ "INDXTYPE",	$RequestValues{IndexType} ],
     StorageClass		=> [ "STGCLASS",	"string" ],
@@ -245,6 +246,11 @@ package MQSeries::Command::MQSC;
 
     UserIdentifier		=> [ "",		',' ],
 
+   },
+
+   InquireStorageClassNames =>
+   {
+    StorageClassName		=> [ "STGCLASS",	"string" ],
    },
 
    StorageClass =>

@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 16.5 2001/02/07 18:19:11 wpm Exp $
+# $Id: MQSeries.pm,v 17.1 2001/03/14 00:19:56 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ require DynaLoader;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 BEGIN {
 

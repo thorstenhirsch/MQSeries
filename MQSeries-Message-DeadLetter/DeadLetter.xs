@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: DeadLetter.xs,v 16.1 2001/01/05 21:43:04 wpm Exp $";
+static char rcsid[] = "$Id: DeadLetter.xs,v 17.1 2001/03/30 18:17:56 wpm Exp $";
 
 /*
   (c) 1999-2001 Morgan Stanley Dean Witter and Co.
@@ -81,6 +81,11 @@ MQDecodeDeadLetter(pBuffer,BufferLength)
 	  SV *DataSV;
 	  MQDLH Header;
 
+	  if ( BufferLength < sizeof(MQDLH) ) {
+	    warn("MQDecodeDeadLetter: BufferLength is smaller than the MQDLH.\n");
+	    XSRETURN_EMPTY;
+	  }
+
 	  Header = *(MQDLH *)pTemp;
 	  pTemp += sizeof(MQDLH);
 	  
@@ -101,7 +106,10 @@ MQDecodeDeadLetter(pBuffer,BufferLength)
 
 	  XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
 
-	  DataSV = newSVpv(pTemp,BufferLength - sizeof(MQDLH) );
+	  if ( BufferLength == sizeof(MQDLH) )
+	    DataSV = newSVpv("",0);
+	  else 
+	    DataSV = newSVpv(pTemp,BufferLength - sizeof(MQDLH));
 	  
 	  XPUSHs(sv_2mortal(DataSV));
 

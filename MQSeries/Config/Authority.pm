@@ -4,7 +4,7 @@
 # (c) 2000, 2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Authority.pm,v 16.4 2001/01/02 16:50:21 biersma Exp $
+# $Id: Authority.pm,v 17.3 2001/03/26 21:31:25 wpm Exp $
 #
 
 package MQSeries::Config::Authority;
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($VERSION);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 use MQSeries qw(:functions);
 use MQSeries::Config::Machine;  # For localqmgrs()
@@ -27,26 +27,26 @@ my %auth_bit_to_name =
    #
    # Admin Rights
    #
-   MQSeries::MQZAO_CREATE		    => 'crt',
-   MQSeries::MQZAO_DELETE		    => 'dlt',
-   MQSeries::MQZAO_DISPLAY		    => 'dsp',
-   MQSeries::MQZAO_CHANGE		    => 'chg',
-   MQSeries::MQZAO_CLEAR		    => 'clr',
+   MQSeries::MQZAO_CREATE		    	=> 'crt',
+   MQSeries::MQZAO_DELETE		    	=> 'dlt',
+   MQSeries::MQZAO_DISPLAY		    	=> 'dsp',
+   MQSeries::MQZAO_CHANGE		    	=> 'chg',
+   MQSeries::MQZAO_CLEAR		    	=> 'clr',
    
    #
    # MQI Rights
    #
-   MQSeries::MQZAO_CONNECT		    => 'connect',
-   MQSeries::MQZAO_BROWSE		    => 'browse',
-   MQSeries::MQZAO_INPUT		    => 'get',
-   MQSeries::MQZAO_OUTPUT		    => 'put',
-   MQSeries::MQZAO_INQUIRE		    => 'inq',
-   MQSeries::MQZAO_SET			    => 'set',
-   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    => 'passid',
-   MQSeries::MQZAO_PASS_ALL_CONTEXT	    => 'passall',
-   MQSeries::MQZAO_SET_IDENTITY_CONTEXT	    => 'setid',
-   MQSeries::MQZAO_SET_ALL_CONTEXT	    => 'setall',
-   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY => 'altusr',
+   MQSeries::MQZAO_CONNECT		    	=> 'connect',
+   MQSeries::MQZAO_BROWSE		    	=> 'browse',
+   MQSeries::MQZAO_INPUT		    	=> 'get',
+   MQSeries::MQZAO_OUTPUT		    	=> 'put',
+   MQSeries::MQZAO_INQUIRE		    	=> 'inq',
+   MQSeries::MQZAO_SET			    	=> 'set',
+   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    	=> 'passid',
+   MQSeries::MQZAO_PASS_ALL_CONTEXT	    	=> 'passall',
+   MQSeries::MQZAO_SET_IDENTITY_CONTEXT		=> 'setid',
+   MQSeries::MQZAO_SET_ALL_CONTEXT	    	=> 'setall',
+   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY 	=> 'altusr',
   );
 my %auth_name_to_bit = reverse %auth_bit_to_name;
 
@@ -58,26 +58,26 @@ my %auth_bit_to_pcf =
    #
    # Admin Rights
    #
-   MQSeries::MQZAO_CREATE		    => 'Create',
-   MQSeries::MQZAO_DELETE		    => 'Delete',
-   MQSeries::MQZAO_DISPLAY		    => 'Display',
-   MQSeries::MQZAO_CHANGE		    => 'Change',
-   MQSeries::MQZAO_CLEAR		    => 'Clear',
+   MQSeries::MQZAO_CREATE		    	=> 'Create',
+   MQSeries::MQZAO_DELETE		    	=> 'Delete',
+   MQSeries::MQZAO_DISPLAY		    	=> 'Display',
+   MQSeries::MQZAO_CHANGE		    	=> 'Change',
+   MQSeries::MQZAO_CLEAR		    	=> 'Clear',
    
    #
    # MQI Rights
    #
-   MQSeries::MQZAO_CONNECT		    => 'Connect',
-   MQSeries::MQZAO_BROWSE		    => 'Browse',
-   MQSeries::MQZAO_INPUT		    => 'Input',
-   MQSeries::MQZAO_OUTPUT		    => 'Output',
-   MQSeries::MQZAO_INQUIRE		    => 'Inquire',
-   MQSeries::MQZAO_SET			    => 'Set',
-   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    => 'PassId',
-   MQSeries::MQZAO_PASS_ALL_CONTEXT	    => 'PassAll',
-   MQSeries::MQZAO_SET_IDENTITY_CONTEXT	    => 'SetId',
-   MQSeries::MQZAO_SET_ALL_CONTEXT	    => 'SetAll',
-   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY => 'AlternateUser',
+   MQSeries::MQZAO_CONNECT		    	=> 'Connect',
+   MQSeries::MQZAO_BROWSE		    	=> 'Browse',
+   MQSeries::MQZAO_INPUT		    	=> 'Input',
+   MQSeries::MQZAO_OUTPUT		    	=> 'Output',
+   MQSeries::MQZAO_INQUIRE		    	=> 'Inquire',
+   MQSeries::MQZAO_SET			    	=> 'Set',
+   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    	=> 'PassId',
+   MQSeries::MQZAO_PASS_ALL_CONTEXT	    	=> 'PassAll',
+   MQSeries::MQZAO_SET_IDENTITY_CONTEXT		=> 'SetId',
+   MQSeries::MQZAO_SET_ALL_CONTEXT	    	=> 'SetAll',
+   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY 	=> 'AlternateUser',
   );
 
 #

@@ -1,5 +1,5 @@
 #
-# $Id: Requests.pl,v 16.2 2001/01/05 21:43:44 wpm Exp $
+# $Id: Requests.pl,v 17.1 2001/04/06 18:44:49 biersma Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -132,6 +132,7 @@ package MQSeries::Command::MQSC;
    CreateStorageClass		=> [ "DEFINE",		$RequestParameters{StorageClass} ],
    DeleteStorageClass		=> [ "DELETE",		$RequestParameters{StorageClass} ],
    InquireStorageClass		=> [ "DISPLAY",		$RequestParameters{StorageClass} ],
+   InquireStorageClassNames	=> [ "DISPLAY",      	$RequestParameters{InquireStorageClassNames} ],
 
    ChangeTrace			=> [ "ALTER",		$RequestParameters{Trace} ],
    InquireTrace			=> [ "DISPLAY",		$RequestParameters{Trace} ],

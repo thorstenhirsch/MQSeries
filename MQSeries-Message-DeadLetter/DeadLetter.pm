@@ -1,5 +1,5 @@
 #
-# $Id: DeadLetter.pm,v 16.3 2001/01/05 21:43:03 wpm Exp $
+# $Id: DeadLetter.pm,v 17.2 2001/03/30 16:20:56 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -18,7 +18,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 
@@ -50,8 +50,7 @@ sub new {
 	    carp "Invalid argument: 'Carp' must be a CODE reference\n";
 	    return;
 	}
-    }
-    else {
+    } else {
 	$args{Carp} = \&carp;
     }
 
@@ -71,8 +70,7 @@ sub new {
 
     if ( $args{Header} ) {
 	$self->{Header} = $args{Header};
-    }
-    else {
+    } else {
 	$self->{Header} = {};
     }
 
@@ -88,8 +86,7 @@ sub Header {
 
     if ( $_[0] ) {
 	exists $self->{Header}->{$_[0]} ? return $self->{Header}->{$_[0]} : return;
-    }
-    else {
+    } else {
 	return $self->{Header};
     }
 
@@ -120,8 +117,7 @@ sub PutConvert {
 
     if ( $buffer ) {
 	return $buffer;
-    }
-    else {
+    } else {
 	$self->{Carp}->("Unable to encode MQSeries Dead Letter Message\n");
 	return undef;
     }

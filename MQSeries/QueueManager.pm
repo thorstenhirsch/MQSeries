@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 16.6 2001/01/11 23:05:47 wpm Exp $
+# $Id: QueueManager.pm,v 17.3 2001/06/05 18:05:10 wpm Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -28,7 +28,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 sub new {
     my $proto = shift;
@@ -603,7 +603,7 @@ sub Connect {
 	$self->{ConnectTimeout} = 0;
     }
 
-    if ( $self->{ConnectTimeout} && not defined &fork ) {
+    if ( $self->{ConnectTimeout} && not defined $Config{d_fork} ) {
 	$self->{Carp}->("This platform does not support fork()\n" .
 			"MQCONN timeout functionality is disabled");
 	$self->{ConnectTimeout} = 0;
@@ -767,17 +767,17 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
   # The best way to do error checking.  Handle the object
   # instantiation and connection to the queue manager independently.
   #
-  my $qmgr = MQSeries::QueueMananer->new
+  my $qmgr = MQSeries::QueueManager->new
     (
      QueueManager	=> 'some.queue.manager',
      NoAutoConnect	=> 1,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
-  # FIXME: Add ReasonToText below
   $qmgr->Connect() ||
     die("Unable to connect to queue manager\n" .
 	"CompCode => " . $qmgr->CompCode() . "\n" .
-	"Reason => " . $qmgr->Reason() . "\n");
+	"Reason => " . $qmgr->Reason() . 
+        " (", MQReasonToText($qmgr->Reason()) . ")\n");
 
   #
   # Advanced usage.  Enable the connection timeout, and connection
@@ -792,11 +792,11 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
      RetrySleep 	=> 10,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
-  # FIXME: Add MQReasonToText below
   $qmgr->Connect() ||
     die("Unable to connect to queue manager\n" .
 	"CompCode => " . $qmgr->CompCode() . "\n" .
-	"Reason => " . $qmgr->Reason() . "\n");
+	"Reason => " . $qmgr->Reason() .
+        " (", MQReasonToText($qmgr->Reason()) . ")\n";
 
 =head1 DESCRIPTION
 

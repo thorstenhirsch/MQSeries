@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 16.7 2001/02/21 22:13:08 wpm Exp $
+# $Id: Base.pm,v 17.3 2001/04/06 17:54:09 biersma Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 sub new {
 
@@ -80,12 +80,12 @@ sub new {
     if ( $args{Command} ) {
 	if ( $self->{Type} eq 'PCF' ) {
 	    unless ( exists $MQSeries::Command::PCF::Requests{$args{Command}} ) {
-		$self->{Carp}->("Invalid command '$args{Command}'\n");
+		$self->{Carp}->("Invalid PCF command '$args{Command}'\n");
 		return;
 	    }
 	} else {
 	    unless ( exists $MQSeries::Command::MQSC::Requests{$args{Command}} ) {
-		$self->{Carp}->("Invalid command '$args{Command}'\n");
+		$self->{Carp}->("Invalid MQSC command '$args{Command}'\n");
 		return;
 	    }
 	}
@@ -435,7 +435,6 @@ sub GetConvert {
 sub PutConvert {
 
     my $self = shift;
-    my $buffer = "";
 
     unless ( $self->{Command} ) {
 	$self->{Carp}->("Required argument 'Command' is missing\n");
@@ -447,18 +446,18 @@ sub PutConvert {
 	    $self->{Carp}->("Unable to translate Command/Parameters into MQEncodePCF input\n");
 	    return undef;
 	};
-	$buffer = MQEncodePCF($header,$parameters);
+	$self->{Buffer} = MQEncodePCF($header,$parameters);
     } else {
 	if ( $self->isa("MQSeries::Command::Response") ) {
 	    $self->{Carp}->("MQPUTing a MQSeries::Command::Response is not supported for type MQSC\n");
 	    return undef;
 	} else {
-	    $buffer = $self->MQEncodeMQSC($self->{Command},$self->{Parameters});
+	    $self->{Buffer} = $self->MQEncodeMQSC($self->{Command},$self->{Parameters});
 	}
     }
 
-    if ( $buffer ) {
-	return $buffer;
+    if ( $self->{Buffer} ) {
+	return $self->{Buffer};
     } else {
 	$self->{Carp}->("Unable to encode MQSeries Request Header and Parameters\n");
 	return undef;
@@ -587,11 +586,10 @@ sub MQEncodeMQSC {
     }
 
     foreach my $parameter ( @parameters ) {
-
 	next if $skipparam{$parameter};
 
 	unless (defined $requestparameters->{$parameter} ) {
-	    $self->{Carp}->("No such parameter '$parameter' for command '$command'\n");
+	    $self->{Carp}->("No such request parameter '$parameter' for command '$command'\n");
 	    return;
 	}
 
@@ -644,8 +642,7 @@ sub MQEncodeMQSC {
 	    else {
 		push(@buffer,$key);
 	    }
-	}
-	else {
+	} else {
 	    #
 	    # Perform the specified key/value mapping of the data
 	    #
@@ -887,7 +884,7 @@ sub MQDecodeMQSC {
 	}
 
 	unless ( $responseparameters->{$key} ) {
-	    $self->{Carp}->("Unrecognized parameter '$key' for command '$command'\n");
+	    $self->{Carp}->("Unrecognized response parameter '$key' for command '$command'\n");
 	    next;
 	}
 

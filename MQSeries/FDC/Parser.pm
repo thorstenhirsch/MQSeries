@@ -5,7 +5,7 @@
 # (c) 2000-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 16.2 2001/01/05 21:45:53 wpm Exp $
+# $Id: Parser.pm,v 17.1 2001/03/14 00:20:14 wpm Exp $
 #
 
 package MQSeries::FDC::Parser;
@@ -17,7 +17,7 @@ use MQSeries::FDC::Entry;
 
 use vars qw($VERSION);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 #
 # Constructor

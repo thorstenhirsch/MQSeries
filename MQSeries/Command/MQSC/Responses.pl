@@ -1,5 +1,5 @@
 #
-# $Id: Responses.pl,v 16.2 2001/01/05 21:45:36 wpm Exp $
+# $Id: Responses.pl,v 17.1 2001/04/06 18:44:33 biersma Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -51,18 +51,28 @@ package MQSeries::Command::MQSC;
    InquireNamelistNames		=> $ResponseParameters{Namelist},
 
    InquireStorageClass		=> $ResponseParameters{StorageClass},
+   InquireStorageClassNames	=> $ResponseParameters{StorageClass},
 
    InquireTrace			=> $ResponseParameters{Trace},
 
    InquireClusterQueueManager	=> $ResponseParameters{Cluster},
   );
 
+#
+# This is used to determine how to map multiple MQSC responses into
+# one MQSeries::Command response.  All the 'old_key' fields of the
+# individual MQSC responses are collected into one 'new_key' field of
+# the MQSeries::Command response.
+#
+# Format: CommandName => [ old_key, new_key ]
+#
 %ResponseList =
   (
    InquireProcessNames		=> [ qw(ProcessName ProcessNames) ],
    InquireQueueNames		=> [ qw(QName QNames) ],
    InquireChannelNames		=> [ qw(ChannelName ChannelNames) ],
    InquireNamelistNames		=> [ qw(NamelistName NamelistNames) ],
+   InquireStorageClassNames	=> [ qw(StorageClassName StorageClassNames) ],
   );
 
 1;

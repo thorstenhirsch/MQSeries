@@ -1,5 +1,5 @@
 #
-# $Id: 70-config.t,v 16.2 2001/01/05 21:46:51 wpm Exp $
+# $Id: 70-config.t,v 17.3 2001/03/30 21:47:22 wpm Exp $
 #
 # (c) 2000-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,9 +16,9 @@ BEGIN {
 
 END { print "not ok 1\n" unless $loaded; }
 
-use MQSeries::Config::Authority 1.13;
-use MQSeries::Config::Machine 1.13;
-use MQSeries::Config::QMgr 1.13;
+use __APITYPE__::MQSeries 1.14;
+use MQSeries::Config::Machine 1.14;
+use MQSeries::Config::QMgr 1.14;
 $loaded = 1;
 print "ok 1\n";
 

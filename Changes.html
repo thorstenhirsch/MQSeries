@@ -10,6 +10,16 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_14">Changes for 1.14</A>
+	<UL>
+
+		<LI><A HREF="#Support_for_a_compare_callback_m">Support for a compare-callback method in CreateObject</A>
+		<LI><A HREF="#Support_for_StorageClass_objects">Support for StorageClass objects in MQSC commands</A>
+		<LI><A HREF="#MQSeries_Command_Base_GetConv">MQSeries::Command::Base->GetConvert preserves original message Buffer</A>
+		<LI><A HREF="#MQSeries_QueueManager_ConnectTi">MQSeries::QueueManager ConnectTimeout logic fixed</A>
+		<LI><A HREF="#MQSeries_Config_Machine_re_par">MQSeries::Config::Machine re-parsing bug</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_13">Changes for 1.13</A>
 	<UL>
 
@@ -141,6 +151,84 @@
 </A></H1>
 This file documents the changes to each and every release of the MQSeries
 perl API, going back as far as the 1.02 release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_14">Changes for 1.14
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Support_for_a_compare_callback_m">Support for a compare-callback method in CreateObject
+
+</A></H2>
+The CreateObject method of MQSeries::Command now supports an optional
+call-back to perform the comparison of object attributes. This is only
+useful in obscure circumstances.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Support_for_StorageClass_objects">Support for StorageClass objects in MQSC commands
+
+</A></H2>
+The StorageClass object type (as used on the OS/390 version of MQSeries) is
+now supported by the MQSeries::Command class.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_Base_GetConv">MQSeries::Command::Base->GetConvert preserves original message Buffer
+
+</A></H2>
+In order to add some statistics gathering code to the command API, the
+MQSeries::Command::Response objects will not keep the unconverted PCF data
+structures in the Buffer attribute of the object, allowing direct
+manipulation of the data, of necessary.
+
+
+<P>
+
+We need to be able to measure the absolute size of the original message,
+since we are trying to gather metrics on the load placed on MQSeries
+systems by administrative tools thatuse this API.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_QueueManager_ConnectTi">MQSeries::QueueManager ConnectTimeout logic fixed
+
+</A></H2>
+This is one of this ``how did this ever work?'' bugs.
+
+
+<P>
+
+The logic to test the support for <CODE>fork()</CODE> in the current perl
+build was wrong. This has been fixed, and the retry logic tested
+successfully.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Config_Machine_re_par">MQSeries::Config::Machine re-parsing bug
+
+</A></H2>
+This code is clever, and re-parses mqs.ini whenever it changes so that long
+running daemons wil automatically detect new queue manager installation.
+However, the method name was incorrect, and this resulted in a fatal
+runtime error. Oops.
 
 
 <P>

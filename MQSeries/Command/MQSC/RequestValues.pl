@@ -1,5 +1,5 @@
 #
-# $Id: RequestValues.pl,v 16.4 2001/01/08 15:30:38 biersma Exp $
+# $Id: RequestValues.pl,v 17.1 2001/04/06 18:43:24 biersma Exp $
 #
 # (c) 1999-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -96,6 +96,7 @@ package MQSeries::Command::MQSC;
     QName                       => "",
     QServiceInterval		=> "QSVCINT",
     QServiceIntervalEvent 	=> "QSVCIEV",
+    QSharingGroupDisposition    => "QSGDISP",
     QType			=> "TYPE",
     RemoteQMgrName		=> "RQMNAME",
     RemoteQName			=> "RNAME",
@@ -145,6 +146,7 @@ package MQSeries::Command::MQSC;
     ApplType			=> "APPLTYPE",
     ApplId			=> "APPLICID",
     EnvData			=> "ENVRDATA",
+    QSharingGroupDisposition    => "QSGDISP",
     UserData			=> "USERDATA",
 
     AlterationDate		=> "ALTDATE",
@@ -352,6 +354,7 @@ package MQSeries::Command::MQSC;
     Password			=> "PASSWORD",
     PutAuthority		=> "PUTAUT",
     QMgrName			=> "QMNAME",
+    QSharingGroupDisposition    => "QSGDISP",
     ReceiveExit			=> "RCVEXIT",
     ReceiveUserData		=> "RCVDATA",
     SecurityExit		=> "SCYEXIT",
@@ -395,8 +398,11 @@ package MQSeries::Command::MQSC;
 
    StorageClassAttrs =>
    {
+    All                         => "ALL",
     AlterationDate		=> "ALTDATE",
     AlterationTime 		=> "ALTTIME",
+    PageSetId                   => "PSID",
+    QSharingGroupDisposition    => "QSGDISP",
     StorageClassDesc		=> "DESCR",	
     XCFGroupName		=> "XCFGNAME",
     XCFMemberName		=> "XCFMNAME",

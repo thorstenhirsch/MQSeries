@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: RulesFormat.xs,v 16.1 2001/01/05 21:43:18 wpm Exp $";
+static char rcsid[] = "$Id: RulesFormat.xs,v 17.1 2001/03/30 18:17:50 wpm Exp $";
 
 /*
   (c) 1999-2001 Morgan Stanley Dean Witter and Co.
@@ -80,7 +80,14 @@ MQDecodeRulesFormat(pBuffer,BufferLength)
 	  HV *HeaderHV;
 	  SV *OptionsSV, *DataSV;
 
-	  MQRFH Header = *(MQRFH *)pTemp;
+	  MQRFH Header;
+	  
+	  if ( BufferLength < sizeof(MQRFH) ) {
+	    warn("MQDecodeRulesFormat: BufferLength is smaller than the MQRFH.\n");
+	    XSRETURN_EMPTY;
+	  }
+
+	  Header = *(MQRFH *)pTemp;
 	  pTemp += MQRFH_STRUC_LENGTH_FIXED;
 	  
 	  HeaderHV = newHV();
@@ -95,13 +102,19 @@ MQDecodeRulesFormat(pBuffer,BufferLength)
 
 	  XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
 
-	  OptionsSV = newSVpv(pTemp,Header.StrucLength - MQRFH_STRUC_LENGTH_FIXED);
+	  if ( Header.StrucLength == MQRFH_STRUC_LENGTH_FIXED )
+	    OptionsSV = newSVpv("",0);
+	  else
+	    OptionsSV = newSVpv(pTemp,Header.StrucLength - MQRFH_STRUC_LENGTH_FIXED);
 	  
 	  XPUSHs(sv_2mortal(OptionsSV));
 	  
 	  pTemp += Header.StrucLength - MQRFH_STRUC_LENGTH_FIXED;
 	  
-	  DataSV = newSVpv(pTemp,BufferLength - Header.StrucLength);
+	  if ( BufferLength == Header.StrucLength )
+	    DataSV = newSVpv("",0);
+	  else
+	    DataSV = newSVpv(pTemp,BufferLength - Header.StrucLength);
 	  
 	  XPUSHs(sv_2mortal(DataSV));
 

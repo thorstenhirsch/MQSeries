@@ -4,7 +4,7 @@
 # (c) 2000-2001 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Machine.pm,v 16.2 2001/01/05 21:45:41 wpm Exp $
+# $Id: Machine.pm,v 17.3 2001/06/07 14:43:53 wpm Exp $
 #
 
 package MQSeries::Config::Machine;
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($VERSION);
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 #
 # Constructor: Read and parse the /var/mqm/mqs.ini file.
@@ -52,7 +52,7 @@ sub stanzas {
     # If the disk modification time has changed, re-parse
     #
     if ((stat $this->{'filename'})[9] != $this->{'mtime'}) {
-        $this->parse();
+        $this->_parse();
     }
 
     return keys %{ $this->{'data'} };
@@ -77,7 +77,7 @@ sub lookup {
     # If the disk modification time has changed, re-parse
     #
     if ((stat $this->{'filename'})[9] != $this->{'mtime'}) {
-        $this->parse();
+        $this->_parse();
     }
 
     return unless (defined $this->{'data'}{$stanza});
@@ -113,7 +113,7 @@ sub localqmgrs {
 # Parameters:
 # - MQSeries::Config::Machine object
 # Returns:
-# - Modified MQSeries::Conifg::Machine object
+# - Modified MQSeries::Config::Machine object
 sub _parse {
     my ($this) = @_;
 
