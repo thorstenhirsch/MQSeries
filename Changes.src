@@ -4,6 +4,64 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.08
+
+This is another relatively minor bug fix release, but since I'm
+releasing it internally at MSDW, I'm also releasing it to CPAN as
+well.
+
+=head2 MQSeries::Message::Event was broken
+
+I made a global variable lexically scoped to its file with an
+erroneous "my" keyword.  Don't do that.  The Event parsing class was
+totally broken as a result.
+
+=head2 MQSeries::Command error checking enhancement
+
+When a command fails, the Reason() was being set to the last reason
+code found in the returned messages, which is always 3008 (command
+failed).  Now the code will catch the first non-zero return code, and
+default to that, and this reason code is usually the one you want.  
+
+For example, InquireQueue for a non-existent queue name will not
+return 2085 (object not found), instead of the generic and
+uninteresting 3008.
+
+=head2 MQSeries::QueueManager and MQSeries::Queue constructor bug
+
+Although I don't recommend using this particular interface, the
+constructors for both of these classes allow you to pass scalar
+references for the Reason and CompCode, so that the MQCONN() or
+MQOPEN() errors, if any, can be obtained.  
+
+These were only being set if there was an error, and now they are set
+regardless.  Thus, if you initialize the values to, say
+MQRC_UNEXPECTED_ERROR and MQCC_FAILED, they will be left that way.
+
+Note that I highly recommend using the NoAutoConnect and NoAutoOpen
+arguments, and then error checking the ->Connect() and ->Open()
+methods explicitly.  The resulting code is much cleaner, IM!HO.
+
+=head2 MQSeries::Queue->Put() method wasn't setting MQPMO_FAIL_IF_QUIESCING
+
+The various *_FAIL_IF_QUIESCING options are set everywhere by default
+(as the author happens to beleive they should be), except here.  This
+is fixed.
+
+=head2 MQSeries::PubSub::Broker/Stream API enhanced to support alternate users
+
+In order to enable the development of adminstrative tools for
+Publish/Subscribe which allow me to age bogus subscriptions
+(i.e. subscriptions that point to non-existent queues), I needed to be
+able to DeregisterSubscriber as an alternate user ID.
+
+The API was enhanced to expose a bit more of the underlying method
+calls in order to make this possible.  
+
+In addition, several minor bugs in the Administrative PubSub API were
+fixed, making it possible to get at almost all of the metatopic
+information easily.
+
 =head1 Changes for 1.07
 
 This release is a minor bug fix release, but one of them is
@@ -483,7 +541,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 10.2 1999/11/22 21:35:50 wpm Exp $
+# $Id: Changes.src,v 11.2 2000/02/02 23:14:05 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

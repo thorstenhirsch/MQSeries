@@ -1,5 +1,5 @@
 #
-# $Id: Broker.pm,v 10.2 1999/11/19 20:07:24 wpm Exp $
+# $Id: Broker.pm,v 11.3 2000/02/02 23:10:59 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,12 +15,14 @@ use MQSeries;
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::PubSub::Command;
+use MQSeries::PubSub::AdminMessage;
+use MQSeries::PubSub::Message;
 
 use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::QueueManager );
 
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 #
 # All 5 of these PubSub commands must be sent to the Broker.
@@ -62,6 +64,7 @@ sub RequestUpdate {
 sub _BlankPadName {
     my $self = shift;
     my ($string,$length) = @_;
+    return $string if $string eq '*';
     if ( length($string) < $length ) {
 	$string .= ' ' x ( $length - length($string) );
     }
@@ -132,25 +135,36 @@ sub _InquireAttribute {
 		   $self->_BlankPadName($qmgrname,MQ_Q_MGR_NAME_LENGTH) .
 		   $suffix);
     
-    my ($message) = $self->InquireRetainedMessages
+    my (@message) = $self->InquireRetainedMessages
       (
        Topic 		=> $topic,
        StreamName	=> $streamname,
+       MsgClass		=> "MQSeries::PubSub::AdminMessage",
       );
     
-    unless ( ref $message && $message->isa("MQSeries::PubSub::AdminMessage") ) {
+    unless ( @message ) {
 	# Don't carp -- InquireRetainedMessages will, if the error isn't ignorable
 	return;
     }
 
-    my $attribute = $message->Parameters($key);
-    
-    if ( ref $attribute eq 'ARRAY' ) {
-	return @$attribute;
+    my %attributes = ();
+
+    foreach my $message ( @message ) {
+	
+	my $attribute = $message->Parameters($key);
+	
+	next unless $attribute;
+
+	if ( ref $attribute eq 'ARRAY' ) {
+	    map { $attributes{$_}++ } @$attribute;
+	}
+	else {
+	    $attributes{$attribute}++;
+	}
+	
     }
-    else {
-	return $attribute;
-    }
+
+    return keys %attributes;
 
 }
 
@@ -188,10 +202,17 @@ sub InquireIdentities {
 			( $anonymous ? "/AllIdentities" : "/Identities" )
 		       );
     
+    my ($adminregexp) = ( 
+			 ( $anonymous ? "MQ/SA/" : "MQ/S/" ) .
+			 "[^/]+/$type" .
+			 ( $anonymous ? "/AllIdentities" : "/Identities" )
+			);
+    
     my (@message) = $self->InquireRetainedMessages
       (
        Topic		=> "$admintopic/$querytopic",
        StreamName	=> $streamname,
+       MsgClass		=> "MQSeries::PubSub::AdminMessage",
       );
     
     return unless @message;
@@ -215,7 +236,7 @@ sub InquireIdentities {
 	    $result->{$key} = $message->Parameters($key);
 	}
 
-	$result->{Topic} =~ s:$admintopic/::;
+	$result->{Topic} =~ s:$adminregexp/::;
 
 	if ( my $count = $message->Parameters("RegistrationQMgrName") ) {
 	    
@@ -285,22 +306,31 @@ sub InquireRetainedMessages {
     $self->{Reason} = MQRC_UNEXPECTED_ERROR;
     $self->{CompCode} = MQCC_FAILED;
 
-    my $topic = $args{Topic};
+    my $topics = ref $args{Topic} eq 'ARRAY' ? $args{Topic} : [$args{Topic}];
     my $streamname = $args{StreamName} || "SYSTEM.BROKER.ADMIN.STREAM";
-        
+    my $msgclass = $args{MsgClass} || "MQSeries::PubSub::Message";
+
+    my $errors = 0;
     my (@message) = ();
+
+    #
+    # For error messages, a printable list of topics would be nice.
+    #
+    my $topicstring = join("','",@$topics);
 
     unless ( 
 	    $self->RegisterSubscriber
 	    (
 	     MsgDesc		=>
 	     {
-	      # Wait is milliseconds, Expiry is tenths of seconds
-	      Expiry 		=> int($self->{Wait}/100),
+	      # Wait is milliseconds, Expiry is tenths of seconds, but
+	      # multiple this by 10, to give us some breathing room
+	      # (hence /10, not /100)
+	      Expiry 		=> int($self->{Wait}/10),
 	     },
 	     Options		=>
 	     {
-	      Topic		=> $topic,
+	      Topic		=> $topics,
 	      StreamName	=> $streamname,
 	      RegOpts		=> [qw( 
 				       Anon
@@ -314,55 +344,87 @@ sub InquireRetainedMessages {
 	return;
     }
 
-    $self->RequestUpdate
+    #
+    # Request them all, then get them.  If any of the requests fail
+    # return an error.
+    #
+    foreach my $topic ( @$topics ) {
+	
+	$self->RequestUpdate
+	  (
+	   Options		=>
+	   {
+	    Topic		=> $topic,
+	    StreamName		=> $streamname,
+	   },
+	  );
+	if ( $self->Reason() != MQRC_NONE && $self->Reason() != MQRCCF_NO_RETAINED_MSG ) {
+	    $self->{Carp}->("RequestUpdate failed\n" .
+			    "Topic 	=> '$topic'\n" .
+			    "StreamName => '$streamname'\n" .
+			    "Reason     => " . $self->Reason() . "\n");
+	    $errors++;
+	}
+	
+    }
+
+    #
+    # Try to get everything anyway...
+    #
+    while ( 1 ) {
+	
+	my $message = $msgclass->new();
+
+	unless ( ref $message && $message->isa($msgclass) ) {
+	    $self->{Carp}->("Unable to instantiate new '$msgclass' object");
+	    $errors++;
+	    # We still want to drain the queue, so use a vanilla
+	    # message
+	    $message = MQSeries::Message->new();
+	}
+	
+	unless ( $self->ReplyQ()->Get( Message 	=> $message ) ) {
+	    
+	    $self->{Carp}->("Unable to get message from replyq\n" .
+			    "Reason => " . $self->ReplyQ()->Reason() . "\n");
+	    $self->{"Reason"} = $self->ReplyQ()->Reason();
+	    $self->{"CompCode"} = $self->ReplyQ()->CompCode();
+	    $errors++;
+	    last;
+	    
+	} 
+	
+	last if $self->ReplyQ()->Reason() == MQRC_NO_MSG_AVAILABLE;
+	push(@message,$message);
+	
+    }
+
+    #
+    # Since our subscription expires, it is possible that the
+    # deregistration will fail.  Ignore the not registered error,
+    # then.
+    #
+    $self->DeregisterSubscriber
       (
        Options		=>
        {
-	Topic		=> $topic,
+	Topic		=> $topics,
 	StreamName	=> $streamname,
        },
       );
-    
-    if ( $self->Reason() == MQRC_NONE ) {
 
-	while ( 1 ) {
-	    my $message = MQSeries::PubSub::AdminMessage->new();
-	    unless ( $self->ReplyQ()->Get( Message => $message ) ) {
-		$self->{Carp}->("Unable to get message from replyq\n" .
-				"Reason => " . $self->ReplyQ()->Reason() . "\n");
-		$self->{"Reason"} = $self->ReplyQ()->Reason();
-		$self->{"CompCode"} = $self->ReplyQ()->CompCode();
-		return;
-	    } 
-	    last if $self->ReplyQ()->Reason() == MQRC_NO_MSG_AVAILABLE;
-	    push(@message,$message);
-	}
-
-    }
-    elsif ( $self->Reason() != MQRCCF_NO_RETAINED_MSG ) {
-	$self->{Carp}->("RequestUpdate failed\n" .
-			"Topic 	    => '$topic'\n" .
-			"StreamName => '$streamname'\n" .
-			"Reason     => " . $self->Reason() . "\n");
-	return;
-    }
-
-    unless (
-	    $self->DeregisterSubscriber
-	    (
-	     Options		=>
-	     {
-	      Topic		=> $topic,
-	      StreamName	=> $streamname,
-	     },
-	    )
-	   ) {
+    if ( $self->Reason() != MQRC_NONE && $self->Reason() != MQRCCF_NOT_REGISTERED ) {
 	$self->{Carp}->("Unable to DeregisterSubscriber\n" .
 			"Reason   => " . $self->Reason() . "\n");
-	return;
+	$errors++;
     }
 
-    return @message;
+    if ( $errors ) {
+	return;
+    }
+    else {
+	return @message;
+    }
 
 }
 

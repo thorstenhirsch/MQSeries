@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 10.1 1999/11/22 21:07:07 wpm Exp $
+# $Id: Command.pm,v 11.4 2000/02/02 23:07:07 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -203,7 +203,7 @@ sub Reason {
 }
 
 #
-# 
+# Generic Command API.  Well, maybe not so generic....
 #
 sub _Command {
 
@@ -212,8 +212,12 @@ sub _Command {
     my $key = "";
     my $multirequest = 0;
 
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
-    $self->{"CompCode"}= MQCC_FAILED;
+    #
+    # IMPORTANT: each and every case where we return *must* set a
+    # reasonable value for the Reason and CompCode.
+    #
+    $self->{"Reason"} = MQRC_NONE;
+    $self->{"CompCode"}= MQCC_OK;
 
     #
     # Allow the 'name' keys to default to '*' if not given.
@@ -275,7 +279,11 @@ sub _Command {
        Command 		=> $command,
        Parameters 	=> $parameters,
        Carp 		=> $self->{Carp},
-      ) || return;
+      ) || do {
+	  $self->{"CompCode"} = MQCC_FAILED;
+	  $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+	  return;
+      };
 
     unless ( $self->{CommandQueue}->Put( Message => $self->{Request} ) ) {
 	$self->{"CompCode"} = $self->{CommandQueue}->CompCode();
@@ -303,7 +311,11 @@ sub _Command {
 	   },
 	   Type			=> $self->{Type},
 	   Header		=> $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
-	  ) || return;
+	  ) || do {
+	      $self->{"CompCode"} = MQCC_FAILED;
+	      $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+	      return;
+	  };
 	
 	my $getresult = $self->{ReplyToQ}->Get
 	  (
@@ -311,10 +323,9 @@ sub _Command {
 	   Wait		=> $self->{Wait},
 	  );
 
-	$self->{"CompCode"} = $self->{ReplyToQ}->CompCode();
-	$self->{"Reason"} = $self->{ReplyToQ}->Reason();
-
 	unless ( $getresult ) {
+	    $self->{"CompCode"} = $self->{ReplyToQ}->CompCode();
+	    $self->{"Reason"} = $self->{ReplyToQ}->Reason();
 	    $self->{Carp}->("MQGET from ReplyQ failed.\n" .
 			    "Reason => " . MQReasonToText($self->{"Reason"}) . "\n");
 	    return;
@@ -470,7 +481,11 @@ sub _Command {
 	       Header		=> $MQSCHeader,
 	       Parameters	=> $MQSCParameters,
 	       Type		=> $self->{Type},
-	      ) || return;
+	      ) || do {
+		  $self->{"CompCode"} = MQCC_FAILED;
+		  $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+		  return;
+	      };
 	    push(@response,$response);
 	}
 
@@ -533,7 +548,15 @@ sub _Command {
     if ( $command =~ /^Inquire(\w+?Names)$/ ) {
 	$key = $1;
 	$key = 'QNames' if $key eq 'QueueNames';
-	return @{$self->{Response}->[0]->Parameters($key)};
+	# beware -- the command may have worked, but there may be no
+	# names, in which case, $names will be undef.
+	my $names = $self->{Response}->[0]->Parameters($key);
+	if ( ref $names eq 'ARRAY' ) {
+	    return @$names;
+	}
+	else {
+	    return;
+	}
     }
     #
     # Next handle anything which returns a list of parameters
@@ -561,10 +584,29 @@ sub _Command {
 
 }
 
+#
+# There is a bug in 5.00502, fixed in 5.00503, that prevents a method
+# that matches the same name as a sub-class, from working.  That is,
+# if method A::B->C and class A::B::C both exist, then the method call
+# is doomed.
+#
+# Response was here first, but Responses() will be provided as a
+# workaround.
+#
 sub Response {
     my $self = shift;
-    if ( ref $self->{Response} eq "ARRAY" ) {
-	return @{$self->{Response}};
+    if ( ref $self->{"Response"} eq "ARRAY" ) {
+	return @{$self->{"Response"}};
+    }
+    else {
+	return;
+    }
+}
+
+sub Responses {
+    my $self = shift;
+    if ( ref $self->{"Response"} eq "ARRAY" ) {
+	return @{$self->{"Response"}};
     }
     else {
 	return;
@@ -930,7 +972,7 @@ respected.  It will be faster to use the strings given, since these
 map directly to the actual macro values via a hash lookup, rather than
 a function call (all of the various C macros are implemented as
 function calls via an AUTOLOAD).  Also, the author finds the
-replacement strings far more readable.  FMMV.
+replacement strings far more readable.  YMMV.
 
 For each key shown, the format of value is one of the following:
 

@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: Event.in,v 9.3 1999/10/22 21:45:43 wpm Exp $
+# $Id: Event.in,v 11.1 1999/12/08 22:09:53 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -8,7 +8,7 @@
 
 package MQSeries::Message::Event;
 
-my %ResponseParameters = 
+%ResponseParameters = 
   (
    &MQCACF_APPL_NAME                    => "ApplName",
    &MQCACF_AUX_ERROR_DATA_STR_1         => "AuxErrorDataStr1",

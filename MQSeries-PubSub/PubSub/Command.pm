@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 10.1 1999/11/11 19:00:22 wpm Exp $
+# $Id: Command.pm,v 11.2 2000/02/02 23:11:44 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -10,7 +10,7 @@ package MQSeries::PubSub::Command;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 use MQSeries;
 use MQSeries::PubSub::Message;
@@ -230,21 +230,38 @@ sub _Command {
     # failure.  The Put or Put1 method will whine about the problem,
     # and set CompCode and Reason.
     #
+    my $putmethod = "Put";
+    my $putargs = 
+      {
+       Message			=> $request,
+      };
+
+    if ( exists $args{PutArgs} ) {
+	unless ( ref $args{PutArgs} eq 'HASH' ) {
+	    $self->{Carp}->("Invalid argument: 'PutArgs' must be a HASH reference.\n");
+	    return;
+	}
+	$putargs = { %$putargs, %{$args{PutArgs}} };
+    }
+
     if ( $self->isa("MQSeries::PubSub::Stream") ) {
-	$self->Put
-	  (
-	   Message		=> $request,
+	$putargs = 
+	  { 
+	   %$putargs,
 	   Sync			=> $args{Sync},
-	  ) || return;
+	  };
     }
     else {
 	# Must be an MQSeries::PubSub::Broker then...
-	$self->Put1
-	  (
+	$putargs = 
+	  { 
+	   %$putargs,
 	   Queue		=> 'SYSTEM.BROKER.CONTROL.QUEUE',
-	   Message		=> $request,
-	  ) || return;
+	  };
+	$putmethod = "Put1";
     }
+
+    $self->$putmethod(%$putargs) || return;
 
     #
     # If we sent a datagram, then we're done.  No further error

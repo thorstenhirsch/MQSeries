@@ -39,9 +39,10 @@ If you succeed in making this work on any other platform, please send
 the changes (in the form of a context diff) to the author, so I can
 integrate it.
 
-Also, note that a port to NT is actively underway, and will be
-hopefully available as part of the upcoming 1.08 release (estimated GA
-availability Q12000, beta maybe sooner).
+ANOTHER NOTE: Regarding the NT port that everyone keeps asking about:
+while I would certainly like to see NT supported, is not clear when I
+will have the time to spend on this.  Since this is an Open Source
+project, the usual saying applies: "Patches are always welcome".
 
 =head1 INSTALLATION
 
@@ -149,7 +150,7 @@ Although, nothing remains of the original code.... (sorry, David :-)
 =cut
 
 #
-# $Id: README,v 10.2 1999/11/22 21:12:18 wpm Exp $
+# $Id: README,v 11.1 2000/02/03 19:20:38 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 10.1 1999/11/11 18:57:54 wpm Exp $
+# $Id: QueueManager.pm,v 11.2 2000/02/02 23:08:21 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,10 +24,10 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 sub new {
-    
+
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
@@ -98,16 +98,15 @@ sub new {
     # OK, now, try to connect (unless told not to).
     #
     unless ( $args{NoAutoConnect} ) {
-	unless ( $self->Connect() ) {
-	    foreach my $code ( qw( CompCode Reason )) {
-		if ( ref $args{$code} eq "SCALAR" ) {
-		    ${$args{$code}} = $self->{$code};
-		}
-	    }
-	    return;
-	} 
+	my $result = $self->Connect();
+	foreach my $code ( qw( CompCode Reason )) {
+	    if ( ref $args{$code} eq "SCALAR" ) {
+		${$args{$code}} = $self->{$code};
+   	    }
+	}
+	return unless $result;
     }
-    
+
     return $self;
 
 }
@@ -254,7 +253,7 @@ sub Inquire {
 
     my $RequestValues = \%MQSeries::Command::PCF::RequestValues;
     my $ResponseParameters = \%MQSeries::Command::PCF::ResponseParameters;
-    
+
     foreach my $key ( @args ) {
 
 	unless ( exists $RequestValues->{QueueManager}->{$key} ) {
@@ -401,7 +400,11 @@ sub Put1 {
     my %args = @_;
 
     my $ObjDesc = {};
-    my $PutMsgOpts = {};
+    my $PutMsgOpts = 
+      {
+       Options			=> MQPMO_FAIL_IF_QUIESCING,
+      };
+
     my $retrycount = 0;
     my $buffer = undef;
 
@@ -413,12 +416,6 @@ sub Put1 {
     $self->{"CompCode"} = MQCC_FAILED;
     $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
 
-    if ( $args{"ObjDesc"} and $args{Queue} ) {
-	$self->{Carp}->("Invalid argument: only one of 'ObjDesc' or " .
-			"'Queue' can be specified");
-	return;
-    }
-
     unless ( $args{"ObjDesc"} or $args{Queue} ) {
 	$self->{Carp}->("Invalid argument: either 'ObjDesc' or " .
 			"'Queue' must be specified");
@@ -426,6 +423,10 @@ sub Put1 {
     }
 
     if ( $args{"ObjDesc"} ) {
+	unless ( ref $args{"ObjDesc"} eq 'HASH' ) {
+	    $self->{Carp}->("Invalid ObjDesc argument; must be a HASH reference");
+	    return;
+	}
 	$ObjDesc = $args{"ObjDesc"};
     }
     else {
@@ -439,6 +440,10 @@ sub Put1 {
     }
 
     if ( $args{PutMsgOpts} ) {
+	unless ( ref $args{PutMsgOpts} eq 'HASH' ) {
+	    $self->{Carp}->("Invalid PutMsgOpts argument; must be a HASH reference");
+	    return;
+	}
 	$PutMsgOpts = $args{PutMsgOpts};
     }
     else {
@@ -855,16 +860,21 @@ following key/value pairs (required keys are marked with a '*'):
 
   Key           Value
   ===           =====
-  Queue*         String, or ARRAY reference (distribution list)
+  Message*      MQSeries::Message object
+  Queue         String, or ARRAY reference (distribution list)
   QueueManager  String
   ObjDesc       HASH reference
-  Message*      MQSeries::Message object
   PutMsgOpts    HASH Reference
   PutMsgRecs    ARRAY Reference
   Sync          Boolean
   PutConvert    CODE reference
 
 =over 4
+
+=item Message
+
+This argument is the message to be placed onto the queue.  The value
+must be an MQSeries::Message object.
 
 =item Queue
 
@@ -927,17 +937,12 @@ which the message is being written.  This is an optional key.
 
 The entire ObjDesc structure passed to the underlying MQPUT1() call
 can be specified via this key.  In this case, the Queue and/or
-QueueManager can not be given.  Use of this key would be considered
+QueueManager are simply ignored.  Use of this key would be considered
 somewhat non-conventional, as the OO API is attempting to hide the
 complexity of these underlying data structures.
 
 However, this allows the developer access to the entire ObjDesc, if
 necessary.  
-
-=item Message
-
-This argument is the message to be placed onto the queue.  The value
-must be an MQSeries::Message object.
 
 =item PutMsgOpts
 

@@ -2,7 +2,7 @@
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 10.3 1999/11/22 21:36:11 wpm Exp $
+# $Id: Makefile.PL,v 11.1 1999/11/24 12:52:33 wpm Exp $
 #
 use ExtUtils::MakeMaker;
 
@@ -28,7 +28,7 @@ conditions, answer "no" and fire up your favorite text editor....
 LegalMumboJumbo
     
     print "Did you read the LICENSE file and agree to its terms and conditions? [y] ";
-    my $answer = <>;
+    my $answer = <STDIN>;
     exit 1 if $answer =~ /^n/i;
 
     open(YES,">.LICENSE.ACCEPTED") || 

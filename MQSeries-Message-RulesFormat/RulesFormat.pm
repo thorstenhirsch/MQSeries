@@ -1,5 +1,5 @@
 #
-# $Id: RulesFormat.pm,v 10.1 1999/11/11 18:58:41 wpm Exp $
+# $Id: RulesFormat.pm,v 11.1 1999/11/23 15:15:36 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,7 +19,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 

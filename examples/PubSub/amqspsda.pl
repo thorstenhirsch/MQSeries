@@ -1,6 +1,6 @@
 #!/ms/dist/perl5/bin/perl5.005
 #
-# $Id: amqspsda.pl,v 10.1 1999/11/11 18:43:37 wpm Exp $
+# $Id: amqspsda.pl,v 11.1 1999/11/23 15:20:30 wpm Exp $
 
 use strict;
 use English;
@@ -373,7 +373,7 @@ sub DumpPublishersOrSubscribers {
 # of message you are about to get, otherwise the GetConvert method
 # fails, and you're SOL.
 #
-# In 1.07, I'll almost certainly add the ability to use
+# In 1.08 (or later), I'll almost certainly add the ability to use
 # MQSeries::Message, and have the API figure out what class to promote
 # the object to, automatically.
 #

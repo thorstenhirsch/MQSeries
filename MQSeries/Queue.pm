@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 10.2 1999/11/11 18:55:32 wpm Exp $
+# $Id: Queue.pm,v 11.2 2000/02/02 23:08:59 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -25,7 +25,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 sub new {
     
@@ -217,14 +217,13 @@ sub new {
     }
 
     unless ( $args{NoAutoOpen} ) {
-	unless ( $self->Open() ) {
-	    foreach my $code ( qw(CompCode Reason) ) {
-		if ( ref $args{$code} eq "SCALAR" ) {
-		    ${$args{$code}} = $self->{$code};
-	        }
-            }
-            return;
-        }
+	my $result = $self->Open();
+	foreach my $code ( qw(CompCode Reason) ) {
+	    if ( ref $args{$code} eq "SCALAR" ) {
+		${$args{$code}} = $self->{$code};
+	    }
+	}
+	return unless $result;
     } 
 
     return $self;
@@ -298,10 +297,14 @@ sub Put {
 
     return unless $self->Open();
 
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"} 	= MQCC_FAILED;
+    $self->{"Reason"} 		= MQRC_UNEXPECTED_ERROR;
 
-    my $PutMsgOpts = {};
+    my $PutMsgOpts = 
+      {
+       Options			=> MQPMO_FAIL_IF_QUIESCING,
+      };
+
     my $retrycount = 0;
     my $buffer = "";
 
