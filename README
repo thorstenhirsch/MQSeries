@@ -81,6 +81,12 @@ to the maintainer.
 						5.6.1
                                                 5.8.0
   Redhat Linux 8.x 	5.3			Same as Red Hat 8 / MQ 5.2
+  Red Hat AS 3.0 / IA32 5.3			5.00503
+						5.6.1
+						5.8.2
+  Red Hat AS 3.0 / IA64 5.2			5.6.1
+						5.8.2
+ *SCO OpenServer 5.0.6	5.0			??
 
 NOTE: The ?? indicates that I received reports of a successful test
 suite run, but I never received confirmation of the MQSeries version.
@@ -119,7 +125,7 @@ the queue manager you specified in the CONFIG file.
 
 NOTE: If you do not support client channel table files, then you may
 have to set the MQSERVER environment variable in order to allow the
-client tests to work.  
+client tests to work.
 
 Any failure in the test suite should a cause for concern.  In order to
 get more details from it, run it via:
@@ -132,6 +138,11 @@ Please include as many details as possible about the operating system
 and MQSeries software on both the host being used to compile this
 extension, as well as the queue manager to which the test suite is
 connecting.
+
+The most common problem with this module is failure to connect to the
+queue manager.  Before submitting a bug report for the
+MQClient::MQSeries modules, make sure the IBM-supplied sample
+utilities C<amqsgetc> and C<amqsputc> work.
 
 =head1 RELEASE NOTES
 
@@ -223,8 +234,8 @@ Although, nothing remains of the original code.... (sorry, David :-)
 =cut
 
 #
-# $Id: README,v 24.1 2003/11/03 16:27:01 biersma Exp $
+# $Id: README,v 25.2 2004/01/14 19:10:33 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #

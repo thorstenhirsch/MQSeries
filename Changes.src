@@ -3,6 +3,42 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.23
+
+=head2 New MQSeries::Message::RFH2 class
+
+A new class to support RFH2 messages; this allows interaction with JMS
+clients and the various WMQ Integrator products.
+
+This message type is experimental and lightly tested (bugreports and
+patches welcome).  Thanks to Tim Kimber for working on this.
+
+=head2 Support for NonPersistentMsgClass
+
+The new queue attribute C<NonPersistentMsgClass>, which is available
+for Local and Model queues starting with WMQ 5.3 CSD06, is now
+supported by MQSeries::Command::PCF and MQSeries::Command::MQSC.
+
+=head1 Changes for 1.22
+
+=head2 Support for the MQ Client on Linux / Itanium
+
+Add 64-bit client support for Linux / Itanium.  This should also make
+it easy to add support for other 64-bit clients - but note that each
+scuh platform will need to adjust the util/parse_headers script.
+Patches for other platforms are welcome.
+
+=head2 Support for SCO OpenServer / MQSeries 5.0
+
+Leonid Lisovskiy contributed patches to make the MQSeries module
+compile on SCO OpenServer 5.0.6 using the WillowTech MQSeries 5.0
+client.
+
+=head2 MQSeries::Command fixes
+
+Support IndexType "GroupId" for shared queues on z/OS in
+MQSeries::Command::MQSC.
+
 =head1 Changes for 1.21
 
 =head2 Fixes for MQSeries::Message::IIH
@@ -1639,9 +1675,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 24.5 2003/11/03 16:29:01 biersma Exp $
+# $Id: Changes.src,v 26.1 2004/04/08 13:03:52 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

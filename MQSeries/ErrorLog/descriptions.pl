@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000, 2001, 2002, 2003 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 # 
-# $Id: descriptions.pl,v 23.2 2003/04/11 17:58:29 biersma Exp $
+# $Id: descriptions.pl,v 25.1 2004/01/14 19:10:29 biersma Exp $
 #
 
 #

@@ -1,7 +1,7 @@
 /* -*-c-*-
- $Id: 21core,v 23.1 2003/04/10 19:07:09 biersma Exp $
+ $Id: 21core,v 25.2 2004/01/14 19:10:06 biersma Exp $
 
- (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+ (c) 1999-2004 Morgan Stanley Dean Witter and Co.
  See ..../src/LICENSE for terms of distribution.
  */
 
@@ -9,14 +9,14 @@ MODULE = __APITYPE__::MQSeries		PACKAGE = __APITYPE__::MQSeries
 
 PROTOTYPES: DISABLE
 
-unsigned long
+MQULONG
 constant_hex(name)
 	char *		name
 
 	PPCODE:
 	{
 	SV		*Return;
-	unsigned long	Result;
+	MQULONG		 Result;
 
 	Result = constant_hex(name);
 

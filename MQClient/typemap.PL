@@ -1,7 +1,7 @@
 #
-# $Id: typemap.PL,v 24.1 2003/11/03 16:24:06 biersma Exp $
+# $Id: typemap.PL,v 25.2 2004/01/14 19:10:12 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # Script to generate a typemap from the MQSeries header files
@@ -141,6 +141,7 @@ PMQCHAR256	T_PV
 # Other Datatypes
 MQLONG		T_IV
 PMQLONG		T_OPAQUEPTR
+MQULONG		T_UV
 MQHCONN		T_IV
 PMQHCONN	T_OPAQUEPTR
 MQHOBJ		T_IV

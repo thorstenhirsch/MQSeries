@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 23.1 2003/04/10 19:11:15 biersma Exp $
+# $Id: parse_headers,v 25.1 2004/01/14 19:08:49 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
@@ -41,16 +41,64 @@ unless ( $headers{"$include/cmqcfce.h"} ) {
 }
 
 
+#
+# Handle 64-bit support, depending on the platform.  At this time, we
+# only handle Linux/IA64.  Patches for other 64-bit clients are
+# welcome.
+#
+my $use_64_bit = 0;
+if ($Config{archname} =~ /^ia64-linux/) {
+    $use_64_bit = 1;
+}
+
 foreach my $header ( @headers ) {
 
     #print "Searching $header\n";
 
     open(HEADER,$header) or die "Unable to open $header: $ERRNO\n";
 
+    #
+    # To support the 64-bit macros, we support very simple conditionals,
+    # nested one deep.
+    #
+    my $conditional;		# Name (undef if not in confitional)
+    my $cond_else;		# 0: if #if, 1: in #else
+
     while ( <HEADER> ) {
 
 	s/^\s*//;
 	chomp;
+
+	if (m@^#if !defined.*\s+/\* File not yet included\?\s+\*/@ ||
+	    m@^#endif\s+/\* End of header file \*/@
+	   ) {
+	    #print "Skip include guard: $_\n";
+	    next;
+	}
+
+	#
+	# Entering a conditional?
+	#
+	if (/^#if defined\((.*?)\)/) {
+	    if (defined $conditional) {
+		die "Cannot handle nested conditional in [$header]: while in [$conditional], found [$1]";
+	    }
+	    $conditional = $1;
+	    $cond_else = 0;
+	    #print "Entering [$conditional]\n";
+	} elsif (/^#else/) {
+	    unless (defined $conditional) {
+		die "Have #else without conditional in [$header]";
+	    }
+	    #print "Entering #else $conditional\n";
+	    $cond_else = 1;
+	} elsif (/^#endif/) {
+	    unless (defined $conditional) {
+		die "Have #endif without conditional in [$header]";
+	    }
+	    #print "Leaving [$conditional]\n";
+	    $conditional = undef;
+	}
 
 	#
 	# Handle line continuation
@@ -73,6 +121,7 @@ foreach my $header ( @headers ) {
 	s/\s*$//;
 
 	my ($key,$value) = (split(/\s+/,$_,3))[1,2];
+	#print STDERR "Have key [$key] value [$value]\n";
 
         #
         # Skip the MQ_64_BIT constant (which has no value)
@@ -82,6 +131,20 @@ foreach my $header ( @headers ) {
         #unless (defined $value) {
         #    print STDERR "XX: key [$key] leads to undefined value\n";
         #}
+
+	#
+	# If we're in a conditionial 64-bit block, we may have to
+	# skip a macro.
+	#
+	if (defined $conditional && $conditional eq 'MQ_64_BIT') {
+	    if ($cond_else == 0 && $use_64_bit == 0) {
+		#print "Skip 64-bit macro value [$key] [$value]\n";
+		next;
+	    } elsif ($cond_else && $use_64_bit) {
+		#print "Skip 32-bit macro value [$key] [$value]\n";
+		next;
+	    }
+	}
 
 	next if $key eq "MQENTRY";
 	next if $key eq "MQPOINTER";
@@ -149,21 +212,13 @@ foreach my $header ( @headers ) {
 
 	    $value =~ s/L$//;
 
-            my $use_64_bit = 0; # Patchers: hint, hint
-
 	    if (not exists $constant_numeric{$key} || # First time
                 (not defined $value && not defined $constant_numeric{$key}) &&
                 (defined $value && defined $constant_numeric{$key} && $constant_numeric{$key} eq $value) # No change
                ) {
 		$constant_numeric{$key} = $value;
-	    } elsif ($use_64_bit && $value > $constant_numeric{$key}) {
-                #print STDERR "AAA: Use 64-bit value [$key] [$value]\n";
-		$constant_numeric{$key} = $value;
-	    } elsif (not $use_64_bit && $value < $constant_numeric{$key}) {
-                #print STDERR "AAA: Use 32-bit value [$key] [$value]\n";
-		$constant_numeric{$key} = $value;
 	    } else {
-                print STDERR "WARNING: Have two conflicting constant values for [$key], using first\n";
+                print STDERR "WARNING: Have two conflicting constant values for [$key], using first [$constant_numeric{$key}] not second [$value]\n";
             }
 
 	}

@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 24.1 2003/05/19 21:41:07 biersma Exp $
+# $Id: Makefile.PL,v 25.3 2004/01/14 19:10:12 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -85,8 +85,13 @@ if (
 #
 if ( $mqmtop =~ /\s/ ) {
     $libdir = "-L'$mqmtop/lib'";
-}
-else {
+} elsif ($Config{archname} =~ /ia64-linux/) {
+    #
+    # XXX: Detect when /opt/mqm/lib64 is required.  This will change
+    #      when we see more 64-bit platforms...
+    #
+    $libdir = "-L$mqmtop/lib64";
+} else {
     $libdir = "-L$mqmtop/lib";
 }
 
@@ -126,6 +131,13 @@ if ( $Config{osname} =~ /os390/ ) {
 #
 if ( $Config{osname} =~ /solaris/ ) {
     $libs .= " -lthread";
+}
+
+#
+# On SCO (at least on OpenServer 5.0.6), we need link link libc
+#
+if ( $Config{osname} =~ /sco/ ) {
+    $libs .= " -lc";
 }
 
 #
@@ -265,6 +277,42 @@ foreach $file ( sort keys %filemap ) {
 open(TYPEMAP, ">>typemap") || die "Unable to touch typemap: $ERRNO\n";
 close(TYPEMAP);
 
+#
+# Collect optional WriteMakefile args in here...
+#
+my %extra_args;
+if ($^O eq 'os390') {
+    $extra_args{MAN3PODS} = {};
+}
+if ($Config{archname} =~ /-object\b/i) {
+    #
+    # On Win32, we need to force the use of the CAPI with
+    # ActiveState's PERL_OBJECT build
+    #
+    $extra_args{CAPI} => 'TRUE';
+}
+if ($Config{osname} =~ /win32/i) {
+    #
+    # On Win32, MakeMaker ain't picking up the constants.c.PL 
+    # file for free.  Probably a bug... 
+    #
+    $extra_args{PL_FILES} = {
+			     'constants.c.PL' 	=> 'constants.c',
+			     'typemap.PL'     	=> 'typemap',
+			    };
+}
+if ($Config{archname} =~ /^ia64-linux/) {
+    #
+    # XXX: On Linux/Itanium, we need to slap the linker to DTRT.  This
+    #      will hopefully go away...
+    #
+    my @libs = split(' ', $lib_string);
+    my $rpath = $libdir;
+    $rpath =~ s!-L!!;
+    my $lddlflags = " -shared -Wl,--enable-new-dtags -Wl,-rpath -Wl,$rpath";
+    $extra_args{LDDLFLAGS} .= $lddlflags;
+}
+
 WriteMakefile(
 	      NAME		=> "${apitype}::MQSeries",
 	      VERSION_FROM	=> "MQSeries.pm",
@@ -272,34 +320,7 @@ WriteMakefile(
 	      INC		=> qq{-I"$include" -I../include},
 	      EXE_FILES		=> [],
 	      OBJECT		=> q[MQSeries$(OBJ_EXT) constants$(OBJ_EXT)],
-	      (
-	       $^O eq 'os390' ?
-	       (
-		MAN3PODS	=> {},
-	       ) : ()
-	      ),
-              #
-	      # On Win32, we need to force the use of the CAPI
-              # with ActiveState's PERL_OBJECT build
-	      #
-              (
-	       $Config{archname} =~ /-object\b/i ?
-	       ( CAPI => 'TRUE' ) : ()
-	      ),
-              #
-              # On Win32, MakeMaker ain't picking up the constants.c.PL 
-              # file for free.  Probably a bug... 
-              #
-	      (
-	       $Config{osname} =~ /win32/i ?
-	       (
-		PL_FILES =>
-		{
-		 'constants.c.PL' 	=> 'constants.c',
-		 'typemap.PL'     	=> 'typemap',
-		}
-	       ) : ()
-	      )
+	      %extra_args,
 	     );
 
 # now we remove it again so that it will be out-of-date

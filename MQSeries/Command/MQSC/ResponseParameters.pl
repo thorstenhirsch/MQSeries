@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 23.2 2003/04/15 13:34:28 biersma Exp $
+# $Id: ResponseParameters.pl,v 26.1 2004/04/08 13:04:24 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -97,6 +97,7 @@ package MQSeries::Command::MQSC;
     MAXDEPTH	=> [ "MaxQDepth" ],
     MAXMSGL	=> [ "MaxMsgLength" ],
     MSGDLVSQ	=> [ "MsgDeliverySequence",	$ResponseValues{MsgDeliverySequence} ],
+    NPMCLASS    => [ "NonPersistentMsgClass",   $ResponseValues{NonPersistentMsgClass} ],
     OPPROCS	=> [ "OpenOutputCount" ],
     PROCESS	=> [ "ProcessName" ],
     PSID        => [ "PageSetId" ],

@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameters.pl,v 24.1 2003/11/03 16:31:35 biersma Exp $
+# $Id: RequestParameters.pl,v 26.1 2004/04/08 13:03:31 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -39,6 +39,7 @@ package MQSeries::Command::MQSC;
     MaxHandles			=> [ "MAXHANDS", 	"integer" ],
     MaxMsgLength		=> [ "MAXMSGL",		"integer" ],
     MaxUncommittedMsgs		=> [ "MAXUMSGS", 	"integer" ],
+    NonPersistentMsgClass       => [ "NPMCLASS",        $RequestValues{NonPersistentMsgClass} ],
     PerformanceEvent		=> [ "PERFMEV",		$RequestValues{Enabled} ],
     QMgrDesc			=> [ "DESCR", 		"string" ],
     QMgrAttrs			=> [ "",		$RequestValues{QMgrAttrs} ],

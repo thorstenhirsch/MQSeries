@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -120,6 +120,7 @@ package MQSeries::Command::PCF;
     MaxQDepth			=> [ 15,                			3 ],
     MsgDeqCount			=> [ 38,                  		3 ],
     MsgEnqCount			=> [ 37,                  		3 ],
+    NonPersistentMsgClass	=> [ 78,              			3,		$ResponseValues{NonPersistentMsgClass} ],
     OpenInputCount		=> [ 17,                     		3 ],
     OpenOutputCount		=> [ 18,                      		3 ],
     QDepthHighEvent		=> [ 43,                       		3 ],

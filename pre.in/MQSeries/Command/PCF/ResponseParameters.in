@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ResponseParameters.in,v 24.3 2003/06/10 13:02:39 biersma Exp $
+# $Id: ResponseParameters.in,v 26.1 2004/04/08 12:47:14 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -111,6 +111,7 @@ package MQSeries::Command::PCF;
     MaxQDepth			=> [ &MQIA_MAX_Q_DEPTH,			&MQCFT_INTEGER ],
     MsgDeqCount			=> [ &MQIA_MSG_DEQ_COUNT,		&MQCFT_INTEGER ],
     MsgEnqCount			=> [ &MQIA_MSG_ENQ_COUNT,		&MQCFT_INTEGER ],
+    NonPersistentMsgClass	=> [ &MQIA_NPM_CLASS,			&MQCFT_INTEGER,		$ResponseValues{NonPersistentMsgClass} ],
     OpenInputCount		=> [ &MQIA_OPEN_INPUT_COUNT,		&MQCFT_INTEGER ],
     OpenOutputCount		=> [ &MQIA_OPEN_OUTPUT_COUNT,		&MQCFT_INTEGER ],
     QDepthHighEvent		=> [ &MQIA_Q_DEPTH_HIGH_EVENT,		&MQCFT_INTEGER ],

@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: RequestValues.in,v 23.2 2003/04/10 19:10:43 biersma Exp $
+# $Id: RequestValues.in,v 26.1 2004/04/08 12:51:45 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -190,6 +190,12 @@ package MQSeries::Command::PCF;
    {
     Permanent                   => &MQQDT_PERMANENT_DYNAMIC,
     Temporary                   => &MQQDT_TEMPORARY_DYNAMIC,
+   },
+
+   NonPersistentMsgClass =>
+   {
+    High			=> &MQNPM_CLASS_HIGH,
+    Normal			=> MQNPM_CLASS_NORMAL,
    },
 
    Scope =>

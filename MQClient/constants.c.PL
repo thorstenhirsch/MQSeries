@@ -1,7 +1,7 @@
 #
-# $Id: constants.c.PL,v 23.1 2003/04/10 19:08:56 biersma Exp $
+# $Id: constants.c.PL,v 25.2 2004/01/14 19:10:12 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -57,7 +57,7 @@ print "\n\n";
 # Generate the constant_hex function 
 #
 print <<"EndOfText";
-unsigned long
+MQULONG
 constant_hex(name)
 char *name;
 {

@@ -2,10 +2,10 @@
 # MQSeries::FDC::Parser.pm - Break an FDC log into chunks, then
 #                            create FDC::Entry objects from those chunks.
 #
-# (c) 2000-2003 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 24.1 2003/05/19 21:32:43 biersma Exp $
+# $Id: Parser.pm,v 26.1 2004/01/15 19:34:58 biersma Exp $
 #
 
 package MQSeries::FDC::Parser;
@@ -17,7 +17,7 @@ use MQSeries::FDC::Entry;
 
 use vars qw($VERSION);
 
-$VERSION = '1.21';
+$VERSION = '1.23';
 
 #
 # Constructor

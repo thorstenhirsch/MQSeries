@@ -1,7 +1,7 @@
 #
-# $Id: RequestValues.pl,v 24.1 2003/11/03 16:32:02 biersma Exp $
+# $Id: RequestValues.pl,v 26.1 2004/04/08 13:03:21 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -209,6 +209,7 @@ package MQSeries::Command::MQSC;
    IndexType =>
    {
     CorrelId			=> "CORRELID",
+    GroupId                     => "GROUPID",
     MsgToken			=> "MSGTOKEN",
     MsgId			=> "MSGID",
     None			=> "NONE",
@@ -226,6 +227,12 @@ package MQSeries::Command::MQSC;
    {
     Priority			=> "PRIORITY",
     FIFO			=> "FIFO",
+   },
+
+   NonPersistentMsgClass =>
+   {
+    High			=> "HIGH",
+    Normal			=> "NORMAL",
    },
 
    QServiceIntervalEvent =>

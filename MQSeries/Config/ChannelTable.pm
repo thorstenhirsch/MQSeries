@@ -1,7 +1,7 @@
 #
-# $Id: ChannelTable.pm,v 24.4 2003/08/18 21:36:02 biersma Exp $
+# $Id: ChannelTable.pm,v 26.1 2004/01/15 19:34:43 biersma Exp $
 #
-# (c) 2001-2003 Morgan Stanley Dean Witter and Co.
+# (c) 2001-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use vars qw(
 	    %StrucLength
 	   );
 
-$VERSION = '1.21';
+$VERSION = '1.23';
 
 @MQCDFields =
   (
@@ -304,7 +304,7 @@ sub readFile {
 		#
 		# KeepAliveInterval: 0xffffffff = 'AUTO'
 		#
-		if ($clntconn->{KeepAliveInterval} = 0xffffffff) {
+		if ($clntconn->{KeepAliveInterval} == 0xffffffff) {
 		    $clntconn->{KeepAliveInterval} = $SystemDefClntconn{KeepAliveInterval};
 		}
 
@@ -349,7 +349,7 @@ sub writeFile {
     #
     # We need to ensure that SYSTEM.DEF.CLNTCONN exists.
     #
-    my $default = {%SystemDefClntconn};
+    my $default = { %SystemDefClntconn, Version => $version };
     my @channel = ();
 
     foreach my $channel ( @$clntconn ) {

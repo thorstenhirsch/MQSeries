@@ -100,6 +100,7 @@ MQSeries/Message/ConfigEvent.pm
 MQSeries/Message/Event.pl
 MQSeries/Message/Event.pm
 MQSeries/Message/IIH.pm
+MQSeries/Message/RFH2.pm
 MQSeries/Message/Storable.pm
 MQSeries/Message/Trigger.pm
 MQSeries/Queue.pm

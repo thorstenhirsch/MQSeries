@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>1.21/src/README</TITLE> 
+	    <TITLE>1.23/src/README</TITLE> 
 	</HEAD>
 
 	<BODY>
@@ -128,6 +128,12 @@ bugs in these platforms. Please report problems to the maintainer.
                                                 5.6.1
                                                 5.8.0
   Redhat Linux 8.x      5.3                     Same as Red Hat 8 / MQ 5.2
+  Red Hat AS 3.0 / IA32 5.3                     5.00503
+                                                5.6.1
+                                                5.8.2
+  Red Hat AS 3.0 / IA64 5.2                     5.6.1
+                                                5.8.2
+ *SCO OpenServer 5.0.6  5.0                     ??
 </PRE>
 
 <P>
@@ -189,7 +195,7 @@ queue manager you specified in the CONFIG file.
 
 NOTE: If you do not support client channel table files, then you may have
 to set the MQSERVER environment variable in order to allow the client tests
-to work.  
+to work.
 
 
 <P>
@@ -210,6 +216,13 @@ If you can't figure out what broke, then send the author the output from
 include as many details as possible about the operating system and MQSeries
 software on both the host being used to compile this extension, as well as
 the queue manager to which the test suite is connecting.
+
+
+<P>
+
+The most common problem with this module is failure to connect to the queue
+manager. Before submitting a bug report for the MQClient::MQSeries modules,
+make sure the IBM-supplied sample utilities <CODE>amqsgetc</CODE> and <CODE>amqsputc</CODE> work.
 
 
 <P>

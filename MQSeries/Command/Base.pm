@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 24.3 2003/11/03 16:31:04 biersma Exp $
+# $Id: Base.pm,v 26.1 2004/01/15 19:34:33 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.21';
+$VERSION = '1.23';
 
 sub new {
 

@@ -1,8 +1,8 @@
 # -*-c-*-
 #
-# $Id: 35MQPUT1-v5,v 24.2 2003/10/14 16:06:49 biersma Exp $
+# $Id: 35MQPUT1-v5,v 25.2 2004/01/14 19:10:09 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -81,13 +81,21 @@ MQPUT1(Hconn,ObjDesc,MsgDesc,PutMsgOpts,Msg,CompCode,Reason)
 	   *
 	   * PMR 31824,7TD and fix IY49267: MQPUT1 with a distribution
 	   * list returns reason code 2136 except when MQOD_VERSION_3 
-	   * is specified.  As MQOD_VERSION_3 is supproted with 
+	   * is specified.  As MQOD_VERSION_3 is supported with 
 	   * queue managers and clients >= 5.1, it is safe to use 
-	   * this when defined.
+	   * this when defined.  We try and support 5.0 clients as best 
+	   * we can.
 	   */
+#ifdef MQOD_VERSION_3
 	  if (ObjDesc.Version < MQOD_VERSION_3) {
 	    ObjDesc.Version = MQOD_VERSION_3;
 	  }
+#else
+          /* Limited support for MQ 5.0 clients */
+          if (ObjDesc.Version < MQOD_VERSION_2) {
+            ObjDesc.Version = MQOD_VERSION_2;
+          }
+#endif
 
 	  /*
 	   * Also force the PMO to version 2...

@@ -1,9 +1,9 @@
 /*
  * Extensions for the PCF Command Set
  *
- * $Id: cmqcfce.h,v 23.1 2003/04/10 19:10:36 biersma Exp $
+ * $Id: cmqcfce.h,v 25.2 2004/01/14 19:10:36 biersma Exp $
  *
- * (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+ * (c) 1999-2004 Morgan Stanley Dean Witter and Co.
  * See ..../src/LICENSE for terms of distribution.
  *
  */
@@ -61,4 +61,4 @@ extern "C" {
 }
 #endif
 
-#endif
+#endif  /* End of header file */

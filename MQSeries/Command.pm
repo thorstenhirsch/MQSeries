@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 24.4 2003/11/03 16:30:12 biersma Exp $
+# $Id: Command.pm,v 26.1 2004/01/15 19:34:32 biersma Exp $
 #
-# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -23,7 +23,7 @@ use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
 
 use vars qw($VERSION);
 
-$VERSION = '1.21';
+$VERSION = '1.23';
 
 sub new {
     my ($proto, %args) = @_;
@@ -1434,8 +1434,6 @@ key/value pairs:
   ReplyToQMgr        String
   Carp               CODE Reference
   StrictMapping      Boolean	
-  CompCode           Reference to Scalar Variable
-  Reason             Reference to Scalar Variable
 
 =over 4
 
@@ -1642,35 +1640,6 @@ Usually, the command server will generate errors if you feed bogus
 data into the API. but that will only occur after the data has been
 encoded and sent to the command server.  This feature will allow you
 to detect this error before the data is ever sent.
-
-=item CompCode
-
-Normally the CompCode and Reason are access via the methods of the
-same name.  However, that obviously is not possible if the constructor
-fails.  If you want to perform special handling of the error codes in
-this case, you will have tell the constructor where to write the
-CompCode and Reason, by providing a SCALAR reference.
-
-For example:
-
-  my $CompCode = MQCC_FAILED;
-  my $Reason   = MQRC_NONE;
-
-  my $command = MQSeries::Command->new
-    (
-     QueueManager => 'some.queue.manager',
-     CompCode     => \$CompCode,
-     Reason       => \$Reason,
-    );
-
-Now, the CompCode and Reason are available, even if the constructor
-fails, in which case it would normally return nothing.
-
-=item Reason
-
-See CompCode above.
-
-=back
 
 =head2 CompCode
 

@@ -3,10 +3,10 @@
 #                          and return parsed FDC::Entry objects for
 #                          any new content added.
 #
-# (c) 2000-2003 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 24.1 2003/05/19 21:32:45 biersma Exp $
+# $Id: Tail.pm,v 26.1 2004/01/15 19:35:01 biersma Exp $
 #
 
 package MQSeries::FDC::Tail;
@@ -19,7 +19,7 @@ use MQSeries::FDC::Parser;
 
 use vars qw($VERSION);
 
-$VERSION = '1.21';
+$VERSION = '1.23';
 
 #
 # The FDC logs are watched based on the following assumptions:
