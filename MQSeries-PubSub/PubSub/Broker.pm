@@ -1,5 +1,5 @@
 #
-# $Id: Broker.pm,v 9.6 1999/11/10 22:18:40 wpm Exp $
+# $Id: Broker.pm,v 10.2 1999/11/19 20:07:24 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,7 +20,7 @@ use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::QueueManager );
 
-$VERSION = '1.06';
+$VERSION = '1.07';
 
 #
 # All 5 of these PubSub commands must be sent to the Broker.
@@ -295,7 +295,8 @@ sub InquireRetainedMessages {
 	    (
 	     MsgDesc		=>
 	     {
-	      Expiry 		=> $self->{Wait},
+	      # Wait is milliseconds, Expiry is tenths of seconds
+	      Expiry 		=> int($self->{Wait}/100),
 	     },
 	     Options		=>
 	     {
@@ -309,7 +310,7 @@ sub InquireRetainedMessages {
 	    ) 
 	   ) {
 	$self->{Carp}->("Unable to RegisterSubscriber\n" .
-			"Reason   => " . $self->Reason() . "\n");
+			"Reason => " . $self->Reason() . "\n");
 	return;
     }
 

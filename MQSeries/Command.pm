@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 9.5 1999/11/04 15:28:44 wpm Exp $
+# $Id: Command.pm,v 10.1 1999/11/22 21:07:07 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -31,7 +31,7 @@ sub new {
 		Reason			=> MQRC_NONE,
 		CompCode		=> MQCC_OK,
 		Wait 			=> 60000,	# 60 second wait for replies...
-		Expiry			=> 30000,	# 30 second expiry on requests 
+		Expiry			=> 600,		# 60 second expiry on requests 
 		Carp			=> \&carp,
 		Type			=> 'PCF',
 	       };
@@ -811,15 +811,15 @@ section "MQSC NOTES" for the Ugly Truth about the MQSC support.
 
 This value is used as the MQMD.Expiry field on all requests sent to
 the command server.  The value is passed to the MQSeries::Message
-constructor, and should specify the time in milliseconds.  The default
-is 30000, or 30 seconds.
+constructor, and should specify the time in B<tenths of a second>.
+The default is 600, or 60 seconds.
 
 =item Wait
 
 This value is used as the Wait argument to the MQSeries::Queue->Get()
 method call made against the ReplyToQ (a dynamic reply queue). and
-should be a time specified in milliseconds.  The default is 60000, or
-60 seconds.
+should be a time specified in B<milliseconds>.  The default is 60000,
+or 60 seconds.
 
 NOTE: Both the Expiry and Wait defaults may be too for slow or heavily
 loaded queue managers.  Tune them appropriately.

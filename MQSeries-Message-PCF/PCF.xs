@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 9.6 1999/10/27 20:36:30 wpm Exp $";
+static char rcsid[] = "$Id: PCF.xs,v 10.1 1999/11/22 21:11:17 wpm Exp $";
 
 /*
   (c) 1999 Morgan Stanley Dean Witter and Co.
@@ -103,8 +103,8 @@ MQDecodePCF(pBuffer)
 	  hv_store(HeaderHV,"Reason",6,(newSViv(Header.Reason)),0);
 	  hv_store(HeaderHV,"ParameterCount",14,(newSViv(Header.ParameterCount)),0);
 
-	  XPUSHs(newRV_noinc((SV*)HeaderHV));
-
+	  XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
+	  
 	  DataAV = newAV();
 
 	  for ( count = 0 ; count < (int)Header.ParameterCount ; count++ ) {
@@ -216,7 +216,7 @@ MQDecodePCF(pBuffer)
 
 	  }
 
-	  XPUSHs(newRV_noinc((SV *)DataAV));	
+	  XPUSHs(sv_2mortal(newRV_noinc((SV *)DataAV)));	
 
 	}
 

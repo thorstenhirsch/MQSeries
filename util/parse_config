@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: parse_config,v 9.3 1999/10/14 23:54:16 wpm Exp $
+# $Id: parse_config,v 10.1 1999/11/11 21:45:03 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -89,10 +89,11 @@ $mqversion = 2;
 open(CMQC,"$include/cmqc.h")
   or die "Unable to open $include/cmqc.h: $ERRNO\n";
 
+$mqsubversion = 0;
+
 while ( <CMQC> ) {
-    next unless /MQCNO_NONE/;
-    $mqversion = 5;
-    last;
+    $mqversion = 5 if /MQCNO_NONE/;
+    $mqsubversion = 1 if /MQGMO_VERSION_3/;
 }
 
 close(CMQC);

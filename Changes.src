@@ -4,6 +4,41 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.07
+
+This release is a minor bug fix release, but one of them is
+significant enough to justify a public release.
+
+=head2 MQSeries::Message::PCF memory leak
+
+The MQDecodePCF routine didn't properly mortalize the references it
+returns.  I hate it when that happens.  The result was that
+long-running applications that used the Command API (or any of the
+PCF-based formats) heavily (guess what the author was developing when
+he discovered this? ;-) will leak memory heavily.  This is fixed.
+
+In addition, the same error was made in the
+MQSeries::Message::RulesFormat XS code as well, and that was also
+fixed.  
+
+Note that none of the basic MQI interfaces had any problems at all.
+There are now no known memory leaks anywhere in the XS code.  We've
+had long running perl daemons up for weeks using the basic MQSeries
+interface, with no reported issues.
+
+=head2 Change to simplify static compiles
+
+The obnoxious, er, I mean, very important and absolutely essential
+legal question about the LICENSE file will be asked only once.  When
+compiling statically, the Makefile.PL gets run again, and if it blocks
+on input this is not only annoying, but it breaks the static compile.
+
+=head2 Default Expiry values were wrong
+
+The default Expiry values used in the MQSeries::Command API were
+incorrect, having the same value as the WaitInterval.  As you probably
+know, Expiry is tenths of a second, and Wait is milliseconds.  Oops.
+
 =head1 Changes for 1.06
 
 This release is the first to make it to CPAN (the Comprehensive Perl
@@ -448,7 +483,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 9.4 1999/11/09 21:24:44 wpm Exp $
+# $Id: Changes.src,v 10.2 1999/11/22 21:35:50 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

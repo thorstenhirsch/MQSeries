@@ -1,6 +1,6 @@
 #!/ms/dist/perl5/bin/perl
 #
-# $Id: flatten_macros,v 9.3 1999/10/25 15:02:36 wpm Exp $
+# $Id: flatten_macros,v 10.2 1999/11/11 21:44:50 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,6 +19,9 @@ use File::Basename;
 
 require "./util/parse_config";
 require "./util/parse_headers";
+
+die "This MUST be run on an MQSeries V5.1 box, fool!!\n"
+  unless $mqversion == 5 && $mqsubversion >= 1;
 
 unless ( @infiles = split(/\n+/,qx{find pre.in -type f -name '*.in' -print}) ) {
     die "Unable to find *.in files in pre.in\n";
@@ -41,6 +44,12 @@ foreach my $infile ( @infiles ) {
 	my (@outstat) = stat($outfile) or die "Unable to stat $outfile: $!\n";
 	my (@instat) = stat($infile) or die "Unable to stat $infile: $!\n";
 	next if $instat[9] < $outstat[9];
+    }
+
+    my $outdir = dirname($outfile);
+    unless ( -d $outdir ) {
+	warn "Creating directory $outdir\n";
+	mkdir($outdir,0755) || die "Unable to mkdir $outdir: $!\n";
     }
 
     warn ($infile . " " x ($maxlen - length($infile)) . " => $outfile\n");

@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 9.10 1999/11/05 17:49:39 wpm Exp $
+# $Id: QueueManager.pm,v 10.1 1999/11/11 18:57:54 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -14,7 +14,6 @@ use Carp;
 use English;
 
 use MQSeries;
-
 #
 # Well, now that we're using the same constants for the Inquire/Set
 # interface, they no longer are really part of the Command/PCF
@@ -23,7 +22,9 @@ use MQSeries;
 #
 use MQSeries::Command::PCF;
 
-use vars qw($AUTOLOAD);
+use vars qw($VERSION);
+
+$VERSION = '1.07';
 
 sub new {
     

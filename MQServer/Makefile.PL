@@ -1,1 +1,0 @@
-../MQClient/Makefile.PL

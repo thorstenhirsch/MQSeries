@@ -1,13 +1,11 @@
 #!/ms/dist/perl5/bin/perl5.005
 #
-# $Id: amqspsda.pl,v 9.4 1999/11/10 22:24:06 wpm Exp $
+# $Id: amqspsda.pl,v 10.1 1999/11/11 18:43:37 wpm Exp $
 
 use strict;
 use English;
 
 use Getopt::Long;
-
-#use lib "/ms/dev/perl5/MQSeries/1.06-5.005/install/exec/lib/perl5";
 
 use MQSeries;
 use MQSeries::PubSub::Broker;

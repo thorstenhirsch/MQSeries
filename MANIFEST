@@ -1,6 +1,5 @@
 CONFIG
 COPYRIGHT
-Changes.html
 Changes.src
 LICENSE
 MANIFEST
@@ -44,7 +43,6 @@ MQSeries-PubSub/PubSub/Command.pm
 MQSeries-PubSub/PubSub/Message.pm
 MQSeries-PubSub/PubSub/Stream.pm
 MQSeries-PubSub/t/pubsub.t
-MQSeries.pl
 MQSeries.pm
 MQSeries/Command.pm
 MQSeries/Command/MQSC.pm
@@ -88,6 +86,7 @@ examples/OO/request-reply-1/reply.pl
 examples/OO/request-reply-1/request.pl
 examples/OO/request-reply-2/reply.pl
 examples/OO/request-reply-2/request.pl
+examples/PubSub/amqspsda.pl
 examples/README
 pre.in/MQSeries-PubSub/PubSub/AdminMessage.in
 pre.in/MQSeries/Command/PCF/ErrorResponseParameters.in

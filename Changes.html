@@ -10,6 +10,14 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_07">Changes for 1.07</A>
+	<UL>
+
+		<LI><A HREF="#MQSeries_Message_PCF_memory_le">MQSeries::Message::PCF memory leak</A>
+		<LI><A HREF="#Change_to_simplify_static_compil">Change to simplify static compiles</A>
+		<LI><A HREF="#Default_Expiry_values_were_wrong">Default Expiry values were wrong</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_06">Changes for 1.06</A>
 	<UL>
 
@@ -54,6 +62,70 @@
 </A></H1>
 This file documents the changes to each and every release of the MQSeries
 perl API, going back as far as the 1.02 release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_07">Changes for 1.07
+
+</A></H1>
+This release is a minor bug fix release, but one of them is significant
+enough to justify a public release.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Message_PCF_memory_le">MQSeries::Message::PCF memory leak
+
+</A></H2>
+The MQDecodePCF routine didn't properly mortalize the references it
+returns. I hate it when that happens. The result was that long-running
+applications that used the Command API (or any of the PCF-based formats)
+heavily (guess what the author was developing when he discovered this? ;-)
+will leak memory heavily. This is fixed.
+
+
+<P>
+
+In addition, the same error was made in the MQSeries::Message::RulesFormat
+XS code as well, and that was also fixed.  
+
+
+<P>
+
+Note that none of the basic MQI interfaces had any problems at all. There
+are now no known memory leaks anywhere in the XS code. We've had long
+running perl daemons up for weeks using the basic MQSeries interface, with
+no reported issues.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Change_to_simplify_static_compil">Change to simplify static compiles
+
+</A></H2>
+The obnoxious, er, I mean, very important and absolutely essential legal
+question about the LICENSE file will be asked only once. When compiling
+statically, the Makefile.PL gets run again, and if it blocks on input this
+is not only annoying, but it breaks the static compile.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Default_Expiry_values_were_wrong">Default Expiry values were wrong
+
+</A></H2>
+The default Expiry values used in the MQSeries::Command API were incorrect,
+having the same value as the WaitInterval. As you probably know, Expiry is
+tenths of a second, and Wait is milliseconds. Oops.
 
 
 <P>

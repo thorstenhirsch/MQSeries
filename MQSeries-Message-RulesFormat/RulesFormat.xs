@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: RulesFormat.xs,v 9.4 1999/10/27 20:38:15 wpm Exp $";
+static char rcsid[] = "$Id: RulesFormat.xs,v 10.1 1999/11/22 21:11:07 wpm Exp $";
 
 /*
   (c) 1999 Morgan Stanley Dean Witter and Co.
@@ -88,7 +88,7 @@ MQDecodeRulesFormat(pBuffer,BufferLength)
 	  hv_store(HeaderHV,"Flags",5,(newSViv(Header.Flags)),0);
 	  hv_store(HeaderHV,"StrucLength",11,(newSViv(Header.StrucLength)),0);
 
-	  XPUSHs(newRV_noinc((SV*)HeaderHV));
+	  XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
 
 	  OptionsSV = newSVpv(pTemp,Header.StrucLength - MQRFH_STRUC_LENGTH_FIXED);
 	  

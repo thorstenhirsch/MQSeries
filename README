@@ -2,7 +2,7 @@
 =head1 INTRODUCTION
 
 This module implements a perl5 API for the IBM MQSeries messaging
-middleware product API (often referred to as the MQI), as well as
+middleware product API (often referred to as the MQI), as well as an
 Object Oriented interface to the MQI, an OO interface to the MQSeries
 administrative commands via PCF or MQSC, and an OO interface to the
 Publish/Subscribe subsystem.
@@ -40,7 +40,7 @@ the changes (in the form of a context diff) to the author, so I can
 integrate it.
 
 Also, note that a port to NT is actively underway, and will be
-available as part of the upcoming 1.07 release (estimated GA
+hopefully available as part of the upcoming 1.08 release (estimated GA
 availability Q12000, beta maybe sooner).
 
 =head1 INSTALLATION
@@ -71,10 +71,10 @@ get more details from it, run it via:
 
   make test TEST_VERBOSE=1
 
-If you can't figure what broke, then send the author the output from
-"perl -V", as well as the output from the verbose test run.  Please
-include as many details as possible about the operating system and
-MQSeries software on both the host being used to compile this
+If you can't figure out what broke, then send the author the output
+from "perl -V", as well as the output from the verbose test run.
+Please include as many details as possible about the operating system
+and MQSeries software on both the host being used to compile this
 extension, as well as the queue manager to which the test suite is
 connecting.
 
@@ -140,7 +140,7 @@ I also have to give credit to:
 for his help in porting and testing the code.
 
 This module was originally developed as an IBM SupportPac, so credit
-must also go to the original authors:
+must also go to the original author:
 
   David J. Lennon <davidl@bristol.com>
 
@@ -149,7 +149,7 @@ Although, nothing remains of the original code.... (sorry, David :-)
 =cut
 
 #
-# $Id: README,v 9.8 1999/11/11 16:08:32 wpm Exp $
+# $Id: README,v 10.2 1999/11/22 21:12:18 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

@@ -1,1 +1,0 @@
-../MQClient/constants.c.PL
