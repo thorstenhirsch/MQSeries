@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: RequestParameters.in,v 14.1 2000/08/15 20:52:12 wpm Exp $
+# $Id: RequestParameters.in,v 15.4 2000/10/27 17:12:40 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -12,10 +12,7 @@ package MQSeries::Command::PCF;
   (
    QueueManager =>
    {
-    QMgrAttrs                   => [
-                                    &MQIACF_Q_MGR_ATTRS,                &MQCFT_INTEGER_LIST,
-                                    $RequestValues{QueueManager},
-                                   ],
+    QMgrAttrs                   => [ &MQIACF_Q_MGR_ATTRS,   		&MQCFT_INTEGER_LIST,	$RequestValues{QueueManager} ],
 
     AuthorityEvent              => [ &MQIA_AUTHORITY_EVENT,             &MQCFT_INTEGER ],
     ChannelAutoDef              => [ &MQIA_CHANNEL_AUTO_DEF,            &MQCFT_INTEGER ],
@@ -43,15 +40,8 @@ package MQSeries::Command::PCF;
 
    Process =>
    {
-    ApplType                    => [
-                                    &MQIA_APPL_TYPE,                    &MQCFT_INTEGER,
-                                    $RequestValues{ApplType},
-                                   ],
-    ProcessAttrs                => [
-                                    &MQIACF_PROCESS_ATTRS,              &MQCFT_INTEGER_LIST,
-                                    $RequestValues{Process},
-                                   ],
-
+    ApplType                    => [ &MQIA_APPL_TYPE,			&MQCFT_INTEGER,		$RequestValues{ApplType} ],
+    ProcessAttrs                => [ &MQIACF_PROCESS_ATTRS,             &MQCFT_INTEGER_LIST,    $RequestValues{Process} ],
     ApplId                      => [ &MQCA_APPL_ID,                     &MQCFT_STRING ],
     EnvData                     => [ &MQCA_ENV_DATA,                    &MQCFT_STRING ],
     FromProcessName             => [ &MQCACF_FROM_PROCESS_NAME,         &MQCFT_STRING ],
@@ -62,49 +52,18 @@ package MQSeries::Command::PCF;
     UserData                    => [ &MQCA_USER_DATA,                   &MQCFT_STRING ],
    },
 
-   Queue => 
+   Queue =>
    {
-    DefBind                     => [ 
-                                    &MQIA_DEF_BIND,                     &MQCFT_INTEGER,
-                                    $RequestValues{DefBind},
-                                   ],
-    DefinitionType              => [
-                                    &MQIA_DEFINITION_TYPE,              &MQCFT_INTEGER,
-                                    $RequestValues{DefinitionType},
-                                   ],
-    DefInputOpenOption          => [
-                                    &MQIA_DEF_INPUT_OPEN_OPTION,        &MQCFT_INTEGER,
-                                    $RequestValues{DefInputOpenOption},
-                                   ],
-    MsgDeliverySequence         => [
-                                    &MQIA_MSG_DELIVERY_SEQUENCE,        &MQCFT_INTEGER,
-                                    $RequestValues{MsgDeliverySequence},
-                                   ],
-    QAttrs                      => [
-                                    &MQIACF_Q_ATTRS,                    &MQCFT_INTEGER_LIST,
-                                    $RequestValues{Queue},
-                                   ],
-    QServiceIntervalEvent       => [
-                                    &MQIA_Q_SERVICE_INTERVAL_EVENT,     &MQCFT_INTEGER,
-                                    $RequestValues{QServiceIntervalEvent},
-                                   ],
-    QType                       => [
-                                    &MQIA_Q_TYPE,                       &MQCFT_INTEGER,
-                                    $RequestValues{QType},
-                                   ],
-    Scope                       => [
-                                    &MQIA_SCOPE,                        &MQCFT_INTEGER,
-                                    $RequestValues{Scope},
-                                   ],
-    TriggerType                 => [
-                                    &MQIA_TRIGGER_TYPE,                 &MQCFT_INTEGER,
-                                    $RequestValues{TriggerType},
-                                   ],
-    Usage                       => [
-                                    &MQIA_USAGE,                        &MQCFT_INTEGER,
-                                    $RequestValues{Usage},
-                                   ],
-
+    DefBind                     => [ &MQIA_DEF_BIND,			&MQCFT_INTEGER,		$RequestValues{DefBind} ],
+    DefinitionType              => [ &MQIA_DEFINITION_TYPE,             &MQCFT_INTEGER,		$RequestValues{DefinitionType} ],
+    DefInputOpenOption          => [ &MQIA_DEF_INPUT_OPEN_OPTION,       &MQCFT_INTEGER,		$RequestValues{DefInputOpenOption} ],
+    MsgDeliverySequence         => [ &MQIA_MSG_DELIVERY_SEQUENCE,       &MQCFT_INTEGER,		$RequestValues{MsgDeliverySequence} ],
+    QAttrs                      => [ &MQIACF_Q_ATTRS,                   &MQCFT_INTEGER_LIST,	$RequestValues{Queue} ],
+    QServiceIntervalEvent       => [ &MQIA_Q_SERVICE_INTERVAL_EVENT,    &MQCFT_INTEGER,		$RequestValues{QServiceIntervalEvent} ],
+    QType                       => [ &MQIA_Q_TYPE,                      &MQCFT_INTEGER,		$RequestValues{QType} ],
+    Scope                       => [ &MQIA_SCOPE,                       &MQCFT_INTEGER,		$RequestValues{Scope} ],
+    TriggerType                 => [ &MQIA_TRIGGER_TYPE,                &MQCFT_INTEGER,		$RequestValues{TriggerType} ],
+    Usage                       => [ &MQIA_USAGE,                       &MQCFT_INTEGER,		$RequestValues{Usage} ],
     BackoutRequeueName          => [ &MQCA_BACKOUT_REQ_Q_NAME,          &MQCFT_STRING ],
     BackoutThreshold            => [ &MQIA_BACKOUT_THRESHOLD,           &MQCFT_INTEGER ],
     BaseQName                   => [ &MQCA_BASE_Q_NAME,                 &MQCFT_STRING ],
@@ -147,47 +106,16 @@ package MQSeries::Command::PCF;
 
    Channel =>
    {
-    ChannelAttrs                => [
-                                    &MQIACF_CHANNEL_ATTRS,              &MQCFT_INTEGER_LIST,
-                                    $RequestValues{Channel},
-                                   ],
-    ChannelInstanceAttrs        => [
-                                    &MQIACH_CHANNEL_INSTANCE_ATTRS,     &MQCFT_INTEGER_LIST,
-                                    $RequestValues{Channel},
-                                   ],
-    ChannelInstanceType         => [
-                                    &MQIACH_CHANNEL_INSTANCE_TYPE,      &MQCFT_INTEGER,
-                                    $RequestValues{ChannelInstanceType},
-                                   ],
-    ChannelTable                => [
-                                    &MQIACH_CHANNEL_TABLE,              &MQCFT_INTEGER,
-                                    $RequestValues{ChannelTable},
-                                   ],
-    ChannelType                 => [
-                                    &MQIACH_CHANNEL_TYPE,               &MQCFT_INTEGER,
-                                    $RequestValues{ChannelType},
-                                   ],
-    InDoubt                     => [
-                                    &MQIACH_IN_DOUBT,                   &MQCFT_INTEGER,
-                                    $RequestValues{InDoubt},
-                                   ],
-    MCAType                     => [
-                                    &MQIACH_MCA_TYPE,                   &MQCFT_INTEGER,
-                                    $RequestValues{MCAType},
-                                   ],
-    NonPersistentMsgSpeed       => [
-                                    &MQIACH_NPM_SPEED,                  &MQCFT_INTEGER,
-                                    $RequestValues{NonPersistentMsgSpeed},
-                                   ],
-    PutAuthority                => [
-                                    &MQIACH_PUT_AUTHORITY,              &MQCFT_INTEGER,
-                                    $RequestValues{PutAuthority},
-                                   ],
-    TransportType               => [
-                                    &MQIACH_XMIT_PROTOCOL_TYPE,         &MQCFT_INTEGER,
-                                    $RequestValues{TransportType},
-                                   ],
-
+    ChannelAttrs                => [ &MQIACF_CHANNEL_ATTRS,             &MQCFT_INTEGER_LIST,	$RequestValues{Channel} ],
+    ChannelInstanceAttrs        => [ &MQIACH_CHANNEL_INSTANCE_ATTRS,    &MQCFT_INTEGER_LIST,	$RequestValues{Channel} ],
+    ChannelInstanceType         => [ &MQIACH_CHANNEL_INSTANCE_TYPE,     &MQCFT_INTEGER,		$RequestValues{ChannelInstanceType} ],
+    ChannelTable                => [ &MQIACH_CHANNEL_TABLE,             &MQCFT_INTEGER,		$RequestValues{ChannelTable} ],
+    ChannelType                 => [ &MQIACH_CHANNEL_TYPE,              &MQCFT_INTEGER,		$RequestValues{ChannelType} ],
+    InDoubt                     => [ &MQIACH_IN_DOUBT,                  &MQCFT_INTEGER,		$RequestValues{InDoubt} ],
+    MCAType                     => [ &MQIACH_MCA_TYPE,                  &MQCFT_INTEGER,		$RequestValues{MCAType} ],
+    NonPersistentMsgSpeed       => [ &MQIACH_NPM_SPEED,                 &MQCFT_INTEGER,		$RequestValues{NonPersistentMsgSpeed} ],
+    PutAuthority                => [ &MQIACH_PUT_AUTHORITY,             &MQCFT_INTEGER,		$RequestValues{PutAuthority} ],
+    TransportType               => [ &MQIACH_XMIT_PROTOCOL_TYPE,        &MQCFT_INTEGER,		$RequestValues{TransportType} ],
     BatchInterval               => [ &MQIACH_BATCH_INTERVAL,            &MQCFT_INTEGER ],
     BatchSize                   => [ &MQIACH_BATCH_SIZE,                &MQCFT_INTEGER ],
     ChannelDesc                 => [ &MQCACH_DESC,                      &MQCFT_STRING ],
@@ -236,21 +164,13 @@ package MQSeries::Command::PCF;
 
    Escape =>
    {
-    EscapeType                  => [
-                                    &MQIACF_ESCAPE_TYPE,                &MQCFT_INTEGER,
-                                    $RequestValues{EscapeType},
-                                   ],
-
+    EscapeType                  => [ &MQIACF_ESCAPE_TYPE,               &MQCFT_INTEGER,		$RequestValues{EscapeType} ],
     EscapeText                  => [ &MQCACF_ESCAPE_TEXT,               &MQCFT_STRING ],
    },
 
    Namelist =>
    {
-    NamelistAttrs               => [
-                                    &MQIACF_NAMELIST_ATTRS,             &MQCFT_INTEGER_LIST, 
-                                    $RequestValues{Namelist},
-                                   ],
-    
+    NamelistAttrs               => [ &MQIACF_NAMELIST_ATTRS,            &MQCFT_INTEGER_LIST,	$RequestValues{Namelist} ],
     FromNamelistName            => [ &MQCACF_FROM_NAMELIST_NAME,        &MQCFT_STRING ],
     NamelistDesc                => [ &MQCA_NAMELIST_DESC,               &MQCFT_STRING ],
     NamelistName                => [ &MQCA_NAMELIST_NAME,               &MQCFT_STRING ],
@@ -261,21 +181,49 @@ package MQSeries::Command::PCF;
 
    Cluster =>
    {
-    Action                      => [ 
-                                    &MQIACF_ACTION,                     &MQCFT_INTEGER,
-                                    $RequestValues{Action},
-                                   ],
-    ClusterQMgrAttrs            => [ 
-                                    &MQIACF_CLUSTER_Q_MGR_ATTRS,        &MQCFT_INTEGER_LIST, 
-                                    $RequestValues{Cluster},
-                                   ],
-
+    Action                      => [ &MQIACF_ACTION,                    &MQCFT_INTEGER,		$RequestValues{Action} ],
+    ClusterQMgrAttrs            => [ &MQIACF_CLUSTER_Q_MGR_ATTRS,       &MQCFT_INTEGER_LIST,	$RequestValues{Cluster} ],
     Channel                     => [ &MQCACH_CHANNEL_NAME,              &MQCFT_STRING ],
     ClusterName                 => [ &MQCA_CLUSTER_NAME,                &MQCFT_STRING ],
     ClusterNamelist             => [ &MQCA_CLUSTER_NAMELIST,            &MQCFT_STRING ],
     QMgrName                    => [ &MQCA_CLUSTER_Q_MGR_NAME,          &MQCFT_STRING ],
     QMgrName                    => [ &MQCA_Q_MGR_NAME,                  &MQCFT_STRING ],
     Quiesce                     => [ &MQIACF_QUIESCE,                   &MQCFT_INTEGER ],
+   },
+
+   Authority =>
+   {
+    ObjectType			=> [ &MQIAE_OBJECT_TYPE,		&MQCFT_INTEGER,		$RequestValues{ObjectType} ],
+    ObjectName			=> [ &MQCAE_OBJECT_NAME,		&MQCFT_STRING ],
+
+    EntityType			=> [ &MQIAE_ENTITY_TYPE,		&MQCFT_INTEGER,		$RequestValues{EntityType} ],
+    EntityName			=> [ &MQCAE_ENTITY_NAME,		&MQCFT_STRING ],
+
+    Connect                     => [ &MQIAE_AUTH_CONNECT,		&MQCFT_INTEGER ],
+    Browse                      => [ &MQIAE_AUTH_BROWSE,		&MQCFT_INTEGER ],
+    Input                       => [ &MQIAE_AUTH_INPUT,			&MQCFT_INTEGER ],
+    Output                      => [ &MQIAE_AUTH_OUTPUT,		&MQCFT_INTEGER ],
+    Inquire                     => [ &MQIAE_AUTH_INQUIRE,		&MQCFT_INTEGER ],
+    Set                         => [ &MQIAE_AUTH_SET,			&MQCFT_INTEGER ],
+    PassId                      => [ &MQIAE_AUTH_PASSID,		&MQCFT_INTEGER ],
+    PassAll                     => [ &MQIAE_AUTH_PASSALL,		&MQCFT_INTEGER ],
+    SetId                       => [ &MQIAE_AUTH_SETID,			&MQCFT_INTEGER ],
+    SetAll                      => [ &MQIAE_AUTH_SETALL,		&MQCFT_INTEGER ],
+    AlternateUser               => [ &MQIAE_AUTH_ALTERNATEUSER,		&MQCFT_INTEGER ],
+    Create                      => [ &MQIAE_AUTH_CREATE,		&MQCFT_INTEGER ],
+    Delete                      => [ &MQIAE_AUTH_DELETE,		&MQCFT_INTEGER ],
+    Display                     => [ &MQIAE_AUTH_DISPLAY,		&MQCFT_INTEGER ],
+    Change                      => [ &MQIAE_AUTH_CHANGE,		&MQCFT_INTEGER ],
+    Create			=> [ &MQIAE_AUTH_CREATE,		&MQCFT_INTEGER ],
+    Clear			=> [ &MQIAE_AUTH_CLEAR,			&MQCFT_INTEGER ],
+    Authorize			=> [ &MQIAE_AUTH_AUTHORIZE,		&MQCFT_INTEGER ],
+    StartStop			=> [ &MQIAE_AUTH_START_STOP,		&MQCFT_INTEGER ],
+    DisplayStatus		=> [ &MQIAE_AUTH_DISPLAY_STATUS,	&MQCFT_INTEGER ],
+    ResolveReset		=> [ &MQIAE_AUTH_RESOLVE_RESET,		&MQCFT_INTEGER ],
+    Ping			=> [ &MQIAE_AUTH_PING,			&MQCFT_INTEGER ],
+    AllAdmin			=> [ &MQIAE_AUTH_ALLADMIN,		&MQCFT_INTEGER ],
+    AllMQI			=> [ &MQIAE_AUTH_ALLMQI,		&MQCFT_INTEGER ],
+    All				=> [ &MQIAE_AUTH_ALL,			&MQCFT_INTEGER ],
    },
 
   );

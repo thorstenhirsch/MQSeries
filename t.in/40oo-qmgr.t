@@ -1,5 +1,5 @@
 #
-# $Id: 40oo-qmgr.t,v 14.2 2000/08/15 20:52:35 wpm Exp $
+# $Id: 40oo-qmgr.t,v 15.1 2000/08/16 00:53:22 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,8 +20,8 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.11;
-use MQSeries::QueueManager 1.11;
+use __APITYPE__::MQSeries 1.12;
+use MQSeries::QueueManager 1.12;
 $loaded = 1;
 print "ok 1\n";
 

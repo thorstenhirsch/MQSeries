@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 14.3 2000/08/15 20:50:49 wpm Exp $
+# $Id: Makefile.PL,v 15.1 2000/09/14 20:21:07 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -17,6 +17,12 @@ if ( $::has_mqmd2 ) {
 		  NAME	   	=> 'MQSeries::Message::DeadLetter',
 		  VERSION_FROM 	=> 'DeadLetter.pm',
 		  INC		=> qq{-I"$include"},
+		  (
+		   $^O eq 'os390' ?
+		   (
+		    MAN3PODS	=> {},
+		   ) : ()
+		  ),
 		  (
 		   $Config{archname} =~ /-object\b/i ?
 		   (

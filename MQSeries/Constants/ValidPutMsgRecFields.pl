@@ -40,34 +40,34 @@ package MQSeries::Constants;
 #
 %ValidPutMsgRecFields =
   (
-   
+
    MsgId		=>
    {
-    Flag		=> 1,              
+    Flag		=> 1,
     Size		=> 24,
    },
-   
+
    CorrelId		=>
    {
-    Flag		=> 2,                 
+    Flag		=> 2,
     Size		=> 24,
    },
 
    GroupId		=>
    {
-    Flag		=> 4,                
+    Flag		=> 4,
     Size		=> 24,
    },
 
    Feedback		=>
    {
-    Flag		=> 8,                
+    Flag		=> 8,
     Size		=> "MQLONG",
    },
 
    AccountingToken	=>
    {
-    Flag		=> 16,                       
+    Flag		=> 16,
     Size		=> 32,
    },
 

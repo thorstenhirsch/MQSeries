@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: parse_config,v 14.1 2000/08/15 20:53:16 wpm Exp $
+# $Id: parse_config,v 15.1 2000/09/14 20:12:21 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,6 +16,7 @@ foreach my $relpath ( qw( . .. ../.. ../../.. ) ) {
 
 die "Unable to locate CONFIG file\n" unless -f $config;
 
+use File::Basename;
 #
 # In the test scripts, we need to disable the non-lazy loading of
 # symbols, since the IRIX client has lots of undefined symbols that
@@ -62,6 +63,8 @@ if ( defined $myconfig{MQMTOP} ) {
 
     if ( $Config{osname} =~ /aix/ ) {
 	$mqmtop = "/usr/lpp/mqm";
+    } elsif ( $Config{osname} eq 'os390' ) {
+	$mqmtop = dirname($config);
     } elsif ( $Config{osname} =~ /win32/i ) {
 
       require "Win32/TieRegistry.pm";
@@ -82,6 +85,40 @@ if ( defined $myconfig{MQMTOP} ) {
       $systemdir = $mqmdir . q{/qmgrs/@SYSTEM};
 
     }
+}
+
+#
+# On OS/390 we create directories and catenate the PDS members into
+# HFS files if necessary.
+#
+if ( $Config{"osname"} eq 'os390' ) {
+
+    #
+    # The high level qualifier for the .SCSQC370 header file pds
+    # members and the .SCSQLOAD load module data set.
+    #
+    if ( defined $myconfig{HLQ} ) {
+        $hlq = $myconfig{HLQ};
+    } else {
+        $hlq = 'MQS120';
+    }
+
+    mkdir ( "$mqmtop/lib", 0755 ) unless ( -d "$mqmtop/lib" );
+    mkdir ( "$mqmtop/inc", 0755 ) unless ( -d "$mqmtop/inc" );
+
+    foreach my $member (
+			qw(CMQC
+			   CMQCFC
+			   CMQXC
+			   CSQ4CBI
+			   CSQ4CB0
+			   CSQ4CMSG
+			   CSQ4TCH0
+			   CSQ4TC0)
+		       ) {
+        cat2hfs ( $member, $hlq, 'SCSQC370', "$mqmtop/inc" );
+    }
+
 }
 
 unless ( -d $mqmtop ) {
@@ -126,6 +163,26 @@ if ( defined $myconfig{MQMLOCALE} ) {
     $mqmlocale = $myconfig{MQMLOCALE};
 } else {
     $mqmlocale = "";
+}
+
+#
+# perhaps useful only on OS/390
+#
+sub cat2hfs {
+    my $member = shift;
+    my $hlq = shift;
+    my $pdsdir = shift;
+    my $incdir = shift;
+
+    my $header = $member;
+    $header =~ tr/[A-Z]/[a-z]/;
+    $header = "$header.h";
+    my $rc = 0;
+    if ( ! -e "$incdir/$header" ) {
+        $rc = `cat \"//'$hlq.$pdsdir($member)'\" > $incdir/$header`;
+        die "$rc, Unable to catenate \"//'$hlq.$pdsdir($member)'\": $ERRNO\n"
+          if ( $rc || $? );
+    }
 }
 
 1;

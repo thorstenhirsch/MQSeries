@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 14.3 2000/08/15 20:51:19 wpm Exp $
+# $Id: Command.pm,v 15.2 2000/10/18 15:19:17 biersma Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -10,10 +10,11 @@ package MQSeries::PubSub::Command;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 use MQSeries;
 use MQSeries::PubSub::Message;
+use MQSeries::Utils qw(ConvertUnit);
 
 sub new {
 
@@ -28,6 +29,15 @@ sub new {
     # of this function.
     my $dynamicq = 'SYSTEM.BROKER.REPLYQ.*';
     my $modelq = 'SYSTEM.DEFAULT.MODEL.PERMDYN.QUEUE';
+
+    #
+    # Mangle the 'Wait' and 'Expiry' args before they go off
+    # into the various related classes.
+    #
+    foreach my $param (qw(Wait Expiry)) {
+        next unless (defined $args{$param});
+        $args{$param} = ConvertUnit($param, $args{$param});
+    }
 
     #
     # Do this first, so we can use the ->isa() method
@@ -66,8 +76,8 @@ sub new {
 	# The Wait argument is the length of time to wait for replies to
 	# pubsub commands.
 	#
-	if ( $args{Wait} ) {
-	    unless ( $args{Wait} =~ /^\d+$/ && $args{Wait} > 0 ) {
+	if ( defined $args{Wait} ) {
+	    unless ( $args{Wait} > 0 ) {
 		$self->{Carp}->("Invalid argument: 'Wait' must be a positive integer\n");
 		return;
 	    }
@@ -657,16 +667,19 @@ model queue, if one exists.
 NOTE: With the MQSeries PubSub support pac, temporary dynamic queues
 are not supported for replies to PubSub command messages, since the
 replies are persistent, thus the model must be a permanent dynamic
-model queue.  Note that with MSQI v2.0, which will replace the PubSUb
+model queue.  Note that with MSQI v2.0, which will replace the PubSub
 support pac broker, this restriction is supposedly lifted.
 
 =item Wait
 
 This parameter specified the Wait argument passed to the Get() method
-when retreiving responses from the broker.  This is obviously not
+when retrieving responses from the broker.  This is obviously not
 relevant if the DatagramOnly option is set, or if the individual
 MQSeries::PubSub::Message objects are instantiated as datagrams, and
 not requests.
+
+This can be a numeric value, in milliseconds, or a symbolic value
+of a number ending on an 's' for seconds or an 'm' for minutes.
 
 The default value is 5000 milliseconds.
 

@@ -1,5 +1,5 @@
 #
-# $Id: Stream.pm,v 14.2 2000/08/15 20:51:22 wpm Exp $
+# $Id: Stream.pm,v 15.1 2000/08/16 00:41:21 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,7 +20,7 @@ use vars qw( @ISA $VERSION );
 
 @ISA = qw( MQSeries::PubSub::Command MQSeries::Queue );
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 sub Publish {
     my $self = shift;

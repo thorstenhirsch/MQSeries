@@ -6,7 +6,7 @@
 # (c) 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 14.3 2000/06/26 14:49:09 biersma Exp $
+# $Id: Tail.pm,v 15.1 2000/08/16 00:56:34 wpm Exp $
 #
 
 package MQSeries::ErrorLog::Tail;
@@ -16,6 +16,10 @@ use Carp;
 use IO::File;
 
 use MQSeries::ErrorLog::Parser;
+
+use vars qw($VERSION);
+
+$VERSION = '1.12';
 
 # 
 # Constructor

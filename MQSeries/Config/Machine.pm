@@ -4,13 +4,17 @@
 # (c) 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Machine.pm,v 14.1 2000/07/13 15:35:21 biersma Exp $
+# $Id: Machine.pm,v 15.1 2000/08/16 00:55:12 wpm Exp $
 #
 
 package MQSeries::Config::Machine;
 
 use strict;
 use Carp;
+
+use vars qw($VERSION);
+
+$VERSION = '1.12';
 
 #
 # Constructor: Read and parse the /var/mqm/mqs.ini file.

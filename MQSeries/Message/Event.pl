@@ -17,7 +17,7 @@
 #
 package MQSeries::Message::Event;
 
-%ResponseParameters = 
+%ResponseParameters =
   (
    3024                                  => "ApplName",
    3026                                  => "AuxErrorDataStr1",

@@ -20,7 +20,7 @@ package MQSeries::PubSub::AdminMessage;
 %Responses =
   (
    60                                    => "DeletePublication",
-   61                                    => "DeregisterPublisher", 
+   61                                    => "DeregisterPublisher",
    62                                    => "DeregisterSubscriber",
    63                                    => "Publish",
    64                                    => "RegisterPublisher",

@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: RequestValues.in,v 14.1 2000/08/15 20:52:13 wpm Exp $
+# $Id: RequestValues.in,v 15.6 2000/10/27 20:16:46 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -11,7 +11,7 @@ package MQSeries::Command::PCF;
 %RequestValues =
   (
    #
-   # QueueManager 
+   # QueueManager
    #
    QueueManager =>
    {
@@ -410,6 +410,7 @@ package MQSeries::Command::PCF;
     NamelistDesc                => &MQCA_NAMELIST_DESC,
     NamelistName                => &MQCA_NAMELIST_NAME,
     Names                       => &MQCA_NAMES,
+    NameCount			=> &MQIA_NAME_COUNT,
    },
 
    Action =>
@@ -421,6 +422,37 @@ package MQSeries::Command::PCF;
    {
     OnOpen                      => &MQBND_BIND_ON_OPEN,
     NotFixed                    => &MQBND_BIND_NOT_FIXED,
+   },
+
+   ObjectType =>
+   {
+    Namelist			=> &MQOT_NAMELIST,
+    Process			=> &MQOT_PROCESS,
+    Queue			=> &MQOT_Q,
+    QueueManager		=> &MQOT_Q_MGR,
+
+    Channel			=> &MQOT_CHANNEL,
+
+    All				=> &MQOT_ALL,
+    AliasQueue			=> &MQOT_ALIAS_Q,
+    ModelQueue			=> &MQOT_MODEL_Q,
+    LocalQueue			=> &MQOT_LOCAL_Q,
+    RemoteQueue			=> &MQOT_REMOTE_Q,
+
+    SenderChannel		=> &MQOT_SENDER_CHANNEL,
+    ServerChannel		=> &MQOT_SERVER_CHANNEL,
+    RequesterChannel		=> &MQOT_REQUESTER_CHANNEL,
+    ReceiverChannel		=> &MQOT_RECEIVER_CHANNEL,
+    CurrentChannel		=> &MQOT_CURRENT_CHANNEL,
+    SavedChannel		=> &MQOT_SAVED_CHANNEL,
+    SvrconnChannel		=> &MQOT_SVRCONN_CHANNEL,
+    ClntconnChannel		=> &MQOT_CLNTCONN_CHANNEL,
+   },
+
+   EntityType =>
+   {
+    Prinicipal			=> &MQETE_PRINCIPAL,
+    Group			=> &MQETE_GROUP,
    },
 
   );

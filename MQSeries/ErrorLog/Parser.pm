@@ -5,7 +5,7 @@
 # (c) 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 14.6 2000/08/06 20:52:44 biersma Exp $
+# $Id: Parser.pm,v 15.1 2000/08/16 00:56:20 wpm Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -20,9 +20,14 @@ use MQSeries::ErrorLog::Entry;
 # Load a file with error-descriptions, available as
 # the variable 'error_table'.
 #
-use vars qw($error_table);
+use vars qw(
+	    $error_table
+	    $VERSION
+	   );
+
 require "MQSeries/ErrorLog/descriptions.pl";
 
+$VERSION = '1.12';
 
 #
 # Constructor

@@ -1,5 +1,5 @@
 #
-# $Id: XML-Dumper.pm,v 14.2 2000/08/15 20:51:52 wpm Exp $
+# $Id: XML-Dumper.pm,v 15.1 2000/08/16 00:59:02 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -18,8 +18,9 @@ use XML::Parser;
 
 use MQSeries::Message;
 
-use vars qw(@ISA);
+use vars qw(@ISA $VERSION);
 
+$VERSION = '1.12';
 @ISA = qw(MQSeries::Message);
 
 #

@@ -62,6 +62,13 @@ package MQSeries::Command::PCF;
    StartChannelListener         => [ 31,                                 $RequestParameters{Channel} ],
    StopChannel                  => [ 29,                                 $RequestParameters{Channel} ],
    SuspendQueueManagerCluster   => [ 72,                                 $RequestParameters{Cluster} ],
+
+   #
+   # Extended command set
+   #
+   InquireAuthority             => [ 1000,                               $RequestParameters{Authority} ],
+   ChangeAuthority              => [ 1001,                               $RequestParameters{Authority} ],
+
   );
 
 

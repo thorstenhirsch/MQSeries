@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 36MQGET,v 14.1 2000/08/15 20:50:18 wpm Exp $
+# $Id: 36MQGET,v 15.1 2000/09/14 20:41:27 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -27,7 +27,7 @@ MQGET(Hconn,Hobj,MsgDesc,GetMsgOpts,Length,CompCode,Reason)
 	sv_setiv(ST(5),(IV)CompCode);
 	sv_setiv(ST(6),(IV)Reason);
 	
-	if ( (pBuffer = malloc(bufLen)) == NULL ) {
+	if ( (pBuffer = (PMQCHAR)malloc(bufLen)) == NULL ) {
 	  warn("Unable to allocate memory in MQGET!\n");
 	  XSRETURN_EMPTY;
 	}

@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 14.5 2000/08/15 20:51:27 wpm Exp $
+# $Id: Command.pm,v 15.7 2000/11/13 21:57:24 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,10 +20,11 @@ use MQSeries::Command::Request;
 use MQSeries::Command::Response;
 use MQSeries::Command::PCF;
 use MQSeries::Command::MQSC;
+use MQSeries::Utils qw(ConvertUnit);
 
 use vars qw($VERSION);
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 sub new {
 
@@ -41,8 +42,8 @@ sub new {
        Type			=> 'PCF',
        ModelQName		=> 'SYSTEM.DEFAULT.MODEL.QUEUE',
        DynamicQName		=> 'PERL.COMMAND.*',
+       StrictMapping		=> 0,
       };
-    bless ($self, $class);
 
     #
     # First thing -- override the Carp routine if given.
@@ -68,6 +69,21 @@ sub new {
     }
 
     #
+    # Fully qualify the class as either ::PCF or ::MQSC, but beware,
+    # as someone can now do:  MQSeries::Command::PCF->new()
+    #
+    if ( $class =~ /::(PCF|MQSC)$/ ) {
+	if ( $self->{Type} ne $1 ) {
+	    $self->{Carp}->("Invalid argument: 'Type' $self->{Type} does not match $class");
+	    return;
+	}
+    } else {
+	$class .= "::" . $self->{Type};
+    }
+
+    bless ($self, $class);
+
+    #
     # Allow the DynamicQName template for the ReplyToQName to be
     # overridden, as well as the ModelQName.
     #
@@ -77,6 +93,13 @@ sub new {
 
     if ( $args{ModelQName} ) {
 	$self->{ModelQName} = $args{ModelQName};
+    }
+
+    #
+    # Do we want strict mapping turned on?
+    #
+    if ( exists $args{StrictMapping} ) {
+	$self->{StrictMapping} = $args{StrictMapping};
     }
 
     #
@@ -159,12 +182,21 @@ sub new {
     # defaults to the ProxyQueueManager, and may not need to be set
     # explicitly, for example to utilize a special purpose channel.
     #
+    # FIXME: Why don't we set the DynamicQName and the ModelQName here either?
+    #
+    foreach my $parameter ( qw(ReplyToQMgr CommandQueueName ) ) {
+	if ( $args{$parameter} ) {
+            $self->{$parameter} = $args{$parameter};
+	}
+    }
+
+    #
     # The Wait and Expiry parameters can be tweaked, too.
     #
-    foreach my $parameter ( qw( Expiry Wait ReplyToQMgr CommandQueueName ) ) {
-	if ( $args{$parameter} ) {
-	    $self->{$parameter} = $args{$parameter};
-	}
+    foreach my $parameter (qw(Expiry Wait)) {
+	if (defined $args{$parameter}) {
+            $self->{$parameter} = ConvertUnit($parameter, $args{$parameter});
+        }
     }
 
     #
@@ -230,6 +262,36 @@ sub new {
 
 }
 
+sub DataParameters {
+
+    my $self = shift;
+
+    my @parameters;
+
+    foreach my $response ( @{$self->{Response}} ) {
+	next if $response->Header('CompCode') == MQCC_FAILED;
+	push(@parameters,$response->Parameters());
+    }
+
+    return @parameters;
+
+}
+
+sub ErrorParameters {
+
+    my $self = shift;
+
+    my @parameters;
+
+    foreach my $response ( @{$self->{Response}} ) {
+	next if $response->Header('CompCode') != MQCC_FAILED;
+	push(@parameters,$response->Parameters());
+    }
+
+    return @parameters;
+
+}
+
 sub CompCode {
     my $self = shift;
     return $self->{"CompCode"};
@@ -238,6 +300,24 @@ sub CompCode {
 sub Reason {
     my $self = shift;
     return $self->{"Reason"};
+}
+
+#
+# Don't autoload this....
+#
+sub DESTROY { 1 }
+
+#
+# This AUTOLOAD will allow any random method to be interpreted as a
+# command request.  If the command isn't defined, then _Command
+# will blow up.
+#
+sub AUTOLOAD {
+    use vars qw($AUTOLOAD);
+    my $self = shift;
+    my $name = $AUTOLOAD;
+    $name =~ s/.*://;
+    return $self->_Command($name,{@_});
 }
 
 #
@@ -261,17 +341,59 @@ sub CreateObject {
     my $Inquire			= "";
     my $Create			= "";
     my $Delete			= "";
+    my $Change			= "";
+
+    my $method			= "";
+
     my $Key			= "";
     my $Type			= "";
+
+    my @KeyNames		= qw(ChannelName NamelistName ProcessName QName);
+    my $KeyCount		= 0;
+
+    #
+    # Verify that we have only been given exactly *one* of the primary
+    # keys that let us determine the object type.
+    #
+    foreach my $KeyName ( @KeyNames ) {
+	$KeyCount++ if exists $Attrs->{$KeyName};
+    }
+
+    #
+    # ProcessName is a valid attribute for Queues, so allow this:
+    #
+    $KeyCount-- if exists $Attrs->{QName} && exists $Attrs->{ProcessName};
+
+    if ( $KeyCount != 1  ) {
+	$self->{Carp}->("CreateObject: Unable to determine object type.\n" .
+			(
+			 $KeyCount == 0
+			 ? "One of the following must be specified:\n"
+			 : ( "More than one of the following was specified:\n" .
+			     "(Exception: ProcessName and QName can both be present, since\n" .
+			     "the former is an attribute of the latter.\n" .
+			     "We assume ObjectType == Queue in this case)\n" )
+			) .
+			"\t" . join("\n\t",@KeyNames) . "\n");
+	return;
+    }
 
     if ( $Attrs->{ChannelName} ) {
 	$Inquire		= "InquireChannel";
 	$Create			= "CreateChannel";
+	$Change			= "ChangeChannel";
 	$Key			= "ChannelName";
 	$Type			= "$Attrs->{ChannelType} Channel";
+    } elsif ( $Attrs->{NamelistName} ) {
+	$Inquire		= "InquireNamelist";
+	$Create			= "CreateNamelist";
+	$Change			= "ChangeNamelist";
+	$Key			= "NamelistName";
+	$Type			= "Namelist";
     } elsif ( $Attrs->{QName} ) {
 	$Inquire		= "InquireQueue";
 	$Create			= "CreateQueue";
+	$Change			= "ChangeQueue";
 	$Delete			= "DeleteQueue";
 	$Key			= "QName";
 
@@ -282,10 +404,10 @@ sub CreateObject {
 	} else {
 	    $Type		= "$Attrs->{QType} Queue";
 	}
-
     } elsif ( $Attrs->{ProcessName} ) {
 	$Inquire		= "InquireProcess";
 	$Create			= "CreateProcess";
+	$Change			= "ChangeProcess";
 	$Key			= "ProcessName";
 	$Type			= "Process";
     }
@@ -299,7 +421,14 @@ sub CreateObject {
     # XXX -- shouldn't we be checking for no such object specifically?
     # Of course we should...
     #
+    if ( $self->Reason() && $self->Reason() != MQRC_UNKNOWN_OBJECT_NAME ) {
+	$self->{Carp}->("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
+	return;
+    }
+
     if ( ref $Object eq 'HASH' ) {
+
+	$method = $Change;
 
 	#
 	# If it exists, let's assume we don't need to create it.  If
@@ -329,6 +458,19 @@ sub CreateObject {
 	    # attribute is a list, then it will be represented as an
 	    # ARRAY reference.  This does complicate things...
 	    #
+	    # First, check to see if we've been fed an array with only
+	    # one element.  If so, flatten it.  This greatly
+	    # simplifies the comparison, since the query will not
+	    # return an ARRAY if there is only one element of any
+	    # given attribute.
+	    #
+	    if (
+		ref $Attrs->{$Attr} eq "ARRAY" &&
+		scalar @{$Attrs->{$Attr}} == 1
+	       ) {
+		$Attrs->{$Attr} = $Attrs->{$Attr}->[0];
+	    }
+
 	    if ( ref $Attrs->{$Attr} ne "ARRAY" ) {
 
 		if ( ref $Object->{$Attr} eq "ARRAY" ) {
@@ -389,8 +531,8 @@ sub CreateObject {
 
 	    }
 
-
 	    if ( $NeedAttr && ! $Quiet ) {
+
 		print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n");
 
 		if ( ref $Attrs->{$Attr} eq "ARRAY" ) {
@@ -411,6 +553,7 @@ sub CreateObject {
 
     } else {
 	print "$Type '$QMgr/$Attrs->{$Key}' is missing\n" unless $Quiet;
+	$method = $Create;
     }
 
     unless ( $Need ) {
@@ -428,40 +571,38 @@ sub CreateObject {
     #
     if ( $Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType} ) {
 
-	if ( $Clear && $Object->{QType} eq 'Local' ) {
-	    $self->ClearQueue
-	      (
-	       QName		=> $Attrs->{QName},
-	      ) || do {
-		  $self->{Carp}->("Unable to clear $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
-				  MQReasonToText($self->Reason()) . "\n");
-		  return;
-	      };
-	}
-
 	print "Deleting $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" unless $Quiet;
 
 	$self->$Delete
 	  (
 	   $Key			=> $Attrs->{$Key},
 	   QType		=> $Object->{QType},
+	   (
+	    $Clear && $Object->{QType} eq 'Local' ?
+	    ( Purge		=> 1 ) : ()
+	   )
 	  ) || do {
 	      $self->{Carp}->("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
 			      MQReasonToText($self->Reason()) . "\n");
 	      return;
 	  };
 
+	$method = $Create;
+
     }
 
-    print "Creating/updating $Type '$QMgr/$Attrs->{$Key}'\n" unless $Quiet;
+    unless ( $Quiet ) {
+	print( ($method eq $Change ? "Updating" : "Creating") . " $Type '$QMgr/$Attrs->{$Key}'\n");
+    }
 
-    $self->$Create
+    $self->$method
       (
        $Key			=> $Attrs->{$Key},
        %$Attrs,
-       Replace			=> 1,
       ) || do {
-	  $self->{Carp}->("Unable to create $Type '$QMgr/$Attrs->{$Key}'\n" .
+	  $self->{Carp}->("Unable to " .
+			  ( $method eq $Change ? "update" : "create" ) .
+			  " $Type '$QMgr/$Attrs->{$Key}'\n" .
 			  MQReasonToText($self->Reason()) . "\n");
 	  return;
       };
@@ -471,7 +612,8 @@ sub CreateObject {
 }
 
 #
-# Generic Command API.  Well, maybe not so generic....
+# This method codes the basic request/reply logic common to both PCF
+# and MQSC command formats.
 #
 sub _Command {
 
@@ -479,7 +621,6 @@ sub _Command {
     my $command			= shift;
     my $parameters	 	= shift;
     my $key 			= "";
-    my $multirequest 		= 0;
 
     #
     # IMPORTANT: each and every case where we return *must* set a
@@ -493,6 +634,8 @@ sub _Command {
     #
     my %command2name =
       (
+       InquireNamelist		=> 'NamelistName',
+       InquireNamelistNames	=> 'NamelistName',
        InquireProcess		=> 'ProcessName',
        InquireProcessNames	=> 'ProcessName',
        InquireQueue		=> 'QName',
@@ -504,12 +647,8 @@ sub _Command {
       );	
 
     if ( $command2name{$command} ) {
-	if ( $parameters->{$command2name{$command}} =~ /\*/ ) {
-	    $multirequest = 1;
-	}
 	unless ( $parameters->{$command2name{$command}} ) {
 	    $parameters->{$command2name{$command}} = '*';
-	    $multirequest = 1;
 	}
     }
 
@@ -548,6 +687,7 @@ sub _Command {
        Command 		=> $command,
        Parameters 	=> $parameters,
        Carp 		=> $self->{Carp},
+       StrictMapping	=> $self->{StrictMapping},
       ) || do {
 	  $self->{"CompCode"} = MQCC_FAILED;
 	  $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
@@ -562,17 +702,11 @@ sub _Command {
 
     $self->{Response} = [];
 
-    my $lastseen = 0;
-    my $count = 0;
-    my $lastcount = 0;
     my $MQSCHeader = { Command => $command };
-    my $MQSCParameters = {};
-    my $response = "";
-    my @response = ();
 
     while ( 1 ) {
 	
-	$response = MQSeries::Command::Response->new
+	my $response = MQSeries::Command::Response->new
 	  (
 	   MsgDesc 		=>
 	   {
@@ -580,6 +714,7 @@ sub _Command {
 	   },
 	   Type			=> $self->{Type},
 	   Header		=> $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
+	   StrictMapping	=> $self->{StrictMapping},
 	  ) || do {
 	      $self->{"CompCode"} = MQCC_FAILED;
 	      $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
@@ -607,190 +742,12 @@ sub _Command {
 	#
 	last if $self->{ReplyToQ}->Reason() == &MQRC_NO_MSG_AVAILABLE;
 
-	$count++;
+	push(@{$self->{Response}},$response);
 
-	#
-	# Let the object-wide compcode and reason be the first
-	# non-zero result found in all of the messages.  This is
-	# *usually* good enough, but the data will be available via
-	# Response() is you want to parse the full header for each
-	# message.
-	#
-	if (
-	    $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE &&
-	    (
-	     $response->Header("CompCode") != MQCC_OK ||
-	     $response->Header("Reason") != MQRC_NONE
-	    )
-	   ) {
-	    $self->{"CompCode"} = $response->Header("CompCode");
-	    $self->{"Reason"} = $response->Header("Reason");
-	}
+	# Have to "reuse" the header.... blegh.
+	$MQSCHeader = $response->Header() if $self->{Type} eq 'MQSC';
 
-	if ( $command eq 'InquireChannelStatus' ) {
-	    if (
-		$self->{Type} eq 'PCF' &&
-		$self->{"Reason"} == MQRCCF_CHL_STATUS_NOT_FOUND
-	       ) {
-		$response->{Parameters}->{ChannelStatus} = 'NotFound';
-	    }
-	    if (
-		$self->{Type} eq 'MQSC' &&
-		(
-		 (
-		  $self->{"CompCode"} == 0 &&
-		  $self->{"Reason"} == 4
-		 ) ||
-		 $response->ReasonText() =~ /no chstatus found/mi
-		)
-	       ) {
-		$response->{Parameters}->{ChannelStatus} = 'NotFound';
-		$self->{"Reason"} = MQRCCF_CHL_STATUS_NOT_FOUND;
-	    }
-	}
-
-	#
-	# MQSC is a bit gross (hey, we're parsing output from MVS, so
-	# what do you expect ;-)
-	#
-	# The header is in the first message, so we hang on to it, and
-	# give it back to the next Response object.  We do NOT want to
-	# keep the first message if there are more than 2 messages.
-	# Also, the last message seems to have pretty much useless
-	# noise in it.  Skip that, too.
-	#
-	if ( $self->{Type} eq 'MQSC' ) {
-
-	    $MQSCHeader = $response->Header();
-
-	    if ( $count == 1) {
-
-		$lastcount = $MQSCHeader->{LastMsgSeqNumber};
-
-		if ( $lastcount == 1 ) {
-		    push(@response,$response);
-		    $lastseen = 1;
-		} elsif ( $lastcount == 2 ) {
-		    push(@response,$response);
-		    $MQSCHeader->{LastMsgSeqNumber} = 1;
-		} elsif ( $lastcount >= 3 ) {
-		    $MQSCHeader->{LastMsgSeqNumber} = $lastcount - 2;
-		}
-
-	    } elsif ( $count == $lastcount ) {
-		$lastseen = 1;
-	    } else {
-
-		#
-		# Ok, now it gets even more complicated (yes, that is
-		# always possible).
-		#
-		# Remember that we are trying very hard to have one
-		# interface, and one format for the results.  PCF has
-		# these InquireFooNames calls, that do *not* map
-		# cleanly to MQSC.  We need to collect the multiple
-		# messages into one, to keep the results in the same
-		# format
-		#
-		if ( $MQSeries::Command::MQSC::ResponseList{$command} ) {
-		    my ($oldkey,$newkey) = @{$MQSeries::Command::MQSC::ResponseList{$command}};
-		    push(@{$MQSCParameters->{$newkey}},$response->Parameters($oldkey))
-		      if $response->Parameters($oldkey);
-		} else {
-		    push(@response,$response);
-		}
-	    }
-
-	    #
-	    # Now we get *really* vile....
-	    #
-	    # Some MQSC commands return 2 batches of responses.
-	    # DISPLAY CHSTATUS sends us one saying "COMMAND ACCEPTED",
-	    # which we really don't care about.
-	    #
-	    if ( $response->ReasonText() =~ /COMMAND.*ACCEPTED/si ) {
-		@response = ();
-		$count = 0;
-		$lastseen = 0;
-		$MQSCHeader = { Command => $command };
-		$MQSCParameters = {};
-	    }
-
-	    last if $lastseen;
-
-	}
-	#
-	# PCF format is much simpler.  Each and every message is
-	# interesting, with its own header.
-	#
-	else {
-
-	    push(@{$self->{Response}},$response);
-
-	    if ( $response->Header("Control") == MQCFC_LAST ) {
-		$lastseen = 1;
-		last;
-	    }
-
-	}
-
-    }
-
-    if ( $self->{Type} eq 'MQSC' ) {
-
-	if ( $MQSeries::Command::MQSC::ResponseList{$command} ) {
-	    $response = MQSeries::Command::Response->new
-	      (
-	       MsgDesc		=> $response->MsgDesc(),
-	       Header		=> $MQSCHeader,
-	       Parameters	=> $MQSCParameters,
-	       Type		=> $self->{Type},
-	      ) || do {
-		  $self->{"CompCode"} = MQCC_FAILED;
-		  $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
-		  return;
-	      };
-	    push(@response,$response);
-	}
-
-	#
-	# Only send back responses which have non-empty parameters.
-	# And yes, we're violating the OO concept of using methods
-	# to get at data members.  We're somewhat incestuous here...
-	#
-	if ( @response ) {
-	    my $responsecount = 0;
-	    foreach my $response ( @response ) {
-		if ( keys %{$response->{Parameters}} ) {
-		    $response->{Header}->{MsgSeqNumber} = ++$responsecount;
-		    $response->{Header}->{Control} = &MQCFC_NOT_LAST;
-		    $response->{Header}->{ParameterCount} = scalar keys %{$response->{Parameters}};
-		    delete $response->{Header}->{LastMsgSeqNumber};
-		    push(@{$self->{Response}},$response);
-		}
-	    }
-	    #
-	    # Yank back the last response, and set its control value
-	    # to MQCFC_LAST
-	    #
-	    if ( scalar(@{$self->{Response}}) ) {
-		my $response = pop(@{$self->{Response}});
-		$response->{Header}->{Control} = &MQCFC_LAST;
-		push(@{$self->{Response}},$response);
-	    }
-	    #
-	    # One last thing.  If we now have *no* responses, then
-	    # pass back the first one.  This is possible if we get
-	    # multiple responses, but none have parameters.
-	    #
-	    else {
-		$response[0]->{Header}->{MsgSeqNumber} = 1,
-		  $response[0]->{Header}->{Control} = &MQCFC_LAST;
-		$response[0]->{Header}->{ParameterCount} = 0;
-		delete $response[0]->{Header}->{LastMsgSeqNumber};
-		push(@{$self->{Response}},$response[0]);
-	    }
-	}
+	last if $self->_LastSeen();
 
     }
 
@@ -799,12 +756,17 @@ sub _Command {
     #
     # If we didn't see the last message, then return the empty list.
     #
-    unless ( $lastseen ) {
+    unless ( $self->_LastSeen() ) {
 	$self->{"CompCode"} = MQCC_FAILED if $self->{"CompCode"} == MQCC_OK;
 	$self->{"Reason"} = MQRC_UNEXPECTED_ERROR if $self->{"Reason"} == MQRC_NONE;
 	$self->{Carp}->("Last response message never seen\n");
 	return;
     }
+
+    #
+    # Massage the responses.  This varies wildly between PCF and MQSC
+    #
+    $self->_ProcessResponses($command) || return;
 
     #
     # Handle the InquireFooNames commands -- they're very easy.
@@ -825,10 +787,30 @@ sub _Command {
     # Next handle anything which returns a list of parameters
     #
     elsif ( $command =~ /^(Inquire|ResetQueue|Escape)/ ) {
+	my @parameters = $self->DataParameters();
 	if ( wantarray ) {
-	    return map { $_->Parameters() } @{$self->{Response}};
+	    return @parameters;
 	} else {
-	    return $self->{Response}->[0]->Parameters();
+	    return $parameters[0];
+	}
+    }
+    #
+    # Handle the "partial completion" reason codes returned by MQSC
+    # for some commands.  This just means the command is asynchronous,
+    # and will be completed "later".  Eg: StopChannel will stop the
+    # channel, but you really need to poll the status with
+    # InquireChannelStatus to figure out *when* it has stopped.  Yeah,
+    # that sucks...
+    #
+    elsif ( $command =~ /^(Start|Stop)Channel$/ ) {
+	if (
+	    $self->{"CompCode"} ||
+	    ( $self->{"Reason"} != 0 && $self->{"Reason"} != 4 )
+	   ) {
+	    $self->{Carp}->(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
+	    return;
+	} else {
+	    return 1;
 	}
     }
     #
@@ -845,25 +827,6 @@ sub _Command {
 
 }
 
-#
-# There is a bug in 5.00502, fixed in 5.00503, that prevents a method
-# that matches the same name as a sub-class, from working.  That is,
-# if method A::B->C and class A::B::C both exist, then the method call
-# is doomed.
-#
-# Response was here first, but Responses() will be provided as a
-# workaround.
-#
-sub Response {
-    my $self = shift;
-    if ( ref $self->{"Response"} eq "ARRAY" ) {
-	return @{$self->{"Response"}};
-    }
-    else {
-	return;
-    }
-}
-
 sub Responses {
     my $self = shift;
     if ( ref $self->{"Response"} eq "ARRAY" ) {
@@ -871,24 +834,6 @@ sub Responses {
     } else {
 	return;
     }
-}
-
-#
-# Don't autoload this....
-#
-sub DESTROY { 1 }
-
-#
-# This AUTOLOAD will allow any random method to be interpreted as a
-# command request.  If the command isn't defined, then _Command
-# will blow up.
-#
-sub AUTOLOAD {
-    use vars qw($AUTOLOAD);
-    my $self = shift;
-    my $name = $AUTOLOAD;
-    $name =~ s/.*://;
-    return $self->_Command($name,{@_});
 }
 
 1;
@@ -930,7 +875,7 @@ MQSeries::Command - OO interface to the Programmable Commands
 
       print "QName = $qname\n";
 
-      foreach my $key ( %$attr ) {
+      foreach my $key ( sort keys %$attr ) {
 	  print "\t$key => $attr->{$key}\n";
       }
 
@@ -1086,6 +1031,7 @@ key/value pairs:
   Wait               Numeric
   ReplyToQMgr        String
   Carp               CODE Reference
+  StrictMapping      Boolean	
   CompCode           Reference to Scalar Variable
   Reason             Reference to Scalar Variable
 
@@ -1155,7 +1101,11 @@ section "MQSC NOTES" for the Ugly Truth about the MQSC support.
 This value is used as the MQMD.Expiry field on all requests sent to
 the command server.  The value is passed to the MQSeries::Message
 constructor, and should specify the time in B<tenths of a second>.
-The default is 600, or 60 seconds.
+The default is 600, or 60 seconds.  
+
+A symbolic value ending on 's' for seconds or 'm' for minutes may
+also be specified, e.g. the symbolic value '45s' will have the same
+meaning as the number 450.
 
 =item Wait
 
@@ -1163,6 +1113,10 @@ This value is used as the Wait argument to the MQSeries::Queue->Get()
 method call made against the ReplyToQ (a dynamic reply queue). and
 should be a time specified in B<milliseconds>.  The default is 60000,
 or 60 seconds.
+
+A symbolic value ending on 's' for seconds or 'm' for minutes may
+also be specified, e.g. the symbolic value '45s' will have the same
+meaning as the number 45000.
 
 NOTE: Both the Expiry and Wait defaults may be too slow for heavily
 loaded queue managers.  Tune them appropriately.
@@ -1208,6 +1162,22 @@ Then, one tells the object to use this routine:
 
 The default, as one might guess, is Carp::carp();
 
+=item StrictMapping
+
+If this argument has a true value, then strict mapping of PCF
+parameters and values will be enforced.  Normally, if you feed a bogus
+string into the API, it will attempt to map it to the underlying PCF
+macro value, and if the mapping fails, it will quietly forgive you,
+and ignore the parameter.  Enabling this feature will cause the
+translation of an encoded PCF message into the data structure for a
+Response, or the translation of a Request into an encoded PCF message,
+to fail if any of the mappings fail.
+
+Usually, the command server will generate errors if you feed bogus
+data into the API. but that will only occur after the data has been
+encoded and sent to the command server.  This feature will allow you
+to detect this error before the data is ever sent.
+
 =item CompCode
 
 Normally the CompCode and Reason are access via the methods of the
@@ -1247,12 +1217,35 @@ made by the API.
 This method will return the MQI Reason for the most recent MQI call
 made by the API.
 
-=head2 Response
+=head2 Responses
 
 Normally, the data of interest is returned from the method in
 question, but the individual responses are available via this method.
 This returns a list of MQSeries::Command::Response objects, one for
 each individual message recieved.
+
+NOTE: In previous releases, this method was named "Response", but due
+to a namespace conflict between the class
+"MQSeries::Command::Response", and the method
+"MQSeries::Command->Response", and the headaches this causes, it has
+been renamed.
+
+=head2 DataParameters
+
+This method will return a list of parameters structures from all of
+the responses messages sent back which were B<not> error responses.
+Some errors will send back responses with parameters, and these could
+easily be confused with real data (until you start looking at the
+actual data, of course).
+
+=head2 ErrorParameters
+
+This method will return a list of parameters structures from all of
+the responses messages sent back which B<were> error responses.  If a
+command fails, the Reason() will usually tell you enough about the
+cause of the failure, but if the reason is MQRCCF_CFIN_PARM_ID_ERROR,
+then the parameters in the error message will indicate which Parameter
+key was invalid.
 
 =head2 CreateObject
 

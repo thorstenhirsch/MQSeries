@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 14.7 2000/08/15 20:51:54 wpm Exp $
+# $Id: Queue.pm,v 15.7 2000/10/30 18:14:21 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,17 +15,19 @@ use English;
 
 use MQSeries;
 use MQSeries::QueueManager;
+use MQSeries::Utils qw(ConvertUnit);
+
 #
 # Well, now that we're using the same constants for the Inquire/Set
 # interface, they no longer are really part of the Command/PCF
-# heirarchy.  We may or may not address this namespace asymmetry in a
+# hierarchy.  We may or may not address this namespace asymmetry in a
 # future release.
 #
 use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 sub new {
 
@@ -117,8 +119,8 @@ sub new {
 	} else {
 	    $self->{ObjDescPtr}->{ObjectName} = $args{Queue};
 	}
-    } else {
-	$self->{Carp}->("Required argument 'Queue' not specified");
+    } elsif ( not $args{ObjDesc} ) {
+	$self->{Carp}->("One of 'Queue' or 'ObjDesc' must be specified");
 	return;
     }
 
@@ -202,6 +204,16 @@ sub new {
 sub CompCode {
     my $self = shift;
     return $self->{"CompCode"};
+}
+
+sub PutConvertReason {
+    my $self = shift;
+    return $self->{"PutConvertReason"};
+}
+
+sub GetConvertReason {
+    my $self = shift;
+    return $self->{"GetConvertReason"};
 }
 
 sub Reason {
@@ -307,6 +319,8 @@ sub Put {
 	
     }
 
+    $self->{"PutConvertReason"} = 0;
+
     if ( $args{PutConvert} ) {
 	if ( ref $args{PutConvert} ne "CODE" ) {
 	    $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
@@ -314,6 +328,7 @@ sub Put {
 	} else {
 	    $buffer = $args{PutConvert}->($args{Message}->Data());
 	    unless ( defined $buffer ) {
+		$self->{"PutConvertReason"} = 1;
 		$self->{Carp}->("Data conversion hook (PutConvert) failed");
 		return;
 	    }
@@ -322,12 +337,14 @@ sub Put {
 	if ( $args{Message}->can("PutConvert") ) {
 	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
 	    unless ( defined $buffer ) {
+		$self->{"PutConvertReason"} = 1;
 		$self->{Carp}->("Data conversion hook (PutConvert) failed");
 		return;
 	    }
 	} elsif ( ref $self->{PutConvert} eq "CODE" ) {
 	    $buffer = $self->{PutConvert}->($args{Message}->Data());
 	    unless ( defined $buffer ) {
+		$self->{"PutConvertReason"} = 1;
 		$self->{Carp}->("Data conversion hook (PutConvert) failed");
 		return;
 	    }
@@ -336,26 +353,41 @@ sub Put {
 	}
     }
 
-    MQPUT(
-	  $self->{QueueManager}->{Hconn},
-	  $self->{Hobj},
-	  $args{Message}->MsgDesc(),
-	  $PutMsgOpts,
-	  $buffer,
-	  $self->{"CompCode"},
-	  $self->{"Reason"},
-	 );
+    #
+    # For some reason, the MQPUT call gives a nasty 'use of
+    # uninitialized value' warning in the call-to-XS (DynaLoader?)
+    # code that we cannot seem to fix.  Work around it...(yes, this is
+    # a cop-out)
+    #
+    {
+        local $^W;
+        MQPUT(
+              $self->{QueueManager}->{Hconn},
+              $self->{Hobj},
+              $args{Message}->MsgDesc(),
+              $PutMsgOpts,
+              $buffer,
+              $self->{"CompCode"},
+              $self->{"Reason"},
+             );
+    }
 
-    if ( $self->{"CompCode"} == MQCC_OK ) {
-	return 1;
-    } elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
-	#
-	# What do we do here?  These are 'partial' successes.
-	#
-	return -1;
-    } else {
+    if ( $self->{"CompCode"} == MQCC_FAILED ) {
 	$self->{Carp}->(qq/MQPUT failed (Reason = $self->{"Reason"})/);
 	return;
+    } else {
+
+	if ( $PutMsgOpts->{Options} & MQPMO_SYNCPOINT ) {
+	    $self->{QueueManager}->{_Pending}->{Put}++;
+	}
+	
+	if ( $self->{"CompCode"} == MQCC_OK ) {
+	    return 1;
+	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+	    # What do we do here?  These are 'partial' successes.
+	    return -1;
+	}
+	
     }
 
 }
@@ -400,16 +432,17 @@ sub Get {
 	}
 
 	if ( exists $args{Wait} ) {
-	    if ( $args{Wait} == 0 ) {
+            my $value = ConvertUnit('Wait', $args{'Wait'});
+	    if ( $value == 0 ) {
 		$GetMsgOpts->{Options} |= MQGMO_NO_WAIT;
-	    } elsif ( $args{Wait} == -1 ) {
+	    } elsif ( $value == -1 ) {
 		$GetMsgOpts->{Options} |= MQGMO_WAIT;
 		$GetMsgOpts->{WaitInterval} = MQWI_UNLIMITED;
 	    } else {
 		$GetMsgOpts->{Options} |= MQGMO_WAIT;
-		$GetMsgOpts->{WaitInterval} = $args{Wait};
+		$GetMsgOpts->{WaitInterval} = $value;
 	    }
-	} else {
+        } else {
 	    $GetMsgOpts->{Options} |= MQGMO_NO_WAIT;
 	}
 
@@ -433,6 +466,9 @@ sub Get {
 
   GET:
     {
+
+	$self->{"GetConvertReason"} = 0;
+
 	my $data = undef;
 	my $datalength = $args{Message}->BufferLength();
 
@@ -459,24 +495,45 @@ sub Get {
 	    )
 	   ) {
 
+	    if (
+		$GetMsgOpts->{Options} & MQGMO_SYNCPOINT ||
+		(
+		 $GetMsgOpts->{Options} & MQGMO_SYNCPOINT_IF_PERSISTENT &&
+		 $args{Message}->MsgDesc('Persistence')
+		)
+	       ) {
+		$self->{QueueManager}->{_Pending}->{Get}++;
+	    }
+
 	    if ( $args{GetConvert} ) {
 		$data = $args{GetConvert}->($buffer);
+		unless ( defined $data ) {
+		    $self->{"GetConvertReason"} = 1;
+		    $self->{Carp}->("Data conversion hook (GetConvert) failed");
+		    return;
+		}
 	    } else {
 		if ( $args{Message}->can("GetConvert") ) {
 		    $data = $args{Message}->GetConvert($buffer);
+		    unless ( defined $data ) {
+			$self->{"GetConvertReason"} = 1;
+			$self->{Carp}->("Data conversion hook (GetConvert) failed");
+			return;
+		    }
 		} elsif ( ref $self->{GetConvert} eq "CODE" ) {
 		    $data = $self->{GetConvert}->($buffer);
+		    unless ( defined $data ) {
+			$self->{"GetConvertReason"} = 1;
+			$self->{Carp}->("Data conversion hook (GetConvert) failed");
+			return;
+		    }
 		} else {
 		    $data = $buffer;
 		}
 	    }
 
-	    unless ( defined $data ) {
-		$self->{Carp}->("Data conversion hook (GetConvert) failed");
-		return;
-	    }
-
 	    $args{Message}->Data($data);
+
 	    return 1;
 
 	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
@@ -509,25 +566,17 @@ sub Get {
 
 }
 
+#
+# In hindsight, it might have made life easier if MQSeries::Queue
+# inherited from MQSeries::QueueManager, as these next 3 methods
+# implement inheritance manually, with no added value, really...
+#
+
 sub Backout {
 
     my $self = shift;
     return unless $self->Open();
-
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
-
-    MQBACK(
-	   $self->{QueueManager}->{Hconn},
-	   $self->{"CompCode"},
-	   $self->{"Reason"},
-	  );
-    if ( $self->{"CompCode"} == MQCC_OK ) {
-	return 1;
-    } else {
-	$self->{Carp}->(qq/MQBACK failed (Reason = $self->{"Reason"})/);
-	return;
-    }
+    return $self->{QueueManager}->Backout();
 
 }
 
@@ -535,21 +584,14 @@ sub Commit {
 
     my $self = shift;
     return unless $self->Open();
+    return $self->{QueueManager}->Commit();
 
-    $self->{"CompCode"} = MQCC_FAILED;
-    $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+}
 
-    MQCMIT(
-	   $self->{QueueManager}->{Hconn},
-	   $self->{"CompCode"},
-	   $self->{"Reason"},
-	  );
-    if ( $self->{"CompCode"} == MQCC_OK ) {
-	return 1;
-    } else {
-	$self->{Carp}->(qq/MQCMIT failed (Reason = $self->{"Reason"})/);
-	return;
-    }
+sub Pending {
+
+    my $self = shift;
+    return $self->{QueueManager}->Pending();
 
 }
 
@@ -563,17 +605,17 @@ sub Inquire {
 
     my (@keys) = ();
 
-    my $RequestValues = \%MQSeries::Command::PCF::RequestValues;
-    my $ResponseParameters = \%MQSeries::Command::PCF::ResponseParameters;
+    my $ForwardMap = $MQSeries::Command::PCF::RequestValues{Queue};
+    my $ReverseMap = $MQSeries::Command::PCF::_Responses{&MQCMD_INQUIRE_Q}->[1];
 
     foreach my $key ( @args ) {
 
-	unless ( exists $RequestValues->{Queue}->{$key} ) {
+	unless ( exists $ForwardMap->{$key} ) {
 	    $self->{Carp}->("Unrecognized Queue attribute: '$key'");
 	    return;
 	}
 
-	push(@keys,$RequestValues->{Queue}->{$key});
+	push(@keys,$ForwardMap->{$key});
 
     }
 
@@ -587,7 +629,7 @@ sub Inquire {
 
     unless ( $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE ) {
 	$self->{Carp}->("MQINQ call failed. " .
-			qq(CompCode => '$self->{"CompCode"}', ) . 
+			qq(CompCode => '$self->{"CompCode"}', ) .
 			qq(Reason => '$self->{"Reason"}'\n));
 	return;
     }
@@ -602,14 +644,14 @@ sub Inquire {
 	
 	my ($key,$value) = ($keys[$index],$values[$index]);
 
-	my ($newkey,$ResponseValues) = @{$ResponseParameters->{Queue}->{$key}};
+	my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
 
-	if ( $ResponseValues ) {
-	    unless ( exists $ResponseValues->{$value} ) {
+	if ( $ValueMap ) {
+	    unless ( exists $ValueMap->{$value} ) {
 		$self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
 		return;
 	    }
-	    $values{$newkey} = $ResponseValues->{$value};
+	    $values{$newkey} = $ValueMap->{$value};
 	} else {
 	    $values{$newkey} = $value;
 	}
@@ -633,25 +675,25 @@ sub Set {
 
     my (%keys) = ();
 
-    my $RequestValues = \%MQSeries::Command::PCF::RequestValues;
+    my $ForwardMap = $MQSeries::Command::PCF::RequestValues{Queue};
 
     foreach my $key ( keys %args ) {
 
 	my $value = $args{$key};
 
-	unless ( exists $RequestValues->{Queue}->{$key} ) {
+	unless ( exists $ForwardMap->{$key} ) {
 	    $self->{Carp}->("Unrecognized Queue attribute: '$key'");
 	    return;
 	}
 
-	my $newkey = $RequestValues->{Queue}->{$key};
+	my ($newkey,$ValueMap) = @{$ForwardMap->{$key}}[0,2];
 
-	if ( exists $RequestValues->{$key} ) {
-	    unless ( exists $RequestValues->{$key}->{$value} ) {
+	if ( $ValueMap ) {
+	    unless ( exists $ValueMap->{$value} ) {
 		$self->{Carp}->("Unrecognized Queue attribute value '$value' for key '$key'\n");
 		return;
 	    }
-	    $keys{$newkey} = $RequestValues->{$key}->{$value};
+	    $keys{$newkey} = $ValueMap->{$value};
 	} else {
 	    $keys{$newkey} = $value;
 	}
@@ -1232,7 +1274,7 @@ value to the constructor, for example:
     ) || die "Unable to open queue: CompCode => $CompCode, Reason => $Reason\n";
 
 But, this is ugly (authors opinion, but then, he gets to write the
-docs, too).  
+docs, too).
 
 NOTE: If you let the MQSeries::Queue object implicitly create the
 MQSeries::QueueManager object, and that fails, you will B<NOT> get the
@@ -1245,7 +1287,7 @@ See the ERROR HANDLING section as well.
 
 =item RetryCount
 
-The call to MQOPEN() (implemented via the Open() method), can be old
+The call to MQOPEN() (implemented via the Open() method), can be told
 to retry the failure for a specific list of reason codes.  This
 functionality is only enabled if the RetryCount is non-zero. By
 default, this value is zero, and thus retries are disabled.
@@ -1310,6 +1352,18 @@ following key/value pairs (required keys are marked with a '*'):
   PutMsgRecs  ARRAY Reference
   Sync        Boolean
   PutConvert  CODE Reference
+
+The return value is true or false, depending on the success of the
+underlying MQPUT() call.  If the operation fails, then the Reason()
+and CompCode() methods will return the appropriate error codes, if the
+error was an MQSeries error.
+
+If a PutConvert() method failed before the actual MQPUT() function
+was called, then the Reason() code will be MQRC_UNEXPECTED_ERROR, and
+the PutConvertReason() will be true.  All of the PutConvert() methods
+supplied with the various MQSeries::Message subclasses in this
+distribution will generate some form of error via carp (or the Carp
+attribute of the objects, if overridden).
 
 =over 4
 
@@ -1390,6 +1444,13 @@ application.  This merely indicates that a message matching the
 specified MsgDesc criteria was not found, or perhaps the queue was
 just empty.  You have to decide how to handle this.
 
+The return value of 0 may indicate an error in either the MQSeries
+call itself, or if applicable, the failure of any GetConvert() method
+called after a successful MQGET() call.  In this case, the
+GetConvertReason() should be checked, as this error may indicate an
+invalid or improperly formatted message.  This is akin to an error
+encountered while parsing the body of the message.
+
 By default, the Get() method will also handle the message buffer size
 being too small for two very specific cases.
 
@@ -1437,12 +1498,15 @@ See the MQGET() documentation for the use of GetMsgOpts.
 
 =item Wait
 
-This is a numeric value, interpreted as follows.  If the value is
-greater than zero, then the MQGMO_WAIT option is used, and the value
-is set as the WaitInterval in the GetMsgOpts structure.
+This is a numeric or symbolic value, interpreted as follows.  A
+symbolic value is a number ending on 's' for seconds or 'm' for
+minutes, which will be converted to the appropriate numeric value. 
+If the value is greater than zero, then the MQGMO_WAIT option is used,
+and the value is set as the WaitInterval in the GetMsgOpts structure.
 
-Remember, this value is interpreted by the API as a number of
-milliseconds, not seconds (the rest of the OO-API uses seconds).
+Remember, if a numeric value is specified, it is interpreted by the
+API as a number of milliseconds, not seconds (the rest of the OO-API
+uses seconds).
 
 If the value is 0, then the MQGMO_NO_WAIT option is used.
 
@@ -1708,6 +1772,46 @@ true on success, and false on failure.
 
 NOTE: The same comments for Backout() apply here.  This is really a
 Queue Manager connection operation.
+
+=head2 CompCode
+
+This method returns the MQI Completion Code for the most recent MQI
+call attempted.
+
+=head2 Reason
+
+This method returns the MQI Reason Code for the most recent MQI
+call attempted.
+
+=head2 PutConvertReason
+
+This method returns a true of false value, indicating if a PutConvert
+method failed or not.  Similar to the MQRC reason codes, false
+indicates success, and true indicates some form of error.  If there
+was no PutConvert method called, this will always return false.
+
+=head2 GetConvertReason
+
+This method returns a true of false value, indicating if a GetConvert
+method failed or not.  Similar to the MQRC reason codes, false
+indicates success, and true indicates some form of error.  If there
+was no GetConvert method called, this will always return false.
+
+=head2 Reasons
+
+This method call returns an array reference, and each member of the
+array is a Response Record returned as a possible side effect of
+calling a Put() method to put a message to a distribution list.
+
+The individual records are hash references, with two keys: CompCode
+and Reason.  Each provides the specific CompCode and Reason associated
+with the put of the message to each individual queue in the
+distribution list, respectively.
+
+=head2 Pending
+
+This method indicated whether or not there are currently actively
+pending transactions (puts or gets under syncpoint).
 
 =head1 MQOPEN RETRY SUPPORT
 

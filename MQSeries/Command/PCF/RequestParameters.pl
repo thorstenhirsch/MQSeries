@@ -21,10 +21,7 @@ package MQSeries::Command::PCF;
   (
    QueueManager =>
    {
-    QMgrAttrs                   => [
-                                    1001,                                5,
-                                    $RequestValues{QueueManager},
-                                   ],
+    QMgrAttrs                   => [ 1001,                   		5,	$RequestValues{QueueManager} ],
 
     AuthorityEvent              => [ 47,                                 3 ],
     ChannelAutoDef              => [ 55,                                 3 ],
@@ -52,15 +49,8 @@ package MQSeries::Command::PCF;
 
    Process =>
    {
-    ApplType                    => [
-                                    1,                                   3,
-                                    $RequestValues{ApplType},
-                                   ],
-    ProcessAttrs                => [
-                                    1003,                                5,
-                                    $RequestValues{Process},
-                                   ],
-
+    ApplType                    => [ 1,               			3,		$RequestValues{ApplType} ],
+    ProcessAttrs                => [ 1003,                               5,    $RequestValues{Process} ],
     ApplId                      => [ 2001,                               4 ],
     EnvData                     => [ 2007,                               4 ],
     FromProcessName             => [ 3003,                               4 ],
@@ -71,49 +61,18 @@ package MQSeries::Command::PCF;
     UserData                    => [ 2021,                               4 ],
    },
 
-   Queue => 
+   Queue =>
    {
-    DefBind                     => [ 
-                                    61,                                  3,
-                                    $RequestValues{DefBind},
-                                   ],
-    DefinitionType              => [
-                                    7,                                   3,
-                                    $RequestValues{DefinitionType},
-                                   ],
-    DefInputOpenOption          => [
-                                    4,                                   3,
-                                    $RequestValues{DefInputOpenOption},
-                                   ],
-    MsgDeliverySequence         => [
-                                    16,                                  3,
-                                    $RequestValues{MsgDeliverySequence},
-                                   ],
-    QAttrs                      => [
-                                    1002,                                5,
-                                    $RequestValues{Queue},
-                                   ],
-    QServiceIntervalEvent       => [
-                                    46,                                  3,
-                                    $RequestValues{QServiceIntervalEvent},
-                                   ],
-    QType                       => [
-                                    20,                                  3,
-                                    $RequestValues{QType},
-                                   ],
-    Scope                       => [
-                                    45,                                  3,
-                                    $RequestValues{Scope},
-                                   ],
-    TriggerType                 => [
-                                    28,                                  3,
-                                    $RequestValues{TriggerType},
-                                   ],
-    Usage                       => [
-                                    12,                                  3,
-                                    $RequestValues{Usage},
-                                   ],
-
+    DefBind                     => [ 61,             			3,		$RequestValues{DefBind} ],
+    DefinitionType              => [ 7,                                  3,		$RequestValues{DefinitionType} ],
+    DefInputOpenOption          => [ 4,                                  3,		$RequestValues{DefInputOpenOption} ],
+    MsgDeliverySequence         => [ 16,                                 3,		$RequestValues{MsgDeliverySequence} ],
+    QAttrs                      => [ 1002,                               5,	$RequestValues{Queue} ],
+    QServiceIntervalEvent       => [ 46,                                 3,		$RequestValues{QServiceIntervalEvent} ],
+    QType                       => [ 20,                                 3,		$RequestValues{QType} ],
+    Scope                       => [ 45,                                 3,		$RequestValues{Scope} ],
+    TriggerType                 => [ 28,                                 3,		$RequestValues{TriggerType} ],
+    Usage                       => [ 12,                                 3,		$RequestValues{Usage} ],
     BackoutRequeueName          => [ 2019,                               4 ],
     BackoutThreshold            => [ 22,                                 3 ],
     BaseQName                   => [ 2002,                               4 ],
@@ -156,47 +115,16 @@ package MQSeries::Command::PCF;
 
    Channel =>
    {
-    ChannelAttrs                => [
-                                    1015,                                5,
-                                    $RequestValues{Channel},
-                                   ],
-    ChannelInstanceAttrs        => [
-                                    1524,                                5,
-                                    $RequestValues{Channel},
-                                   ],
-    ChannelInstanceType         => [
-                                    1523,                                3,
-                                    $RequestValues{ChannelInstanceType},
-                                   ],
-    ChannelTable                => [
-                                    1526,                                3,
-                                    $RequestValues{ChannelTable},
-                                   ],
-    ChannelType                 => [
-                                    1511,                                3,
-                                    $RequestValues{ChannelType},
-                                   ],
-    InDoubt                     => [
-                                    1516,                                3,
-                                    $RequestValues{InDoubt},
-                                   ],
-    MCAType                     => [
-                                    1517,                                3,
-                                    $RequestValues{MCAType},
-                                   ],
-    NonPersistentMsgSpeed       => [
-                                    1562,                                3,
-                                    $RequestValues{NonPersistentMsgSpeed},
-                                   ],
-    PutAuthority                => [
-                                    1508,                                3,
-                                    $RequestValues{PutAuthority},
-                                   ],
-    TransportType               => [
-                                    1501,                                3,
-                                    $RequestValues{TransportType},
-                                   ],
-
+    ChannelAttrs                => [ 1015,                               5,	$RequestValues{Channel} ],
+    ChannelInstanceAttrs        => [ 1524,                               5,	$RequestValues{Channel} ],
+    ChannelInstanceType         => [ 1523,                               3,		$RequestValues{ChannelInstanceType} ],
+    ChannelTable                => [ 1526,                               3,		$RequestValues{ChannelTable} ],
+    ChannelType                 => [ 1511,                               3,		$RequestValues{ChannelType} ],
+    InDoubt                     => [ 1516,                               3,		$RequestValues{InDoubt} ],
+    MCAType                     => [ 1517,                               3,		$RequestValues{MCAType} ],
+    NonPersistentMsgSpeed       => [ 1562,                               3,		$RequestValues{NonPersistentMsgSpeed} ],
+    PutAuthority                => [ 1508,                               3,		$RequestValues{PutAuthority} ],
+    TransportType               => [ 1501,                               3,		$RequestValues{TransportType} ],
     BatchInterval               => [ 1564,                               3 ],
     BatchSize                   => [ 1502,                               3 ],
     ChannelDesc                 => [ 3502,                               4 ],
@@ -245,21 +173,13 @@ package MQSeries::Command::PCF;
 
    Escape =>
    {
-    EscapeType                  => [
-                                    1017,                                3,
-                                    $RequestValues{EscapeType},
-                                   ],
-
+    EscapeType                  => [ 1017,                               3,		$RequestValues{EscapeType} ],
     EscapeText                  => [ 3014,                               4 ],
    },
 
    Namelist =>
    {
-    NamelistAttrs               => [
-                                    1004,                                5, 
-                                    $RequestValues{Namelist},
-                                   ],
-    
+    NamelistAttrs               => [ 1004,                               5,	$RequestValues{Namelist} ],
     FromNamelistName            => [ 3005,                               4 ],
     NamelistDesc                => [ 2009,                               4 ],
     NamelistName                => [ 2010,                               4 ],
@@ -270,21 +190,49 @@ package MQSeries::Command::PCF;
 
    Cluster =>
    {
-    Action                      => [ 
-                                    1086,                                3,
-                                    $RequestValues{Action},
-                                   ],
-    ClusterQMgrAttrs            => [ 
-                                    1093,                                5, 
-                                    $RequestValues{Cluster},
-                                   ],
-
+    Action                      => [ 1086,                               3,		$RequestValues{Action} ],
+    ClusterQMgrAttrs            => [ 1093,                               5,	$RequestValues{Cluster} ],
     Channel                     => [ 3501,                               4 ],
     ClusterName                 => [ 2029,                               4 ],
     ClusterNamelist             => [ 2030,                               4 ],
     QMgrName                    => [ 2031,                               4 ],
     QMgrName                    => [ 2015,                               4 ],
     Quiesce                     => [ 1008,                               3 ],
+   },
+
+   Authority =>
+   {
+    ObjectType			=> [ 1000,               		3,		$RequestValues{ObjectType} ],
+    ObjectName			=> [ 3000,               		4 ],
+
+    EntityType			=> [ 1001,               		3,		$RequestValues{EntityType} ],
+    EntityName			=> [ 3001,               		4 ],
+
+    Connect                     => [ 1011,                		3 ],
+    Browse                      => [ 1012,               		3 ],
+    Input                       => [ 1013,              			3 ],
+    Output                      => [ 1014,               		3 ],
+    Inquire                     => [ 1015,                		3 ],
+    Set                         => [ 1016,            			3 ],
+    PassId                      => [ 1017,               		3 ],
+    PassAll                     => [ 1018,                		3 ],
+    SetId                       => [ 1019,              			3 ],
+    SetAll                      => [ 1020,               		3 ],
+    AlternateUser               => [ 1021,                      		3 ],
+    Create                      => [ 1022,               		3 ],
+    Delete                      => [ 1023,               		3 ],
+    Display                     => [ 1024,                		3 ],
+    Change                      => [ 1025,               		3 ],
+    Create			=> [ 1022,               		3 ],
+    Clear			=> [ 1026,              			3 ],
+    Authorize			=> [ 1027,                  		3 ],
+    StartStop			=> [ 1028,                   		3 ],
+    DisplayStatus		=> [ 1029,                       	3 ],
+    ResolveReset		=> [ 1030,                      		3 ],
+    Ping			=> [ 1031,             			3 ],
+    AllAdmin			=> [ 1050,                 		3 ],
+    AllMQI			=> [ 1051,               		3 ],
+    All				=> [ 1052,            			3 ],
    },
 
   );

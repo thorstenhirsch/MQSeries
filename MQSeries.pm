@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 14.5 2000/08/15 20:51:25 wpm Exp $
+# $Id: MQSeries.pm,v 15.4 2000/10/18 15:37:48 biersma Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ require DynaLoader;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 BEGIN {
 
@@ -144,7 +144,7 @@ server PCF messages for MQSeries administration:
 
   MQSeries::Command
 
-There are two sets of classes that help you follow (tail -f style) and
+There are two sets of classes that help you follow (tail C<-f> style) and
 parse the two kinds of log-files written by MQSeries: the FDC files
 and the error-logs.  These classes allow you to write a log monitoring
 daemon that feeds into syslog or your system management tools.
@@ -156,11 +156,17 @@ daemon that feeds into syslog or your system management tools.
   MQSeries::FDC::Parser
   MQSeries::FDC::Entry
 
-There is a set of classes that parses configuration files (/var/mqm/mqs.ini
-and /var/mqm/qmgrs/*/qm.ini):
+There is a set of classes that parses configuration and authority
+files (/var/mqm/mqs.ini, /var/mqm/qmgrs/*/qm.ini,
+/var/mqm/qmgrs/*/auth/*/*).
 
+  MQSeries::Config::Authority
   MQSeries::Config::Machine
   MQSeries::Config::QMgr
+
+Some internal helper functions are stored in the module:
+
+  MQSeries::Utils
 
 See the documentation for each of these individual modules for more
 information.
@@ -474,10 +480,10 @@ For example, a reason code of 2009 (MQRC_CONNECTION_BROKEN) will return:
 which looks a lot better in error logs and alerts than 2009.
 
 The macro name itself is also returned as a string, so one could use
-"MQRC_CONNECTION_BROKEN" is logs, error messages, etc.
+"MQRC_CONNECTION_BROKEN" in logs, error messages, etc.
 
-In this release (1.06) only English language text is returned, but in
-a future release, these messages will be locale specific.  This will
+In this release, only English language text is returned, but in a
+future release, these messages will be locale specific.  This will
 almost certainly be implemented with locale-specific DBM files, but
 you probably do not need to know this just yet....
 
@@ -486,13 +492,13 @@ you probably do not need to know this just yet....
   ($ReasonText) = MQReasonToText($Reason);
 
 This is nothing more than a trivial interface to MQReasonToStrings,
-returning just the one value (the reason text).  
+returning just the one value (the reason text).
 
 =head2 MQReasonToMacro
 
   ($ReasonMacro) = MQReasonToMacro($Reason);
 
 This is nothing more than a trivial interface to MQReasonToStrings,
-returning just the one value (the MQRC_* macro as a string).  
+returning just the one value (the MQRC_* macro as a string).
 
 =cut

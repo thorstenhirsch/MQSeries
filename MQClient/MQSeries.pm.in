@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: MQSeries.pm.in,v 14.2 2000/08/15 20:49:54 wpm Exp $
+# $Id: MQSeries.pm.in,v 15.2 2000/11/14 21:13:05 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ require "MQSeries/Constants.pl";
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 #
 # This nonsense is only necessary if you don't have the locale files
@@ -112,32 +112,27 @@ sub AUTOLOAD {
     my ($constant,$numeric,$string,$null,$char);
     ($constant = $AUTOLOAD) =~ s/.*:://;
 
-    $numeric = constant_hex($constant);
-    unless ( $ERRNO ) {
+    if ( defined($numeric = constant_hex($constant)) ) {
 	eval "sub $AUTOLOAD { $numeric }";
 	goto &$AUTOLOAD;
     }
 
-    $numeric = constant_numeric($constant);
-    unless ( $ERRNO ) {
+    if ( defined($numeric = constant_numeric($constant)) ) {
 	eval "sub $AUTOLOAD { $numeric }";
 	goto &$AUTOLOAD;
     }
 
-    $string = constant_string($constant);
-    unless ( $ERRNO ) {
+    if ( defined($string = constant_string($constant)) ) {
 	eval "sub $AUTOLOAD { \"$string\" }";
 	goto &$AUTOLOAD;
     }
 
-    $char = constant_char($constant);
-    unless ( $ERRNO ) {
+    if ( defined($char = constant_char($constant)) ) {
 	eval "sub $AUTOLOAD { chr(" . ord($char) . ") }";
 	goto &$AUTOLOAD;
     }
 
-    $null = constant_null($constant);
-    if ( defined $null ) {
+    if ( defined($null = constant_null($constant)) ) {
 	eval "sub $AUTOLOAD { \"\\0\" x $null }";
 	goto &$AUTOLOAD;
     }

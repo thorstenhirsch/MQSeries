@@ -1,5 +1,5 @@
 #
-# $Id: typemap.PL,v 14.1 2000/08/15 20:50:42 wpm Exp $
+# $Id: typemap.PL,v 15.1 2000/09/18 14:50:43 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -25,7 +25,7 @@
 $input{'MQCHAR48'} = join('',
 			  '/*' . '=' x 75 . "*/\n",
 			  "T_MQCHAR48\n",
-			  "    strncpy(\$var, (char*)SvPV(\$arg, na), 48)\n",
+			  "    strncpy(\$var, (char*)SvPV(\$arg, PL_na), 48)\n",
 			  );
 
 require "../util/parse_config";

@@ -6,7 +6,7 @@
 # (c) 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 14.2 2000/06/26 10:49:31 biersma Exp $
+# $Id: Tail.pm,v 15.2 2000/09/28 08:55:40 biersma Exp $
 #
 
 package MQSeries::FDC::Tail;
@@ -16,6 +16,10 @@ use Carp;
 use IO::File;
 
 use MQSeries::FDC::Parser;
+
+use vars qw($VERSION);
+
+$VERSION = '1.12';
 
 #
 # The FDC logs are watched based on the following assumptions:
@@ -33,18 +37,23 @@ use MQSeries::FDC::Parser;
 # Parameters:
 # - Class name
 # - Directory to watch
+# - Max # of files this is allowed to open at any one time
+#   (defaults to 200)
 # Returns:
 # - New MQSeries::FDC::Tail object
 #
 sub new {
-    my ($class, $dirname) = @_;
+    my ($class, $dirname, $maxfiles) = @_;
 
     # Paranoia...
-    confess "Invalid number of arguments" unless (@_ == 2);
+    $maxfiles = 200 if (!defined $maxfiles);
+    confess "Invalid number of arguments" unless (@_ == 2 || @_ == 3);
     confess "Invalid directory [$dirname]" unless (-d $dirname);
+    confess "Maxfiles must be at least 20" unless ($maxfiles >= 20);
 
     my $this = bless { 'directory' => $dirname,
                        'files'     => {},
+                       'maxfiles'  => $maxfiles,
                      }, $class;
 
     # Establish a base-line of known state
@@ -119,7 +128,7 @@ sub process {
         next unless (-f "$this->{'directory'}/$entry");
 
         # Get stats - but re-use results from -f filetest
-        my ($inode, $size) = (stat _)[1,7];
+        my ($inode, $size, $mtime) = (stat _)[1,7,9];
         $found{$entry} = 1;
 
         #
@@ -144,6 +153,7 @@ sub process {
                 #
                 my $fh = $this->{'files'}{$entry}{'fh'};
                 unless (defined $fh) {
+                    $this->_check_maxfiles();
                     $fh = $this->{'files'}{$entry}{'fh'} =
                       IO::File->new("$this->{'directory'}/$entry") ||
                         confess "Cannot open file [$this->{'directory'}/$entry]: $!";
@@ -157,6 +167,7 @@ sub process {
                 }
                 push @entries, $this->process_updates($fh, $this->{'files'}{$entry}{'parser'});
                 $this->{'files'}{$entry}{'size'} = $size;
+                $this->{'files'}{$entry}{'mtime'} = $mtime;
                 next;
             } else {            # Size unchanged
                 next;
@@ -167,10 +178,12 @@ sub process {
         # New file (not seen before or inode changed)
         #
         $this->{'files'}{$entry} = 
-          { 'inode'   => $inode, 
+          { 'inode'  => $inode, 
+            'mtime'  => $mtime,
             'size'   => $size,
             'parser' => MQSeries::FDC::Parser->new($entry),
           };
+        $this->_check_maxfiles();
         my $fh = $this->{'files'}{$entry}{'fh'} =
           IO::File->new("$this->{'directory'}/$entry") ||
             confess "Cannot open file [$this->{'directory'}/$entry]: $!";
@@ -215,6 +228,52 @@ sub process_updates {
     return $parser->parse_data($new_data);
 }
 
+
+#
+# PRIVATE help functions: check and see that we do not have too many 
+# files open.  This is invoked just before we open any file-handle.
+#
+# NOTE: The main reason this is required is that 32-bit Solaris has a 
+#       limit of max 255 files open at any one time using stdio (which 
+#       perl does), even though the file-descriptor limit can be quite
+#       a bit higher.  And, of course, MQ likes to write FDC errors
+#       on hundreds of files at once :-)
+#
+# Parameters:
+# - MQSeries::FDC::Tail object
+#
+sub _check_maxfiles {
+    my ($this) = @_;
+
+    my $files = $this->{'files'};
+    return unless (scalar(keys %$files) >= $this->{'maxfiles'});
+
+    #print "Checking max # of open files\n";
+    #
+    # Collect the enties that have an open file, and their mtime.
+    #
+    my %open_entries;
+    foreach my $entry (keys %$files) {
+        next unless (defined $files->{$entry}{'fh'});
+        $open_entries{$entry} = $files->{$entry}{'mtime'};
+    }
+    return unless (scalar(keys %open_entries) >= $this->{'maxfiles'});
+    
+    #
+    # Sort the files by age
+    #
+    my @oldest = sort { $open_entries{$a} <=> $open_entries{$b} 
+                      } keys %open_entries;
+    #print "Oldest file is [" . 
+    #  ($open_entries{ $oldest[-1] } - $open_entries{ $oldest[0] }),
+    #  "] seconds older than the latest\n";
+
+    foreach my $entry (@oldest[0,9]) {
+        $files->{$entry}{'fh'}->close();
+        delete $files->{$entry}{'fh'};
+    }
+}
+        
 
 1;                              # End on a positive note
 
@@ -265,6 +324,10 @@ removed.
 
 Create a new MQSeries::FDC::Tail object. The argument is the 
 directory to watch (/var/mqm/errors for a typical installation).
+An optional second argument specifies the maximum number of files
+that may be open at the same time; the default is 200, well under
+the default limit of 255 open files imposed by the stdio libraries
+of many vendors.
 
 =head2 process
 

@@ -1,6 +1,6 @@
 #!/ms/dist/perl5/bin/perl
 #
-# $Id: flatten_macros,v 14.1 2000/08/15 20:53:14 wpm Exp $
+# $Id: flatten_macros,v 15.2 2000/10/25 19:24:09 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,9 +16,13 @@
 # ./util/flatten_macros
 
 use File::Basename;
+use Getopt::Long;
 
 require "./util/parse_config";
 require "./util/parse_headers";
+
+GetOptions( \%Args, qw( force ) ) ||
+  die "Error parsing \@ARGV\n";
 
 die "This MUST be run on an MQSeries V5.1 box, fool!!\n"
   unless $mqversion == 5 && $mqsubversion >= 1;
@@ -38,9 +42,10 @@ foreach my $infile ( @infiles ) {
     my $outfile = $infile;
     $outfile =~ s:^pre\.in/::;
     $outfile =~ s/\.in$/.pl/;
-    $tmpfile = "$outfile.$$"; 
+    $tmpfile = "$outfile.$$";
+    push(@tmpfiles,$tmpfile);
 
-    if ( -f $outfile ) {
+    if ( -f $outfile && ! $Args{force} ) {
 	my (@outstat) = stat($outfile) or die "Unable to stat $outfile: $!\n";
 	my (@instat) = stat($infile) or die "Unable to stat $infile: $!\n";
 	next if $instat[9] < $outstat[9];
@@ -123,6 +128,11 @@ EndOfWarning
 
 	}
 
+	#
+	# Ugh - somewhere we're setting $* it appears....
+	#
+	s/\s+$/\n/;
+
 	print OUT;
 
     }
@@ -134,3 +144,6 @@ EndOfWarning
 
 }
 
+END {
+    unlink @tmpfiles;
+}

@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 14.2 2000/08/15 20:53:17 wpm Exp $
+# $Id: parse_headers,v 15.1 2000/10/24 01:03:25 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,6 +22,22 @@ foreach my $dirent ( readdir(INCLUDE) ) {
 }
 
 closedir(INCLUDE);
+
+#
+# Add in the cmqcfce.h only if we haven't found it already.
+#
+my %headers = map { $_ => 1 } @headers;
+unless ( $headers{"$include/cmqcfce.h"} ) {
+    my $found = 0;
+    foreach my $incdir ( qw(./include ../include ../../include ../../../include) ) {
+	next unless -f "$incdir/cmqcfce.h";
+	push(@headers,"$incdir/cmqcfce.h");
+	$found = 1;
+	last;
+    }
+    die "Unable to locate cmqcfce.h\n" unless $found;
+}
+
 
 foreach my $header ( @headers ) {
 

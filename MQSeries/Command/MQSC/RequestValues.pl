@@ -1,5 +1,5 @@
 #
-# $Id: RequestValues.pl,v 14.1 2000/08/15 20:51:36 wpm Exp $
+# $Id: RequestValues.pl,v 15.1 2000/11/13 18:54:22 biersma Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,6 +15,8 @@ package MQSeries::Command::MQSC;
    Enabled 			=> [ "DISABLED",	"ENABLED" ],
 
    HardenGetBackout		=> [ "NOHARDENBO",	"HARDENBO" ],
+
+   Purge                        => [ "NOPURGE",         "PURGE" ],
 
    Shareability			=> [ "NOSHARE",		"SHARE" ],
 

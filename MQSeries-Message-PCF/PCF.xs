@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 14.1 2000/08/15 20:51:01 wpm Exp $";
+static char rcsid[] = "$Id: PCF.xs,v 15.2 2000/09/18 14:51:23 wpm Exp $";
 
 /*
   (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
@@ -23,8 +23,13 @@ static char rcsid[] = "$Id: PCF.xs,v 14.1 2000/08/15 20:51:01 wpm Exp $";
 #               include "patchlevel.h"
 #       endif
 #endif
+#ifndef PATCHLEVEL
+#   define PATCHLEVEL PERL_VERSION
+#endif
 #ifndef PERL_PATCHLEVEL
 #       define PERL_PATCHLEVEL PATCHLEVEL
+#endif
+#ifndef PERL_SUBVERSION
 #       define PERL_SUBVERSION SUBVERSION
 #endif
  
@@ -56,8 +61,13 @@ static char rcsid[] = "$Id: PCF.xs,v 14.1 2000/08/15 20:51:01 wpm Exp $";
 #       define boolSV(b) ((b) ? &PL_sv_yes : &PL_sv_no)
 #endif
 
+#ifndef __MVS__
 #include "cmqc.h"
 #include "cmqcfc.h"
+#else
+#include "../inc/cmqc.h"
+#include "../inc/cmqcfc.h"
+#endif /* ! __MVS__ */
 
 /*#define DEBUGME*/
 

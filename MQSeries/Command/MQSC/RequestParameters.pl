@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameters.pl,v 14.1 2000/08/15 20:51:34 wpm Exp $
+# $Id: RequestParameters.pl,v 15.1 2000/11/13 18:53:57 biersma Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -315,7 +315,7 @@ package MQSeries::Command::MQSC;
 
   );
 
-$RequestParameters{CreateQueue} = $RequestParameters{ChangeQueue} = $RequestParameters{DeleteQueue} =
+$RequestParameters{CreateQueue} = $RequestParameters{ChangeQueue} =
   {
    %{$RequestParameters{Queue}},
    QName			=> [ $RequestParameterRemap{Queue},	"string" ],
@@ -332,5 +332,13 @@ $RequestParameters{ClearQueue} =
    %{$RequestParameters{Queue}},
    QName			=> [ "QLOCAL",		"string" ],
   };
+
+$RequestParameters{DeleteQueue} =
+  {
+   %{$RequestParameters{Queue}},
+   QName			=> [ $RequestParameterRemap{Queue},	"string" ],
+   Purge			=> [ "",		$RequestValues{Purge} ],
+  };
+
 
 1;

@@ -5,7 +5,7 @@
 # (c) 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 # 
-# $Id: descriptions.pl,v 14.2 2000/08/14 09:23:57 biersma Exp $
+# $Id: descriptions.pl,v 15.1 2000/11/13 23:18:45 wpm Exp $
 #
 
 #
@@ -27,12 +27,12 @@ my $exit_patt = '/[\w\.\/\-\(\)]+';
 my $hex_patt = '[A-F\d]+';
 my $hostname_patt = '[\w\-]+';
 my $ip_patt = '\d+\.\d+\.\d+\.\d+';
-my $host_patt = "$hostname_patt \\($ip_patt\\) \\(\\d+\\)|$hostname_patt \\($ip_patt\\)|$ip_patt";
+my $host_patt = "$hostname_patt \\($ip_patt\\) \\(\\d+\\)|$hostname_patt \\($ip_patt\\)|$ip_patt \\(\\d+\\)|$ip_patt";
 my $pid_patt = '\d+';
 my $qmgr_patt = '[\w\.!%\/]+';
 my $qname_patt = '[\w\.\%\/]+';
 my $rc_patt = '\d+';
-my $reason_patt = '\d+:\w+|\d+:?';
+my $reason_patt = '\d+: \(.*?\)|\d+:\w+|\d+\w+|\d+:?';
 my $resourcemgr_patt = '\w+\s+\w+';
 my $xa_operation_patt = 'xa_\w+';
 my $seqno_patt = '\d+';
@@ -84,7 +84,7 @@ $error_table =
    'AMQ5819' => [ "MQSeries message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
                   "Stream", "Reason" ],
 
-   'AMQ5820' => [ "MQSeries message broker stream \\(($qname_patt)\\s*\\) restarted.",
+   'AMQ5820' => [ "MQSeries message broker stream \\(\\s*($qname_patt)\\s*\\) restarted.",
                   "Stream" ],
    
    'AMQ5821' => [ "MQSeries message broker unable to contact parent broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\.",
@@ -125,6 +125,21 @@ $error_table =
    'AMQ5855' => [ "MQSeries message broker \\(($qmgr_patt)\\) ended for reason '($reason_patt)'\\.",
                   "Broker", "Reason" ],
 
+   'AMQ5856' => [ "Broker publish command message cannot be processed\\. Reason code ($reason_patt)\\..* The MQSeries broker failed to process a publish message for stream \\(($qname_patt)\\s*\\)\\.",
+                  "Reason", "Stream" ],
+
+   'AMQ5857' => [ "Broker control command message cannot be processed\\. Reason code ($reason_patt)\\..*The MQSeries broker failed to process a command message on the ($qname_patt)\\.",
+                  "Reason", "Stream" ],
+
+   'AMQ5864' => [ "Broker reply message could not be sent to queue \\(($qname_patt)\\s*\\) at queue manager \\(($qmgr_patt)\\s*\\) for reason ($reason_patt)\\.",
+                  "Stream", "QMgr", "Reason" ],
+
+   'AMQ5866' => [ "Broker command message has been discarded\\. Reason code ($reason_patt)\\.",
+                  "Reason" ],
+
+   'AMQ5867' => [ " MQSeries message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
+                  "Stream", "Reason" ],
+
    'AMQ5878' => [ "MQSeries message broker recovery failure detected\\." ],
      
    # NOTE: The 'Stream' field here may look like 'uncreated stream',
@@ -141,7 +156,11 @@ $error_table =
 
    'AMQ6050' => [ "MQSeries is unable to convert string data in CCSID \\d+ to data in CCSID \\d+\\." ],
 
+   'AMQ6053' => [ "MQSeries is unable to convert string data in CCSID \\d+ to data in CCSID -?\\d+\\." ],
+
    'AMQ6090' => [ "MQSeries was unable to display an error message" ],
+
+   'AMQ6091' => [ "An internal MQSeries error has occurred\\." ],
 
    'AMQ6109' => [ "An internal MQSeries error has occurred\\." ],
 
@@ -184,6 +203,9 @@ $error_table =
    'AMQ7075' => [ "Unknown attribute (\\S+) on line (\\d+) of ini file (\\S+)\\.",
                   "Attribute", "Line", "File" ],
 
+   'AMQ7076' => [ "Line (\\d+) of the configuration file (\\S+) contained value (.*?)\s*that is not valid for the attribute (\\S+)\\.",
+                  "Line", "File", "Value", "Attribute" ],
+
    'AMQ7159' => [ "A FASTPATH application has ended unexpectedly" ],
 
    'AMQ7310' => [ "The attempt to put a report message on queue ($qname_patt) on queue manager ($qmgr_patt) failed with reason code ($reason_patt)\\. The message will be put on the dead-letter queue\\.",
@@ -193,6 +215,9 @@ $error_table =
                   "QMgr" ],
 
    'AMQ7469' => [ "Transactions rolled back to release log space\\." ],
+
+   'AMQ7472' => [ "Object ($qname_patt), type (\\w+) damaged\\.",
+                  "Object", "Type" ],
 
    'AMQ7604' => [ "The XA resource manager '($resourcemgr_patt)' was not available when called for ($xa_operation_patt)\\.",
                   "ResourceMgr", "Operation" ],
@@ -205,6 +230,11 @@ $error_table =
 
    'AMQ7624' => [ "An exception occurred during an ($xa_operation_patt) call to XA resource manager '($resourcemgr_patt)'\\.",
                   "Operation", "ResourceMgr" ],
+
+   'AMQ7625' => [ "The XA resource manager '($resourcemgr_patt)' has become available again\\.",
+                  "ResourceMgr" ],
+
+   'AMQ7924' => [ "Bad length in the PCF header \\(length = \\d+\\)\\." ],
 
    # FIXME: If encountered again, determine message version pattern
    'AMQ7925' => [ "Message version 16777216 is not supported" ],
@@ -279,6 +309,9 @@ $error_table =
 
    'AMQ9213' => [ "The return code from the TCP/IP \\((.*?)\\) call was ($rc_patt) \\(X'", 
                   "Operation", "IPCode" ],
+
+   'AMQ9221' => [ " The specified value of '(.*?)' was not recognized as one of the protocols supported\\.",
+                  "Protocol" ],
    
    'AMQ9228' => [ "The TCP/IP responder program could not be started\\." ],
 
@@ -289,6 +322,9 @@ $error_table =
 
    'AMQ9411' => [ "The repository manager (?:ended|stopped) normally\\." ],
 
+   'AMQ9447' => [ "Following an error, the repository manager tried to backout some updates to the repository, but was unsuccessful\\. The repository manager terminates\\." ],
+
+
    # NOTE: At time, this gets invalid channel names (eg, from bad clients),
    #       so we use a non-standard pattern
    'AMQ9503' => [ "Channel '(.*?)' between this machine and the remote machine could not be established",
@@ -297,8 +333,11 @@ $error_table =
    'AMQ9504' => [ "A protocol error was detected for channel '($channel_patt)'\\.",
                   "Channel" ],
    
-   'AMQ9506' => [ "Channel '($channel_patt)' has ended because",
+   'AMQ9506' => [ "Channel '($channel_patt)' has ended because the remote queue manager did not accept the last batch of messages.",
                   "Channel" ],
+
+   'AMQ9507' => [ "Channel '($channel_patt)' is currently in-doubt\\. .* The requested operation cannot complete because the channel is in-doubt with host '(.*?)'\\.",
+                  "Channel", "Host" ],
 
    # NOTE: At times, this gets empty queue manager names (probably
    #       a client error), so we use a non-standard pattern
@@ -333,7 +372,7 @@ $error_table =
 
    'AMQ9522' => [ "The program could not access the channel status table\\." ],
    
-   'AMQ9524' => [ "Channel '($channel_patt)' cannot start because",
+   'AMQ9524' => [ "Channel '($channel_patt)' cannot start because the remote queue manager is not currently available\\.",
                   "Channel" ],
    
    'AMQ9525' => [ "Channel '($channel_patt)' is closing",
@@ -360,7 +399,7 @@ $error_table =
    'AMQ9534' => [ "Channel '($channel_patt)' is currently",
                   "Channel" ],
 
-   'AMQ9535' => [ "Channel program '($channel_patt)' ended because user exit '(\\S+)' is not valid\\.",
+   'AMQ9535' => [ "Channel program '($channel_patt)' ended because user exit '(.*?)' is not valid\\.",
                   "Channel", "Exit" ],
 
    'AMQ9536' => [ "Channel program '($channel_patt)' was ended by exit '($exit_patt)'",
@@ -380,9 +419,19 @@ $error_table =
    'AMQ9549' => [ "Transmission Queue '($qname_patt)' inhibited for MQGET\\.",
                   "QName" ],
 
+   'AMQ9553' => [ "The function (.*?) attempted is not currently supported on this platform\\.",
+                  "Function" ],
+
    'AMQ9558' => [ "The channel program ended because the channel '($channel_patt)' is not currently available on the remote system\\.",
                   "Channel" ],
-   
+
+   'AMQ9588' => [ "Program cannot update queue manager object\\..*The attempt to update object '(.*?)' on queue manager '($qmgr_patt)' failed with reason code ($reason_patt)\\.",
+                  "Object", "QMgr", "Reason" ],
+
+   # NOTE: Found this with an empty user id
+   'AMQ9599' => [ "The attempt to open either the queue or queue manager object '($qname_patt)' on queue manager '($qmgr_patt)' by user '.*?' failed with reason code ($reason_patt)\\.",
+                  "QName", "QMgr", "Reason" ],
+                     
    # NOTE: At times, this gets invalid channel names (eg, from bad clients),
    #       so we use a non-standard pattern
    'AMQ9999' => [ "Channel program '(.*?)' ended abnormally\\.",

@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: Requests.in,v 14.1 2000/08/15 20:52:15 wpm Exp $
+# $Id: Requests.in,v 15.2 2000/10/25 17:21:11 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -53,6 +53,13 @@ package MQSeries::Command::PCF;
    StartChannelListener         => [ &MQCMD_START_CHANNEL_LISTENER,     $RequestParameters{Channel} ],
    StopChannel                  => [ &MQCMD_STOP_CHANNEL,               $RequestParameters{Channel} ],
    SuspendQueueManagerCluster   => [ &MQCMD_SUSPEND_Q_MGR_CLUSTER,      $RequestParameters{Cluster} ],
+
+   #
+   # Extended command set
+   #
+   InquireAuthority             => [ &MQCMDE_INQUIRE_AUTHORITY,         $RequestParameters{Authority} ],
+   ChangeAuthority              => [ &MQCMDE_CHANGE_AUTHORITY,          $RequestParameters{Authority} ],
+
   );
 
 

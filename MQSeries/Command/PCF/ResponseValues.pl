@@ -22,181 +22,212 @@ package MQSeries::Command::PCF;
 
    Platform =>
    {
-    1                                    => "MVS",
-    13                                   => "NSK",
-    2                                    => "OS2",
-    4                                    => "OS400",
-    3                                    => "UNIX",
-    5                                    => "Win16",
-    11                                   => "Win32",
+    MVS				=> 1,
+    NSK				=> 13,
+    OS2				=> 2,
+    OS400			=> 4,
+    UNIX			=> 3,
+    Win16			=> 5,
+    Win32			=> 11,
    },
 
    QType =>
    {
-    3                                    => "Alias",
-    7                                    => "Cluster",
-    1                                    => "Local",
-    2                                    => "Model",
-    6                                    => "Remote",
+    Alias			=> 3,
+    Cluster			=> 7,
+    Local			=> 1,
+    Model			=> 2,
+    Remote			=> 6,
    },
 
    DefInputOpenOption =>
    {
-    4                                    => "Exclusive",
-    2                                    => "Shared",
+    Exclusive			=> 4,
+    Shared			=> 2,
    },
 
    MsgDeliverySequence =>
    {
-    1                                    => "FIFO",
-    0                                    => "Priority",
+    FIFO			=> 1,
+    Priority			=> 0,
    },
 
    DefinitionType =>
    {
-    2                                    => "Permanent",
-    1                                    => "Predefined",
-    3                                    => "Temporary",
+    Permanent			=> 2,
+    Predefined			=> 1,
+    Temporary			=> 3,
    },
 
    Usage =>
    {
-    0                                    => "Normal",
-    1                                    => "XMITQ",
+    Normal			=> 0,
+    XMITQ			=> 1,
    },
 
    TriggerType =>
    {
-    3                                    => "Depth",
-    2                                    => "Every",
-    1                                    => "First",
-    0                                    => "None",
+    Depth			=> 3,
+    Every			=> 2,
+    First			=> 1,
+    None			=> 0,
    },
 
    Scope =>
    {
-    2                                    => "Cell",
-    1                                    => "QMgr",
+    Cell			=> 2,
+    QMgr			=> 1,
    },
 
    QServiceIntervalEvent =>
    {
-    1                                    => "High",
-    0                                    => "None",
-    2                                    => "OK",
+    High			=> 1,
+    None			=> 0,
+    OK				=> 2,
    },
 
    ChannelType =>
    {
-    6                                    => "Clntconn",
-    8                                    => "ClusterReceiver",
-    9                                    => "ClusterSender",
-    3                                    => "Receiver",
-    4                                    => "Requester",
-    1                                    => "Sender",
-    2                                    => "Server",
-    7                                    => "Svrconn",
+    Clntconn			=> 6,
+    ClusterReceiver		=> 8,
+    ClusterSender		=> 9,
+    Receiver			=> 3,
+    Requester			=> 4,
+    Sender			=> 1,
+    Server			=> 2,
+    Svrconn			=> 7,
    },
 
    ChannelInstanceType =>
    {
-    1011                                 => "Current",
-    1012                                 => "Saved",
+    Current			=> 1011,
+    Saved			=> 1012,
    },
 
    MCAStatus =>
    {
-    3                                    => "Running", 
-    0                                    => "Stopped", 
+    Running			=> 3,
+    Stopped			=> 0,
    },
 
    TransportType =>
    {
-    5                                    => "DECnet",
-    1                                    => "LU62",
-    3                                    => "NetBIOS",
-    4                                    => "SPX",
-    2                                    => "TCP",
-    6                                    => "UDP",
+    DECnet			=> 5,
+    LU62			=> 1,
+    NetBIOS			=> 3,
+    SPX				=> 4,
+    TCP				=> 2,
+    UDP				=> 6,
    },
 
    PutAuthority =>
    {
-    2                                    => "Context",
-    1                                    => "Default",
+    Context			=> 2,
+    Default			=> 1,
    },
 
    MCAType =>
    {
-    1                                    => "Process",
-    2                                    => "Thread",
+    Process			=> 1,
+    Thread			=> 2,
    },
 
    NonPersistentMsgSpeed =>
    {
-    2                                    => "Fast",
-    1                                    => "Normal",
+    Fast			=> 2,
+    Normal			=> 1,
    },
 
    ChannelStatus =>
    {
-    1                                    => "Binding",
-    0                                    => "Inactive",
-    13                                   => "Initializing",
-    8                                    => "Paused",
-    7                                    => "Requesting",
-    5                                    => "Retrying",
-    3                                    => "Running",
-    2                                    => "Starting", 
-    6                                    => "Stopped",
-    4                                    => "Stopping",
+    Binding			=> 1,
+    Inactive			=> 0,
+    Initializing		=> 13,
+    Paused			=> 8,
+    Requesting			=> 7,
+    Retrying			=> 5,
+    Running			=> 3,
+    Starting			=> 2,
+    Stopped			=> 6,
+    Stopping			=> 4,
    },
 
    ApplType =>
    {
-    1                                    => "CICS",
-    5                                    => "DOS",
-    3                                    => "IMS",
-    2                                    => "MVS",
-    4                                    => "OS2",
-    8                                    => "OS400",
-    6                                    => "UNIX",
-    12                                   => "VMS",
-    9                                    => "Win16",
-    11                                   => "Win32",
+    CICS			=> 1,
+    DOS				=> 5,
+    IMS				=> 3,
+    MVS				=> 2,
+    OS2				=> 4,
+    OS400			=> 8,
+    UNIX			=> 6,
+    VMS				=> 12,
+    Win16			=> 9,
+    Win32			=> 11,
    },
 
    EscapeType =>
    {
-    1                                    => "MQSC",
+    MQSC			=> 1,
    },
 
    QMgrDefinitionType =>
    {
-    2                                    => "AutoClusterSender",
-    4                                    => "AutoExplicitClusterSender",
-    3                                    => "ClusterReceiver",
-    1                                    => "ExplicitClusterSender",
+    AutoClusterSender		=> 2,
+    AutoExplicitClusterSender	=> 4,
+    ClusterReceiver		=> 3,
+    ExplicitClusterSender	=> 1,
    },
 
    QMgrType =>
    {
-    0                                    => "Normal",
-    1                                    => "Repository",
+    Normal			=> 0,
+    Repository			=> 1,
    },
 
    ClusterQType =>
    {
-    2                                    => "Alias",
-    1                                    => "Local",
-    4                                    => "QMgrAlias",
-    3                                    => "Remote",
+    Alias			=> 2,
+    Local			=> 1,
+    QMgrAlias			=> 4,
+    Remote			=> 3,
    },
 
    DefBind =>
    {
-    1                                    => "NotFixed",
-    0                                    => "OnOpen",
+    NotFixed			=> 1,
+    OnOpen			=> 0,
+   },
+
+   ObjectType =>
+   {
+    Namelist			=> 2,
+    Process			=> 3,
+    Queue			=> 1,
+    QueueManager		=> 5,
+
+    Channel			=> 6,
+
+    All				=> 1001,
+    AliasQueue			=> 1002,
+    ModelQueue			=> 1003,
+    LocalQueue			=> 1004,
+    RemoteQueue			=> 1005,
+
+    SenderChannel		=> 1007,
+    ServerChannel		=> 1008,
+    RequesterChannel		=> 1009,
+    ReceiverChannel		=> 1010,
+    CurrentChannel		=> 1011,
+    SavedChannel		=> 1012,
+    SvrconnChannel		=> 1013,
+    ClntconnChannel		=> 1014,
+   },
+
+   EntityType =>
+   {
+    Prinicipal			=> 1000,
+    Group			=> 1001,
    },
 
   );

@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: DeadLetter.xs,v 14.4 2000/08/15 20:50:46 wpm Exp $";
+static char rcsid[] = "$Id: DeadLetter.xs,v 15.1 2000/09/18 14:51:14 wpm Exp $";
 
 /*
   (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
@@ -23,8 +23,13 @@ static char rcsid[] = "$Id: DeadLetter.xs,v 14.4 2000/08/15 20:50:46 wpm Exp $";
 #               include "patchlevel.h"
 #       endif
 #endif
+#ifndef PATCHLEVEL
+#   define PATCHLEVEL PERL_VERSION
+#endif
 #ifndef PERL_PATCHLEVEL
 #       define PERL_PATCHLEVEL PATCHLEVEL
+#endif
+#ifndef PERL_SUBVERSION
 #       define PERL_SUBVERSION SUBVERSION
 #endif
  

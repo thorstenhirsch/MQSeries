@@ -1,5 +1,6 @@
 CONFIG
 COPYRIGHT
+Changes.html
 Changes.src
 LICENSE
 MANIFEST
@@ -40,6 +41,10 @@ MQSeries-Message-RulesFormat/RulesFormat.pm
 MQSeries-Message-RulesFormat/RulesFormat.xs
 MQSeries-Message-RulesFormat/t/rfh.t
 MQSeries-Message-RulesFormat/typemap
+MQSeries-OAM/Makefile.PL
+MQSeries-OAM/OAM.pm
+MQSeries-OAM/OAM.xs
+MQSeries-OAM/t/oam.t
 MQSeries-PubSub/Makefile.PL
 MQSeries-PubSub/PubSub/AdminMessage.pl
 MQSeries-PubSub/PubSub/AdminMessage.pm
@@ -50,6 +55,7 @@ MQSeries-PubSub/PubSub/Stream.pm
 MQSeries-PubSub/t/pubsub.t
 MQSeries.pm
 MQSeries/Command.pm
+MQSeries/Command/Base.pm
 MQSeries/Command/MQSC.pm
 MQSeries/Command/MQSC/RequestArgs.pl
 MQSeries/Command/MQSC/RequestParameterPrimary.pl
@@ -61,7 +67,7 @@ MQSeries/Command/MQSC/ResponseParameters.pl
 MQSeries/Command/MQSC/ResponseValues.pl
 MQSeries/Command/MQSC/Responses.pl
 MQSeries/Command/PCF.pm
-MQSeries/Command/PCF/ErrorResponseParameters.pl
+MQSeries/Command/PCF/RequestParameterOrder.pl
 MQSeries/Command/PCF/RequestParameterRequired.pl
 MQSeries/Command/PCF/RequestParameters.pl
 MQSeries/Command/PCF/RequestValues.pl
@@ -71,6 +77,7 @@ MQSeries/Command/PCF/ResponseValues.pl
 MQSeries/Command/PCF/Responses.pl
 MQSeries/Command/Request.pm
 MQSeries/Command/Response.pm
+MQSeries/Config/Authority.pm
 MQSeries/Config/Machine.pm
 MQSeries/Config/QMgr.pm
 MQSeries/Constants.pl
@@ -94,16 +101,20 @@ MQSeries/Message/Storable.pm
 MQSeries/Message/XML-Dumper.pm
 MQSeries/Queue.pm
 MQSeries/QueueManager.pm
+MQSeries/Utils.pm
 Makefile.PL
 README
+README.html
 examples/OO/request-reply-1/reply.pl
 examples/OO/request-reply-1/request.pl
 examples/OO/request-reply-2/reply.pl
 examples/OO/request-reply-2/request.pl
 examples/PubSub/amqspsda.pl
 examples/README
+examples/saveauth
+include/cmqcfce.h
 pre.in/MQSeries-PubSub/PubSub/AdminMessage.in
-pre.in/MQSeries/Command/PCF/ErrorResponseParameters.in
+pre.in/MQSeries/Command/PCF/RequestParameterOrder.in
 pre.in/MQSeries/Command/PCF/RequestParameterRequired.in
 pre.in/MQSeries/Command/PCF/RequestParameters.in
 pre.in/MQSeries/Command/PCF/RequestValues.in
@@ -123,7 +134,10 @@ t.in/20convert.t
 t.in/30basic.t
 t.in/40oo-qmgr.t
 t.in/50oo-command.t
+t.in/60-logs.t
+t.in/70-config.t
 util/check_copyright
+util/check_version
 util/extract_reason_codes
 util/fake_mm
 util/flatten_macros

@@ -4,7 +4,7 @@
 # (c) 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: QMgr.pm,v 14.1 2000/07/13 15:35:29 biersma Exp $
+# $Id: QMgr.pm,v 15.1 2000/08/16 00:55:05 wpm Exp $
 #
 
 package MQSeries::Config::QMgr;
@@ -13,6 +13,10 @@ use strict;
 use Carp;
 
 use MQSeries::Config::Machine;
+
+use vars qw($VERSION);
+
+$VERSION = '1.12';
 
 #
 # Constructor: Read and parse the /var/mqm/qmgrs/XYYZY/qm.ini file.

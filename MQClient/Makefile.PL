@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 14.1 2000/08/15 20:50:35 wpm Exp $
+# $Id: Makefile.PL,v 15.3 2000/10/24 01:05:15 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -43,12 +43,14 @@ if ( $Config{osname} =~ /(irix|sunos)/ ) {
 # Probably a reasonable default....
 #
 # XXX -- what other library names are valid?
+# Note that on OS/390 perl's -f stat() tests do not work with PDSes.
 #
 unless (
 	-f "$mqmtop/lib/libmqm.so" ||
 	-f "$mqmtop/lib/libmqm.sl" ||
 	-f "$mqmtop/lib/libmqm.a" ||
-	-f "$mqmtop/lib/mqm.lib"
+	-f "$mqmtop/lib/mqm.lib" ||
+	$^O eq "os390"
        ) {
     warn("No libmqm server library found, MQServer disabled\n")
       if $apitype eq 'MQServer'; # Whine once...
@@ -88,11 +90,14 @@ else {
     $libdir = "-L$mqmtop/lib";
 }
 
-if ( $apitype eq "MQClient" ) {
-    $libs = "$libdir -lmqicg -lmqic -lmqic32 -lmqmcs -lmqmzse";
-}
-else {
-    $libs = "$libdir -lmqm -lmqmcs -lmqmzse";
+if ( $Config{osname} =~ /os390/ ) {
+    $libs = "-l\"//'$hlq.SCSQLOAD'\"";
+} else {
+    if ( $apitype eq "MQClient" ) {
+	$libs = "$libdir -lmqicg -lmqic -lmqic32 -lmqmcs -lmqmzse";
+    } else {
+	$libs = "$libdir -lmqm -lmqmcs -lmqmzse";
+    }
 }
 
 #
@@ -243,9 +248,15 @@ WriteMakefile(
 	      NAME		=> "${apitype}::MQSeries",
 	      VERSION_FROM	=> "MQSeries.pm",
 	      LIBS		=> [$libs],
-	      INC		=> qq{-I"$include"},
+	      INC		=> qq{-I"$include" -I../include},
 	      EXE_FILES		=> [],
 	      OBJECT		=> q[MQSeries$(OBJ_EXT) constants$(OBJ_EXT)],
+	      (
+	       $^O eq 'os390' ?
+	       (
+		MAN3PODS	=> {},
+	       ) : ()
+	      ),
               #
 	      # On Win32, we need to force the use of the CAPI
               # with ActiveState's PERL_OBJECT build
@@ -269,7 +280,6 @@ WriteMakefile(
 	       ) : ()
 	      )
 	     );
-
 
 # now we remove it again so that it will be out-of-date
 # with respect to typemap.PL.

@@ -2,7 +2,7 @@
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 14.1 2000/08/15 20:51:57 wpm Exp $
+# $Id: Makefile.PL,v 15.1 2000/09/14 20:13:24 wpm Exp $
 #
 use English;
 use ExtUtils::MakeMaker;
@@ -105,12 +105,18 @@ WriteMakefile(
 	      NAME	   	=> 'MQSeries',
 	      VERSION_FROM 	=> 'MQSeries.pm', # finds $VERSION
 	      (
+	       $^O eq 'os390' ?
+	       (
+		MAN3PODS	=> {},
+	       ) : ()
+	      ),
+	      (
 	       $] ge '5.005' ?
 	       (
 		AUTHOR		=> 'W. Phillip Moore (Phil.Moore@msdw.com)',
 		ABSTRACT	=> "Interface to IBM's MQSeries Product",
 	       ) : ()
-	      )
+	      ),
 	     );
 
 

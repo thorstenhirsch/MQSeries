@@ -1,5 +1,5 @@
 #
-# $Id: Event.pm,v 14.1 2000/08/15 20:51:50 wpm Exp $
+# $Id: Event.pm,v 15.1 2000/08/16 00:58:15 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,8 +19,9 @@ use MQSeries::Message::PCF qw(MQDecodePCF);
 
 require "MQSeries/Message/Event.pl";
 
-use vars qw(@ISA);
+use vars qw(@ISA $VERSION);
 
+$VERSION = '1.12';
 @ISA = qw(MQSeries::Message);
 
 sub PutConvert {

@@ -31,9 +31,23 @@ package MQSeries::Command::PCF;
 %RequestParameterRequired =
   (
 
+   InquireAuthority		=>
+   {
+    ObjectType			=> 1,
+    ObjectName			=> 1,
+   },
+
+   ChangeAuthority		=>
+   {
+    ObjectName			=> 1,
+    ObjectType			=> 1,
+    EntityName			=> 1,
+    EntityType			=> 1,
+   },
+
    CopyChannel                  =>
    {
-    ChannelType                 => 1, 
+    ChannelType                 => 1,
     FromChannelName             => 1,
     ToChannelName               => 1,
    },
@@ -61,7 +75,7 @@ package MQSeries::Command::PCF;
    {
     ClusterQMgrName             => 1,
    },
-   
+
    SuspendQueueManagerCluster   =>
    {
     ClusterName                 => 1,
@@ -73,47 +87,47 @@ package MQSeries::Command::PCF;
 #
 # This *greatly* shrinks the size of this file...
 #
-$RequestParameterRequired{InquireNamelist} = 
-  $RequestParameterRequired{CreateNamelist} = 
+$RequestParameterRequired{InquireNamelist} =
+  $RequestParameterRequired{CreateNamelist} =
   $RequestParameterRequired{ChangeNamelist} =
   {
    NamelistName         => 1,
   };
 
 $RequestParameterRequired{InquireProcess} =
-  $RequestParameterRequired{CreateProcess} = 
+  $RequestParameterRequired{CreateProcess} =
   $RequestParameterRequired{ChangeProcess} =
   {
    ProcessName          => 1,
   };
 
-$RequestParameterRequired{CreateQueue} = 
-  $RequestParameterRequired{ChangeQueue} = 
+$RequestParameterRequired{CreateQueue} =
+  $RequestParameterRequired{ChangeQueue} =
   {
    QName                        => 1,
    QType                        => 1,
   };
 
-$RequestParameterRequired{InquireQueueNames} = 
-  $RequestParameterRequired{InquireQueue} = 
+$RequestParameterRequired{InquireQueueNames} =
+  $RequestParameterRequired{InquireQueue} =
   $RequestParameterRequired{DeleteQueue} =
   {
    QName                        => 1,
   };
 
-$RequestParameterRequired{CreateChannel} = 
+$RequestParameterRequired{CreateChannel} =
   $RequestParameterRequired{ChangeChannel} =
   {
    ChannelName                  => 1,
    ChannelType                  => 1,
   };
 
-$RequestParameterRequired{StopChannel} = 
-  $RequestParameterRequired{ResetChannel} = 
-  $RequestParameterRequired{PingChannel} = 
-  $RequestParameterRequired{InquireChannelStatus} = 
-  $RequestParameterRequired{InquireChannelNames} = 
-  $RequestParameterRequired{InquireChannel} = 
+$RequestParameterRequired{StopChannel} =
+  $RequestParameterRequired{ResetChannel} =
+  $RequestParameterRequired{PingChannel} =
+  $RequestParameterRequired{InquireChannelStatus} =
+  $RequestParameterRequired{InquireChannelNames} =
+  $RequestParameterRequired{InquireChannel} =
   $RequestParameterRequired{DeleteChannel} =
   {
    ChannelName                  => 1,

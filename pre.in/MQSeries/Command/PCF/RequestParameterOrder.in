@@ -1,0 +1,26 @@
+#-*-perl-*-
+#
+# $Id: RequestParameterOrder.in,v 15.2 2000/11/13 20:32:39 wpm Exp $
+#
+# (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package MQSeries::Command::PCF;
+
+#
+# Some of the PCF commands have order dependencies for the optional,
+# and perhaps the required, parameters.  MQSeries::Command is smart
+# enough to put required in front of optional, but this configuration
+# will guarantee the order of the parameters, where necessary.
+#
+
+%RequestParameterOrder =
+  (
+   DeleteQueue			=>
+   {
+    Optional			=> [qw( QType Purge )],
+   },
+  );
+
+1;

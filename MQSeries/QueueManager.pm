@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 14.3 2000/08/15 20:51:55 wpm Exp $
+# $Id: QueueManager.pm,v 15.3 2000/10/24 01:07:23 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -13,6 +13,11 @@ use strict qw(vars refs);
 use Carp;
 use English;
 
+#
+# We're going to use this to validate signal names
+#
+use Config;
+
 use MQSeries;
 #
 # Well, now that we're using the same constants for the Inquire/Set
@@ -24,7 +29,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 sub new {
 
@@ -34,19 +39,29 @@ sub new {
 
     my $self =
       {
-       Carp		=> \&carp,
-       RetryCount 	=> 0,
-       RetrySleep 	=> 60,
-       RetryReasons	=> {
-			    map { $_ => 1 }
-			    (
-			     MQRC_CONNECTION_BROKEN,
-			     MQRC_Q_MGR_NOT_AVAILABLE,
-			     MQRC_Q_MGR_QUIESCING,
-			     MQRC_Q_MGR_STOPPING,
-			    )
-			   },
-       ConnectArgs	=> {},
+
+       Carp			=> \&carp,
+       RetryCount 		=> 0,
+       RetrySleep 		=> 60,
+       RetryReasons		=> {
+				    map { $_ => 1 }
+				    (
+				     MQRC_CONNECTION_BROKEN,
+				     MQRC_Q_MGR_NOT_AVAILABLE,
+				     MQRC_Q_MGR_QUIESCING,
+				     MQRC_Q_MGR_STOPPING,
+				    )
+				   },
+       ConnectTimeoutSignal	=> 'USR1',
+       ConnectTimeout		=> 0,
+       ConnectArgs		=> {},
+
+       #
+       # XXX -- This is new with 1.12, but in 1.13, we are going to
+       # make this default to 0.  We'll warn you...
+       #
+       AutoCommit	=> 1,
+
       };
     bless ($self, $class);
 
@@ -97,9 +112,21 @@ sub new {
     # the arguments is ignored.  Developer beware.  RTFM.  Yada yada
     # yada.
     #
-    foreach my $connectarg ( qw( RetryCount RetrySleep RetryReasons ) ) {
+    foreach my $connectarg ( qw( RetryCount RetrySleep RetryReasons
+				 ConnectTimeout ConnectTimeoutSignal ) ) {
 	next unless exists $args{$connectarg};
 	$self->{ConnectArgs}->{$connectarg} = $args{$connectarg};
+    }
+
+
+    #
+    # Has AutoCommit behavior been specified?  If not, we make a note
+    # of it.
+    #
+    if ( exists $args{AutoCommit} ) {
+	$self->{AutoCommit} = $args{AutoCommit};
+    } else {
+	$self->{AutoCommitDefault} = 1;
     }
 
     #
@@ -230,6 +257,11 @@ sub CompCode {
     return $self->{"CompCode"};
 }
 
+sub PutConvertReason {
+    my $self = shift;
+    return $self->{"PutConvertReason"};
+}
+
 sub Reason {
     my $self = shift;
     return $self->{"Reason"};
@@ -250,17 +282,17 @@ sub Inquire {
 
     my (@keys) = ();
 
-    my $RequestValues = \%MQSeries::Command::PCF::RequestValues;
-    my $ResponseParameters = \%MQSeries::Command::PCF::ResponseParameters;
+    my $ForwardMap = $MQSeries::Command::PCF::RequestValues{QueueManager};
+    my $ReverseMap = $MQSeries::Command::PCF::_Responses{&MQCMD_INQUIRE_Q_MGR}->[1];
 
     foreach my $key ( @args ) {
 
-	unless ( exists $RequestValues->{QueueManager}->{$key} ) {
+	unless ( exists $ForwardMap->{$key} ) {
 	    $self->{Carp}->("Unrecognized Queue attribute: '$key'");
 	    return;
 	}
 
-	push(@keys,$RequestValues->{QueueManager}->{$key});
+	push(@keys,$ForwardMap->{$key});
 
     }
 
@@ -289,14 +321,14 @@ sub Inquire {
 	
 	my ($key,$value) = ($keys[$index],$values[$index]);
 
-	my ($newkey,$ResponseValues) = @{$ResponseParameters->{QueueManager}->{$key}};
+	my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
 
-	if ( $ResponseValues ) {
-	    unless ( exists $ResponseValues->{$value} ) {
+	if ( $ValueMap ) {
+	    unless ( exists $ValueMap->{$value} ) {
 		$self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
 		return;
 	    }
-	    $values{$newkey} = $ResponseValues->{$value};
+	    $values{$newkey} = $ValueMap->{$value};
 	} else {
 	    $values{$newkey} = $value;
 	}
@@ -332,6 +364,29 @@ sub Disconnect {
     $self->{"CompCode"} = MQCC_FAILED;
     $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
 
+    if ( $self->{_Pending} ) {
+	if ( $self->{AutoCommit} == 0 ) {
+	    $self->Backout() || return;
+	} elsif ( $self->{AutoCommitDefault} ) {
+	    # XXX -- should we word this stronger?
+	    my $putcnt = $self->{_Pending}->{Put};
+	    my $getcnt = $self->{_Pending}->{Get};
+	    $self->{Carp}->(<<"ScreamLoudly");
+WARNING: There is a pending transaction involving $putcnt puts and
+$getcnt gets, and we are about to implicitly commit these messages by
+disconnecting from the queue manager.  This is a dangerous side effect
+and this behavior will change in a future release of the MQSeries perl
+API.
+
+If you need this functionality, you must set AutoCommit to 1 when
+instantiating your MQSeries::QueueManager objects, and then automatic
+commits will happen at MSDISC time, at you and your datas peril.
+
+You have been warned....
+ScreamLoudly
+	}
+    }
+
     MQDISC(
 	   $self->{Hconn},
 	   $self->{"CompCode"},
@@ -366,6 +421,7 @@ sub Backout {
 	   $self->{"Reason"},
 	  );
     if ( $self->{"CompCode"} == MQCC_OK ) {
+	delete $self->{_Pending};
 	return 1;
     } else {
 	$self->{Carp}->(qq/MQBACK of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
@@ -386,11 +442,19 @@ sub Commit {
 	   $self->{"Reason"},
 	  );
     if ( $self->{"CompCode"} == MQCC_OK ) {
+	delete $self->{_Pending};
 	return 1;
     } else {
 	$self->{Carp}->(qq/MQCMIT of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
+
+}
+
+sub Pending {
+
+    my $self = shift;
+    return $self->{_Pending};
 
 }
 
@@ -457,6 +521,8 @@ sub Put1 {
     #
     # Sanity check the data conversion CODE snippets.
     #
+    $self->{"PutConvertReason"} = 0;
+
     if ( $args{PutConvert} ) {
 	if ( ref $args{PutConvert} ne "CODE" ) {
 	    $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
@@ -464,6 +530,7 @@ sub Put1 {
 	} else {
 	    $buffer = $args{PutConvert}->($args{Message}->Data());
 	    unless ( defined $buffer ) {
+		$self->{"PutConvertReason"} = 1;
 		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
 		return;
 	    }
@@ -472,12 +539,14 @@ sub Put1 {
 	if ( $args{Message}->can("PutConvert") ) {
 	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
 	    unless ( defined $buffer ) {
+		$self->{"PutConvertReason"} = 1;
 		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
 		return;
 	    }
 	} elsif ( ref $self->{PutConvert} eq "CODE" ) {
 	    $buffer = $self->{PutConvert}->($args{Message}->Data());
 	    unless ( defined $buffer ) {
+		$self->{"PutConvertReason"} = 1;
 		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
 		return;
 	    }
@@ -495,14 +564,19 @@ sub Put1 {
 	   $self->{"CompCode"},
 	   $self->{"Reason"},
 	  );
-    if ( $self->{"CompCode"} == MQCC_OK ) {
-	return 1;
-    } elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
-	# This is true in lots of cases.
-	return 1;
-    } else {
+    if ( $self->{"CompCode"} == MQCC_FAILED ) {
+
 	$self->{Carp}->(qq/MQPUT1 failed (Reason = $self->{"Reason"})/);
 	return;
+
+    } else {
+
+	if ( $PutMsgOpts->{Options} & MQPMO_SYNCPOINT ) {
+	    $self->{_Pending}->{Put}++;
+	}
+	
+	return 1;
+
     }
 
 }
@@ -518,7 +592,7 @@ sub Connect {
     $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
     my $retrycount = 0;
 
-    foreach my $key ( qw( RetryCount RetrySleep ) ) {
+    foreach my $key ( qw( RetryCount RetrySleep ConnectTimeout ) ) {
 	next unless exists $args{$key};
 	unless ( $args{$key} =~ /^\d+$/ ) {
 	    $self->{Carp}->("Invalid argument: '$key' must numeric");
@@ -527,13 +601,53 @@ sub Connect {
 	$self->{$key} = $args{$key};
     }
 
+    #
+    # The ConnectTimeout functionality requires:
+    #
+    # (a) A working fork()
+    # (b) Support for signals
+    # (c) The ability to send signals to other processes (Win32 loses,
+    #     cause you can only send signals to yourself)
+    #
+
+    if ( $self->{ConnectTimeout} && $^O =~ /win32/i ) {
+	$self->{Carp}->("MQCONN timeout functionality is not yet supported on Win32");
+	$self->{ConnectTimeout} = 0;
+    }
+
+    if ( $self->{ConnectTimeout} && not defined &fork ) {
+	$self->{Carp}->("This platform does not support fork()\n" .
+			"MQCONN timeout functionality is disabled");
+	$self->{ConnectTimeout} = 0;
+    }
+
+    if ( $self->{ConnectTimeout} && not defined $Config{sig_name} ) {
+	$self->{Carp}->("Signals are not available in this version of perl\n" .
+			"MQCONN timeout functionality is disabled");
+	$self->{ConnectTimeout} = 0;
+    }
+
+    if ( $self->{ConnectTimeout} ) {
+
+	$self->{ConnectTimeoutSignal} = $args{ConnectTimeoutSignal} if $args{ConnectTimeoutSignal};
+
+	my %signame = map { $_ => 1 } split(/\s+/,$Config{sig_name});
+	
+	unless ( $signame{$self->{ConnectTimeoutSignal}} ) {
+	    $self->{Carp}->("Signal name '$self->{ConnectTimeoutSignal}' is not supported on this platform\n" .
+			    "MQCONN timeout functionality is disabled");
+	    $self->{ConnectTimeout} = 0;
+	}
+
+    }
+
     if ( $args{RetryReasons} ) {
 
 	unless (
 		ref $args{RetryReasons} eq "ARRAY" ||
 		ref $args{RetryReasons} eq "HASH"
 	       ) {
-	    $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASh reference");
+	    $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASH reference");
 	    return;
 	}
 
@@ -548,49 +662,93 @@ sub Connect {
   CONNECT:
     {
 
-	my $Hconn = MQCONN(
-			   $self->{ProxyQueueManager} || $self->{QueueManager},
-			   $self->{"CompCode"},
-			   $self->{"Reason"},
-			  );
-	if ( $self->{"CompCode"} == MQCC_OK ) {
-	    $self->{Hconn} = $Hconn;
-	    $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
-	    return 1;
-	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
-	    if ( $self->{"Reason"} == MQRC_ALREADY_CONNECTED ) {
-	        $self->{Hconn} = $Hconn;
-		$MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
-		return 1;
-	    } else {
-		$self->{Carp}->("MQCONN failed (CompCode = MQCC_WARNING), " .
-				qq/but Reason is unrecognized: '$self->{"Reason"}'/);
-		return;
-	    }
-	} elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
+	my $Hconn = "";
+	my $timedout = 0;
 
-            if ( exists $self->{RetryReasons}->{$self->{"Reason"}} ) {
+	if ( $self->{ConnectTimeout} ) {
 
-		if ( $retrycount < $self->{RetryCount} ) {
-		    $retrycount++;
-		    $self->{Carp}->(qq/MQCONN failed (Reason = $self->{"Reason"}), will sleep / .
-				    "$self->{RetrySleep} seconds and retry...");
-		    sleep $self->{RetrySleep};
-		    redo CONNECT;
+	    my $alarm = "MQSeries::QueueManager MQCONN timeout";
+	    my $child = 0;
+
+	  FORK:
+	    {
+
+		if ( $child = fork ) {
+		    #
+		    # We're in the parent.  Set the signal
+		    # handler, and call MQCONN inside an eval.  If
+		    # the child kills us, $@ will indicate this.
+		    #
+		    eval {
+			local $SIG{$self->{ConnectTimeoutSignal}} = sub { die $alarm };
+			$Hconn = MQCONN(
+					$self->{ProxyQueueManager} || $self->{QueueManager},
+					$self->{"CompCode"},
+					$self->{"Reason"},
+				       );
+		    };
+		    kill $self->{ConnectTimeoutSignal}, $child;
+		    waitpid($child,0);
+		    $timedout++ if $@ =~ /$alarm/;
+		} elsif ( defined $child ) {
+		    #
+		    # We're in the child.  Hand around and then
+		    # send a signal to the parent letting it know
+		    # the timeout period was reached.
+		    #
+		    local $SIG{$self->{ConnectTimeoutSignal}} = sub { exit 0; };
+		    my $ppid = getppid();
+		    sleep $self->{ConnectTimeout};
+		    kill $self->{ConnectTimeoutSignal}, $ppid;
+		    exit 0;
 		} else {
-		    $self->{Carp}->(qq/MQCONN failed (Reason = $self->{"Reason"}), retry timed out./);
+		    # XXX do we even want retry logic here???  Hmm...
+		    $self->{Carp}->("Unable to fork: $ERRNO");
 		    return;
 		}
-		
-	    } else {
-		$self->{Carp}->(qq/MQCONN failed (Reason = $self->{"Reason"}), not retrying./);
-		return;
+
 	    }
 
 	} else {
-	    $self->{Carp}->(qq/MQCONN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
-	    return;
+		
+	    $Hconn = MQCONN(
+			    $self->{ProxyQueueManager} || $self->{QueueManager},
+			    $self->{"CompCode"},
+			    $self->{"Reason"},
+			   );
+
 	}
+
+
+	if ( $self->{"Reason"} == MQRC_NONE || $self->{"Reason"} == MQRC_ALREADY_CONNECTED ) {
+	    $self->{Hconn} = $Hconn;
+	    $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
+	    return 1;
+	}
+
+	if ( $timedout ) {
+	    $self->{Carp}->("MQCONN failed (interrupted after $self->{ConnectTimeout} seconds)");
+	} else {
+	    $self->{Carp}->(qq/MQCONN failed (Reason = $self->{"Reason"})/);
+	}
+
+	if (
+	    $self->{RetryCount} &&
+	    ( exists $self->{RetryReasons}->{$self->{"Reason"}} || $timedout )
+	   ) {
+
+	    if ( $retrycount < $self->{RetryCount} ) {
+		$retrycount++;
+		$self->{Carp}->("Retrying MQCONN call in $self->{RetrySleep} seconds...");
+		sleep $self->{RetrySleep};
+		redo CONNECT;
+	    } else {
+		$self->{Carp}->("Maximum retry attempts reached ($self->{RetryCount})");
+	    }
+
+	}
+
+	return;
 
     }
 
@@ -610,76 +768,61 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
   use MQSeries::QueueManager;
 
   #
-  # Simplest usage
+  # Simplest, trivial usage
   #
   my $qmgr = MQSeries::QueueManager->new( QueueManager => 'some.queue.manager' ) ||
     die("Unable to connect to queue manager\n");
 
   #
-  # Slightly more complicated, obtaining the CompCode and Reason code,
-  # and checking it yourself.  
+  # The best way to do error checking.  Handle the object
+  # instantiation and connection to the queue manager independently.
   #
-  my $CompCode = MQCC_FAILED;
-  my $Reason = MQRC_UNEXPECTED_ERROR;
-  my $qmgr = MQSeries::QueueManager->new
+  my $qmgr = MQSeries::QueueMananer->new
     (
-     QueueManager 	=> 'some.queue.manager',
-     CompCode 		=> \$CompCode,
-     Reason 		=> \$Reason,
-    );
+     QueueManager	=> 'some.queue.manager',
+     NoAutoConnect	=> 1,
+    ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
-  if ( $CompCode == MQCC_FAILED ) {
-      die("Unable to connect to queue manager\n" .
-	  "CompCode => $CompCode\n" .
-	  "Reason => $Reason\n");
-  }
-  if ( $Reason == MQRC_ALREADY_CONNECTED ) {
-      warn "Duplicate connection to some.queue.manager";
-  }
- 
+  $qmgr->Connect() ||
+    die("Unable to connect to queue manager\n" .
+	"CompCode => " . $qmgr->CompCode() . "\n" .
+	"Reason => " . $qmgr->Reason() . "\n");
+
   #
-  # Advanced usage, setting optional arguments
+  # Advanced usage.  Enable the connection timeout, and connection
+  # retry logic.
   #
   my $qmgr = MQSeries::QueueManager->new
     (
      QueueManager 	=> 'some.queue.manager',
-     Carp 		=> \&MyLogger,
+     NoAutoConnect	=> 1,
+     ConnectTimeout	=> 120,
      RetryCount 	=> 60,
      RetrySleep 	=> 10,
-    ) || die("Unable to connect to queue manager\n");
+    ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
-  #
-  # Advanced usage, setting Queue Manager wide default put and get
-  # conversion routines.
-  #
-  my $qmgr = MQSeries::QueueManager->new
-    (
-     QueueManager 	=> 'some.queue.manager',
-     PutConvert 	=> \&my_encrypt,
-     GetConvert 	=> \&my_decrypt,
-    ) || die("Unable to connect to queue manager\n");
+  $qmgr->Connect() ||
+    die("Unable to connect to queue manager\n" .
+	"CompCode => " . $qmgr->CompCode() . "\n" .
+	"Reason => " . $qmgr->Reason() . "\n");
 
 =head1 DESCRIPTION
 
 The MQSeries::QueueManager object is an OO mechanism for connecting to
-an MQSeries queue manager.
+an MQSeries queue manager, and/or opening and inquiring a queue
+manager object.
 
 This module is used together with MQSeries::Queue and
 MQSeries::Message, and the other MQSeries::* modules.  These objects
 provide a simpler, higher level interface to the MQI.
 
-The primary value added by this particular object interface is logic
-to retry the connection under certain failure conditions.  Basically,
-any Reason Code which represents a transient condition, such as a
-Queue Manager shutting down, or a connection lost (possibly due to a
-network glitch?), will result in the MQCONN call being retried, after
-a short sleep.  See below for how to tune this behavior.
+This module also provides special support for connect timeouts (for
+interrupting MQCONN() calls that may hang forever), as well as connect
+retry logic, which will retry failed MQCONN() calls for a specific
+list of reason codes.
 
-This is intended to allow developers to write MQSeries applications
-which recover from short term outages without intervention.  This
-behavior is critically important to the authors applications, but may
-not be right for yours.  By default, the retry parameters are 0, so
-this is effectively disabled.
+See the "Special Considerations" section for a discussion of these
+advanced, but powerful, features.
 
 =head1 METHODS
 
@@ -692,15 +835,16 @@ The constructor takes a hash as an argument, with the following keys:
   QueueManager  		String
   Carp           		CODE reference
   NoAutoConnect			Boolean
-  RetryCount     		Numeric
-  RetrySleep     		Numeric
+  AutoCommit			Boolean
+  ConnectTimeout		Numeric
+  ConnectTimeoutSignal		String
   GetConvert     		CODE reference
   PutConvert     		CODE reference
-  CompCode       		Reference to Scalar Variable
-  Reason         		Reference to Scalar Variable
   RetrySleep			Numeric
   RetryCount			Numeric
   RetryReasons			HASH Reference
+  CompCode       		Reference to Scalar Variable
+  Reason         		Reference to Scalar Variable
 
 =over 4
 
@@ -739,6 +883,62 @@ Then, one tells the object to use this routine:
     ) || die("Unable to connect to queue manager.\n");
 
 The default, as one might guess, is Carp::carp();
+
+=item NoAutoConnect
+
+If the value of this argument is true, then the constructor will not
+automatically call the Connect() method, allowing the developer to
+call it explicitly, and thus independently error check object
+instantiation and the connection to the queue manager.  See the
+section on Error Handling in Special Considerations.
+
+=item AutoCommit
+
+If the value of this argument is true, then pending transactions will
+be committed during object destruction.  If it is false, then pending
+transactions will be backed out before disconnecting from the queue
+manager during object destruction.
+
+See the section on "AutoCommit" in "Special Considerations".
+
+=item ConnectTimeout
+
+If this value is given, it must be a positive integer.  This is the
+time, in seconds, in which an MQCONN() must complete before the MQI
+call will be interrupted.  The default value is zero, which means the
+MQCONN() call will not be interrupted.
+
+There are outage scenarios, in the experience of the author, where the
+MQCONN() call will block indefinetely and never return.  This happens
+when a queue manager is "hung", and completely unresponsive, in some
+cases.
+
+This feature should be used with caution, since it is implemented
+using a SIGALRM handler, and the alarm() system call.  See the section
+on "Connection Timeouts" in "Special Considerations".
+
+Attempts to use this feature on unsupported platforms that do not
+support signals will generate a warning, and be silently ignored.
+
+=item ConnectTimeoutSignal
+
+By default, the ConnectTimeout mechanism is implemented using a signal
+handler for SIGUSR1, but the signal used to interrupt the MQCONN()
+call can be customized using this attribute.
+
+The signal handler installed by this API is done using local(), so the
+effects of the handler will only override the applications handler
+during the call to MQCONN().
+
+The string used for this attribute should be the short hand name of
+the signal, for example, to set the signal to SIGUSR2:
+
+   my $qmgr = MQSeries::QueueManager->new
+     (
+      QueueManager		=> 'FOO',
+      ConnectTimeout		=> 300,
+      ConnectTimeoutSignal	=> 'USR2',
+     ) || die;
 
 =item RetryCount
 
@@ -798,7 +998,7 @@ value to the constructor, for example:
     ) || die "Unable to open queue: CompCode => $CompCode, Reason => $Reason\n";
 
 But, this is ugly (authors opinion, but then, he gets to write the
-docs, too).  
+docs, too).
 
 =item RetryCount
 
@@ -869,6 +1069,18 @@ following key/value pairs (required keys are marked with a '*'):
   PutMsgRecs    ARRAY Reference
   Sync          Boolean
   PutConvert    CODE reference
+
+The return value is true or false, depending on the success of the
+underlying MQPUT1() call.  If the operation fails, then the Reason()
+and CompCode() methods will return the appropriate error codes, if the
+error was an MQSeries error.
+
+If a PutConvert() method failed before the actual MQPUT1() function
+was called, then the Reason() code will be MQRC_UNEXPECTED_ERROR, and
+the PutConvertReason() will be true.  All of the PutConvert() methods
+supplied with the various MQSeries::Message subclasses in this
+distribution will generate some form of error via carp (or the Carp
+attribute of the objects, if overridden).
 
 =over 4
 
@@ -993,17 +1205,26 @@ conversion routined for only a few specific queues.  In the latter
 case, it is entirely possible that you will need to specify PutConvert
 when performing an MQPUT1 MQI call via the Put1() method.
 
-=item CompCode
+=back
+
+=head2 CompCode
 
 This method returns the MQI Completion Code for the most recent MQI
 call attempted.
 
-=item Reason
+=head2 Reason
 
 This method returns the MQI Reason Code for the most recent MQI
 call attempted.
 
-=item Reasons
+=head2 PutConvertReason
+
+This method returns a true of false value, indicating if a PutConvert
+method failed or not.  Similar to the MQRC reason codes, false
+indicates success, and true indicates some form of error.  If there
+was no PutConvert method called, this will always return false.
+
+=head2 Reasons
 
 This method call returns an array reference, and each member of the
 array is a Response Record returned as a possible side effect of
@@ -1013,8 +1234,6 @@ The individual records are hash references, with two keys: CompCode
 and Reason.  Each provides the specific CompCode and Reason associated
 with the put of the message to each individual queue in the
 distribution list, respectively.
-
-=back
 
 =head2 Open
 
@@ -1139,14 +1358,82 @@ and the value of that key in the ObjDesc hash is returned.
 NOTE: This method is meaningless unless the queue manager has been
 MQOPEN()ed via the Open() method.
 
-=head1 MQCONN RETRY SUPPORT
+=head1 Special Considerations
+
+=head2 AutoCommit
+
+Normally, when you have pending transactions (i.e. MQPUT() and/or
+MQGET() calls with syncpoint), they will be automatically committed
+when MQDISC() is called.  The MQSeries::QueueManager object
+destructor, in an attempt to make things easy for the programmer,
+automatically calls MQDISC() for you.  The result is that transactions
+will be automatically committed when the application exits in any way
+that allows the object destruction to occur.
+
+This behavior is somewhat counter intuitive, as you would expect
+transactions to be backed out unless you explicitly say otherwise
+(i.e. call MQCMIT(), or in this context, the Commit() method call).
+
+As of the 1.12 release of the MQSeries Perl API, this behavior is
+under the control of the developer.  The AutoCommit argument to the
+object constructor is a Boolean value that specifies whether
+AutoCommit is on or off.  If enabled, then a pending transaction will
+be committed before disconnecting.  If disabled, then the transaction
+will be backed out, and only if the backout succeeds will we cleanly
+disconnect.
+
+NOTE: The default behavior is backwards compatible in the 1.12
+release, meaning that AutoCommit is enabled by default.  However, if
+you do B<not> specify the AutoCommit behavior explicitly, then the
+automatic commit of a pending tranaction will generate a warning when
+the object is destroyed.  This is because we (the MQSeries Perl API
+authors) feel that depending on this functionality is dangerous.
+
+ANOTHER NOTE: The default behavior will change with the 1.13 release,
+as AutoCommit will default to 0, not 1, making the intuitive behavior
+the default.
+
+=head2 Connection Timeout Support
+
+There are known outage scenarios wherein the queue manager will be in
+a "hung" state, where it is entirely unresponsive, but still up and
+running.  Attempts to connect to such a queue manager can block
+indefinetely, with the MQCONN() call never returning, until the queue
+manager is shutdown and restarted.  Normally, applications can not
+trap this error, since they will be stuck in the MQCONN() call,
+forever.
+
+By setting the ConnectTimeout argument to the MQSeries::QueueManager
+constructor, a time limit on MQCONN() can be imposed, and applications
+will be able to detect this situation, and take action, if so desired.
+
+This functionality is implemented by forking a child process, which
+sleeps for the duration of the ConnectTimeout, and then sends a signal
+to the parent to interrupt the MQCONN() call.  If the MQCONN() call
+succeeds before the timeout is reached, then the parent kill the child
+with the same signal.
+
+By default, SIGUSR1 is used, and the handlers are installed locally,
+so there should be no conflict with any signal handlers installed by
+the application, unless you really need your own SIGUSR1 to be enabled
+during the MQCONN() call.  You can customize the signal used via the
+ConnectTimeoutSignal argument.
+
+If the timeout occurs, it will be considered a retryable error. (See
+the next section).
+
+NOTE: This functionality is only supported on platforms that support
+fork(), and signals, of course.  Win32 is not supported, since it does
+not support sending signals to other processes.
+
+=head2 Connection Retry Support
 
 Normally, when MQCONN() fails, the method that called it (Connect() or
 new()) also fails.  It is possible to have the Connect() method retry
-the MQOPEN() call for a specific set of reason codes.
+the MQCONN() call for a specific set of reason codes.
 
-By default,  the retry logic  is  disabled, but it  can  be enabled by
-setting the RetryCount to a non-zero value.  The  list of reason codes
+By default, the retry logic is disabled, but it can be enabled by
+setting the RetryCount to a non-zero value.  The list of reason codes
 defaults to a few reasonable values, but a list of retryable codes can
 be specified via the RetryReasons argument.
 
@@ -1170,7 +1457,7 @@ retry logic only applies to the initial connection.  Reconnecting at
 arbitrary points in the code is far more complex, and it left as a
 (painful) exercise to the reader.
 
-=head1 ERROR HANDLING
+=head2 Error Handling
 
 Most methods return a true or false value indicating success of
 failure, and internally, they will call the Carp subroutine (either
@@ -1243,7 +1530,7 @@ would do the following:
         "Reason   => " . $qmgr->Reason() . "\n");
   }
 
-=head1 CONVERSION PRECEDENCE
+=head2 Conversion Precedence
 
 Once you have read all the MQSeries::* documentation, you might be
 confused as to how the various PutConvert/GetConvert method arguments

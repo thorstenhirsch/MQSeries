@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 14.1 2000/08/15 20:51:14 wpm Exp $
+# $Id: Makefile.PL,v 15.1 2000/09/14 20:14:15 wpm Exp $
 #
 # (c) 1999, 2000 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,6 +15,12 @@ if ( $::has_mqrfh ) {
     WriteMakefile(
 		  NAME	   	=> 'MQSeries::PubSub',
 		  VERSION_FROM 	=> 'PubSub/Broker.pm',
+		  (
+		   $^O eq 'os390' ?
+		   (
+		    MAN3PODS	=> {},
+		   ) : ()
+		  ),
 		 );
 }
 else {
