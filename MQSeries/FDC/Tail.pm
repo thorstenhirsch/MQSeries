@@ -1,12 +1,12 @@
 #
-# MQSeries::FDC::Tail.pm - Watch multiple FDC in a directory 
-#                          and return parsed FDC::Entry objects
-#                          for any new content added.
+# MQSeries::FDC::Tail.pm - Watch multiple FDC in a directory
+#                          and return parsed FDC::Entry objects for
+#                          any new content added.
 #
-# (c) 2000-2001 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 17.1 2001/03/14 00:20:15 wpm Exp $
+# $Id: Tail.pm,v 20.3 2002/03/18 20:34:20 biersma Exp $
 #
 
 package MQSeries::FDC::Tail;
@@ -19,7 +19,7 @@ use MQSeries::FDC::Parser;
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 #
 # The FDC logs are watched based on the following assumptions:
@@ -31,7 +31,7 @@ $VERSION = '1.14';
 # - If a file inode changes, the previous file is of no interest
 #
 
-# 
+#
 # Constructor
 #
 # Parameters:
@@ -63,9 +63,9 @@ sub new {
 }
 
 
-# 
-# Establish a baseline of all known files and sizes.
-# Later 'process' calls will only see updates relative to this.
+#
+# Establish a baseline of all known files and sizes.  Later 'process'
+# calls will only see updates relative to this.
 #
 # Parameters:
 # - MQSeries::FDC::Tail object
@@ -73,21 +73,21 @@ sub new {
 sub scan {
     my ($this) = @_;
 
-    # 
-    # Find all matching files in the directory;
-    # the 'files' attribute is indexed by name and stores 
-    # hashes with inode and size entries.
+    #
+    # Find all matching and readable files in the directory; the
+    # 'files' attribute is indexed by name and stores hashes with
+    # inode and size entries.
     #
     opendir(WATCHDIR, $this->{'directory'}) ||
       confess "Cannot open directory [$this->{'directory'}]: $!";
     my $entries = {};
     while (defined (my $entry = readdir WATCHDIR)) {
         next unless ($entry =~ m!^AMQ\d+.*\.FDC$!);
-        next unless (-f "$this->{'directory'}/$entry");
+        next unless (-f "$this->{'directory'}/$entry" && -r _);
 
         # Get stats - but re-use results from -f filetest
         my ($inode, $size) = (stat _)[1,7];
-        $entries->{$entry} = { 'inode'   => $inode, 
+        $entries->{$entry} = { 'inode'   => $inode,
                                'size'   => $size,
                                'parser' => MQSeries::FDC::Parser->new($entry),
                              };
@@ -99,11 +99,11 @@ sub scan {
 
 
 #
-# Process all changed files and invoke the parser
-# on the changed data. If this routine is called
-# regularly, that data will typically be one error-message;
-# however, it may be more.  The MQSeries::FDC::Parser
-# class handles these one-or-more message chunks properly.
+# Process all changed files and invoke the parser on the changed
+# data. If this routine is called regularly, that data will typically
+# be one error-message; however, it may be more.  The
+# MQSeries::FDC::Parser class handles these one-or-more message chunks
+# properly.
 #
 # Parameters:
 # - MQSeries::FDC::Tail object
@@ -114,9 +114,9 @@ sub process {
     confess "Invalid no of args" unless (@_ == 1);
     my ($this) = @_;
 
-    # 
+    #
     # Find all matching files in the directory;
-    # the 'files' attribute is indexed by name and stores 
+    # the 'files' attribute is indexed by name and stores
     # hashes with inode, size and (lazily populated) fh entries.
     #
     opendir(WATCHDIR, $this->{'directory'}) ||
@@ -125,7 +125,7 @@ sub process {
     my @entries;
     while (defined (my $entry = readdir WATCHDIR)) {
         next unless ($entry =~ m!^AMQ\d+.*\.FDC$!);
-        next unless (-f "$this->{'directory'}/$entry");
+        next unless (-f "$this->{'directory'}/$entry" && -r _);
 
         # Get stats - but re-use results from -f filetest
         my ($inode, $size, $mtime) = (stat _)[1,7,9];
@@ -139,9 +139,9 @@ sub process {
         if (defined $this->{'files'}{$entry}) {
             if ($this->{'files'}{$entry}{'inode'} != $inode) {
                 #
-                # If the inode has changed, delete the entry
-                # from the table - the new-file logic will cause
-                # the file to be processed from the start.
+                # If the inode has changed, delete the entry from the
+                # table - the new-file logic will cause the file to be
+                # processed from the start.
                 #
                 delete $this->{'files'}{$entry};
                 # Fall-through
@@ -177,8 +177,8 @@ sub process {
         #
         # New file (not seen before or inode changed)
         #
-        $this->{'files'}{$entry} = 
-          { 'inode'  => $inode, 
+        $this->{'files'}{$entry} =
+          { 'inode'  => $inode,
             'mtime'  => $mtime,
             'size'   => $size,
             'parser' => MQSeries::FDC::Parser->new($entry),
@@ -192,8 +192,8 @@ sub process {
     closedir(WATCHDIR);
 
     #
-    # Now get rid of all files we have open, that no longer are 
-    # in the directory - useful for a long-running daemon
+    # Now get rid of all files we have open, that no longer are in the
+    # directory - useful for a long-running daemon
     #
     foreach my $file (keys %{ $this->{'files'} }) {
         next if (defined $found{$file});
@@ -206,10 +206,10 @@ sub process {
 }
 
 
-# 
-# Handle the updates of one file.  This is a separate method
-# to allow sub-classes to provide a different read mechanism
-# (e.g., line-by-line or chunk-by-chunk instead of everything).
+#
+# Handle the updates of one file.  This is a separate method to allow
+# sub-classes to provide a different read mechanism (e.g.,
+# line-by-line or chunk-by-chunk instead of everything).
 #
 # Parameters:
 # - MQSeries::FDC::Tail object
@@ -230,11 +230,11 @@ sub process_updates {
 
 
 #
-# PRIVATE help functions: check and see that we do not have too many 
+# PRIVATE help functions: check and see that we do not have too many
 # files open.  This is invoked just before we open any file-handle.
 #
-# NOTE: The main reason this is required is that 32-bit Solaris has a 
-#       limit of max 255 files open at any one time using stdio (which 
+# NOTE: The main reason this is required is that 32-bit Solaris has a
+#       limit of max 255 files open at any one time using stdio (which
 #       perl does), even though the file-descriptor limit can be quite
 #       a bit higher.  And, of course, MQ likes to write FDC errors
 #       on hundreds of files at once :-)
@@ -258,13 +258,13 @@ sub _check_maxfiles {
         $open_entries{$entry} = $files->{$entry}{'mtime'};
     }
     return unless (scalar(keys %open_entries) >= $this->{'maxfiles'});
-    
+
     #
     # Sort the files by age
     #
-    my @oldest = sort { $open_entries{$a} <=> $open_entries{$b} 
+    my @oldest = sort { $open_entries{$a} <=> $open_entries{$b}
                       } keys %open_entries;
-    #print "Oldest file is [" . 
+    #print "Oldest file is [" .
     #  ($open_entries{ $oldest[-1] } - $open_entries{ $oldest[0] }),
     #  "] seconds older than the latest\n";
 
@@ -273,11 +273,11 @@ sub _check_maxfiles {
         delete $files->{$entry}{'fh'};
     }
 }
-        
+
 
 1;                              # End on a positive note
 
-        
+
 __END__
 
 =head1 NAME
@@ -305,14 +305,13 @@ MQSeries::FDC::Tail -- Watch MQSeries FDC error files
 
 =head1 DESCRIPTION
 
-The MQSeries::FDC::Tail class provides a mechanism to watch
-the FDC logs, which are generally written to if a fatal MQSeries
-error, or internal MQSeries error, occurs.
+The MQSeries::FDC::Tail class provides a mechanism to watch the FDC
+logs, which are generally written to if a fatal MQSeries error, or
+internal MQSeries error, occurs.
 
-Every time the process() method is invoked, it will return a
-(possibly empty) array of MQSeries::FDC::Entry objects,
-which can in turn be analyzed and shipped off to syslog or other 
-monitoring tools.
+Every time the process() method is invoked, it will return a (possibly
+empty) array of MQSeries::FDC::Entry objects, which can in turn be
+analyzed and shipped off to syslog or other monitoring tools.
 
 The MQSeries::FDC::Tail class will notice new FDC files appearing;
 files being truncated (e.g. by housekeeping jobs) or files being
@@ -322,20 +321,18 @@ removed.
 
 =head2 new
 
-Create a new MQSeries::FDC::Tail object. The argument is the 
-directory to watch (/var/mqm/errors for a typical installation).
-An optional second argument specifies the maximum number of files
-that may be open at the same time; the default is 200, well under
-the default limit of 255 open files imposed by the stdio libraries
-of many vendors.
+Create a new MQSeries::FDC::Tail object. The argument is the directory
+to watch (/var/mqm/errors for a typical installation).  An optional
+second argument specifies the maximum number of files that may be open
+at the same time; the default is 200, well under the default limit of
+255 open files imposed by the stdio libraries of many vendors.
 
 =head2 process
 
-Process any changes since the previous invocation (or the constructor).
-Read any data found, parse it and return the MQSeries::FDC::Entry
-objects that were read.
+Process any changes since the previous invocation (or the
+constructor).  Read any data found, parse it and return the
+MQSeries::FDC::Entry objects that were read.
 
 =head1 SEE ALSO
 
-MQSeries(3), MQSeries::FDC::Parser(3), MQSeries::FDC::Entry(3), 
-MQSeries::ErrorLog::Tail(3)
+MQSeries(3), MQSeries::FDC::Parser(3), MQSeries::FDC::Entry(3), MQSeries::ErrorLog::Tail(3)

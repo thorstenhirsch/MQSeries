@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 17.1 2001/03/29 16:11:11 wpm Exp $
+# $Id: parse_headers,v 20.2 2002/03/13 15:31:16 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
@@ -12,6 +12,7 @@
 #
 
 use English;
+use Config;
 
 opendir(INCLUDE,$include) ||
   die "Unable to opendir $include: $ERRNO\n";
@@ -116,7 +117,7 @@ foreach my $header ( @headers ) {
 	}
 
 	#
-	# Hex 
+	# Hex
 	#
 	if ( $value =~ /^0x/ ) {
 	    $value =~ s/L$//;
@@ -125,9 +126,25 @@ foreach my $header ( @headers ) {
 	#
 	# Numeric
 	#
-	elsif ( $value =~ /L$/ ) {
+	# NOTE: Special case to handle the MQ_64_BIT conditionals.  If
+	# we see the same value more than once, then we use the longer
+	# value IFF we are compiling with a 64 bit perl.  Sleazy, but
+	# effective.  This works because the ONLY parameters that are
+	# affected by these conditionals are the _LENGTH parameters
+	# for some of the structures.
+	#
+	elsif ( $value =~ /L$/ || $value =~ /^-?\d+$/) {
+
 	    $value =~ s/L$//;
-	    $constant_numeric{$key} = $value;
+
+	    if ( not exists $constant_numeric{$key} ) {
+		$constant_numeric{$key} = $value;
+	    } elsif ( $Config{use64bits} eq 'true' && $value > $constant_numeric{$key} ) {
+		$constant_numeric{$key} = $value;
+	    } elsif ( $Config{use64bits} eq 'false' && $value < $constant_numeric{$key} ) {
+		$constant_numeric{$key} = $value;
+	    }
+
 	}
 	#
 	# Null strings -- very special

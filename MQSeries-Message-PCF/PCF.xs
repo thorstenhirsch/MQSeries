@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 16.1 2001/01/05 21:43:10 wpm Exp $";
+static char rcsid[] = "$Id: PCF.xs,v 20.2 2002/03/19 21:51:28 wpm Exp $";
 
 /*
-  (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+  (c) 1999-2002 Morgan Stanley Dean Witter and Co.
   See ..../src/LICENSE for terms of distribution.
  */
 
@@ -133,7 +133,7 @@ MQDecodePCF(pBuffer)
 	      hv_store(DataHV,"Type",4,(newSViv(pStringParam->Type)),0);
 	      hv_store(DataHV,"Parameter",9,(newSViv(pStringParam->Parameter)),0);
 	      hv_store(DataHV,"CodedCharSetId",14,(newSViv(pStringParam->CodedCharSetId)),0);
-	      hv_store(DataHV,"String",6,(newSVpv(pStringParam->String,pStringParam->StringLength)),0);
+	      hv_store(DataHV,"String",6,(newSVpvn(pStringParam->String,pStringParam->StringLength)),0);
 	      
 	      av_push(DataAV,newRV_noinc((SV*)DataHV));
 
@@ -181,7 +181,7 @@ MQDecodePCF(pBuffer)
 		  tmpStringLength++;
 		}
 
-		av_push(ListAV,newSVpv(pSListTemp,tmpStringLength));
+		av_push(ListAV,newSVpvn(pSListTemp,tmpStringLength));
 		pSListTemp += pStringParamList->StringLength;
 
 	      }

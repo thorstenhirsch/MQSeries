@@ -1,7 +1,7 @@
 #
-# $Id: Storable.pm,v 17.1 2001/03/14 00:20:18 wpm Exp $
+# $Id: Storable.pm,v 20.2 2002/03/18 20:34:24 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -18,7 +18,7 @@ use MQSeries::Message;
 
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 @ISA = qw(MQSeries::Message);
 
 #

@@ -2,10 +2,10 @@
 # MQSeries::FDC::Parser.pm - Break an FDC log into chunks, then
 #                            create FDC::Entry objects from those chunks.
 #
-# (c) 2000-2001 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 17.1 2001/03/14 00:20:14 wpm Exp $
+# $Id: Parser.pm,v 20.3 2002/03/18 20:34:19 biersma Exp $
 #
 
 package MQSeries::FDC::Parser;
@@ -17,7 +17,7 @@ use MQSeries::FDC::Entry;
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 #
 # Constructor
@@ -125,7 +125,7 @@ sub parse_one_chunk {
     my $fields = {};
     my $end = "\n| end :- ";
     $header .= $end;            # Fake end to make parsing easier
-    while ($header =~ m!^\| ([\w\s\/]+)\s+:-\s+(.*?)(?=\n\|[\w\s]+\s+:- )!msgc) {
+    while ($header =~ m!^\| ([\w\s\-\/]+)\s+:-\s+(.*?)(?=\n\|[\w\-\s]+\s+:- )!msgc) {
         my ($field, $data) = ($1, $2);
         $field =~ s!\s*$!!;
         $data =~ s!\s+\|\s*\n\s*\|\s*! !g;

@@ -1,7 +1,7 @@
 #
-# $Id: Constants.pl,v 16.1 2001/01/05 21:45:43 wpm Exp $
+# $Id: Constants.pl,v 20.1 2002/03/18 20:34:09 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

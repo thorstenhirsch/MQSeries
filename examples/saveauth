@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 #                                                    -*-perl-*-
-# (c) 2000-2001 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: saveauth,v 16.1 2001/01/05 21:46:17 wpm Exp $
+# $Id: saveauth,v 20.1 2002/03/18 20:34:43 biersma Exp $
 #
 
 use strict;

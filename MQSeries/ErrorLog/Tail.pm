@@ -3,10 +3,10 @@
 #                               and return parsed ErrorLog::Entry objects
 #                               for any new content added.
 #
-# (c) 2000-2001 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 17.1 2001/03/14 00:20:11 wpm Exp $
+# $Id: Tail.pm,v 20.2 2002/03/18 20:34:14 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Tail;
@@ -19,7 +19,7 @@ use MQSeries::ErrorLog::Parser;
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 # 
 # Constructor

@@ -1,7 +1,7 @@
 #
-# $Id: ChannelTable.pm,v 17.2 2001/04/02 21:02:51 wpm Exp $
+# $Id: ChannelTable.pm,v 20.2 2002/03/18 20:34:03 biersma Exp $
 #
-# (c) 2001 Morgan Stanley Dean Witter and Co.
+# (c) 2001-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use vars qw(
 	    %StrucLength
 	   );
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 @MQCDFields =
   (
@@ -150,6 +150,7 @@ $VERSION = '1.14';
 %SystemDefClntconn =
   (
    Version			=> 4,
+   ChannelName			=> 'SYSTEM.DEF.CLNTCONN',
    ChannelType			=> 'Clntconn',
    TransportType		=> 'TCP',
    MaxMsgLength			=> 4194304,
@@ -310,6 +311,7 @@ sub writeFile {
     my ($filename,$clntconn,$version) = @args{qw(Filename Clntconn Version)};
 
     my $data = "AMQR";
+    my $offset = length($data);
 
     if ( $args{Debug} ) {
 	print "\nInside writeFile method\n";
@@ -326,16 +328,15 @@ sub writeFile {
     my $default = {%SystemDefClntconn};
     my @channel = ();
 
-    my $supportedkeys = { map { $_->[0] => 1 } @MQCDFields };
-
     foreach my $channel ( @$clntconn ) {
 	next unless $channel->{ChannelName} =~ /^SYSTEM\.DEF\.CLNTCONN\s*$/;
 	$default = { %SystemDefClntconn, %$channel };
 	$default->{Version} = $version;
 	$default->{StrucLength} = $StrucLength{$version};
-	push(@channel,$default);
 	last;
     }
+
+    push(@channel,$default);
 
     foreach my $channel ( @$clntconn ) {
 	next if $channel->{ChannelName} =~ /^SYSTEM\.DEF\.CLNTCONN\s*$/;
@@ -346,6 +347,7 @@ sub writeFile {
     }
 
     {
+	my $supportedkeys = { map { $_->[0] => 1 } @MQCDFields };
 	my $invalid = 0;
 	foreach my $channel ( @channel ) {
 	    foreach my $key ( keys %$channel ) {
@@ -357,8 +359,16 @@ sub writeFile {
 	confess "Invalid keys in Clntconn list\n" if $invalid;
     }
 
-    my $previous = 0;
-    my $next = 0;
+    #
+    # We're going to create an array of binary encoded MQCD
+    # structures, and then go back and create the next/previous
+    # pointers.  We used to do this (version 1.15) as we went, but it
+    # appears that IBM's code that parses this file assumes that the
+    # end of the linked list is the beginning of the file, and after
+    # following the linked list pointers to the end, it then parses
+    # the file sequentially.
+    #
+    my @mqcd = ();
 
     for ( my $index = 0 ; $index <= $#channel ; $index++ ) {
 
@@ -443,7 +453,62 @@ sub writeFile {
 
 	my $mqcd_length = length($mqcd);
 
+	push(@mqcd,
+	     {
+	      MQCD		=> $mqcd,
+	      Offset		=> $offset,
+	     });
+
+	$offset += $mqcd_length + 20;
+
+    }
+
+    #
+    # Now we'll troll through the @mqcd array of hashes, and add the
+    # next and previous pointers.  This is gross, because we have to
+    # make this look *exactly* like the order the physical list is
+    # written when a queue manager writes the file.  IOW, we have to
+    # fool IBM.
+    #
+    # The physical order of the entries is:  1 2 3 4 5 6
+    # The logical order of the entries is:   1 6 5 4 3 2
+    #
+    # Confused?  I hope so...
+    #
+    for ( my $index = 0 ; $index <= $#mqcd ; $index++ ) {
+
+	my $next = 0;
+	my $prev = 0;
+
+	#
+	# Three special cases.
+	#
+	if ( $index == 0 ) {
+	    # The first physical entry is the first in the linked
+	    # list, thus no previous pointer.
+	    $next = $mqcd[$#mqcd]->{Offset};
+	    $prev = 0;
+	} elsif ( $index == 1 ) {
+	    # The second physical entry is the last in the linked
+	    # list, thus no next pointer.
+	    $next = 0;
+	    $prev = $mqcd[$index+1]->{Offset};
+	} elsif ( $index == $#mqcd ) {
+	    # The last physical entry has to point back to the first
+	    # one.
+	    $next = $mqcd[$index-1]->{Offset};
+	    $prev = $mqcd[0]->{Offset};
+	} else {
+	    # The default next/previous pointers just go backwards through
+	    # the physical list, in the opposite order.
+	    $next = $mqcd[$index-1]->{Offset};
+	    $prev = $mqcd[$index+1]->{Offset};
+	}
+
+	my $mqcd_length = length($mqcd[$index]->{MQCD});
+
 	if ( $args{Debug} ) {
+	    print "Channel entry $index out of " . ($#mqcd+1) . " entries\n";
 	    print "MQCD Length = $mqcd_length\n";
 	}
 
@@ -455,23 +520,15 @@ sub writeFile {
 	$entry .= $class->writeNumber($mqcd_length);
 	$entry .= "\0" x 4;
 
-	if ( $index == $#channel ) {
-	    $next = 0;
-	} else {
-	    $next = length($data) + $mqcd_length + 20;
-	}
-
 	$entry .= $class->writeNumber( $next );
-	$entry .= $class->writeNumber( $previous );
+	$entry .= $class->writeNumber( $prev );
 
 	if ( $args{Debug} ) {
 	    print "Offset to next definition = $next\n";
-	    print "Offset to prev definition = $previous\n";
+	    print "Offset to prev definition = $prev\n";
 	}
 
-	$entry .= $mqcd;
-
-	$previous = length($data);
+	$entry .= $mqcd[$index]->{MQCD};
 
 	$data .= $entry;
 

@@ -1,8 +1,8 @@
 #!/ms/dist/perl5/bin/perl5.005-thread
 #
-# $Id: reply.pl,v 16.2 2001/01/05 21:46:11 wpm Exp $
+# $Id: reply.pl,v 20.1 2002/03/18 20:34:34 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

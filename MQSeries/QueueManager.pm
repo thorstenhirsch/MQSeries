@@ -1,7 +1,7 @@
 #
-# $Id: QueueManager.pm,v 17.3 2001/06/05 18:05:10 wpm Exp $
+# $Id: QueueManager.pm,v 20.2 2002/02/27 18:09:51 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,14 +21,14 @@ use MQSeries qw(:functions);
 #
 # Well, now that we're using the same constants for the Inquire/Set
 # interface, they no longer are really part of the Command/PCF
-# heirarchy.  We may or may not address this namespace asymmetry in a
+# hierarchy.  We may or may not address this namespace asymmetry in a
 # future release.
 #
 use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 sub new {
     my $proto = shift;
@@ -53,12 +53,7 @@ sub new {
        ConnectTimeoutSignal	=> 'USR1',
        ConnectTimeout		=> 0,
        ConnectArgs		=> {},
-
-       #
-       # XXX -- This is new with 1.12, but in 1.13, we are going to
-       # make this default to 0.  We'll warn you...
-       #
-       AutoCommit	=> 0,
+       AutoCommit               => 0,
 
       };
     bless ($self, $class);
@@ -123,15 +118,26 @@ sub new {
     #
     if ( exists $args{AutoCommit} ) {
 	$self->{AutoCommit} = $args{AutoCommit};
-    } else {
-	$self->{AutoCommitDefault} = 1;
     }
 
     #
-    # OK, now, try to connect (unless told not to).
+    # Historically, we auto-connected, unless 'NoAutoConnect' was set
+    # to 1.  We still auto-connect, but the option is now called
+    # 'AutoConnect', and must be set to 0 (false) to avoid
+    # auto-connecting.  We still support the old flag for backwards
+    # compatibility.
     #
-    unless ( $args{NoAutoConnect} ) {
-	my $result = $self->Connect();
+    # FIXME: Warn for NoAutoConnect usage in later releases, if $^W is on.
+    #
+    if (exists $args{'NoAutoConnect'}) {
+        if (exists $args{'AutoConnect'}) {
+            $self->{Carp}->("Both 'AutoConnect' and 'NoAutoConnect' specified, ignoring 'NoAutoConnect'");
+        } else {
+            $args{'AutoConnect'} = ($args{'NoAutoConnect'} ? 0 : 1);
+        }
+    }
+    unless (exists $args{'AutoConnect'} && $args{'AutoConnect'} == 0) {
+        my $result = $self->Connect();
 	foreach my $code ( qw( CompCode Reason )) {
 	    if ( ref $args{$code} eq "SCALAR" ) {
 		${$args{$code}} = $self->{$code};
@@ -342,8 +348,8 @@ sub Inquire {
 
 }
 
-sub Disconnect {
 
+sub Disconnect {
     my $self = shift;
 
     return 1 unless $self->{Hconn};
@@ -388,8 +394,8 @@ sub Disconnect {
 	$self->{Carp}->(qq/MQDISC of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
-
 }
+
 
 sub DESTROY {
     my $self = shift;
@@ -397,8 +403,8 @@ sub DESTROY {
     $self->Disconnect();
 }
 
-sub Backout {
 
+sub Backout {
     my $self = shift;
     $self->{"CompCode"} = MQSeries::MQCC_FAILED;
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
@@ -415,11 +421,10 @@ sub Backout {
 	$self->{Carp}->(qq/MQBACK of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
-
 }
 
-sub Commit {
 
+sub Commit {
     my $self = shift;
     $self->{"CompCode"} = MQSeries::MQCC_FAILED;
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
@@ -436,18 +441,16 @@ sub Commit {
 	$self->{Carp}->(qq/MQCMIT of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
-
 }
+
 
 sub Pending {
-
     my $self = shift;
     return $self->{_Pending};
-
 }
 
-sub Put1 {
 
+sub Put1 {
     my $self = shift;
     my %args = @_;
 
@@ -566,11 +569,10 @@ sub Put1 {
 	return 1;
 
     }
-
 }
 
-sub Connect {
 
+sub Connect {
     my $self = shift;
     my %args = ( %{$self->{ConnectArgs}}, @_ );
 
@@ -741,7 +743,6 @@ sub Connect {
 	return;
 
     }
-
 }
 
 1;
@@ -770,7 +771,7 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
   my $qmgr = MQSeries::QueueManager->new
     (
      QueueManager	=> 'some.queue.manager',
-     NoAutoConnect	=> 1,
+     AutoConnect	=> 0,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
   $qmgr->Connect() ||
@@ -786,7 +787,7 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
   my $qmgr = MQSeries::QueueManager->new
     (
      QueueManager 	=> 'some.queue.manager',
-     NoAutoConnect	=> 1,
+     AutoConnect	=> 0,
      ConnectTimeout	=> 120,
      RetryCount 	=> 60,
      RetrySleep 	=> 10,
@@ -826,7 +827,7 @@ The constructor takes a hash as an argument, with the following keys:
   ===            		=====
   QueueManager  		String
   Carp           		CODE reference
-  NoAutoConnect			Boolean
+  AutoConnect			Boolean
   AutoCommit			Boolean
   ConnectTimeout		Numeric
   ConnectTimeoutSignal		String
@@ -876,13 +877,19 @@ Then, one tells the object to use this routine:
 
 The default, as one might guess, is Carp::carp();
 
-=item NoAutoConnect
+=item AutoConnect
 
-If the value of this argument is true, then the constructor will not
-automatically call the Connect() method, allowing the developer to
-call it explicitly, and thus independently error check object
-instantiation and the connection to the queue manager.  See the
-section on Error Handling in Special Considerations.
+This is an optional parameter that defaults to true.  If the value of
+this argument is false, then the constructor will not automatically
+call the C<Connect()> method, allowing the developer to call it
+explicitly, and thus independently error check object instantiation
+and the connection to the queue manager.  See the section on Error
+Handling in Special Considerations.
+
+NOTE: This parameter used to be called C<NoAutoConnect>, obviously
+with reverse meaning for true and false.  The old behavior is still
+supported for backwards compatibility.  Future release will start
+issuing a warning and eventually C<NoAutoConnect> will go away.
 
 =item AutoCommit
 
@@ -968,9 +975,10 @@ transparently, in the class definition.
 =item CompCode, Reason
 
 WARNING: These keys are deprecated, and their use no longer
-encouraged.  They are left in place only for backwards compabitility.
+encouraged.  They are left in place only for backwards compabitility
+and will be removed in a future release.
 
-See the docs for the NoAutoConnect argument, and the Connect()
+See the docs for the C<AutoConnect> argument, and the Connect()
 method.
 
 When the constructor encounters an error, it returns nothing, and you
@@ -995,7 +1003,7 @@ docs, too).
 =item RetryCount
 
 The call to MQCONN() (implemented via the Connect() method), can be
-old to retry the failure for a specific list of reason codes.  This
+told to retry the failure for a specific list of reason codes.  This
 functionality is only enabled if the RetryCount is non-zero. By
 default, this value is zero, and thus retries are disabled.
 
@@ -1020,7 +1028,7 @@ to the queue manager.  The various options are all set via the
 MQSeries::Queue constructor (see above).
 
 This method is called automatically by the constructor, unless the
-NoAutoConnect argument is given.
+C<AutoConnect> argument is specified and set to false.
 
 Note that this is a new method as of the 1.06 release, and is provided
 to enable more fine grained error checking.  See the ERROR HANDLING
@@ -1374,15 +1382,15 @@ be committed before disconnecting.  If disabled, then the transaction
 will be backed out, and only if the backout succeeds will we cleanly
 disconnect.
 
-NOTE: The default behavior is backwards compatible in the 1.12
+NOTE: The default behavior was backwards compatible in the 1.12
 release, meaning that AutoCommit is enabled by default.  However, if
 you do B<not> specify the AutoCommit behavior explicitly, then the
-automatic commit of a pending tranaction will generate a warning when
+automatic commit of a pending transaction will generate a warning when
 the object is destroyed.  This is because we (the MQSeries Perl API
 authors) feel that depending on this functionality is dangerous.
 
-ANOTHER NOTE: The default behavior will change with the 1.13 release,
-as AutoCommit will default to 0, not 1, making the intuitive behavior
+ANOTHER NOTE: The default behavior did change with the 1.13 release,
+and AutoCommit now defaults to 0, not 1, making the intuitive behavior
 the default.
 
 =head2 Connection Timeout Support
@@ -1512,7 +1520,7 @@ would do the following:
   my $qmgr = MQSeries::QueueManager->new
     (
      QueueManager		=> 'some.queue.manager',
-     NoAutoConnect		=> 1,
+     AutoConnect		=> 0,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
   # Call the Connect method explicitly

@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -462,6 +462,7 @@ package MQSeries::Command::PCF;
    {
     Principal			=> 1000,
     Group			=> 1001,
+    AFS			        => 1002,
    },
 
   );

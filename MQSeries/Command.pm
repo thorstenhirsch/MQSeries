@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 17.9 2001/06/07 13:07:44 wpm Exp $
+# $Id: Command.pm,v 20.2 2002/03/18 20:33:38 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -23,7 +23,7 @@ use MQSeries::Utils qw(ConvertUnit);
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 sub new {
     my $proto = shift;
@@ -105,7 +105,15 @@ sub new {
     # Where do we send requests?
     #
     if ( $args{CommandQueueName} ) {
+        #
+        # NOTE: This may be distribution-list notation
+        #       (queue@xmitqname), in which case the RealQueueManager
+        #       name may specify the target queue manager name.
+        #
 	$self->{CommandQueueName} = $args{CommandQueueName};
+        if (defined $args{'RealQueueManager'}) {
+            $self->{'RealQueueManager'} = $args{'RealQueueManager'};
+        }
     } else {
 	#
 	# Some reasonable defaults.  If we're proxying to a MQSC
@@ -343,6 +351,17 @@ sub AUTOLOAD {
 # attributes to see if they match, and if they do, do nothing.  That
 # is, its a conditional creation of the given object.
 #
+# Hash with named parameters:
+# - Verify (optional boolean): run for real (false, dft) / verify only (true)
+# - Quiet: (optional boolean): display activity (true) / silent (false, dft)
+# - Clear: (optional, boolean): clear queue if recreated
+# - Attrs: Ref to hash with attributes of object to be created
+# - Force: (optional, boolean): use force option when recreating queue
+# - Callback (optional): code ref used to coprae attributes
+# Returns:
+# - Boolean: false if create/verify failed, true if create/verify succeeded
+#   If true: -1 if no differences/changes, 1 if differences/changes made
+#
 sub CreateObject {
     my ($self, %args) = @_;
     my ($Verify, $Quiet, $Clear, $Attrs, $Force, $Callback) =
@@ -475,9 +494,9 @@ sub CreateObject {
 		print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n");
 
 		if (ref $Attrs->{$Attr} eq "ARRAY") {
-		    print "Should be:\n\t" . join("\n\t",map { qq{'$_'} } @{$Attrs->{$Attr}}) . "\n";
+		    print "Should be:\n\t" . join("\n\t",map { qq{'$_'} } @{$Changes->{$Attr}}) . "\n";
 		} else {
-		    print "Should be: '$Attrs->{$Attr}'\n";
+		    print "Should be: '$Changes->{$Attr}'\n";
 		}
 		
 		if (ref $Object->{$Attr} eq "ARRAY") {
@@ -495,10 +514,10 @@ sub CreateObject {
 
     unless ($Need) {
 	print "$Type '$QMgr/$Attrs->{$Key}' is correctly configured\n" unless $Quiet;
-	return 1;
+	return -1;              # -1: No changes
     }
 
-    return 1 if $Verify;
+    return 1 if $Verify;        # 1: Things changed
 
     #
     # If we have any changes, make sure we include the QName/QType,
@@ -541,7 +560,7 @@ sub CreateObject {
 	  };
 
 	$method = $Create;
-
+        $Changes = $Callback->($Attrs);
     }
 
     unless ( $Quiet ) {
@@ -575,7 +594,7 @@ sub CreateObject {
 	  return;
       };
 
-    return 1;
+    return 1;                   # 1: Things changed
 }
 
 
@@ -885,7 +904,6 @@ sub _Command {
 #
 sub _CompareAttributes {
     my ($request, $found, $cmp_sub) = @_;
-    $found ||= {};
 
     my $retval = {};
     foreach my $attr (sort keys %$request) {
@@ -894,9 +912,11 @@ sub _CompareAttributes {
         # returned by the Inquire commands, eg. Replace, Force and
         # others that make no sense.
         #
-        next unless exists $found->{$attr};
+        next if (defined $found && !exists $found->{$attr});
 
-        my $NeedAttr = $cmp_sub->($attr, $request->{$attr}, $found->{$attr});
+        my $NeedAttr = (defined $found
+                        ? $cmp_sub->($attr, $request->{$attr}, $found->{$attr})
+                        : 1);
         if ($NeedAttr) {
             $retval->{$attr} = $request->{$attr};
         }

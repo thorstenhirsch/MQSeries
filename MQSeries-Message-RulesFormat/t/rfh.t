@@ -1,7 +1,7 @@
 #
-# $Id: rfh.t,v 16.1 2001/01/05 21:43:19 wpm Exp $
+# $Id: rfh.t,v 20.1 2002/03/18 20:33:16 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

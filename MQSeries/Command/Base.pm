@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 17.3 2001/04/06 17:54:09 biersma Exp $
+# $Id: Base.pm,v 20.4 2002/03/18 20:33:40 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 sub new {
 
@@ -120,6 +120,7 @@ sub new {
 
 }
 
+
 #
 # This routine replaces something I originally did in C, using the
 # perl internals API, to lookup all of these hashes and arrays.
@@ -127,9 +128,7 @@ sub new {
 # Yes, I was insane...
 #
 sub _TranslatePCF {
-
-    my $self = shift;
-    my ($header,$origparams) = @_;
+    my ($self, $header, $origparams) = @_;
 
     my $command = $header->{Command};
 
@@ -164,14 +163,13 @@ sub _TranslatePCF {
     my ($ParameterRequired) = ( exists $RequiredMap->{$command} ?
 				$RequiredMap->{$command} :
 				{} );
+    my @required_order = sort { $ParameterRequired->{$a} <=> 
+                                $ParameterRequired->{$b}
+                              } keys %$ParameterRequired;
+    my $ParameterOrderList = $MQSeries::Command::PCF::RequestParameterOrder{$command};
+    my @optional_order = ($ParameterOrderList ? @$ParameterOrderList : ());
 
-    my $ParameterOrderList = $MQSeries::Command::PCF::RequestParameterOrder{$command} || {};
-
-    my $ParameterOrderHash = {};
-
-    foreach my $key ( keys %$ParameterOrderList ) {
-	$ParameterOrderHash->{$key} = { map { $_ => 1 } @{$ParameterOrderList->{$key}} };
-    }
+    my %ParameterOrderHash = map { ($_,1) } (@required_order, @optional_order);
 
     #
     # Verify that all of the parameters are known - this finds my typos...
@@ -203,28 +201,31 @@ sub _TranslatePCF {
     # Sort the parameters, required then optional, and if necessary,
     # command dependent order.
     #
-    my @origparams = ();
+    my @ordered_params = ();
+    foreach my $pair ( [ 'Required', \@required_order ],
+                       [ 'Optional', \@optional_order ] ) {
+        my ($type, $list) = @$pair;
 
-    foreach my $type ( qw(Required Optional) ) {
-
-	foreach my $param ( @{$ParameterOrderList->{$type}} ) {
+	foreach my $param (@$list) {
 	    next unless defined $origparams->{$param};
-	    push(@origparams,$param);
+	    push @ordered_params, $param;
 	}
 
-	foreach my $param ( keys %$origparams ) {
-	    next if $type eq 'Required' && not exists $ParameterRequired->{$param};
-	    next if $type eq 'Optional' && exists $ParameterRequired->{$param};
-	    push(@origparams,$param) unless $ParameterOrderHash->{$type}->{$param};
+	foreach my $param (keys %$origparams) {
+	    next if ($type eq 'Required' && 
+                     not exists $ParameterRequired->{$param});
+	    next if ($type eq 'Optional' && 
+                     exists $ParameterRequired->{$param});
+	    push @ordered_params, $param 
+              unless $ParameterOrderHash{$param};
 	}
 
     }
 
-    foreach my $origparam ( @origparams ) {
+    foreach my $param (@ordered_params) {
+	my $origvalue = $origparams->{$param};
 
-	my $origvalue = $origparams->{$origparam};
-
-	my ($paramkey,$paramtype,$ValueMap) = @{$ParameterMap->{$origparam}};
+	my ($paramkey,$paramtype,$ValueMap) = @{ $ParameterMap->{$param} };
 
 	my $newparameter =
 	  {
@@ -264,7 +265,7 @@ sub _TranslatePCF {
 	    if ( ref $ValueMap ) {
 		unless ( exists $ValueMap->{$origvalue} ) {
 		    $self->{Carp}->("Unknown value '$origvalue' for " .
-				    "parameter '$origparam', command '$command'");
+				    "parameter '$param', command '$command'");
 		    return;
 		}
 		$newparameter->{Value} = $ValueMap->{$origvalue};
@@ -278,7 +279,7 @@ sub _TranslatePCF {
 		if ( ref $ValueMap ) {
 		    unless ( exists $ValueMap->{$value} ) {
 			$self->{Carp}->("Unknown value '$origvalue' for " .
-					"parameter '$origparam', command '$command'");
+					"parameter '$param', command '$command'");
 			return;
 		    }
 		    push(@{$newparameter->{Values}},$ValueMap->{$value});
@@ -289,12 +290,11 @@ sub _TranslatePCF {
 	}
 
 	push(@$parameters,$newparameter);
-
     }
 
     return ($header,$parameters);
-
 }
+
 
 #
 # This routine does the reverse mapping of _TranslatePCF.
@@ -755,17 +755,17 @@ sub MQDecodeMQSC {
     # Look for the error feedback...
     #
     # We recognize this because:
-    # - The message looks like CSQxxxxx *XYZZY
+    # - The message looks like CSQxxxxx *XYZZY or CSQxxxx /XYZZY
     # - The message code is not CSQM4xxI, which is the normal message
     #   return
     #
     # NOTE: In MQ 5.2 for OS/390, the *XYZZY occurs in CSQM409I, but this
     #       did not occur in previous version.  Hence, we have to take
-    #       care not to assume any *XYZZY is an error.
+    #       care not to assume any *XYZZY or /XYYZY is an error.
     #
     if ( $buffer =~ m{
 		      ^(?!CSQM4\d\dI)\S+\s+	# Message ID
-		      \*\w+\s*	                # The leading * is the key
+		      [\*/]\w+\s*               # The leading * or / is the key
 		      (.*)
 		     }x ) {
 	$newheader =

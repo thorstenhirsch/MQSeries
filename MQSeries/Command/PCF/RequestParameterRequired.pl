@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -20,12 +20,14 @@ package MQSeries::Command::PCF;
 #
 # Since PCF commands have to list the required parameters *before* any
 # optional ones, MQSeries::Command::Request::_TranslatePCF uses this
-# hash to indicate which parameters are required.
+# hash to indicate which parameters are required and in which order
+# they must be specified.
 #
 # NOTE: You only have to list a command and its required parameters
-# here if the command has *both* required and optional parameters.  If
-# the command's parameters are either all required or all optional, it
-# can be omitted entirely.
+# here if the command has *both* required and optional parameters, or
+# if the parameter order is significant.  If the command's parameters
+# are either all required or all optional, and order does not matter,
+# it can be omitted entirely.
 #
 
 %RequestParameterRequired =
@@ -47,28 +49,28 @@ package MQSeries::Command::PCF;
 
    CopyChannel                  =>
    {
-    ChannelType                 => 1,
+    ChannelType                 => 3,
     FromChannelName             => 1,
-    ToChannelName               => 1,
+    ToChannelName               => 2,
    },
 
    CopyNamelist                 =>
    {
     FromNamelistName            => 1,
-    ToNamelistName              => 1,
+    ToNamelistName              => 2,
    },
 
    CopyProcess                  =>
    {
     FromProcessName             => 1,
-    ToProcessName               => 1,
+    ToProcessName               => 2,
    },
 
    CopyQueue                    =>
    {
     FromQName                   => 1,
-    QType                       => 1,
-    ToQName                     => 1,
+    QType                       => 3,
+    ToQName                     => 2,
    },
 
    InquireClusterQueueManager   =>
@@ -105,7 +107,7 @@ $RequestParameterRequired{CreateQueue} =
   $RequestParameterRequired{ChangeQueue} =
   {
    QName                        => 1,
-   QType                        => 1,
+   QType                        => 2,
   };
 
 $RequestParameterRequired{InquireQueueNames} =
@@ -119,7 +121,7 @@ $RequestParameterRequired{CreateChannel} =
   $RequestParameterRequired{ChangeChannel} =
   {
    ChannelName                  => 1,
-   ChannelType                  => 1,
+   ChannelType                  => 2,
   };
 
 $RequestParameterRequired{StopChannel} =

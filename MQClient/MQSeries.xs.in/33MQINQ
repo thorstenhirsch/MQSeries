@@ -1,8 +1,8 @@
 # -*-c-*-
 #
-# $Id: 33MQINQ,v 16.1 2001/01/05 21:42:45 wpm Exp $
+# $Id: 33MQINQ,v 20.2 2002/03/19 21:39:03 wpm Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -149,7 +149,7 @@ MQINQ(Hconn,Hobj,CompCode,Reason,...)
 		  XSRETURN_EMPTY;
 		}
 		tempLen = SvIV(*svp);
-		XPUSHs(sv_2mortal(newSVpv(pCurCharAttr,tempLen)));
+		XPUSHs(sv_2mortal(newSVpvn(pCurCharAttr,tempLen)));
 		pCurCharAttr += tempLen;
 	      }
 	      else {

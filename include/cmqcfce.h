@@ -1,9 +1,9 @@
 /*
  * Extensions for the PCF Command Set
  *
- * $Id: cmqcfce.h,v 16.2 2001/01/05 21:46:19 wpm Exp $
+ * $Id: cmqcfce.h,v 20.1 2002/03/18 20:34:45 biersma Exp $
  *
- * (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+ * (c) 1999-2002 Morgan Stanley Dean Witter and Co.
  * See ..../src/LICENSE for terms of distribution.
  *
  */
@@ -55,6 +55,7 @@ extern "C" {
 
 #define MQETE_PRINCIPAL				1000L
 #define MQETE_GROUP				1001L
+#define MQETE_AFS_GROUP				1002L
 
 #if defined(__cplusplus)
 }

@@ -12,29 +12,21 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
 
 #
-# Some of the PCF commands have order dependencies for the optional,
-# and perhaps the required, parameters.  MQSeries::Command is smart
-# enough to put required in front of optional, but this configuration
-# will guarantee the order of the parameters, where necessary.
+# Some of the PCF commands have order dependencies for the optional
+# parameters.  MQSeries::Command is smart enough to put required in
+# front of optional, but this configuration will guarantee the order
+# of the optional parameters, where necessary.
 #
 
 %RequestParameterOrder =
   (
-   CopyQueue                    =>
-   {
-    Required                    => [qw( FromQName ToQName Type )],
-   },
-
-   DeleteQueue			=>
-   {
-    Optional			=> [qw( QType Purge )],
-   },
+   DeleteQueue			=> [qw( QType Purge )],
   );
 
 1;

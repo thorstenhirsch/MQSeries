@@ -22,10 +22,11 @@ website at: http://www.ibm.com/software/mqseries
 =head1 PREREQUISITES
 
 This release requires perl5.004 or later, and some release of the IBM
-MQSeries product installed, either V2, V5.0 or V5.1.
+MQSeries product installed, either V2, V5.0, V5.1 or V5.2.
 
 The PubSub extensions, and the RulesFormat message support require
-either V5.1, or V5.0 with CSD05 or later.
+either V5.2, V5.1, or V5.0 with CSD05 or later.  MQSI is not
+supported.
 
 =head1 PLATFORMS
 
@@ -45,17 +46,28 @@ the author, of course.
 						5.00503 (w/ -Dusethreads)
   SunOS 5.6		5.0			5.00503
   SunOS 5.7		5.1			Same as SunOS 5.5.1
+  SunOS 5.7		5.2			Same as SunOS 5.5.1
+  SunOS 5.8		5.1			Same as SunOS 5.5.1
+  SunOS 5.8		5.2			Same as SunOS 5.5.1
   IRIX 6.5		2.x			Same as SunOS 5.5.1	
-  HP-UX 11.0 32bit	5.1			5.00503
+  IRIX 6.5		5.0			Same as SunOS 5.5.1	
+ *HP-UX 11.0 32bit	5.1			5.00503
+ *HP-UX 11.0 32bit	5.2			5.6.1
   NT 4.0		5.0			AS build 521
   NT 4.0		5.1			AS build 521
   NT 4.0		5.1			AS build 617
-  AIX 4.3.3		5.1			5.00503
+  NT 4.0		5.1			AS build 617
+ *Windows 2000		5.2			??
+ *AIX 4.3.3		5.1			5.00503
+ *AIX 4.3.3		5.2			5.6.1
  *SuSE Linux 6.3	5.1			5.00503
  *HP-UX 10.20		??			??
  *Redhat Linux 5.2	?? 			??
   Redhat Linux 6.1	5.1 			5.00503
   Redhat Linux 6.2	5.1			5.6.0
+  Redhat Linux 7.x	5.2			5.00405
+						5.00503
+						5.6.1
 
 NOTE: The ?? indicates that I received reports of a successful test
 suite run, but I never received confirmation of the MQSeries version.
@@ -175,12 +187,15 @@ file formats used by the MQSeries product:
 
 =head1 AUTHORS
 
-The code is currently maintained and supported by both:
+The code is currently maintained and supported by:
 
-  W. Phillip Moore <Phil.Moore@msdw.com>
-  Hildo Biersma <Hildo.Biersma@msdw.com>
+  Hildo Biersma <Hildo.Biersma@MorganStanley.com>
 
-I also have to give credit to:
+Most of the previous development, maintenance and support work was done by:
+
+  W. Phillip Moore <Phil.Moore@MorganStanley.com>
+
+We also have to give credit to:
 
   Brian T. Shelden <shelden@shelden-associates.com>
 
@@ -196,8 +211,8 @@ Although, nothing remains of the original code.... (sorry, David :-)
 =cut
 
 #
-# $Id: README,v 16.1 2001/01/05 21:46:07 wpm Exp $
+# $Id: README,v 20.3 2002/03/26 14:33:43 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #

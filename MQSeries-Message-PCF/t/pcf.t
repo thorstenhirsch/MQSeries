@@ -1,7 +1,7 @@
 #
-# $Id: pcf.t,v 17.1 2001/03/14 00:19:45 wpm Exp $
+# $Id: pcf.t,v 20.2 2002/03/18 20:33:08 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,7 +21,7 @@ BEGIN {
 }
 
 END { print "not ok 1\n" unless $loaded; }
-use MQSeries::Message::PCF 1.14 qw(MQEncodePCF MQDecodePCF);
+use MQSeries::Message::PCF 1.17 qw(MQEncodePCF MQDecodePCF);
 $loaded = 1;
 print "ok 1\n";
 

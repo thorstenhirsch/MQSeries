@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 17.1 2001/03/14 00:19:51 wpm Exp $
+# $Id: Command.pm,v 20.2 2002/03/18 20:33:30 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,7 +10,7 @@ package MQSeries::PubSub::Command;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 use MQSeries qw(:functions);
 use MQSeries::PubSub::Message;
@@ -752,9 +752,9 @@ For example:
         (
          Message 		=> $message,
          Wait			=> 1000,
-        );
+        ) || die;
 
-      next if $result > 1; # -1 means MQRC_NO_MSG_AVAILABLE -- see MQSeries::Queue::Get docs
+      next if $result == -1; # -1 means MQRC_NO_MSG_AVAILABLE -- see MQSeries::Queue::Get docs
 
       # Do something useful with $message->Data(), perhaps
 

@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: RequestValues.in,v 16.2 2001/02/05 16:43:22 wpm Exp $
+# $Id: RequestValues.in,v 20.1 2002/03/18 20:34:53 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -453,6 +453,7 @@ package MQSeries::Command::PCF;
    {
     Principal			=> &MQETE_PRINCIPAL,
     Group			=> &MQETE_GROUP,
+    AFS			        => &MQETE_AFS_GROUP,
    },
 
   );

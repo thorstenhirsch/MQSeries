@@ -76,6 +76,7 @@ MQSeries/Command/PCF/Responses.pl
 MQSeries/Command/Request.pm
 MQSeries/Command/Response.pm
 MQSeries/Config/Authority.pm
+MQSeries/Config/ChannelTable.pm
 MQSeries/Config/Machine.pm
 MQSeries/Config/QMgr.pm
 MQSeries/Constants.pl
@@ -107,6 +108,8 @@ examples/OO/request-reply-2/reply.pl
 examples/OO/request-reply-2/request.pl
 examples/PubSub/amqspsda.pl
 examples/README
+examples/mqchl2ini
+examples/mqini2chl
 examples/saveauth
 include/cmqcfce.h
 pre.in/MQSeries-PubSub/PubSub/AdminMessage.in

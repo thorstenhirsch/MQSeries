@@ -1,7 +1,7 @@
 #
-# $Id: Queue.pm,v 17.1 2001/03/14 00:20:20 wpm Exp $
+# $Id: Queue.pm,v 20.3 2002/03/13 15:24:15 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -26,10 +26,9 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 sub new {
-
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
@@ -155,18 +154,34 @@ sub new {
     }
 
     #
+    # Historically, we auto-opened, unless 'NoAutoOpen' was set to 1.
+    # We still auto-open, but the option is now called 'AutoOpen', and
+    # must be set to 0 (false) to avoid auto-opening.  We still
+    # support the old flag for backwards compatibility.
+    #
+    # FIXME: Warn for NoAutoOpen usage in later releases, if $^W is on.
+    #
+    if (exists $args{'NoAutoOpen'}) {
+        if (exists $args{'AutoOpen'}) {
+            $self->{Carp}->("Both 'AutoOpen' and 'NoAutoOpen' specified, ignoring 'NoAutoOpen'");
+        } else {
+            $args{'AutoOpen'} = ($args{'NoAutoOpen'} ? 0 : 1);
+        }
+    }
+
+    #
     # How are we opening this?  Only one of Options or Mode can be
-    # specified.  Actually, cut people some slack here.  If NoAutoOpen
-    # is used, then you might very well be passing Mode or Options to
+    # specified.  Actually, cut people some slack here.  If AutoOpen
+    # is false, then you might very well be passing Mode or Options to
     # the Open() method
     #
-    unless ( $args{NoAutoOpen} ) {
-	if (
+    unless (exists $args{'AutoOpen'} && $args{'AutoOpen'} == 0) {
+        if (
 	    ( exists $args{Options} and exists $args{Mode} )
 	    or
 	    ( not exists $args{Options} and not exists $args{Mode} )
 	   ) {
-	    $self->{Carp}->("Incompatible arguments: one and only one of 'Options' or 'Mode' must be given");
+            $self->{Carp}->("Incompatible arguments: one and only one of 'Options' or 'Mode' must be given");
 	    return;
 	}
     }
@@ -177,56 +192,60 @@ sub new {
     if ( $args{DisableAutoResize} ) {
 	$self->{DisableAutoResize} = $args{DisableAutoResize};
     }
-
+    
     #
     # All of these options can be passed to the Open() method, so we'll defer checking them until then.
     #
-    foreach my $openarg ( qw( Options Mode RetrySleep RetryCount RetryReasons ) ) {
-      next unless exists $args{$openarg};
-      $self->{OpenArgs}->{$openarg} = $args{$openarg};
+    foreach my $openarg (qw(Options Mode RetrySleep RetryCount RetryReasons)) {
+        next unless exists $args{$openarg};
+        $self->{OpenArgs}->{$openarg} = $args{$openarg};
     }
 
-    unless ( $args{NoAutoOpen} ) {
+    unless (exists $args{'AutoOpen'} && $args{'AutoOpen'} == 0) {
 	my $result = $self->Open();
 	foreach my $code ( qw(CompCode Reason) ) {
-	    if ( ref $args{$code} eq "SCALAR" ) {
-		${$args{$code}} = $self->{$code};
-	    }
-	}
-	return unless $result;
+            if ( ref $args{$code} eq "SCALAR" ) {
+		${ $args{$code} } = $self->{$code};
+            }
+        }
+        return unless $result;
     }
 
     return $self;
-
 }
+
 
 sub CompCode {
     my $self = shift;
     return $self->{"CompCode"};
 }
 
+
 sub PutConvertReason {
     my $self = shift;
     return $self->{"PutConvertReason"};
 }
+
 
 sub GetConvertReason {
     my $self = shift;
     return $self->{"GetConvertReason"};
 }
 
+
 sub Reason {
     my $self = shift;
     return $self->{"Reason"};
 }
+
 
 sub Reasons {
     my $self = shift;
     return $self->{ObjDesc}->{ResponseRecs};
 }
 
-sub Close {
 
+sub Close {
     my $self = shift;
     my (%args) = @_;
 
@@ -257,19 +276,19 @@ sub Close {
 			qq/$self->{QueueManager}->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
-
 }
+
 
 sub DESTROY {
     my $self = shift;
     $self->Close();
 }
 
+
 #
 # The real work is usually done with Put() and Get()
 #
 sub Put {
-
     my $self = shift;
     my %args = @_;
 
@@ -388,11 +407,10 @@ sub Put {
 	}
 	
     }
-
 }
 
-sub Get {
 
+sub Get {
     my $self = shift;
     my %args = @_;
 
@@ -563,40 +581,49 @@ sub Get {
 	}
 
     }
-
 }
 
-#
-# In hindsight, it might have made life easier if MQSeries::Queue
-# inherited from MQSeries::QueueManager, as these next 3 methods
-# implement inheritance manually, with no added value, really...
-#
 
+#
+# Return the queue manager object used for this queue
+#
+sub QueueManager {
+    my ($self) = @_;
+
+    return $self->{'QueueManager'};
+}
+
+
+#
+# NOTE: It was a mistake to provide these methods at the queue level
+# and then delegate them to the queue manager object, as that confused
+# some developers into thinking the scope of transactions is
+# per-queue.
+#
+# The documentation has been updated to reflect this and all three
+# methods will go away in a future release.
+#
 sub Backout {
-
     my $self = shift;
     return unless $self->Open();
     return $self->{QueueManager}->Backout();
-
 }
 
-sub Commit {
 
+sub Commit {
     my $self = shift;
     return unless $self->Open();
     return $self->{QueueManager}->Commit();
-
 }
+
 
 sub Pending {
-
     my $self = shift;
     return $self->{QueueManager}->Pending();
-
 }
 
-sub Inquire {
 
+sub Inquire {
     my $self = shift;
     my (@args) = @_;
 
@@ -662,11 +689,10 @@ sub Inquire {
     $self->{"Reason"} = MQSeries::MQRC_NONE;
 
     return %values;
-
 }
 
-sub Set {
 
+sub Set {
     my $self = shift;
     my (%args) = @_;
 
@@ -675,7 +701,7 @@ sub Set {
 
     my (%keys) = ();
 
-    my $ForwardMap = $MQSeries::Command::PCF::RequestValues{Queue};
+    my $ForwardMap = $MQSeries::Command::PCF::RequestParameters{Queue};
 
     foreach my $key ( keys %args ) {
 
@@ -716,15 +742,14 @@ sub Set {
     }
 
     return 1;
-
 }
+
 
 #
 # Unlike *most* of these methods (here, and in most other code), this
 # returns a hard reference to the entire hash
 #
 sub ObjDesc {
-
     my $self = shift;
 
     if ( $_[0] ) {
@@ -737,11 +762,10 @@ sub ObjDesc {
     } else {
 	return $self->{ObjDescPtr};
     }
-
 }
 
-sub Open {
 
+sub Open {
     my $self = shift;
     my %args = ( %{$self->{OpenArgs}}, @_ );
 
@@ -867,8 +891,8 @@ sub Open {
 	}
 
     }
-
 }
+
 
 1;
 
@@ -909,12 +933,12 @@ MQSeries::Queue -- OO interface to the MQSeries Queue objects
 	       "Reason = " . $queue->Reason() . "\n");
 
     if ( UpdateSomeDatabase($getmessage->Data()) ) {
-        $queue->Commit()
+        $queue->QueueManager()->Commit()
 	  or die("Unable to commit changes to queue.\n" .
 		 "CompCode = " . $queue->CompCode() . "\n" .
 		 "Reason = " . $queue->Reason() . "\n");
     } else {
-        $queue->Backout()
+        $queue->QueueManager()->Backout()
 	  or die("Unable to backout changes to queue.\n" .
 		 "CompCode = " . $queue->CompCode() . "\n" .
 		 "Reason = " . $queue->Reason() . "\n");
@@ -1024,7 +1048,7 @@ key/value pairs (required keys are marked with a '*'):
   CloseOptions	     		MQCLOSE 'Options' values
   DynamicQName			String
   DisableAutoResize  		Boolean
-  NoAutoOpen    		Boolean
+  AutoOpen          		Boolean
   ObjDesc            		HASH Reference
   Carp               		CODE Reference
   PutConvert         		CODE Reference
@@ -1036,8 +1060,8 @@ key/value pairs (required keys are marked with a '*'):
   RetryReasons			HASH Reference
 
 NOTE: Only B<one> or the 'Options' or 'Mode' keys can be specified.
-They are mutually exclusive.  If 'NoAutoOpen' is given, then both
-'Options' and 'Mode' are optional, as they canbe passed directly to
+They are mutually exclusive.  If 'AutoOpen' is given, then both
+'Options' and 'Mode' are optional, as they can be passed directly to
 the Open() method.
 
 =over 4
@@ -1171,18 +1195,24 @@ converted message will not fit.
 
 See the Get() method documentation for more information.
 
-=item NoAutoOpen
+=item AutoOpen
 
-This will disable the implicit call to the Open() method by the
-constructor, thus requiring the application to call it itself.  This
-allows for more fine-grained error checking, since the constructur
-will then fail only if there is a problem parsing the constructor
-arguments.  The subsequent call to Open() can be error checked
-independently of the new() constructor.
+This is an optional parameter that defaults to true.  If the value of
+this argument is false, then the constructor will not implicitly call
+the C<Open()> method, thus requiring the application to call it
+itself.  This allows for more fine-grained error checking, since the
+constructur will then fail only if there is a problem parsing the
+constructor arguments.  The subsequent call to C<Open()> can be error
+checked independently of the C<new()> constructor.
+
+NOTE: This parameter used to be called C<AutoOpen>, obviously
+with reverse meaning for true and false.  The old behavior is still
+supported for backwards compatibility.  Future release will start
+issuing a warning and eventually C<NoAutoOpen> will go away.
 
 =item ObjDesc
 
-The value of this key is a hash refernece which sets the key/values of
+The value of this key is a hash reference which sets the key/values of
 the MsgDesc structure.  See the "MQSeries Application Programming
 Reference" documentation for the possible keys and values of the MQOD
 structure.
@@ -1404,8 +1434,8 @@ MQSeries(3).
 
 This is a flag to indicate that the Syncpoint option is to be used,
 and the message(s) not committed to the queue until an MQBACK or
-MQCOMM call is made.  These are both wrapped with the Backout() and
-Commit() methods respectively.
+MQCOMM call is made.  These are both wrapped with the queue manager
+Backout() and Commit() methods respectively.
 
 The value is simply interpreted as true or false.
 
@@ -1751,6 +1781,11 @@ argument is given, then the ObjDesc hash reference is returned.  If a
 single argument is given, then this is interpreted as a specific key,
 and the value of that key in the ObjDesc hash is returned.
 
+=head2 QueueManager
+
+This method takes no arguments, and returns the MQSeries::QueueManager
+object used by the queue.
+
 =head2 Backout
 
 This method takes no arguments, and merely calls MQBACK.  It returns
@@ -1764,6 +1799,15 @@ the new() documentation above), these methods are provided as part of
 the MQSeries::Queue API.  Note, however, that this does B<NOT> imply
 that syncpoint operations can be performed at the individual Queue
 level.  Transactions are still per-queue manager connection.
+
+NOTE: Applications should generally invoke the Commit() and Backout()
+methods on the queue manager object, not on the queue.  If no queue
+manager object has been created, code like
+
+  $queue->QueueManager()->Backout()
+
+should be used.  The queue-level Commit(), Backout() and Pending()
+methods will go away in a future release.
 
 =head2 Commit
 
@@ -1812,6 +1856,9 @@ distribution list, respectively.
 
 This method indicated whether or not there are currently actively
 pending transactions (puts or gets under syncpoint).
+
+NOTE: This method will be dropped in a future release.  See the note
+on the Backout() method for details.
 
 =head1 MQOPEN RETRY SUPPORT
 
@@ -1909,7 +1956,7 @@ would do the following:
   my $qmgr = MQSeries::QueueManager->new
     (
      QueueManager		=> 'some.queue.manager',
-     DisableAutoConnect		=> 1,
+     AutoConnect		=> 0,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
   # Call the Connect method explicitly
@@ -1924,7 +1971,7 @@ would do the following:
      QueueManager		=> $qmgr,
      Queue			=> 'SOME.QUEUE',
      Mode			=> 'input',
-     NoAutoOpen			=> 1,
+     AutoOpen			=> 0,
     ) || die "Unable to instantiate MQSeries::Queue object\n";
 
   # Call the Open method explicitly

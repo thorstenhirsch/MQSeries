@@ -1,8 +1,103 @@
-
 =head1 Introduction
 
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
+
+=head1 Changes for 1.17
+
+=head2 Parameter order for PCF commands
+
+Jim Hildebrand at MQ Software tried to use the MQSeries::Command suite
+on Windows 2000 and discovered that the order in which PCF command
+options are specified was dependent on the platform hash key ordering,
+even though the PCF command server requires a specific ordering for
+some keys.  The perl hash key ordering happened to work on Solaris,
+but broke on Windows 2000 (and possibly other platforms).
+
+=head2 Final message for mainframe MQSC commands
+
+Joseph Sacco at Starwood Hotels reported that the MQSeries::Command
+suite, when run against a mainframe using MQSC commands, gave annoying
+errors messages because the teminating response line on his mainframe
+queue manager has a different format from ours.
+
+We now accept both formats.  If you run MQSeries::Command against a
+mainframe and get error messages like:
+
+    Unrecognized MQSC buffer: /T2 CSQMDRTS ' DISPLAY QUEUE' NORMAL COMPLETION
+
+then please get in touch and send us the error message.
+
+=head2 Invalid handling of zero-length messages and zero-length PCF strings
+
+Peter Giorgilli reported that we had a bug in the XS code that caused
+us to return garbage data when reading zero-length messages.  It turns
+out a similar issue caused zero-length PCF strings to be misread for
+responses from little-endian queue managers (e.g. Linux/ia32 and
+Windows).  These zero-length string bugs have been corrected
+throughout all the XS code.
+
+=head2 Rename NoAutoConnect flag for MQSeries::QueueManager constructor
+
+The NoAutoConnect flag for the MQSeries::QueueManager constructor has
+been renamed to AutoConnect (with, obviously, reverse meaning of the
+option values).  The default behavior remains the same and the next
+few releases will support the old flag for backwards compatibility.
+
+=head2 Rename NoAutoOpen flag for MQSeries::Queue constructor
+
+The NoAutoOpen flag for the MQSeries::Queue constructor has been
+renamed to AutoOpen (with, obviously, reverse meaning of the option
+values).  The default behavior remains the same and the next few
+releases will support the old flag for backwards compatibility.
+
+=head2 Add QueueManager method to MQSeries::Queue
+
+In retrospect, it was probably a mistake to add Commit() and Backout()
+methods to the MQSeries::Queue class and have them delegate these
+calls to the queue manager object.  Some developers were confused by
+this and thought the scope of transactions was per-queue.  
+
+However, it is valid to create an MQSeries::Queue object without
+creating an MQSeries::QueueManager object first, and Commit() and
+Backout() have to be called on something - so it seemed like a
+reasonable thing to do.
+
+A new method for MQSeries::Queue, QueueManager(), can be used to
+extract the queue manager object from a queue.  The documentation has
+been updated to reflect that Commit() and Backout() should be called
+on the queue manager object, not on the queue.  The queue-level
+Commit() and Backout() methods will be dropped in a future release.
+
+=head1 Changes for 1.16
+
+=head2 MQSeries::Config::ChannelTable
+
+The SYSTEM.DEF.CLNTCONN definition must be present, or the client can
+get upset in certain error conditions, so the code now forces this to
+the front of the list, even if you don't specify it.
+
+The physical order of the entries, and the order in which the linked
+list pointers binds them together, now patches exactly the same
+pattern as IBM uses to generate the file on a queue manager.  It is
+very possible that noone at Hursley will be able to tell one of my
+files from one of theirs. ;-)
+
+And that's a challenge....
+
+=head2 MQSeries::Queue->Set was horrible broken
+
+This was one of those 'how did this ever work?' problems.  The core
+was fatally broken.  Fixed.
+
+=head1 Changes for 1.15
+
+=head2 Add 'AFS' principal type to Authority API
+
+The extended PCF API to query/alter Unix authorities now supports a
+thirs entity type, 'AFS' (PCF macro MQETE_AFS_GROUP).  As this
+requires a modified command server and custom Object Authority Manager
+(OAM) only used at Morgan Stanley, this should not affect anyone else.
 
 =head1 Changes for 1.14
 
@@ -1051,9 +1146,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 17.6 2001/06/07 14:42:18 wpm Exp $
+# $Id: Changes.src,v 20.4 2002/03/19 22:11:05 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

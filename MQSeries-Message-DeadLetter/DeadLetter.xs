@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: DeadLetter.xs,v 17.1 2001/03/30 18:17:56 wpm Exp $";
+static char rcsid[] = "$Id: DeadLetter.xs,v 20.2 2002/03/19 21:52:04 wpm Exp $";
 
 /*
-  (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+  (c) 1999-2002 Morgan Stanley Dean Witter and Co.
   See ..../src/LICENSE for terms of distribution.
  */
 
@@ -109,7 +109,7 @@ MQDecodeDeadLetter(pBuffer,BufferLength)
 	  if ( BufferLength == sizeof(MQDLH) )
 	    DataSV = newSVpv("",0);
 	  else 
-	    DataSV = newSVpv(pTemp,BufferLength - sizeof(MQDLH));
+	    DataSV = newSVpvn(pTemp,BufferLength - sizeof(MQDLH));
 	  
 	  XPUSHs(sv_2mortal(DataSV));
 

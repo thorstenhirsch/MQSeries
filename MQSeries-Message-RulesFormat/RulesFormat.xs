@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: RulesFormat.xs,v 17.1 2001/03/30 18:17:50 wpm Exp $";
+static char rcsid[] = "$Id: RulesFormat.xs,v 20.3 2002/03/19 21:49:45 wpm Exp $";
 
 /*
-  (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+  (c) 1999-2002 Morgan Stanley Dean Witter and Co.
   See ..../src/LICENSE for terms of distribution.
  */
 
@@ -105,7 +105,7 @@ MQDecodeRulesFormat(pBuffer,BufferLength)
 	  if ( Header.StrucLength == MQRFH_STRUC_LENGTH_FIXED )
 	    OptionsSV = newSVpv("",0);
 	  else
-	    OptionsSV = newSVpv(pTemp,Header.StrucLength - MQRFH_STRUC_LENGTH_FIXED);
+	    OptionsSV = newSVpvn(pTemp,Header.StrucLength - MQRFH_STRUC_LENGTH_FIXED);
 	  
 	  XPUSHs(sv_2mortal(OptionsSV));
 	  
@@ -114,7 +114,7 @@ MQDecodeRulesFormat(pBuffer,BufferLength)
 	  if ( BufferLength == Header.StrucLength )
 	    DataSV = newSVpv("",0);
 	  else
-	    DataSV = newSVpv(pTemp,BufferLength - Header.StrucLength);
+	    DataSV = newSVpvn(pTemp,BufferLength - Header.StrucLength);
 	  
 	  XPUSHs(sv_2mortal(DataSV));
 

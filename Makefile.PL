@@ -1,46 +1,12 @@
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 16.1 2001/01/05 21:46:06 wpm Exp $
+# $Id: Makefile.PL,v 20.1 2002/03/18 20:34:27 biersma Exp $
 #
 use English;
 use ExtUtils::MakeMaker;
 use File::Copy;
-
-#
-# I hate these file turds, but I only want you to have to answer this
-# obnoxious question once.
-#
-unless ( -f ".LICENSE.ACCEPTED" ) {
-
-    print <<"LegalMumboJumbo";
-
-[[ My lawyers made me do this.  Flames to /dev/null.  -- wpm ]]
-
-This software is is licensed as open source code and is subject to the
-terms and conditions of a license agreement that is set forth in the
-included LICENSE file.
-
-If you have read the license agreement and accept its terms and
-conditions, answer "yes" to continue with the installation.  If you
-have not read the license agreement or do not accept its terms and
-conditions, answer "no" and fire up your favorite text editor....
-
-LegalMumboJumbo
-
-    print "Did you read the LICENSE file and agree to its terms and conditions? [y] ";
-    my $answer = <STDIN>;
-    exit 1 if $answer =~ /^n/i;
-
-    open(YES,">.LICENSE.ACCEPTED") ||
-      die "Unable to write .LICENSE.ACCEPTED: $!\n";
-    close(YES) ||
-      die "Unable to close .LICENSE.ACCEPTED: $!\n";
-
-    print "\n";
-
-}
 
 #
 # Create the MQServer directory and files on the fly.
@@ -113,7 +79,7 @@ WriteMakefile(
 	      (
 	       $] ge '5.005' ?
 	       (
-		AUTHOR		=> 'W. Phillip Moore (Phil.Moore@msdw.com)',
+		AUTHOR		=> 'W. Phillip Moore (Phil.Moore@morganstanley.com)',
 		ABSTRACT	=> "Interface to IBM's MQSeries Product",
 	       ) : ()
 	      ),

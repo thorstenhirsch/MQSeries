@@ -1,7 +1,7 @@
 #
-# $Id: ResponseValues.pl,v 16.2 2001/01/05 21:45:35 wpm Exp $
+# $Id: ResponseValues.pl,v 20.2 2002/03/18 20:33:54 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,7 +9,13 @@ package MQSeries::Command::MQSC;
 
 %ResponseValues =
   (
-   Enabled =>
+   Disabled =>                  # InhibitGet/InhbitPut have reversed logic
+   {
+    DISABLED		=> 1,
+    ENABLED		=> 0,
+   },
+
+   Enabled =>                   # Everyone else with enabled/disabled
    {
     DISABLED		=> 0,
     ENABLED		=> 1,

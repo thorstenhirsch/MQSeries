@@ -1,7 +1,7 @@
 #
-# $Id: 30basic.t,v 17.1 2001/03/14 00:20:26 wpm Exp $
+# $Id: 30basic.t,v 20.2 2002/03/18 20:35:25 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -20,7 +20,7 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.14;
+use __APITYPE__::MQSeries 1.17;
 $loaded = 1;
 print "ok 1\n";
 

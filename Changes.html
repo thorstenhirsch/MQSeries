@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>Changes.src</TITLE> 
+	    <TITLE>1.17/src/Changes.src</TITLE> 
 	</HEAD>
 
 	<BODY>
@@ -10,6 +10,29 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_17">Changes for 1.17</A>
+	<UL>
+
+		<LI><A HREF="#Parameter_order_for_PCF_commands">Parameter order for PCF commands</A>
+		<LI><A HREF="#Final_message_for_mainframe_MQSC">Final message for mainframe MQSC commands</A>
+		<LI><A HREF="#Rename_NoAutoConnect_flag_for_MQ">Rename NoAutoConnect flag for MQSeries::QueueManager constructor</A>
+		<LI><A HREF="#Rename_NoAutoOpen_flag_for_MQSer">Rename NoAutoOpen flag for MQSeries::Queue constructor</A>
+		<LI><A HREF="#Add_QueueManager_method_to_MQSer">Add QueueManager method to MQSeries::Queue</A>
+	</UL>
+
+	<LI><A HREF="#Changes_for_1_16">Changes for 1.16</A>
+	<UL>
+
+		<LI><A HREF="#MQSeries_Config_ChannelTable">MQSeries::Config::ChannelTable</A>
+		<LI><A HREF="#MQSeries_Queue_Set_was_horribl">MQSeries::Queue->Set was horrible broken</A>
+	</UL>
+
+	<LI><A HREF="#Changes_for_1_15">Changes for 1.15</A>
+	<UL>
+
+		<LI><A HREF="#Add_AFS_principal_type_to_Auth">Add 'AFS' principal type to Authority API</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_14">Changes for 1.14</A>
 	<UL>
 
@@ -151,6 +174,172 @@
 </A></H1>
 This file documents the changes to each and every release of the MQSeries
 perl API, going back as far as the 1.02 release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_17">Changes for 1.17
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Parameter_order_for_PCF_commands">Parameter order for PCF commands
+
+</A></H2>
+Jim Hildebrand at MQ Software tried to use the MQSeries::Command suite on
+Windows 2000 and discovered that the order in which PCF command options are
+specified was dependent on the platform hash key ordering, even though the
+PCF command server requires a specific ordering for some keys. The perl
+hash key ordering happened to work on Solaris, but broke on Windows 2000
+(and possibly other platforms).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Final_message_for_mainframe_MQSC">Final message for mainframe MQSC commands
+
+</A></H2>
+Joseph Sacco at Starwood Hotels reported that the MQSeries::Command suite,
+when run against a mainframe using MQSC commands, gave annoying errors
+messages because the teminating response line on his mainframe queue
+manager has a different format from ours.
+
+
+<P>
+
+We now accept both formats. If you run MQSeries::Command against a
+mainframe and get error messages like:
+
+
+<P>
+
+<PRE>    Unrecognized MQSC buffer: /T2 CSQMDRTS ' DISPLAY QUEUE' NORMAL COMPLETION
+</PRE>
+
+<P>
+
+then please get in touch and send us the error message.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Rename_NoAutoConnect_flag_for_MQ">Rename NoAutoConnect flag for MQSeries::QueueManager constructor
+
+</A></H2>
+The NoAutoConnect flag for the MQSeries::QueueManager constructor has been
+renamed to AutoConnect (with, obviously, reverse meaning of the option
+values). The default behavior remains the same and the next few releases
+will support the old flag for backwards compatibility.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Rename_NoAutoOpen_flag_for_MQSer">Rename NoAutoOpen flag for MQSeries::Queue constructor
+
+</A></H2>
+The NoAutoOpen flag for the MQSeries::Queue constructor has been renamed to
+AutoOpen (with, obviously, reverse meaning of the option values). The
+default behavior remains the same and the next few releases will support
+the old flag for backwards compatibility.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Add_QueueManager_method_to_MQSer">Add QueueManager method to MQSeries::Queue
+
+</A></H2>
+In retrospect, it was probably a mistake to add <CODE>Commit()</CODE> and
+<CODE>Backout()</CODE> methods to the MQSeries::Queue class and have them
+delegate these calls to the queue manager object. Some developers were
+confused by this and thought the scope of transactions was per-queue.  
+
+
+<P>
+
+However, it is valid to create an MQSeries::Queue object without creating
+an MQSeries::QueueManager object first, and <CODE>Commit()</CODE> and
+<CODE>Backout()</CODE> have to be called on something - so it seemed like a
+reasonable thing to do.
+
+
+<P>
+
+A new method for MQSeries::Queue, <CODE>QueueManager(),</CODE> can be used
+to extract the queue manager object from a queue. The documentation has
+been updated to reflect that <CODE>Commit()</CODE> and
+<CODE>Backout()</CODE> should be called on the queue manager object, not on
+the queue. The queue-level <CODE>Commit()</CODE> and <CODE>Backout()</CODE>
+methods will be dropped in a future release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_16">Changes for 1.16
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="MQSeries_Config_ChannelTable">MQSeries::Config::ChannelTable
+
+</A></H2>
+The SYSTEM.DEF.CLNTCONN definition must be present, or the client can get
+upset in certain error conditions, so the code now forces this to the front
+of the list, even if you don't specify it.
+
+
+<P>
+
+The physical order of the entries, and the order in which the linked list
+pointers binds them together, now patches exactly the same pattern as IBM
+uses to generate the file on a queue manager. It is very possible that
+noone at Hursley will be able to tell one of my files from one of theirs.
+;-)
+
+
+<P>
+
+And that's a challenge....
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Queue_Set_was_horribl">MQSeries::Queue->Set was horrible broken
+
+</A></H2>
+This was one of those 'how did this ever work?' problems. The core was
+fatally broken. Fixed.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_15">Changes for 1.15
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Add_AFS_principal_type_to_Auth">Add 'AFS' principal type to Authority API
+
+</A></H2>
+The extended PCF API to query/alter Unix authorities now supports a thirs
+entity type, 'AFS' (PCF macro MQETE_AFS_GROUP). As this requires a modified
+command server and custom Object Authority Manager (OAM) only used at
+Morgan Stanley, this should not affect anyone else.
 
 
 <P>

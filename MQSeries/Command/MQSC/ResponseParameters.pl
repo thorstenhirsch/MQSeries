@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 17.1 2001/04/06 18:42:41 biersma Exp $
+# $Id: ResponseParameters.pl,v 20.2 2002/03/18 20:33:53 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -84,7 +84,7 @@ package MQSeries::Command::MQSC;
     DEFTYPE	=> [ "DefinitionType",		$ResponseValues{DefinitionType} ],
     DESCR	=> [ "QDesc" ],
     DISTL	=> [ "DistLists",		$ResponseValues{Yes} ],
-    GET		=> [ "InhibitGet",		$ResponseValues{Enabled} ],
+    GET		=> [ "InhibitGet",		$ResponseValues{Disabled} ],
     IGQ         => [ "IntraGroupQueueing" ],
     IGQAUT      => [ "IntraGroupAuthority" ],
     IGQUSER     => [ "IntraGroupUser" ],
@@ -96,7 +96,7 @@ package MQSeries::Command::MQSC;
     MSGDLVSQ	=> [ "MsgDeliverySequence",	$ResponseValues{MsgDeliverySequence} ],
     OPPROCS	=> [ "OpenOutputCount" ],
     PROCESS	=> [ "ProcessName" ],
-    PUT		=> [ "InhibitPut",		$ResponseValues{Enabled} ],
+    PUT		=> [ "InhibitPut",		$ResponseValues{Disabled} ],
     QDEPTHHI	=> [ "QDepthHighLimit" ],
     QDEPTHLO	=> [ "QDepthLowLimit" ],
     QDPHIEV	=> [ "QDepthHighEvent",		$ResponseValues{Enabled} ],

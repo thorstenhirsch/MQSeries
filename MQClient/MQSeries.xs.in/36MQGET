@@ -1,8 +1,8 @@
 # -*-c-*-
 #
-# $Id: 36MQGET,v 16.1 2001/01/05 21:42:51 wpm Exp $
+# $Id: 36MQGET,v 20.2 2002/03/19 21:38:17 wpm Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -35,7 +35,7 @@ MQGET(Hconn,Hobj,MsgDesc,GetMsgOpts,Length,CompCode,Reason)
 	MQGET(Hconn,Hobj,&MsgDesc,&GetMsgOpts,bufLen,pBuffer,&dataLen,&CompCode,&Reason);
 	Length = dataLen;
 	if (CompCode != MQCC_FAILED) {
-	  RETVAL = newSVpv(pBuffer,(dataLen < bufLen ? dataLen : bufLen));
+	  RETVAL = newSVpvn(pBuffer,(dataLen < bufLen ? dataLen : bufLen));
 	}
 	else
 	  RETVAL = newSV(0);

@@ -1,9 +1,9 @@
 # MQSeries::FDC::Entry.pm - One entry from an FDC log.
 #
-# (c) 2000-2001 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 17.1 2001/03/14 00:20:13 wpm Exp $
+# $Id: Entry.pm,v 20.2 2002/03/18 20:34:17 biersma Exp $
 #
 
 package MQSeries::FDC::Entry;
@@ -17,7 +17,7 @@ use overload ('""'  => 'as_string',
 
 use vars qw($VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 #
 # Constructor

@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000,2001 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 # 
-# $Id: descriptions.pl,v 17.1 2001/05/21 20:16:30 biersma Exp $
+# $Id: descriptions.pl,v 20.2 2002/03/21 14:26:47 biersma Exp $
 #
 
 #
@@ -25,7 +25,7 @@ my $channel_patt = '[\w\.\%\/]+';
 my $code_patt = '-?\d+';
 my $exit_patt = '[\w\.\/\-\(\)]+';
 my $hex_patt = '[A-F\d]+';
-my $hostname_patt = '[\w\-]+';
+my $hostname_patt = '\w[\w\-\.]+';
 my $ip_patt = '\d+\.\d+\.\d+\.\d+';
 my $host_patt = "$hostname_patt \\($ip_patt\\) \\(\\d+\\)|$hostname_patt \\($ip_patt\\)|$ip_patt \\(\\d+\\)|$ip_patt";
 my $logfile_patt = 'S\d+\.LOG';
@@ -80,7 +80,7 @@ $error_table =
                   "Stream" ],
 
    # NOTE: Have encountered this guy without an actual broker name...
-   'AMQ5818' => [ "Unable to open MQSeries message broker stream queue \\((.*?)\s*\\) for reason (\\d+,\\d+)\." ],
+   'AMQ5818' => [ "Unable to open MQSeries message broker stream queue \\((.*?)\\s*\\) for reason (\\d+,\\d+)\." ],
 
    'AMQ5819' => [ "MQSeries message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
                   "Stream", "Reason" ],
@@ -251,6 +251,13 @@ $error_table =
 
    'AMQ7159' => [ "A FASTPATH application has ended unexpectedly" ],
 
+   'AMQ7214' => [ "The module '(\\S+)' for Api Exit '(\\w+)' could not be loaded for reason (\\S+)\\.",
+                  "Module", "Exit", "Reason" ],
+
+   'AMQ7216' => [ "The Api Exit '(\\w+)' function '(\\w+)' in the module '(\\S+)' returned CompCode ($code_patt) and ReasonCode ($rc_patt)",
+
+                  "Exit", "Function", "Module", "Code", "Reason" ],
+
    'AMQ7310' => [ "The attempt to put a report message on queue ($qname_patt) on queue manager ($qmgr_patt) failed with reason code ($reason_patt)\\. The message will be put on the dead-letter queue\\.",
                   "QName", "QMgr", "Reason" ],
 
@@ -307,10 +314,15 @@ $error_table =
    # FIXME: Are the number of objects of interest?
    'AMQ8048' => [ "Default objects statistics :" ],
 
+
+   'AMQ8049' => [ " While creating or replacing the default object ($qname_patt) for MQSeries queue manager ($qmgr_patt) an error occurred\\. The error was due to improper authorization\\. The reason code is ($reason_patt)\\.",
+                  "ObjectName", "QMgr", "Reason" ],
+
    'AMQ8214' => [ "CONNAME parameter required with channel types SDR, RQSTR, CLNTCONN, CLUSSDR and CLUSRCVR\\." ],
 
    'AMQ8226' => [ "MQSeries channel ($channel_patt) cannot be created",
                   "Channel" ],
+
 
    'AMQ8424' => [ "Error detected in a name keyword\\." ],
 
@@ -364,6 +376,9 @@ $error_table =
    'AMQ9213' => [ "The return code from the (.*?) call was ($rc_patt) \\(X'", 
                   "Operation", "IPCode" ],
 
+   'AMQ9218' => [ "The TCP/IP listener program could not bind to port number (\\d+)\\.",
+                  "Port" ],
+
    'AMQ9220' => [ "The attempt to load the TCP/IP library or procedure '(.*?)' failed with error code ($rc_patt)\\.",
                   "Library", "Reason" ],
 
@@ -374,6 +389,8 @@ $error_table =
 
    'AMQ9243' => [ "The queue manager '($qmgr_patt)' does not exist\\.",
                   "QMgr" ],
+
+   'AMQ9244' => [ "The default queue manager does not exist\\." ],
 
    'AMQ9245' => [ "MQSeries was unable to obtain the account details for MCA user ID '(\\w+)'\\. This user ID was the MCA user ID for channel '($channel_patt)' on queue manager '($qmgr_patt)' and may have been defined in the channel definition, or supplied either by a channel exit or by a client\\.",
                   "Userid", "Channel", "QMgr" ],
@@ -400,7 +417,9 @@ $error_table =
    'AMQ9503' => [ "Channel '(.*?)' between this machine and the remote machine could not be established",
                   "Channel" ],
 
-   'AMQ9504' => [ "A protocol error was detected for channel '($channel_patt)'\\.",
+   # NOTE: At time, this gets invalid channel names (eg, from bad clients),
+   #       so we use a non-standard pattern
+   'AMQ9504' => [ "A protocol error was detected for channel '(.*?)'\\.",
                   "Channel" ],
    
    'AMQ9506' => [ "Channel '($channel_patt)' has ended because the remote queue manager did not accept the last batch of messages.",
@@ -488,6 +507,9 @@ $error_table =
    
    'AMQ9545' => [ "Channel '($channel_patt)' closed because",
                   "Channel" ],
+
+   'AMQ9546' => [ "The program has ended because return code ($code_patt) was returned from an internal function\\.",
+                  "Code" ],
 
    'AMQ9547' => [ "The operation requested cannot be performed because channel '($channel_patt)' on the remote machine is not of a suitable type\\.",
                   "Channel" ],

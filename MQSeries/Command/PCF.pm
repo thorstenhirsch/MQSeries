@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 17.1 2001/03/14 00:20:01 wpm Exp $
+# $Id: PCF.pm,v 20.2 2002/03/18 20:33:57 biersma Exp $
 #
-# (c) 1999-2001 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -15,7 +15,7 @@ use vars qw(
 
 @ISA = qw(MQSeries::Command);
 
-$VERSION = '1.14';
+$VERSION = '1.17';
 
 use MQSeries qw(:functions);
 
@@ -52,14 +52,14 @@ MQSeries::Command::PCF->_ReverseMap
 # this is a peice of cake.  For real fun, see the MQSC code.
 #
 sub _LastSeen {
-
     my $self = shift;
-    my ($last) = reverse @{$self->{Response}};
+
+    my $last = $self->{Response}->[-1];
     return unless ref $last && $last->isa("MQSeries::Command::Response");
     return unless $last->Header("Control") == MQSeries::MQCFC_LAST;
     return 1;
-
 }
+
 
 #
 # Post process the response list.  For PCF, this just means setting
