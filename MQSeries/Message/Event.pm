@@ -1,5 +1,5 @@
 #
-# $Id: Event.pm,v 9.2 1999/10/22 21:45:26 wpm Exp $
+# $Id: Event.pm,v 12.2 2000/02/25 09:25:08 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -31,11 +31,12 @@ sub PutConvert {
 
 sub GetConvert {
     my $self = shift;
-    my ($buffer) = @_;
+
+    ($self->{Buffer}) = @_;
 
     my ($header,$parameters);
 
-    unless ( ($header,$parameters) = MQDecodePCF($buffer) ) {
+    unless ( ($header,$parameters) = MQDecodePCF($self->{Buffer}) ) {
 	$self->{Carp}->("Unable to parse PCF contents from message\n");
 	return undef;
     }
@@ -170,6 +171,9 @@ GetConvert() method to decode standard MQSeries Event messages.
 
 =head1 METHODS
 
+Since this is a subclass of MQSeries::Message, all of that classes
+methods are available, as well as the following.
+
 =head2 PutConvert, GetConvert
 
 Neither of these methods are called by the users application, but are
@@ -183,6 +187,18 @@ a futute release will support the creation of such events.
 The GetConvert method decodes the message contents into the
 EventHeader and EventData hashes, which are available via the methods
 of the same name.
+
+=head2 Buffer
+
+Actually, this is one of the MQSeries::Message methods, and not
+specific to MQSeries::Message::Event.  However, it is important to
+note that this class is one of those that saves the raw buffer
+returned by MQGET in the object.
+
+The Buffer method will return the raw, unconverted PCF data in the
+original message.  The autor uses this to echo the original event
+message to other systems management software that wants to parse the
+PCF.
 
 =head2 EventHeader
 

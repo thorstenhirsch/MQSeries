@@ -1,5 +1,5 @@
 #
-# $Id: AdminMessage.pm,v 11.1 1999/11/23 15:17:36 wpm Exp $
+# $Id: AdminMessage.pm,v 12.1 2000/02/03 19:42:32 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -23,7 +23,7 @@ use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
 
-$VERSION = '1.08';
+$VERSION = '1.09';
 
 #
 # Generate the message contents from the Command

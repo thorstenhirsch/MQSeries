@@ -1,5 +1,5 @@
 #
-# $Id: typemap.PL,v 9.3 1999/10/14 21:25:18 wpm Exp $
+# $Id: typemap.PL,v 12.1 2000/02/18 07:59:08 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -62,10 +62,11 @@ while ( <> ) {
 	print "#Found a $field of type $fieldt\n" if $debug;
 
 	#
-	# Two known types we don't support.  Ignore them.
+	# Three known types we don't support.  Ignore them.
 	#
 	next if $fieldt eq 'MQPTR';
 	next if $fieldt eq 'MQMD1';
+	next if $fieldt eq 'MQHCONN';
 
 	if ($fieldt eq 'MQLONG' ||
 	    $fieldt eq 'MQHOBJ') {

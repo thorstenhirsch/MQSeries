@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 11.2 2000/02/02 23:08:21 wpm Exp $
+# $Id: QueueManager.pm,v 12.4 2000/03/03 17:38:01 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,7 +24,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.08';
+$VERSION = '1.09';
 
 sub new {
 
@@ -32,11 +32,22 @@ sub new {
     my $class = ref($proto) || $proto;
     my %args = @_;
 
-    my $self = {
-		Carp		=> \&carp,
-		RetryCount 	=> 0,
-		RetrySleep 	=> 0,
-	       };
+    my $self =
+      {
+       Carp		=> \&carp,
+       RetryCount 	=> 0,
+       RetrySleep 	=> 60,
+       RetryReasons	=> {
+			    map { $_ => 1 }
+			    (
+			     MQRC_CONNECTION_BROKEN,
+			     MQRC_Q_MGR_NOT_AVAILABLE,
+			     MQRC_Q_MGR_QUIESCING,
+			     MQRC_Q_MGR_STOPPING,
+			    )
+			   },
+       ConnectArgs	=> {},
+      };
     bless ($self, $class);
 
     #
@@ -46,8 +57,7 @@ sub new {
 	if ( ref $args{Carp} ne "CODE" ) {
 	    carp "Invalid argument: 'Carp' must be a CODE reference";
 	    return;
-	}
-	else {
+	} else {
 	    $self->{Carp} = $args{Carp};
 	}
     }
@@ -59,9 +69,12 @@ sub new {
     # to allow this to be optional.
     #
     if ( $args{QueueManager} ) {
-	$self->{QueueManager} = $args{QueueManager};
-    }
-    else {
+	if ( ref $args{QueueManager} && $args{QueueManager}->isa("MQSeries::QueueManager") ) {
+	    $self->{QueueManager} = $args{QueueManager}->{QueueManager};
+	} else {
+	    $self->{QueueManager} = $args{QueueManager};
+	}
+    } else {
 	$self->{QueueManager} = "";
     }
 
@@ -73,8 +86,7 @@ sub new {
 	    if ( ref $args{$key} ne "CODE" ) {
 		$self->{Carp}->("Invalid argument: '$key' must be a CODE reference");
 		return;
-	    }
-	    else {
+	    } else {
 		$self->{$key} = $args{$key};
 	    }
 	}
@@ -85,13 +97,9 @@ sub new {
     # the arguments is ignored.  Developer beware.  RTFM.  Yada yada
     # yada.
     #
-    foreach my $key ( qw( RetryCount RetrySleep ) ) {
-	next unless exists $args{$key};
-	unless ( $args{$key} =~ /^\d+$/ ) {
-	    $self->{Carp}->("Invalid argument: '$key' must numeric");
-	    return;
-	}
-	$self->{$key} = $args{$key};
+    foreach my $connectarg ( qw( RetryCount RetrySleep RetryReasons ) ) {
+	next unless exists $args{$connectarg};
+	$self->{ConnectArgs}->{$connectarg} = $args{$connectarg};
     }
 
     #
@@ -124,8 +132,7 @@ sub Open {
     #
     if ( exists $args{Options} ) {
 	$self->{Options} = $args{Options};
-    }
-    else {
+    } else {
 	$self->{Options} = MQOO_INQUIRE | MQOO_FAIL_IF_QUIESCING;
     }
 
@@ -135,13 +142,11 @@ sub Open {
     if ( exists $args{ObjDesc} ) {
 	if ( ref $args{ObjDesc} eq "HASH" ) {
 	    $self->{ObjDescPtr} = $args{ObjDesc};
-	}
-	else {
+	} else {
 	    $self->{Carp}->("Invalid argument: 'ObjDesc' must be a HASH reference");
 	    return;
 	}
-    }
-    else {
+    } else {
 	$self->{ObjDescPtr} =
 	  {
 	   ObjectType		=> MQOT_Q_MGR,
@@ -161,13 +166,11 @@ sub Open {
 
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	return 1;
-    }
-    elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
-	$self->{Carp}->("MQOPEN failed (Reason = " . $self->{"Reason"} . ")");
+    } elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
+	$self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"})/);
 	return;
-    }
-    else {
-	$self->{Carp}->("MQOPEN failed, unrecognized CompCode: '" . $self->{"CompCode"} . "'");
+    } else {
+	$self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
 	return;
     }
 
@@ -194,14 +197,12 @@ sub Close {
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	delete $self->{Hobj};
 	return 1;
-    }
-    elsif ( $self->{"Reason"} == MQRC_HCONN_ERROR ) {
+    } elsif ( $self->{"Reason"} == MQRC_HCONN_ERROR ) {
 	delete $self->{Hobj};
 	return 1;
-    }
-    else {
+    } else {
 	$self->{Carp}->("MQCLOSE of $self->{ObjDescPtr}->{ObjectName} on " .
-			"$self->{QueueManager} failed (Reason = " . $self->{"Reason"} . ")");
+			qq/$self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
 
@@ -214,13 +215,11 @@ sub ObjDesc {
     if ( $_[0] ) {
 	if ( exists $self->{ObjDescPtr}->{$_[0]} ) {
 	    return $self->{ObjDescPtr}->{$_[0]};
-	}
-	else {
+	} else {
 	    $self->{Carp}->("No such ObjDescPtr field: $_[0]");
 	    return;
 	}
-    }
-    else {
+    } else {
 	return $self->{ObjDescPtr};
     }
 
@@ -275,8 +274,8 @@ sub Inquire {
 
     unless ( $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE ) {
 	$self->{Carp}->("MQINQ call failed. " .
-			"CompCode => '" . $self->{"CompCode"} . "', " . 
-			"Reason => '" . $self->{"Reason"} . "'\n");
+			qq/CompCode => '$self->{"CompCode"}', / .
+			qq/Reason   => '$self->{"Reason"}'\n/);
 	return;
     }
 
@@ -298,8 +297,7 @@ sub Inquire {
 		return;
 	    }
 	    $values{$newkey} = $ResponseValues->{$value};
-	}
-	else {
+	} else {
 	    $values{$newkey} = $value;
 	}
 
@@ -318,6 +316,19 @@ sub Disconnect {
 
     return 1 unless $self->{Hconn};
 
+    #
+    # This should protect us from disconnecting from a queue manager
+    # when this object is destroyed in a forked child process.
+    #
+    return 1 unless exists $MQSeries::QueueManager::Pid2Hconn{$$};
+
+    #
+    # This should protect us from disconnecting when a given Hconn has
+    # been reused by more than one object.  The order the objects are
+    # created or destroyed shouldnot matter.
+    #
+    return 1 if $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}-- > 1;
+
     $self->{"CompCode"} = MQCC_FAILED;
     $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
 
@@ -329,18 +340,9 @@ sub Disconnect {
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	delete $self->{Hconn};
 	return 1;
-    }
-    #
-    # This is a hack, since it is possible that this object may get
-    # destroyed more than once, it if is "duped" in a forked child
-    # process (or even scarier, a thread...)
-    #
-    elsif ( $self->{"Reason"} == MQRC_HCONN_ERROR ) {
-	delete $self->{Hconn};
-	return 1;
-    }
-    else {
-	$self->{Carp}->("MQDISC of $self->{QueueManager} failed (Reason = " . $self->{"Reason"} . ")");
+
+    } else {
+	$self->{Carp}->(qq/MQDISC of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
 
@@ -365,9 +367,8 @@ sub Backout {
 	  );
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	return 1;
-    }
-    else {
-	$self->{Carp}->("MQBACK of $self->{QueueManager} failed (Reason = " . $self->{"Reason"} . ")");
+    } else {
+	$self->{Carp}->(qq/MQBACK of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
 
@@ -386,9 +387,8 @@ sub Commit {
 	  );
     if ( $self->{"CompCode"} == MQCC_OK ) {
 	return 1;
-    }
-    else {
-	$self->{Carp}->("MQCMIT of $self->{QueueManager} failed (Reason = " . $self->{"Reason"} . ")");
+    } else {
+	$self->{Carp}->(qq/MQCMIT of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
 	return;
     }
 
@@ -400,7 +400,7 @@ sub Put1 {
     my %args = @_;
 
     my $ObjDesc = {};
-    my $PutMsgOpts = 
+    my $PutMsgOpts =
       {
        Options			=> MQPMO_FAIL_IF_QUIESCING,
       };
@@ -408,7 +408,7 @@ sub Put1 {
     my $retrycount = 0;
     my $buffer = undef;
 
-    unless ( ref $args{Message} and $args{Message}->isa("MQSeries::Message") )  {
+    unless ( ref $args{Message} and $args{Message}->isa("MQSeries::Message") ) {
 	$self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
 	return;
     }
@@ -428,12 +428,10 @@ sub Put1 {
 	    return;
 	}
 	$ObjDesc = $args{"ObjDesc"};
-    }
-    else {
+    } else {
 	if ( ref $args{Queue} eq "ARRAY" ) {
 	    $ObjDesc->{ObjectRecs} = $args{Queue};
-	}
-	else {
+	} else {
 	    $ObjDesc->{ObjectName} = $args{Queue};
 	    $ObjDesc->{ObjectQMgrName} = $args{QueueManager};
 	}
@@ -445,15 +443,13 @@ sub Put1 {
 	    return;
 	}
 	$PutMsgOpts = $args{PutMsgOpts};
-    }
-    else {
+    } else {
 	if ( $args{PutMsgRecs} ) {
 	    $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
 	}
 	if ( $args{Sync} ) {
 	    $PutMsgOpts->{Options} |= MQPMO_SYNCPOINT;
-	}
-	else {
+	} else {
 	    $PutMsgOpts->{Options} |= MQPMO_NO_SYNCPOINT;
 	}
     }
@@ -465,19 +461,15 @@ sub Put1 {
 	if ( ref $args{PutConvert} ne "CODE" ) {
 	    $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
 	    return;
-	}
-	else {
+	} else {
 	    $buffer = $args{PutConvert}->($args{Message}->Data());
 	}
-    }
-    else {
+    } else {
 	if ( $args{Message}->can("PutConvert") ) {
 	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
-	}
-	elsif ( ref $self->{PutConvert} eq "CODE" ) {
+	} elsif ( ref $self->{PutConvert} eq "CODE" ) {
 	    $buffer = $self->{PutConvert}->($args{Message}->Data());
-	}
-	else {
+	} else {
 	    $buffer = $args{Message}->Data();
 	}
     }
@@ -487,132 +479,112 @@ sub Put1 {
 	return;
     }
 
-  PUT:
-    {
-	MQPUT1(
-	       $self->{Hconn},
-	       $ObjDesc,
-	       $args{Message}->MsgDesc(),
-	       $PutMsgOpts,
-	       $buffer,
-	       $self->{"CompCode"},
-	       $self->{"Reason"},
-	      );
-	if ( $self->{"CompCode"} == MQCC_OK ) {
-	    return 1;
-	}
-	elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
-	    # This is true in lots of cases.
-	    return 1;
-	}
-	else {
-	    if (
-		$self->{"Reason"} == MQRC_CONNECTION_BROKEN or
-		$self->{"Reason"} == MQRC_Q_MGR_NOT_AVAILABLE or
-		$self->{"Reason"} == MQRC_Q_MGR_QUIESCING or
-		$self->{"Reason"} == MQRC_Q_MGR_STOPPING or
-		$self->{"Reason"} == MQRC_RESOURCE_PROBLEM or
-		$self->{"Reason"} == MQRC_UNEXPECTED_ERROR
-	       ) {
-		if ( $retrycount < $self->{RetryCount} ) {
-
-		    $retrycount++;
-		    $self->{Carp}->("MQPUT1 failed (Reason = " . $self->{"Reason"} . "), will sleep " .
-				    "$self->{RetrySleep} seconds and retry...");
-		    sleep $self->{RetrySleep};
-
-		    #
-		    # We *might* need to redo the connection.  This is
-		    # harmless if it still valid.
-		    #
-		    return unless $self->{QueueManager}->Connect();
-
-		    redo PUT;
-
-		}
-		else {
-		    $self->{Carp}->("MQPUT1 failed (Reason = " . $self->{"Reason"} . "), retry timed out.");
-		    return;
-		}
-		
-	    }
-	    else {
-		$self->{Carp}->("MQPUT1 failed (Reason = " . $self->{"Reason"} . "), no retry attempted.");
-		return;
-	    }
-	}
-
+    MQPUT1(
+	   $self->{Hconn},
+	   $ObjDesc,
+	   $args{Message}->MsgDesc(),
+	   $PutMsgOpts,
+	   $buffer,
+	   $self->{"CompCode"},
+	   $self->{"Reason"},
+	  );
+    if ( $self->{"CompCode"} == MQCC_OK ) {
+	return 1;
+    } elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+	# This is true in lots of cases.
+	return 1;
+    } else {
+	$self->{Carp}->(qq/MQPUT1 failed (Reason = $self->{"Reason"})/);
+	return;
     }
-
 
 }
 
 sub Connect {
 
     my $self = shift;
+    my %args = ( %{$self->{ConnectArgs}}, @_ );
+
+    return 1 if $self->{Hconn};
 
     $self->{"CompCode"} = MQCC_FAILED;
     $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
     my $retrycount = 0;
 
+    foreach my $key ( qw( RetryCount RetrySleep ) ) {
+	next unless exists $args{$key};
+	unless ( $args{$key} =~ /^\d+$/ ) {
+	    $self->{Carp}->("Invalid argument: '$key' must numeric");
+	    return;
+	}
+	$self->{$key} = $args{$key};
+    }
+
+    if ( $args{RetryReasons} ) {
+
+	unless (
+		ref $args{RetryReasons} eq "ARRAY" ||
+		ref $args{RetryReasons} eq "HASH"
+	       ) {
+	    $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASh reference");
+	    return;
+	}
+
+	if ( ref $args{RetryReasons} eq 'HASH' ) {
+	    $self->{RetryReasons} = $args{RetryReasons};
+	} else {
+	    $self->{RetryReasons} = { map { $_ => 1 } @{$args{RetryReasons}} };
+	}
+
+    }
+
   CONNECT:
     {
 
-	$self->{Hconn} = MQCONN(
-				$self->{ProxyQueueManager} || $self->{QueueManager},
-				$self->{"CompCode"},
-				$self->{"Reason"},
-			       );
+	my $Hconn = MQCONN(
+			   $self->{ProxyQueueManager} || $self->{QueueManager},
+			   $self->{"CompCode"},
+			   $self->{"Reason"},
+			  );
 	if ( $self->{"CompCode"} == MQCC_OK ) {
+	    $self->{Hconn} = $Hconn;
+	    $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
 	    return 1;
-	}
-	elsif ( $self->{"CompCode"} == MQCC_WARNING ){
+	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
 	    if ( $self->{"Reason"} == MQRC_ALREADY_CONNECTED ) {
+	        $self->{Hconn} = $Hconn;
+		$MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
 		return 1;
-	    }
-	    else {
+	    } else {
 		$self->{Carp}->("MQCONN failed (CompCode = MQCC_WARNING), " .
-				"but Reason is unrecognized: '" . $self->{"Reason"} . "'");
+				qq/but Reason is unrecognized: '$self->{"Reason"}'/);
 		return;
 	    }
-	}
-	elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
+	} elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
 
-	    #
-	    # These are the conditions that I *think* are retryable.
-	    #
-	    if (
-		$self->{"Reason"} == MQRC_CONNECTION_BROKEN or
-		$self->{"Reason"} == MQRC_Q_MGR_NOT_AVAILABLE or
-		$self->{"Reason"} == MQRC_Q_MGR_QUIESCING or
-		$self->{"Reason"} == MQRC_Q_MGR_STOPPING or
-		$self->{"Reason"} == MQRC_RESOURCE_PROBLEM or
-		$self->{"Reason"} == MQRC_UNEXPECTED_ERROR
-	       ) {
+            if ( exists $self->{RetryReasons}->{$self->{"Reason"}} ) {
 
 		if ( $retrycount < $self->{RetryCount} ) {
 		    $retrycount++;
-		    $self->{Carp}->("MQCONN failed (Reason = " . $self->{"Reason"} . "), will sleep " .
+		    $self->{Carp}->(qq/MQCONN failed (Reason = $self->{"Reason"}), will sleep / .
 				    "$self->{RetrySleep} seconds and retry...");
 		    sleep $self->{RetrySleep};
 		    redo CONNECT;
-		}
-		else {
-		    $self->{Carp}->("MQCONN failed (Reason = " . $self->{"Reason"} . "), retry timed out.");
+		} else {
+		    $self->{Carp}->(qq/MQCONN failed (Reason = $self->{"Reason"}), retry timed out./);
 		    return;
 		}
 		
-	    }
-	    else {
-		$self->{Carp}->("MQCONN failed (Reason = " . $self->{"Reason"} . "), not retrying.");
+	    } else {
+		$self->{Carp}->(qq/MQCONN failed (Reason = $self->{"Reason"}), not retrying./);
 		return;
 	    }
 
-	}
-	else {
-	    $self->{Carp}->("MQCONN failed, unrecognized CompCode: '" . $self->{"CompCode"} . "'");
+	} else {
+	    $self->{Carp}->(qq/MQCONN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
 	    return;
 	}
+
     }
 
 }
@@ -719,6 +691,9 @@ The constructor takes a hash as an argument, with the following keys:
   PutConvert     		CODE reference
   CompCode       		Reference to Scalar Variable
   Reason         		Reference to Scalar Variable
+  RetrySleep			Numeric
+  RetryCount			Numeric
+  RetryReasons			HASH Reference
 
 =over 4
 
@@ -817,6 +792,25 @@ value to the constructor, for example:
 
 But, this is ugly (authors opinion, but then, he gets to write the
 docs, too).  
+
+=item RetryCount
+
+The call to MQCONN() (implemented via the Connect() method), can be
+old to retry the failure for a specific list of reason codes.  This
+functionality is only enabled if the RetryCount is non-zero. By
+default, this value is zero, and thus retries are disabled.
+
+=item RetrySleep
+
+This argument is the amount of time, in seconds, to sleep between
+subsequent retry attempts.
+
+=item RetryReasons
+
+This argument is either an ARRAY or HASH reference indicating the
+specific reason code for which retries will be attempted.  If given as
+an ARRAY, the elements are simply the reason codes, and if given as a
+HASH, then the keys are the reason codes (and the values ignored).
 
 =back
 
@@ -1137,6 +1131,37 @@ and the value of that key in the ObjDesc hash is returned.
 
 NOTE: This method is meaningless unless the queue manager has been
 MQOPEN()ed via the Open() method.
+
+=head1 MQCONN RETRY SUPPORT
+
+Normally, when MQCONN() fails, the method that called it (Connect() or
+new()) also fails.  It is possible to have the Connect() method retry
+the MQOPEN() call for a specific set of reason codes.
+
+By default,  the retry logic  is  disabled, but it  can  be enabled by
+setting the RetryCount to a non-zero value.  The  list of reason codes
+defaults to a few reasonable values, but a list of retryable codes can
+be specified via the RetryReasons argument.
+
+You are probably wondering why this logic is useful for MQCONN().  The
+choice of the default RetryReasons is not without its own reason.
+
+Consider an application that loses its connection to its queue
+manager, and thus crashes and restarts.  It may very well attempt to
+reconnect before the queue manager has recovered, and this support
+allows the application to retry the connection for a while, until it
+succeeds.
+
+Alternately, consider an application that is started at boot time,
+possible in parallel with the queue manager.  If the application comes
+up before the queue manager, the MQCONN() call will fail.  Retrying
+this initial connection will make the application startup more robust.
+
+This makes it easier to have applications recover from queue manager
+failures, or that have more robust startup logic, but note that this
+retry logic only applies to the initial connection.  Reconnecting at
+arbitrary points in the code is far more complex, and it left as a
+(painful) exercise to the reader.
 
 =head1 ERROR HANDLING
 

@@ -1,11 +1,13 @@
 /* -*-c-*-
- $Id: 21core,v 9.4 1999/10/29 23:30:42 wpm Exp $
+ $Id: 21core,v 12.1 2000/02/18 07:46:47 wpm Exp $
 
  (c) 1999 Morgan Stanley Dean Witter and Co.
  See ..../src/LICENSE for terms of distribution.
  */
 
 MODULE = __APITYPE__::MQSeries		PACKAGE = __APITYPE__::MQSeries		
+
+PROTOTYPES: DISABLE
 
 unsigned long
 constant_hex(name)

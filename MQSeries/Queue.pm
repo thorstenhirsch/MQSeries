@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 11.2 2000/02/02 23:08:59 wpm Exp $
+# $Id: Queue.pm,v 12.3 2000/03/03 16:45:42 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -25,10 +25,10 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.08';
+$VERSION = '1.09';
 
 sub new {
-    
+
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
@@ -39,13 +39,21 @@ sub new {
     # Note -- because we have a ObjDesc method, we'd have to 
     # quote the ObjDesc key everywhere, so...
     #
-    my $self = {
-		Options		=> MQOO_FAIL_IF_QUIESCING,
-		ObjDescPtr 	=> \%ObjDesc,
-		Carp 		=> \&carp,
-		RetryCount	=> 0,
-		RetrySleep 	=> 0,
-	       };
+    my $self =
+      {
+       Options		=> MQOO_FAIL_IF_QUIESCING,
+       ObjDescPtr 	=> \%ObjDesc,
+       Carp 		=> \&carp,
+       RetryCount	=> 0,
+       RetrySleep 	=> 60,
+       RetryReasons	=> {
+			    map { $_ => 1 }
+			    (
+			     MQRC_OBJECT_IN_USE,
+			    )
+			   },
+       OpenArgs		=> {},
+      };
     bless ($self, $class);
 
     #
@@ -153,7 +161,7 @@ sub new {
 	    return;
 	}
     }
-    
+
     #
     # How are we opening this?  Only one of Options or Mode can be
     # specified.  Actually, cut people some slack here.  If NoAutoOpen
@@ -177,43 +185,13 @@ sub new {
     if ( $args{DisableAutoResize} ) {
 	$self->{DisableAutoResize} = $args{DisableAutoResize};
     }
-    
-    #
-    # If the options are given, we assume you know what you're doing.
-    #
-    if ( exists $args{Options} ) {
-	$self->{Options} = $args{Options};
-	# And, we'll let the MQI whine at you if you misuse it.
-	$self->{GetEnable} = 1;
-	$self->{PutEnable} = 1;
-    }
 
     #
-    # If the Mode is given, then we have a few defaults to choose from
+    # All of these options can be passed to the Open() method, so we'll defer checking them until then.
     #
-    if ( exists $args{Mode} ) {
-
-	if ( $args{Mode} eq 'input' ) {
-	    $self->{Options} |= MQOO_INPUT_AS_Q_DEF;
-	    $self->{GetEnable} = 1;
-	}
-	elsif ( $args{Mode} eq 'input_exclusive' ) {
-	    $self->{Options} |= MQOO_INPUT_EXCLUSIVE;
-	    $self->{GetEnable} = 1;
-	}
-	elsif ( $args{Mode} eq 'input_shared' ) {
-	    $self->{Options} |= MQOO_INPUT_SHARED;
-	    $self->{GetEnable} = 1;
-	}
-	elsif ( $args{Mode} eq 'output' ) {
-	    $self->{Options} |= MQOO_OUTPUT;
-	    $self->{PutEnable} = 1;
-	}
-	else {
-	    $self->{Carp}->("Invalid argument: 'Mode' value $args{Mode} not yet supported");
-	    return;
-	}
-	
+    foreach my $openarg ( qw( Options Mode RetrySleep RetryCount RetryReasons ) ) {
+      next unless exists $args{$openarg};
+      $self->{OpenArgs}->{$openarg} = $args{$openarg};
     }
 
     unless ( $args{NoAutoOpen} ) {
@@ -224,7 +202,7 @@ sub new {
 	    }
 	}
 	return unless $result;
-    } 
+    }
 
     return $self;
 
@@ -300,12 +278,11 @@ sub Put {
     $self->{"CompCode"} 	= MQCC_FAILED;
     $self->{"Reason"} 		= MQRC_UNEXPECTED_ERROR;
 
-    my $PutMsgOpts = 
+    my $PutMsgOpts =
       {
        Options			=> MQPMO_FAIL_IF_QUIESCING,
       };
 
-    my $retrycount = 0;
     my $buffer = "";
 
     unless ( $self->{PutEnable} ) {
@@ -406,7 +383,6 @@ sub Get {
     $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
 
     my $GetMsgOpts = {};
-    my $retrycount = 0;
 
     unless ( $self->{GetEnable} ) {
 	$self->{Carp}->("Get() is disabled; Queue not opened for input");
@@ -539,14 +515,11 @@ sub Get {
 		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
 		return;
 	    }
-	    
+
 	}
 	else {
 
 	    if ( $self->{"Reason"} == MQRC_NO_MSG_AVAILABLE ) {
-		#
-		# XXX -- How do we determine this in the client API???
-		#
 		return -1;
 	    }
 	    else {
@@ -618,7 +591,7 @@ sub Inquire {
 
     my $RequestValues = \%MQSeries::Command::PCF::RequestValues;
     my $ResponseParameters = \%MQSeries::Command::PCF::ResponseParameters;
-    
+
     foreach my $key ( @args ) {
 
 	unless ( exists $RequestValues->{Queue}->{$key} ) {
@@ -688,7 +661,7 @@ sub Set {
     my (%keys) = ();
 
     my $RequestValues = \%MQSeries::Command::PCF::RequestValues;
-    
+
     foreach my $key ( keys %args ) {
 
 	my $value = $args{$key};
@@ -723,7 +696,7 @@ sub Set {
 
     unless ( $self->{"CompCode"} == MQCC_OK && $self->{"Reason"} == MQRC_NONE ) {
 	$self->{Carp}->("MQSET call failed. " .
-			qq/CompCode => '$self->{"CompCode"}', / . 
+			qq/CompCode => '$self->{"CompCode"}', / .
 			qq/Reason => '$self->{"Reason"}'\n/);
 	return;
     }
@@ -758,12 +731,14 @@ sub ObjDesc {
 sub Open {
 
     my $self = shift;
-    my %args = @_;
+    my %args = ( %{$self->{OpenArgs}}, @_ );
 
     return 1 if $self->{Hobj};
 
     $self->{"CompCode"} = MQCC_FAILED;
     $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
+
+    my $retrycount = 0;
 
     if ( exists $args{Options} and exists $args{Mode} ) {
 	$self->{Carp}->("Incompatible arguments: one and only one of 'Options' or 'Mode' must be given");
@@ -809,30 +784,77 @@ sub Open {
     }
 
     #
-    # Open the Queue
+    # The Retry options...
     #
-    $self->{Hobj} = MQOPEN(
-			   $self->{QueueManager}->{Hconn},
-			   $self->{ObjDescPtr},
-			   $self->{Options},
-			   $self->{"CompCode"},
-			   $self->{"Reason"},
-			  );
+    foreach my $key ( qw( RetryCount RetrySleep ) ) {
+	if ( exists $args{$key} ) {
+	    unless ( $args{$key} =~ /^\d+$/ ) {
+		$self->{Carp}->("Invalid Argument: '$key' must be numeric");
+		return;
+	    }
+	    $self->{$key} = $args{$key};
+	}
+    }
 
-    if ( $self->{"CompCode"} == MQCC_OK ) {
-	return 1;
+    if ( $args{RetryReasons} ) {
+
+	unless (
+		ref $args{RetryReasons} eq "ARRAY" ||
+		ref $args{RetryReasons} eq "HASH"
+	       ) {
+	    $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASh reference");
+	    return;
+	}
+
+	if ( ref $args{RetryReasons} eq 'HASH' ) {
+	    $self->{RetryReasons} = $args{RetryReasons};
+	} else {
+	    $self->{RetryReasons} = { map { $_ => 1 } @{$args{RetryReasons}} };
+	}
+
     }
-    elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
-	# This is when Reason == MQRC_MULTIPLE_REASONS
-	return -1;
-    }
-    elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
-	$self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"})/);
-	return;
-    }
-    else {
-	$self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
-	return;
+
+  OPEN:
+    {
+
+	#
+	# Open the Queue
+	#
+	my $Hobj = MQOPEN(
+			  $self->{QueueManager}->{Hconn},
+			  $self->{ObjDescPtr},
+			  $self->{Options},
+			  $self->{"CompCode"},
+			  $self->{"Reason"},
+			 );
+
+	if ( $self->{"CompCode"} == MQCC_OK ) {
+	    $self->{Hobj} = $Hobj;
+	    return 1;
+	} elsif ( $self->{"CompCode"} == MQCC_WARNING ) {
+	    # This is when Reason == MQRC_MULTIPLE_REASONS
+	    $self->{Hobj} = $Hobj;
+	    return -1;
+	} elsif ( $self->{"CompCode"} == MQCC_FAILED ) {
+
+	    if ( exists $self->{RetryReasons}->{$self->{"Reason"}} ) {
+		if ( $retrycount < $self->{RetryCount} ) {
+		    $retrycount++;
+		    $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), will sleep / .
+				    "$self->{RetrySleep} seconds and retry...");
+		    sleep $self->{RetrySleep};
+		    redo OPEN;
+		} else {
+		    $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), retry timed out/);
+		    return;
+		}
+	    }
+	
+	} else {
+	    $self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
+	    return;
+	}
+
     }
 
 }
@@ -998,6 +1020,9 @@ key/value pairs (required keys are marked with a '*'):
   GetConvert         		CODE Reference
   CompCode           		Reference to Scalar Variable
   Reason             		Reference to Scalar Variable
+  RetrySleep			Numeric
+  RetryCount			Numeric
+  RetryReasons			HASH Reference
 
 NOTE: Only B<one> or the 'Options' or 'Mode' keys can be specified.
 They are mutually exclusive.  If 'NoAutoOpen' is given, then both
@@ -1227,13 +1252,40 @@ MQSeries::Queue constructor.
 
 See the ERROR HANDLING section as well.
 
+=item RetryCount
+
+The call to MQOPEN() (implemented via the Open() method), can be old
+to retry the failure for a specific list of reason codes.  This
+functionality is only enabled if the RetryCount is non-zero. By
+default, this value is zero, and thus retries are disabled.
+
+=item RetrySleep
+
+This argument is the amount of time, in seconds, to sleep between
+subsequent retry attempts.
+
+=item RetryReasons
+
+This argument is either an ARRAY or HASH reference indicating the
+specific reason code for which retries will be attempted.  If given as
+an ARRAY, the elements are simply the reason codes, and if given as a
+HASH, then the keys are the reason codes (and the values ignored).
+
 =back
 
 =head2 Open
 
-This method will accept the same Options and Mode arguments which can
-be passed to the constructor (new()), and it merely calls MQOPEN() to
-open the actual queue object.  
+This method will accept the following arguments which can be passed to
+the constructor (new()), and it merely calls Open() to open the actual
+queue object.
+
+  Key                		Value
+  ===                		=====
+  Mode              		String
+  Options           		MQOPEN 'Options' values
+  RetrySleep			Numeric
+  RetryCount			Numeric
+  RetryReasons			HASH Reference
 
 This method is called automatically by the constructor, unless the
 NoAutoOpen argument is given.
@@ -1665,6 +1717,35 @@ true on success, and false on failure.
 
 NOTE: The same comments for Backout() apply here.  This is really a
 Queue Manager connection operation.
+
+=head1 MQOPEN RETRY SUPPORT
+
+Normally, when MQOPEN() fails, the method that called it (Open() or
+new()) also fails.  It is possible to have the Open() method retry the
+MQOPEN() call for a specific set of reason codes.
+
+By default,  the retry logic  is  disabled, but it  can  be enabled by
+setting the RetryCount to a non-zero value.  The  list of reason codes
+defaults to just MQRC_OBJECT_IN_USE, but a list of retryable codes can
+be specified via the RetryReasons argument.
+
+You are probably wondering why this logic is useful for MQOPEN().  The
+choice of the default RetryReasons is not without its own reason.
+
+Consider an application that opens a queue for exclusive input.  If
+that application crashes and restarts, there will typically be a
+window of time when the queue manager has not yet noticed that the
+crashed application instance has died.  The application which has been
+restarted will not fail to open the queue, and MQOPEN() will set the
+reason to MQRC_OBJECT_IN_USE.
+
+By retrying this particular reason code, and tuning the RetryCount and
+RetrySleep to be consistent with the timeout on the queue manager,
+applications can restart, reconnect and reopen these queues
+transparently.
+
+There are almost certainly other scenarios where the RetryReasons may
+need to be customized, and thus the code supports this flexibility.
 
 =head1 ERROR HANDLING
 

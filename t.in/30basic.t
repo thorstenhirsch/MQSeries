@@ -1,5 +1,5 @@
 #
-# $Id: 30basic.t,v 9.3 1999/11/10 22:22:28 wpm Exp $
+# $Id: 30basic.t,v 12.1 2000/03/06 14:11:16 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -10,13 +10,12 @@ BEGIN {
 }
 
 BEGIN { 
-    $| = 1; 
-    if ( "__APITYPE__" eq "MQServer" && ! -d q{/var/mqm/qmgrs/@SYSTEM} ) {
+    $| = 1;
+    if ( "__APITYPE__" eq "MQServer" && ! -d $systemdir ) {
 	print "1..0\n";
 	exit 0;
-    }
-    else {
-	print "1..17\n"; 
+    } else {
+	print "1..17\n";
     }
 }
 
@@ -38,8 +37,7 @@ if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print "MQCONN failed: CompCode => $CompCode, Reason => $Reason\n";
     print "not ok 2\n";
     exit 0;
-}
-else {
+} else {
     print "ok 2\n";
 }
 
@@ -57,8 +55,7 @@ if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQOPEN failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 3\n");
     $Hobj = -1;
-}
-else {
+} else {
     print "ok 3\n";
 }
 
@@ -78,17 +75,16 @@ print "Querying several queue attributes (MQINQ)\n";
 print("MQINQ returned: CompCode => $CompCode, Reason => $Reason\n");
 
 if ( $CompCode != MQCC_OK
-	|| $Reason != MQRC_NONE ) {
+     || $Reason != MQRC_NONE ) {
     print("MQINQ failed: CompCode => $CompCode, Reason => $Reason\n"
-#	  , "MaxMsgLength => $MaxMsgLength\n" 
-#	  , "QueueName => $QueueName\n" 
-#	  , "CreationDate => $CreationDate\n" 
-#	  , "CreationTime => $CreationTime\n" 
-#	  , "MaxQDepth => $MaxQDepth\n" 
+	  #	  , "MaxMsgLength => $MaxMsgLength\n"
+	  #	  , "QueueName => $QueueName\n"
+	  #	  , "CreationDate => $CreationDate\n"
+	  #	  , "CreationTime => $CreationTime\n"
+	  #	  , "MaxQDepth => $MaxQDepth\n"
 	  , "not ok 4\n"
-	);
-}
-else {
+	 );
+} else {
     print "ok 4\n";
 }
 
@@ -100,8 +96,7 @@ MQPUT($Hconn,$Hobj,$MsgDesc,$PutMsgOpts,$tempMsg,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQPUT failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 5\n");
-}
-else {
+} else {
     print "ok 5\n";
 }
 
@@ -114,8 +109,7 @@ if ( $Reason != MQRC_TRUNCATED_MSG_FAILED || $tempMsg ne "Now is the" ) {
     print("MQGET should have failed, due to truncation\n" .
 	  "CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 6\n");
-}
-else {
+} else {
     print "ok 6\n";
 }
 
@@ -127,8 +121,7 @@ $tempMsg = MQGET($Hconn,$Hobj,$MsgDesc,$GetMsgOpts,$tempLen,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQGET failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 7\n");
-}
-else {
+} else {
     print "ok 7\n";
 }
 
@@ -137,8 +130,7 @@ MQSET($Hconn,$Hobj,$CompCode,$Reason,MQIA_INHIBIT_GET,MQQA_GET_INHIBITED,MQCA_TR
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQSET failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 8\n");
-}
-else {
+} else {
     print "ok 8\n";
 }
 
@@ -146,15 +138,15 @@ print "Inquiring Inhibit Get and Trigger Data (MQINQ)\n";
 ($inhibitGet,$trigData) = ("", "");	# defeats -w
 ($inhibitGet,$trigData) = MQINQ($Hconn,$Hobj,$CompCode,$Reason,MQIA_INHIBIT_GET,MQCA_TRIGGER_DATA);
 #$trigData =~  s/\s*(.*?)\s*$/$1/;
-if ( $CompCode != MQCC_OK 
-	|| $Reason != MQRC_NONE 
-	|| $trigData !~ /^bogusdata\s*/ 
-	) {
+if (
+    $CompCode != MQCC_OK ||
+    $Reason != MQRC_NONE ||
+    $trigData !~ /^bogusdata\s*/
+   ) {
     print("MQINQ failed: CompCode => $CompCode, Reason => $Reason\n" .
-#	  "Trigger data should be 'bogusdata', is '$trigData'\n" .
+	  #	  "Trigger data should be 'bogusdata', is '$trigData'\n" .
 	  "not ok 9\n");
-}
-else {
+} else {
     print "ok 9\n";
 }
 
@@ -163,8 +155,7 @@ MQSET($Hconn,$Hobj,$CompCode,$Reason,MQIA_INHIBIT_GET,MQQA_GET_ALLOWED,MQCA_TRIG
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQSET failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 10\n");
-}
-else {
+} else {
     print "ok 10\n";
 }
 
@@ -173,8 +164,7 @@ print "Inquiring Inhibit Get and Trigger Data (MQINQ)\n";
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQINQ failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 11\n");
-}
-else {
+} else {
     print "ok 11\n";
 }
 
@@ -183,8 +173,7 @@ MQCLOSE($Hconn,$Hobj,MQCO_NONE,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQCLOSE failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 12\n");
-}
-else {
+} else {
     print "ok 12\n";
 }
 
@@ -201,8 +190,7 @@ MQPUT1($Hconn,$ObjDesc,$MsgDesc,$PutMsgOpts,$tempMsg,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQPUT1 failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 13\n");
-}
-else {
+} else {
     print "ok 13\n";
 }
 
@@ -217,8 +205,7 @@ $Hobj = MQOPEN($Hconn,$ObjDesc,MQOO_INPUT_AS_Q_DEF,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQOPEN failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 14\n");
-}
-else {
+} else {
     print "ok 14\n";
 }
 
@@ -230,8 +217,7 @@ $tempMsg = MQGET($Hconn,$Hobj,$MsgDesc,$GetMsgOpts,$tempLen,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQGET failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 15\n");
-}
-else {
+} else {
     print "ok 15\n";
 }
 
@@ -240,8 +226,7 @@ MQCLOSE($Hconn,$Hobj,MQCO_NONE,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQCLOSE failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 16\n");
-}
-else {
+} else {
     print "ok 16\n";
 }
 
@@ -250,8 +235,7 @@ MQDISC($Hconn,$CompCode,$Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print("MQDISC failed: CompCode => $CompCode, Reason => $Reason\n" .
 	  "not ok 17\n");
-}
-else {
+} else {
     print "ok 17\n";
 }
 

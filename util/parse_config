@@ -1,10 +1,10 @@
 #-*-perl-*-
 #
-# $Id: parse_config,v 10.1 1999/11/11 21:45:03 wpm Exp $
+# $Id: parse_config,v 12.4 2000/03/06 14:06:14 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
-# 
+#
 # Parse our config file to get the parameters we need
 #
 
@@ -35,10 +35,9 @@ while ( <CONFIG> ) {
     next if /^\#/;
     next unless ($key,$value) = /^(\w+)\s*=\s*(.*)\s*$/;
     if ( $ENV{$key} ) {
-	warn "Environment variable '$key' overrides CONFIG definition\n";
+	print "Environment variable '$key' overrides CONFIG definition\n";
 	$myconfig{$key} = $ENV{$key};
-    }
-    else {
+    } else {
 	$myconfig{$key} = $value;
     }
 }
@@ -50,21 +49,43 @@ close(CONFIG) or
 # Validate the structure of the MQMTOP directory.  It has to exist,
 # and have lib and inc (or include) subdirectories.
 #
+
 if ( defined $myconfig{MQMTOP} ) {
     $mqmtop = $myconfig{MQMTOP};
-}
-else {
+} else {
+
+    #
+    # Canonical default.  True for most of the UNIX platforms.
+    #
+    $mqmtop = "/opt/mqm";
+    $systemdir = q{/var/mqm/qmgrs/@SYSTEM};
+
     if ( $Config{osname} =~ /aix/ ) {
 	$mqmtop = "/usr/lpp/mqm";
-    }
-    else {
-	$mqmtop = "/opt/mqm";
+    } elsif ( $Config{osname} =~ /win32/i ) {
+
+      require "Win32/TieRegistry.pm";
+      import Win32::TieRegistry;
+
+      $Registry->Delimiter('/');
+
+      my $CurrentVersion = "LMachine/SOFTWARE/IBM/MQSeries/CurrentVersion/";
+
+      my ($mqmdir) = (
+		      $Registry->{"$CurrentVersion/FilePath"} ||
+		      $Registry->{"$CurrentVersion/WorkPath"} ||
+		      "C:/Mqm"
+		     );
+
+      $mqmtop = "$mqmdir/Tools";
+
+      $systemdir = $mqmdir . q{/qmgrs/@SYSTEM};
+
     }
 }
 
 unless ( -d $mqmtop ) {
-    warn "No such directory '$mqmtop', defaulting to /opt/mqm\n";
-    $mqmtop = "/opt/mqm";
+    die "No such directory '$mqmtop'\n";
 }
 
 unless ( -d "$mqmtop/lib" ) {
@@ -73,11 +94,11 @@ unless ( -d "$mqmtop/lib" ) {
 
 if ( -d "$mqmtop/inc" ) {
     $include = "$mqmtop/inc";
-}
-elsif ( -d "$mqmtop/include" ) {
+} elsif ( -d "$mqmtop/include" ) {
     $include = "$mqmtop/include";
-}
-else {
+} elsif ( -d "$mqmtop/C/include" ) {
+    $include = "$mqmtop/C/include";
+} else {
     die "Missing inc or include directory in $mqmtop\n";
 }
 
@@ -103,8 +124,7 @@ close(CMQC);
 #
 if ( defined $myconfig{MQMLOCALE} ) {
     $mqmlocale = $myconfig{MQMLOCALE};
-}
-else {
+} else {
     $mqmlocale = "";
 }
 

@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 11.4 2000/02/02 23:07:07 wpm Exp $
+# $Id: Command.pm,v 12.3 2000/03/03 17:39:28 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,20 +21,27 @@ use MQSeries::Command::Response;
 use MQSeries::Command::PCF;
 use MQSeries::Command::MQSC;
 
+use vars qw($VERSION);
+
+$VERSION = '1.09';
+
 sub new {
-    
+
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
 
-    my $self = {
-		Reason			=> MQRC_NONE,
-		CompCode		=> MQCC_OK,
-		Wait 			=> 60000,	# 60 second wait for replies...
-		Expiry			=> 600,		# 60 second expiry on requests 
-		Carp			=> \&carp,
-		Type			=> 'PCF',
-	       };
+    my $self =
+      {
+       Reason			=> MQRC_NONE,
+       CompCode			=> MQCC_OK,
+       Wait 			=> 60000, # 60 second wait for replies...
+       Expiry			=> 600,	# 60 second expiry on requests
+       Carp			=> \&carp,
+       Type			=> 'PCF',
+       ModelQName		=> 'SYSTEM.DEFAULT.MODEL.QUEUE',
+       DynamicQName		=> 'PERL.COMMAND.*',
+      };
     bless ($self, $class);
 
     #
@@ -62,7 +69,19 @@ sub new {
     }
 
     #
-    # Where do we send requests?  
+    # Allow the DynamicQName template for the ReplyToQName to be
+    # overridden, as well as the ModelQName.
+    #
+    if ( $args{DynamicQName} ) {
+	$self->{DynamicQName} = $args{DynamicQName};
+    }
+
+    if ( $args{ModelQName} ) {
+	$self->{ModelQName} = $args{ModelQName};
+    }
+
+    #
+    # Where do we send requests?
     #
     if ( $args{CommandQueueName} ) {
 	$self->{CommandQueueName} = $args{CommandQueueName};
@@ -106,9 +125,9 @@ sub new {
 	if ( ref $args{ProxyQueueManager} ) {
 	    if ( $args{ProxyQueueManager}->isa("MQSeries::QueueManager") ) {
 		$self->{QueueManager} = $args{ProxyQueueManager};
-	    } 
+	    }
 	    else {
-		$self->{Carp}->("Invalid argument: 'ProxyQueueManager' " . 
+		$self->{Carp}->("Invalid argument: 'ProxyQueueManager' " .
 				"must be an MQSeries::QueueManager object");
 		return;
 	    }
@@ -126,9 +145,9 @@ sub new {
 	if ( ref $args{QueueManager} ) {
 	    if ( $args{QueueManager}->isa("MQSeries::QueueManager") ) {
 		$self->{QueueManager} = $args{QueueManager};
-	    } 
+	    }
 	    else {
-		$self->{Carp}->("Invalid argument: 'QueueManager' " . 
+		$self->{Carp}->("Invalid argument: 'QueueManager' " .
 				"must be an MQSeries::QueueManager object");
 		return;
 	    }
@@ -168,22 +187,22 @@ sub new {
 	    )
 	   ) {
 	return;
-    } 
+    }
 
     #
-    # 
+    #
     #
     unless (
 	    $self->{ReplyToQ} = MQSeries::Queue->new
 	    (
 	     QueueManager 	=> $self->{QueueManager},
-	     Queue 		=> 'SYSTEM.DEFAULT.MODEL.QUEUE',
-	     DynamicQName 	=> 'PERL.COMMAND.*',
+	     Queue 		=> $self->{ModelQName},
+	     DynamicQName 	=> $self->{DynamicQName},
 	     Mode		=> 'input',
 	     Carp 		=> $self->{Carp},
 	     Reason		=> \$self->{"Reason"},
 	     CompCode		=> \$self->{"CompCode"},
-	    ) 
+	    )
 	   ) {
 	return;
     }
@@ -200,6 +219,171 @@ sub CompCode {
 sub Reason {
     my $self = shift;
     return $self->{"Reason"};
+}
+
+#
+# XXX: This will remain undocumented in 1.09 *intentionally*, as the
+# author expects to massacre the interface and change it, so use at
+# your own risk.
+#
+# This method will query the object, and if it exists, check the
+# attributes to see if they match, and if they do, do nothing.  That
+# is, its a conditional creation of the given object.
+#
+sub CreateObject {
+
+    my $self 			= shift;
+    my (%args)			= @_;
+    my ($Verify,$Quiet,$Attrs)  = @args{qw(Verify Quiet Attrs)};
+
+    my $QMgr			= (
+				   $self->{RealQueueManager} ||
+				   $self->{QueueManager}->{QueueManager}
+				  );
+
+    my $Need 			= 1;
+
+    my $Inquire			= "";
+    my $Create			= "";
+    my $Delete			= "";
+    my $Key			= "";
+    my $Type			= "";
+
+    if ( $Attrs->{ChannelName} ) {
+	$Inquire		= "InquireChannel";
+	$Create			= "CreateChannel";
+	$Key			= "ChannelName";
+	$Type			= "$Attrs->{ChannelType} Channel";
+    }
+    elsif ( $Attrs->{QName} ) {
+	$Inquire		= "InquireQueue";
+	$Create			= "CreateQueue";
+	$Delete			= "DeleteQueue";
+	$Key			= "QName";
+
+	if ( $Attrs->{QType} eq 'Remote' && not $Attrs->{RemoteQName} ) {
+	    $Type		= "QMgr Alias";
+	}
+	elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {	
+	    $Type		= "Transmission Queue";
+	}
+	else {
+	    $Type		= "$Attrs->{QType} Queue";
+	}
+
+    }
+    elsif ( $Attrs->{ProcessName} ) {
+	$Inquire		= "InquireProcess";
+	$Create			= "CreateProcess";
+	$Key			= "ProcessName";
+	$Type			= "Process";
+    }
+
+    #
+    # First check to see if it exists.
+    #
+    my ($Object) = $self->$Inquire( $Key => $Attrs->{$Key} );
+
+    #
+    # XXX -- shouldn't we be checking for no such object specifically?
+    # Of course we should...
+    #
+    if ( ref $Object eq 'HASH' ) {
+
+	#
+	# If it exists, let's assume we don't need to create it.  If
+	# any of the attributes are wrong, we'll then say we "Need"
+	# it.
+	#
+	$Need = 0;
+
+	foreach my $Attr ( sort keys %$Attrs ) {
+
+	    #
+	    # Don't bother comparing Attrs passed in which don't get
+	    # returned by the Inquire commands, eg. Replace, Force and
+	    # others that make no sense.
+	    #
+	    next unless exists $Object->{$Attr};
+
+	    my $NeedAttr = 0;
+
+	    #
+	    # One special case -- we don't need this attribute is they
+	    # are both empty and/or white space.  Bear in mind that
+	    # you have to feed a single space to some of these damn
+	    # commands.  Very annoying.
+	    #
+	    # Otherwise, do the comparison.
+	    #
+	    unless ( $Attrs->{$Attr} =~ /^\s*$/ && $Object->{$Attr} =~ /^\s*$/ ) {
+		if ( $Attrs->{$Attr} =~ /^\d+/ ) {
+		    if ( $Attrs->{$Attr} != $Object->{$Attr} ) {
+			$NeedAttr = $Need = 1;
+		    }
+		} else {
+		    if ( $Attrs->{$Attr} ne $Object->{$Attr} ) {
+			$NeedAttr = $Need = 1;
+		    }
+		}
+	    }
+
+	    if ( $NeedAttr ) {
+		print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n" .
+		      "Should be '$Attrs->{$Attr}', is '$Object->{$Attr}'\n")
+		  unless $Quiet;
+	    }
+
+	}
+
+    }
+    else {
+	print "$Type '$QMgr/$Attrs->{$Key}' is missing\n" unless $Quiet;
+    }
+
+    unless ( $Need ) {
+	print "$Type '$QMgr/$Attrs->{$Key}' is correctly configured\n" unless $Quiet;
+	return 1;
+    }
+
+    return 1 if $Verify;
+
+    #
+    # If the QType has changed, we'll have to delete it first.  NOTE:
+    # We do *not* purge.  That should be checked out manually, as it
+    # will be an odd case anyway.  In any event, this will be somewhat
+    # rare.
+    #
+    if ( $Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType} ) {
+
+	print "Deleting $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" unless $Quiet;
+
+	$self->$Delete
+	  (
+	   $Key			=> $Attrs->{$Key},
+	  ) or do {
+	      $self->{Carp}->("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
+			      MQReasonToText($self->Reason()) . "\n");
+	      return;
+	  };
+
+    }
+
+    print "Creating/updating $Type '$QMgr/$Attrs->{$Key}'\n" unless $Quiet;
+
+    $self->$Create
+      (
+       $Key			=> $Attrs->{$Key},
+       %$Attrs,
+       Replace			=> 1,
+      ) or do {
+	  $self->{Carp}->("Unable to create $Type '$QMgr/$Attrs->{$Key}'\n" .
+			  MQReasonToText($self->Reason()) . "\n");
+	  return;
+      };
+
+    return 1;
+
 }
 
 #
@@ -339,7 +523,7 @@ sub _Command {
 	last if $self->{ReplyToQ}->Reason() == &MQRC_NO_MSG_AVAILABLE;
 
 	$count++;
-    
+
 	#
 	# Let the object-wide compcode and reason be the first
 	# non-zero result found in all of the messages.  This is

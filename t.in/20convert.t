@@ -1,5 +1,5 @@
 #
-# $Id: 20convert.t,v 9.3 1999/11/10 22:22:39 wpm Exp $
+# $Id: 20convert.t,v 12.1 2000/03/06 14:09:16 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -9,14 +9,13 @@ BEGIN {
     require "../util/parse_config";
 }
 
-BEGIN { 
-    $| = 1; 
-    if ( "__APITYPE__" eq "MQServer" && ! -d q{/var/mqm/qmgrs/@SYSTEM} ) {
+BEGIN {
+    $| = 1;
+    if ( "__APITYPE__" eq "MQServer" && ! -d $systemdir ) {
 	print "1..0\n";
 	exit 0;
-    }
-    else {
-	print "1..6\n"; 
+    } else {
+	print "1..6\n";
     }
 }
 
@@ -40,8 +39,7 @@ if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print "MQCONN failed: CompCode => $CompCode, Reason => $Reason\n";
     print "not ok 2\n";
     exit 0;
-}
-else {
+} else {
     print "ok 2\n";
 }
 
@@ -63,8 +61,7 @@ MQPUT1($Hconn, $ObjDesc, $MsgDesc, $PutMsgOpts, $ebcdic, $CompCode, $Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print "MQPUT1 failed: CompCode => $CompCode, Reason => $Reason\n";
     print "not ok 3\n";
-}
-else {
+} else {
     print "ok 3\n";
 }
 
@@ -72,8 +69,7 @@ $Hobj = MQOPEN($Hconn, $ObjDesc, MQOO_INPUT_SHARED, $CompCode, $Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print "MQOPEN failed: CompCode => $CompCode, Reason => $Reason\n";
     print "not ok 4\n";
-}
-else {
+} else {
     print "ok 4\n";
 }
 
@@ -84,10 +80,9 @@ $msg = MQGET($Hconn, $Hobj, $MsgDesc, $GetMsgOpts, $length, $CompCode, $Reason);
 if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print "MQGET failed: CompCode => $CompCode, Reason => $Reason\n";
     print "not ok 5\n";
-    $msg = "";	# defeats -w
+    $msg = "";			# defeats -w
 
-}
-else {
+} else {
     print "ok 5\n";
 }
 
@@ -99,8 +94,7 @@ if ( $msg ne $ascii ) {
     print "Should be: '$ascii'\n";
     print "Is:        '$msg'\n";
     print "not ok 6\n";
-}
-else {
+} else {
     print "ok 6\n";
 }
 

@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 9.3 1999/10/29 22:29:45 wpm Exp $
+# $Id: parse_headers,v 12.1 2000/02/18 03:21:51 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -13,7 +13,15 @@
 
 use English;
 
-@headers = <$include/cm*.h>;
+opendir(INCLUDE,$include) ||
+  die "Unable to opendir $include: $ERRNO\n";
+
+foreach my $dirent ( readdir(INCLUDE) ) {
+  next unless $dirent =~ /^cm.*\.h$/;
+  push(@headers,"$include/$dirent");
+}
+
+closedir(INCLUDE);
 
 foreach my $header ( @headers ) {
 

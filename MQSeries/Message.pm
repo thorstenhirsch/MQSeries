@@ -1,5 +1,5 @@
 #
-# $Id: Message.pm,v 9.5 1999/10/22 21:47:54 wpm Exp $
+# $Id: Message.pm,v 12.2 2000/02/25 09:21:31 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,6 +15,10 @@ use English;
 
 use MQSeries;
 
+use vars qw($VERSION);
+
+$VERSION = '1.09';
+
 sub new {
 
     my $proto = shift;
@@ -23,12 +27,12 @@ sub new {
 
     my %MsgDesc = ();
 
-    my $self = 
+    my $self =
       {
        # This needs to be a hard reference.  See MQSeries::Queue::Put()
        MsgDesc 		=> \%MsgDesc,
        # XXX - performance impact on default buffer size?
-       BufferLength 	=> 32767, 
+       BufferLength 	=> 32767,
        Carp 		=> \&carp,
       };
 
@@ -74,7 +78,7 @@ sub new {
     }
 
     return $self;
-    
+
 }
 
 #
@@ -102,7 +106,7 @@ sub MsgDesc {
 
 #
 # Set the data value, if given.  With no args, it just returns the
-# data value.
+# data value.  Same for the buffer.
 #
 sub Data {
     my $self = shift;
@@ -110,6 +114,14 @@ sub Data {
 	$self->{Data} = $_[0];
     }
     return $self->{Data};
+}
+
+sub Buffer {
+    my $self = shift;
+    if ( defined $_[0] ) {
+	$self->{Buffer} = $_[0];
+    }
+    return $self->{Buffer};
 }
 
 sub BufferLength {
@@ -180,7 +192,7 @@ MQSeries::Message -- OO interface to MQSeries messages
       CorrelId 		=> $request->MsgDesc("MsgId"),
      },
     );
-            
+
 See MQSeries::Queue SYNOPSIS section as well.
 
 =head1 DESCRIPTION
@@ -220,7 +232,7 @@ MQSeries messages using the MQSeries::Message::Storable module.
 The Data method will set the Data portion of the message if it is
 passed any defined value, and will simply return the data otherwise.
 Thus, to clear any existing Data from a message, one would pass the
-empty string: 
+empty string:
 
   $message = MQSeries::Message->new( Data => "foo" );
   $message->Data(""); # Clears Data value entirely
@@ -229,6 +241,13 @@ In order to query the Data value, the method must be called with no
 further arguments;
 
   $data = $message->Data(); # Returns Data unmolested
+
+=item Buffer
+
+This method will return the raw, converted buffer when one exists.
+This is really only relevant for a message type which uses a
+PutConvert and/or GetConvert method to translate the raw buffer
+returned from MQGET().
 
 =item BufferLength
 
@@ -241,7 +260,7 @@ the queue are expected to be larger, this must be set appropriately.
 The value of this key is a hash refernece which sets the key/values of
 the MsgDesc structure.  See the "MQSeries Application Programming
 Reference" documentation for the possible keys and values of the MQMD
-structure.  
+structure.
 
 Also, see the examples section for specific usage of this feature.
 This is one area of the API which is not easily hidden; you have to

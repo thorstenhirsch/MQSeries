@@ -4,6 +4,108 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.09
+
+=head2 Support for Win32
+
+This release compiles on Windows NT 4.0, and has thus far been tested
+with ActiveState 5.00503, build 521, with Visual C++ 6.0.  Other
+perl/compiler combinations will probably follow, but the initial
+support is all the author has to test.  I've tested it with 5.0 as a
+client, and 5.1 as both client and server.
+
+NOTE: (and a WARNING, too).  This code determines where your MQSeries
+installation is by querying the Windows Registry, using
+Win32::TieRegistry.  This is done not only at compile time (to find
+the includes files and shared libs), but also at run time to determine
+whether or not to use the client or server API, automatically.
+
+=head2 Retry logic in MQSeries::QueueManager->Connect() and MQSeries::Queue->Open()
+
+The retry logic was always there in MQSeries::QueueManager->Connect(),
+but now it is much more configurable.  You can specify which reasons
+codes are worth retrying, rather than depend on a hardcoded (and
+possibly wrong or incorrect) list.
+
+MQSeries::Queue->Open() also support retry logic, and the author finds
+this very useful for daemons recovering from a previous crash,
+attempting to open a queue for exclusive input, and waiting for the
+previously invoked agent process to free up the input handle.
+
+The documentation for both modules has a RETRY LOGIC section.  See
+that for more information, as well as the documentation for the
+constructors, and each of the specific methods.
+
+=head2 MQSeries::Command->new takes additional arguments.
+
+The MQSeries::Command constructor takes additional arguments allowing
+you to specify the Model Queue, and DynamicQName used to open the
+dynamic reply queue for command messages.
+
+=head2 MQSeries::Command->CreateObject() method added
+
+WARNING: This new method, while being Very Cool, is EXPERIMENTAL, and
+intentionally not documented, as the API will likely change.  It
+will probably stabilize in 1.10.
+
+CreateObject is a higher level wrapper function that will only create
+the specified object if it doesn't exist, or the specified attributes
+don't match.  This is a conditional object creation, that will be a
+noop if the object is already correctly configured.
+
+=head2 MQSeries::QueueManager Hconn reference counting
+
+A global hash, keyed on the process ID, and the Hconn value, will keep
+track of how many MQSeries::QueueManager objects have been
+instantiated for a given queue manager connections (since the Hconn
+values get reused).  The object destructor will now decrement these
+values, and only the last object will actually disconnect from the
+queue manager.
+
+This is actually a significant enhancement, as it was possible to
+pre-maturely disconnect from the queue manager when instantiating lots
+of objects, all of them specifying the queue manager by name, and thus
+internally recreating lots of MQSeries::QueueManager objects.  The
+first one to get destroyed would wipe out the connection, causing
+problems for the others.
+
+=head2 MQSeries::QueueManager constructor arguments
+
+The constructor argument QueueManager can now be another
+MQSeries::QueueManager argument, and the QueueManager name will be
+stolne from that object, and a new one instantiated.  This really just
+allows an MQSeries::QueueManager object to be passed to the
+MQSeries::PubSub::Broker constructor, actually.
+
+=head2 MQSeries::Queue->Open() ignores the Hobj on errors
+
+The Hobj value returned by MQOPEN() is only saved in the object hash
+when the CompCode is either MQCC_OK or MQCC_WARNING.  The value when
+there is a failure can be a large, useless negative number, but then
+this looks like a true value in perl.
+
+This confuses the subsequent attempts to call ->Open(), which are
+supposed to return true if the object is already opened.  This was done via:
+
+	return 1 is $self->{Hobj};
+
+which will be wrong.  This is primarily relevant is you implement any
+form of retry logic for failed queue opens.
+
+=head2 MQSeries::Message->Buffer() method added
+
+A new method to return the raw buffer from an MQGET() call.  This is
+relevant for classes which use GetConvert() methods to translate the
+raw data into a customized form.  If they save the raw buffer into
+$self->{Buffer}, then it will be available.
+
+=head2 MQSeries::Message::Event->GetConvert() saves raw Buffer
+
+This GetConvert() method will save the raw buffer, which in this case
+gives the developer access to the raw PCF data.  The author uses this
+to echo the original event, in its unaltered format, to other systems
+management packages, afte rhe gets to it first.
+
 =head1 Changes for 1.08
 
 This is another relatively minor bug fix release, but since I'm
@@ -23,7 +125,7 @@ code found in the returned messages, which is always 3008 (command
 failed).  Now the code will catch the first non-zero return code, and
 default to that, and this reason code is usually the one you want.  
 
-For example, InquireQueue for a non-existent queue name will not
+For example, InquireQueue for a non-existent queue name will now
 return 2085 (object not found), instead of the generic and
 uninteresting 3008.
 
@@ -541,7 +643,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 11.2 2000/02/02 23:14:05 wpm Exp $
+# $Id: Changes.src,v 12.5 2000/03/06 15:56:46 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

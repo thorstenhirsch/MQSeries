@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 11.2 2000/02/02 23:11:44 wpm Exp $
+# $Id: Command.pm,v 12.1 2000/02/03 19:44:01 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -10,7 +10,7 @@ package MQSeries::PubSub::Command;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '1.08';
+$VERSION = '1.09';
 
 use MQSeries;
 use MQSeries::PubSub::Message;

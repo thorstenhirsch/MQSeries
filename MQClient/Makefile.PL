@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 9.3 1999/11/04 20:32:11 wpm Exp $
+# $Id: Makefile.PL,v 12.4 2000/03/03 17:40:32 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -44,10 +44,11 @@ if ( $Config{osname} =~ /(irix|sunos)/ ) {
 #
 # XXX -- what other library names are valid?
 #
-unless ( 
+unless (
 	-f "$mqmtop/lib/libmqm.so" ||
 	-f "$mqmtop/lib/libmqm.sl" ||
-	-f "$mqmtop/lib/libmqm.a"
+	-f "$mqmtop/lib/libmqm.a" ||
+	-f "$mqmtop/lib/mqm.lib"
        ) {
     warn("No libmqm server library found, MQServer disabled\n")
       if $apitype eq 'MQServer'; # Whine once...
@@ -62,7 +63,7 @@ if ( $myconfig{NOCLIENT} && $myconfig{NOSERVER} ) {
     die "Both the MQClient and MQServer API's have been disabled!!\n";
 }
 
-if ( 
+if (
     ( $apitype eq "MQClient" && $myconfig{NOCLIENT} )
     ||
     ( $apitype eq "MQServer" && $myconfig{NOSERVER} )
@@ -75,18 +76,30 @@ if (
 #
 # Now we have to specify the list of libraries needed on each platform
 #
-if ( $apitype eq "MQClient" ) {
-    $libs = "-L$mqmtop/lib -lmqicg -lmqic -lmqmcs -lmqmzse";
+
+#
+# XXX -- this hack handles the white space in pathnames prevalent on
+# Win32.  At least on Solaris, quoting the -L path doesn't work.
+#
+if ( $mqmtop =~ /\s/ ) {
+    $libdir = "-L'$mqmtop/lib'";
 }
 else {
-    $libs = "-L$mqmtop/lib -lmqm -lmqmcs -lmqmzse";
+    $libdir = "-L$mqmtop/lib";
+}
+
+if ( $apitype eq "MQClient" ) {
+    $libs = "$libdir -lmqicg -lmqic -lmqic32 -lmqmcs -lmqmzse";
+}
+else {
+    $libs = "$libdir -lmqm -lmqmcs -lmqmzse";
 }
 
 #
 # There may very well be other platforms on which we need -lthread.
 #
 if ( $Config{osname} =~ /solaris/ ) {
-    $libs .= " -lthread";
+    $libs .= " -lpthread -lthread";
 }
 
 #
@@ -111,14 +124,15 @@ foreach $file ( readdir(TEST) ) {
 closedir(TEST);
 
 foreach $file ( sort keys %filemap ) {
-    
+
+    my @files = ();
+
     if ( -d $file ) {
-	my @files = ();
 	opendir(INDIR,$file) || die "Unable to opendir $file: $ERRNO\n";
 	foreach ( readdir(INDIR) ) {
 	    next if /^\.\.?$/;
 	    next unless /^\d{2}/;
-	    next if /~$/; # skip emacs backup files
+	    next if /~$/;	# skip emacs backup files
 	    #
 	    # Skip files that do not match the current major version.
 	    # This lets us include MQCONNX and MQBEGIN only if we are
@@ -130,85 +144,91 @@ foreach $file ( sort keys %filemap ) {
 	    push(@files,"$file/$_");
 	}
 	closedir(INDIR);
-	open(IN,"cat " . join(" ",sort @files) . "|")
-	  or die "Unable to fork cat: $ERRNO\n";
-    }
-    else {
-	open(IN,$file) || die "Unable to open $file: $ERRNO\n";
+    } else {
+
+        @files = ($file);
     }
 
-    open(OUT,">$filemap{$file}") || die "Unable to write to $filemap{$file}: $ERRNO\n";
+    open(OUT,">$filemap{$file}") || 
+      die "Unable to write to $filemap{$file}: $ERRNO\n";
 
-    while ( <IN> ) {
+    foreach my $subfile ( sort @files ) {
 
-	#
-	# Special case: include the header files in the right order,
-	# based on what's available.
-	#
-	if ( /__INCLUDES__/ ) {
-	    
-	    foreach my $header ( grep(/cmqc\.h$/,@headers),
-				 grep(!/cmqc\.h$/,@headers) ) {
-		my $filename = basename($header);
-		print OUT "#include <$filename>\n";
+	open(IN,$subfile) || die "Unable to open $subfile: $ERRNO\n";
+
+	while ( <IN> ) {
+	
+	    #
+	    # Special case: include the header files in the right order,
+	    # based on what's available.
+	    #
+	    if ( /__INCLUDES__/ ) {
+
+		foreach my $header ( grep(/cmqc\.h$/,@headers),
+				     grep(!/cmqc\.h$/,@headers) ) {
+		    my $filename = basename($header);
+		    print OUT "#include <$filename>\n";
+		}
+
+		next;
+
 	    }
-	    
-	    next;
+	
+	    #
+	    # Another special case: include the macros found in the header
+	    # files dynamically.
+	    #
+	    if ( /__CONSTANTS__/ ) {
 
+		foreach my $constant (
+				      sort (
+					    keys %constant_hex,
+					    keys %constant_numeric,
+					    keys %constant_string,
+					    keys %constant_null,
+					    keys %constant_char
+					   )
+				     ) {
+		    #
+		    # NOTE: 13 is the indentation of the qw() construct
+		    # being assigned to @EXPORT in MQSeries.pm.in.  This
+		    # is the author being incredibly anal about the
+		    # style....
+		    #
+		    print OUT " " x 13 . "$constant\n";
+		}
+
+		next;
+
+	    }
+	
+	    if ( /__CONSTANT_NULL__/ ) {
+
+		foreach my $constant ( sort keys %constant_null ) {
+		    # More anal retentive indentation (the 3 and 20, that is)
+		    print OUT (" " x 3 . $constant .
+			       " " x (20 - length($constant)) .
+			       "=> $constant_null{$constant},\n");
+		}
+
+		next;
+
+	    }
+	
+	    s/__APITYPE__/$apitype/g;
+	    s/__LOCALE__/$mqmlocale/g;
+	    s/__TEST_QUEUE__/$myconfig{QUEUE}/g;
+	    s/__TEST_QUEUE_MANAGER__/$myconfig{QUEUEMGR}/g;
+	    print OUT $_;
+	
 	}
 
-	#
-	# Another special case: include the macros found in the header
-	# files dynamically.
-	#
-	if ( /__CONSTANTS__/ ) {
-
-	    foreach my $constant (
-				  sort (
-					keys %constant_hex,
-					keys %constant_numeric,
-					keys %constant_string,
-					keys %constant_null,
-					keys %constant_char
-				       )
-				 ) {
-		#
-		# NOTE: 13 is the indentation of the qw() construct
-		# being assigned to @EXPORT in MQSeries.pm.in.  This
-		# is the author being incredibly anal about the
-		# style....
-		#
-		print OUT " " x 13 . "$constant\n";
-	    }
-
-	    next;
-
-	}
-
-	if ( /__CONSTANT_NULL__/ ) {
-	    
-	    foreach my $constant ( sort keys %constant_null ) {
-		# More anal retentive indentation (the 3 and 20, that is)
-		print OUT (" " x 3 . $constant .
-			   " " x (20 - length($constant)) .
-			   "=> $constant_null{$constant},\n");
-	    }
-
-	    next;
-
-	}
-
-	s/__APITYPE__/$apitype/g;
-	s/__LOCALE__/$mqmlocale/g;
-	s/__TEST_QUEUE__/$myconfig{QUEUE}/g;
-	s/__TEST_QUEUE_MANAGER__/$myconfig{QUEUEMGR}/g;
-	print OUT $_;
+	close(IN) || die "Unable to close $subfile: $ERRNO\n";
 
     }
 
-    close(IN) || die "Unable to close $file: $ERRNO\n";
     close(OUT) || die "Unable to close $filemap{$file}: $ERRNO\n";
-    
+
 }
 
 #
@@ -223,12 +243,40 @@ WriteMakefile(
 	      NAME		=> "${apitype}::MQSeries",
 	      VERSION_FROM	=> "MQSeries.pm",
 	      LIBS		=> [$libs],
-	      INC		=> "-I$include",
+	      INC		=> qq{-I"$include"},
 	      EXE_FILES		=> [],
 	      OBJECT		=> q[MQSeries$(OBJ_EXT) constants$(OBJ_EXT)],
+              #
+	      # On Win32, we need to force the use of the CAPI
+              # with ActiveState's PERL_OBJECT build
+	      #
+              (
+	       $Config{archname} =~ /-object\b/i ?
+	       ( CAPI => 'TRUE' ) : ()
+	      ),
+              #
+              # On Win32, MakeMaker ain't picking up the constants.c.PL 
+              # file for free.  Probably a bug... 
+              #
+	      (
+	       $Config{osname} =~ /win32/i ?
+	       (
+		PL_FILES =>
+		{
+		 'constants.c.PL' 	=> 'constants.c',
+		 'typemap.PL'     	=> 'typemap',
+		}
+	       ) : ()
+	      )
 	     );
 
 
 # now we remove it again so that it will be out-of-date
 # with respect to typemap.PL.
 unlink("typemap");
+
+#
+# Unlink this to be force it to be regenerated.
+#
+unlink("constants.c");
+

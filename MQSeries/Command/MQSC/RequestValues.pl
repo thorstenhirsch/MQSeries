@@ -1,5 +1,5 @@
 #
-# $Id: RequestValues.pl,v 9.2 1999/11/02 23:44:39 wpm Exp $
+# $Id: RequestValues.pl,v 12.1 2000/02/24 09:24:13 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -9,7 +9,7 @@ package MQSeries::Command::MQSC;
 
 %RequestValues =
   (
-   
+
    Yes				=> [ "NO",		"YES" ],
 
    Enabled 			=> [ "DISABLED",	"ENABLED" ],
@@ -134,6 +134,7 @@ package MQSeries::Command::MQSC;
 
    ProcessAttrs =>
    {
+    All				=> "ALL",
     ProcessName			=> "PROCESS",
     ProcessDesc			=> "DESCR",
     ApplType			=> "APPLTYPE",
@@ -205,7 +206,7 @@ package MQSeries::Command::MQSC;
     Alias			=> "QALIAS",
     Model			=> "QMODEL",
    },
-   
+
    ChannelType =>
    {
     Sender			=> "SDR",
@@ -344,6 +345,7 @@ package MQSeries::Command::MQSC;
 
    NamelistAttrs =>
    {
+    All				=> "ALL",
     NamelistName 		=> "NAMELIST",
     NamelistDesc		=> "DESCR",
     Names			=> "NAMES",
@@ -384,6 +386,7 @@ package MQSeries::Command::MQSC;
 
    ClusterQMgrAttrs =>
    {
+    All				=> "ALL",
     AlterationDate		=> "ALTDATE",
     AlterationTime		=> "ALTTIME",
     BatchInterval		=> "BATCHINT",
@@ -437,7 +440,7 @@ package MQSeries::Command::MQSC;
    {
     ForceRemove			=> "FORCEREMOVE",
    },
-   
+
    TpipeAction =>
    {
     Commit			=> "COMMIT",

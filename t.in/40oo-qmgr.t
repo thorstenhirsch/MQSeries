@@ -1,5 +1,5 @@
 #
-# $Id: 40oo-qmgr.t,v 9.2 1999/11/10 22:22:17 wpm Exp $
+# $Id: 40oo-qmgr.t,v 12.1 2000/03/06 14:12:25 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -9,14 +9,13 @@ BEGIN {
     require "../util/parse_config";
 }
 
-BEGIN { 
-    $| = 1; 
-    if ( "__APITYPE__" eq "MQServer" && ! -d q{/var/mqm/qmgrs/@SYSTEM} ) {
+BEGIN {
+    $| = 1;
+    if ( "__APITYPE__" eq "MQServer" && ! -d $systemdir ) {
 	print "1..0\n";
 	exit 0;
-    }
-    else {
-	print "1..9\n"; 
+    } else {
+	print "1..9\n";
     }
 }
 
@@ -41,8 +40,7 @@ $QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
     my $qmgr = MQSeries::QueueManager->new( QueueManager => $QMgrName );
     if ( ref $qmgr && $qmgr->isa("MQSeries::QueueManager") ) {
 	print "ok 2\n";
-    }
-    else {
+    } else {
 	print "not ok 2\n";
 	exit 0;
     }
@@ -54,7 +52,7 @@ $QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
 {
 
     my $qmgr = MQSeries::QueueManager->new
-      ( 
+      (
        QueueManager 	=> $QMgrName,
        NoAutoConnect	=> 1,
       );
@@ -69,7 +67,7 @@ $QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
 	      "Reason   => " . $qmgr->Reason() . "\n");
 	print "not ok 3\n";
 	exit 0;
-    } 
+    }
 
     print "ok 3\n";
 
@@ -91,7 +89,7 @@ $QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
 {
 
     my $qmgr = MQSeries::QueueManager->new
-      ( 
+      (
        QueueManager 	=> $QMgrName,
       );
     unless ( ref $qmgr && $qmgr->isa("MQSeries::QueueManager") ) {
@@ -112,15 +110,14 @@ $QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
     print "ok 6\n";
 
     my %qmgrattr = $qmgr->Inquire( qw(
-				      Platform 
+				      Platform
 				      CodedCharSetId
 				      DeadLetterQName
 				     ) );
 
     if ( scalar keys %qmgrattr == 3 ) {
 	print "ok 7\n";
-    }
-    else {
+    } else {
 	print "MQSeries::QueueManager->Inquire did not return 3 keys\n";
 	print "not ok 7\n";
     }
@@ -144,15 +141,13 @@ $QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
 
     if ( $notok8 ) {
 	print "not ok 8\n";
-    }
-    else {
+    } else {
 	print "ok 8\n";
     }
 
     if ( $qmgr->Close() ) {
 	print "ok 9\n";
-    }
-    else {
+    } else {
 	print("MQSeries::QueueManager->Close() failed.\n" .
 	      "CompCode => " . $qmgr->CompCode() . "\n" .
 	      "Reason   => " . $qmgr->Reason() . "\n");

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 9.4 1999/10/22 22:28:20 wpm Exp $
+# $Id: Makefile.PL,v 12.1 2000/02/18 03:18:12 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,7 +15,13 @@ if ( $::has_mqrfh ) {
     WriteMakefile(
 		  NAME	   	=> 'MQSeries::Message::RulesFormat',
 		  VERSION_FROM 	=> 'RulesFormat.pm',
-		  INC		=> "-I$include",
+		  INC		=> qq{-I"$include"},
+		  (
+		   $Config{archname} =~ /-object\b/i ?
+		   (
+		    CAPI	=> 'TRUE',
+		   ) : ()
+		  )
 		 );
 }
 else {

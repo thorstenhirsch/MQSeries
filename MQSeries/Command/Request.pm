@@ -1,5 +1,5 @@
 #
-# $Id: Request.pm,v 9.7 1999/11/02 23:47:39 wpm Exp $
+# $Id: Request.pm,v 12.1 2000/02/03 19:39:08 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,9 +20,11 @@ use MQSeries::Command::MQSC;
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQEncodePCF);
 
-use vars qw(@ISA);
+use vars qw(@ISA $VERSION);
 
 @ISA = qw(MQSeries::Message);
+
+$VERSION = '1.09';
 
 sub new {
 

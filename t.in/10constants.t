@@ -1,5 +1,5 @@
 #
-# $Id: 10constants.t,v 9.1 1999/10/14 21:26:10 wpm Exp $
+# $Id: 10constants.t,v 12.1 2000/03/06 14:08:27 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -43,18 +43,15 @@ foreach my $constant (
 
     if ( exists $constant_null{$constant} ) {
 	if ( defined($value) ) {
-	  if ( $value =~ /^\0+$/ ) {
-	      print length($value) . " NULL chars";
-	  }
-	  else {
-	      print "'$value'";
-	  }
-	}
-	else {
+	    if ( $value =~ /^\0+$/ ) {
+		print length($value) . " NULL chars";
+	    } else {
+		print "'$value'";
+	    }
+	} else {
 	    print "undefined";
 	}
-    }
-    else {
+    } else {
 	print(defined($value) ? "'$value'" : "undefined")
     }
 
@@ -63,27 +60,23 @@ foreach my $constant (
     if ( exists $constant_null{$constant} ) {
 	print "$constant_null{$constant} NULL chars\n";
 	print "not " unless defined($value) && length($value) == $constant_null{$constant};
-    }
-    elsif ( exists $constant_hex{$constant} ) {
+    } elsif ( exists $constant_hex{$constant} ) {
 	print "'$constant_hex{$constant}'\n";
 	print "not " unless defined($value) && $value == $constant_hex{$constant};
-    }
-    elsif ( exists $constant_numeric{$constant} ) {
+    } elsif ( exists $constant_numeric{$constant} ) {
 	print "'$constant_numeric{$constant}'\n";
 	print "not " unless defined($value) && $value == $constant_numeric{$constant};
-    }
-    elsif ( exists $constant_string{$constant} ) {
+    } elsif ( exists $constant_string{$constant} ) {
 	print "'$constant_string{$constant}'\n";
 	print "not " unless defined($value) && $value eq $constant_string{$constant};
-    }
-    else {
+    } else {
 	print "'$constant_char{$constant}'\n";
 	print "not " unless defined($value) && $value eq $constant_char{$constant};
     }
-	   
+
     print "ok $counter\n";
-	   
+
     $counter++;
-	   
+
 }
 

@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 11.1 1999/11/23 15:19:18 wpm Exp $
+# $Id: MQSeries.pm,v 12.2 2000/03/06 14:04:01 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -22,17 +22,40 @@ require DynaLoader;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.08';
+$VERSION = '1.09';
 
 BEGIN {
 
-    if ( -d q{/var/mqm/qmgrs/@SYSTEM} and not exists $INC{"MQClient/MQSeries.pm"} ) {
+    my $systemdir = q{/var/mqm/qmgrs/@SYSTEM};
+
+    if ( $^O =~ /Win32/i ) {
+
+	no strict;
+
+	require "Win32/TieRegistry.pm";
+	import Win32::TieRegistry;
+
+	$Registry->Delimiter('/');
+
+	my $CurrentVersion = "LMachine/SOFTWARE/IBM/MQSeries/CurrentVersion/";
+
+	($systemdir) = (
+			$Registry->{"$CurrentVersion/FilePath"} ||
+			$Registry->{"$CurrentVersion/WorkPath"} ||
+			"C:/Mqm"
+		       ) . q{/qmgrs/@SYSTEM};
+
+    }
+
+    if (
+	$INC{"MQServer/MQSeries.pm"} ||
+	(  -d $systemdir && ! exists $INC{"MQClient/MQSeries.pm"} )
+       ) {
 	require "MQServer/MQSeries.pm";
 	import MQServer::MQSeries;
 	@EXPORT = @MQServer::MQSeries::EXPORT;
 	$MQSeries::Mode = "Server";
-    }
-    else {
+    } else {
 	require "MQClient/MQSeries.pm";
 	import MQClient::MQSeries;
 	@EXPORT = @MQClient::MQSeries::EXPORT;

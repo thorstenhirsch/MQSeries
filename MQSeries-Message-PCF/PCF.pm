@@ -1,5 +1,5 @@
 #
-# $Id: PCF.pm,v 11.1 1999/11/23 15:18:53 wpm Exp $
+# $Id: PCF.pm,v 12.1 2000/02/03 19:40:56 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,7 +16,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.08';
+$VERSION = '1.09';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 

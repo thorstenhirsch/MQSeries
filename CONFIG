@@ -1,5 +1,5 @@
 #
-# $Id: CONFIG,v 11.1 2000/02/02 22:07:53 wpm Exp wpm $
+# $Id: CONFIG,v 12.1 2000/03/03 17:45:24 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,7 +20,7 @@
 #
 # export MQSERVER='SAT1/TCP/sasas12(16670)'
 #
-QUEUEMGR = SAT9
+QUEUEMGR = YOURQM
 
 #
 # If you want the server tests to use the default queue manager

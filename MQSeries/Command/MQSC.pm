@@ -1,11 +1,15 @@
 #
-# $Id: MQSC.pm,v 9.1 1999/10/14 23:42:01 wpm Exp $
+# $Id: MQSC.pm,v 12.1 2000/02/03 19:38:07 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Command::MQSC;
+
+use vars qw($VERSION);
+
+$VERSION = '1.09';
 
 #
 # Note -- the order is important, so resist the anal retentive urge to

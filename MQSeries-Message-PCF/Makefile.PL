@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 9.2 1999/10/14 23:37:19 wpm Exp $
+# $Id: Makefile.PL,v 12.1 2000/02/18 03:16:51 wpm Exp $
 #
 # (c) 1999 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -13,6 +13,12 @@ require "../util/parse_headers";
 WriteMakefile(
 	      NAME	   	=> 'MQSeries::Message::PCF',
 	      VERSION_FROM	=> 'PCF.pm',
-	      INC		=> "-I$include",
+	      INC		=> qq{-I"$include"},
+              (
+	       $Config{archname} =~ /-object\b/i ?
+	       (
+		CAPI 		=> 'TRUE',
+	       ) : ()
+	      )
 	     );
 
