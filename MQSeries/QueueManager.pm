@@ -1,7 +1,7 @@
 #
-# $Id: QueueManager.pm,v 22.2 2002/08/07 12:30:27 biersma Exp $
+# $Id: QueueManager.pm,v 23.4 2003/04/10 19:10:20 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -30,7 +30,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 sub new {
     my $proto = shift;
@@ -138,13 +138,10 @@ sub new {
     # auto-connecting.  We still support the old flag for backwards
     # compatibility.
     #
-    # NOTE: Will warn for NoAutoConnect usage in later releases,
-    # even if $^W is not set.
+    # NOTE: This will become a fatal error in the next release.
     #
     if (exists $args{'NoAutoConnect'}) {
-        if ($^W) {
-            warn "Use of 'NoAutoConnect' is deprecated and will go away in a later release";
-        }
+        warn "Use of 'NoAutoConnect' is deprecated and will go away in a later release";
         if (exists $args{'AutoConnect'}) {
             $self->{Carp}->("Both 'AutoConnect' and 'NoAutoConnect' specified, ignoring 'NoAutoConnect'");
         } else {
@@ -921,9 +918,8 @@ Handling in Special Considerations.
 
 NOTE: This parameter used to be called C<NoAutoConnect>, obviously
 with reverse meaning for true and false.  The old behavior is still
-supported for backwards compatibility, though a warning is generated
-if C<-w> is on.  Future release will start issuing a warning and
-eventually C<NoAutoConnect> will go away.
+supported for backwards compatibility, though a warning is generated.
+The C<NoAutoConnect> parameter will go away in the next release.
 
 =item AutoCommit
 

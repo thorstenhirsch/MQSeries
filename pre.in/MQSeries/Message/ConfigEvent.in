@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ConfigEvent.in,v 22.2 2002/09/19 15:06:39 biersma Exp $
+# $Id: ConfigEvent.in,v 23.1 2003/01/10 16:11:50 biersma Exp $
 #
-# (c) 2002 Morgan Stanley Dean Witter and Co.
+# (c) 2002, 2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -38,7 +38,7 @@ package MQSeries::Message::ConfigEvent;
    &MQCA_CF_STRUC_NAME                  => 'CFStructName',
    &MQCA_IGQ_USER_ID                    => 'IntraGroupUser',
    &MQCA_QSG_NAME                       => 'QSharingGroupName',
-   &MQCA_STORAGE_CLASS                  => 'StorageClass',
+   &MQCA_STORAGE_CLASS                  => 'StorageClassName',
 
    &MQIA_CF_LEVEL                       => 'CFStructLevel',
    &MQIA_CF_RECOVER                     => 'Recovery',
@@ -46,8 +46,11 @@ package MQSeries::Message::ConfigEvent;
    &MQIA_IGQ_PUT_AUTHORITY              => 'IntraGroupAuthority',
    &MQIA_INDEX_TYPE                     => 'IndexType',
    &MQIA_INTRA_GROUP_QUEUING            => 'IntraGroupQueueing',
+   &MQIA_PAGESET_ID                     => 'PageSetId',
    &MQIA_QSG_DISP                       => 'QSharingGroupDisposition',
    &MQIA_SSL_TASKS                      => 'SSLTasks',
+   &MQCA_XCF_GROUP_NAME                 => 'XCFGroupName',
+   &MQCA_XCF_MEMBER_NAME                => 'XCFMemberName',
 
    &MQIACH_KEEP_ALIVE_INTERVAL          => 'KeepAliveInterval',
   );

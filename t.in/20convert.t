@@ -1,7 +1,7 @@
 #
-# $Id: 20convert.t,v 22.1 2002/07/23 20:27:56 biersma Exp $
+# $Id: 20convert.t,v 23.3 2003/04/10 19:11:00 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -20,7 +20,7 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.19;
+use __APITYPE__::MQSeries 1.20;
 $loaded = 1;
 print "ok 1\n";
 
@@ -73,7 +73,7 @@ if ( $CompCode != MQCC_OK || $Reason != MQRC_NONE ) {
     print "ok 4\n";
 }
 
-$MsgDesc = {};
+$MsgDesc = { CodedCharSetId => 819 };
 $GetMsgOpts = { Options => MQGMO_NO_WAIT | MQGMO_CONVERT };
 $length = 1000;
 $msg = MQGET($Hconn, $Hobj, $MsgDesc, $GetMsgOpts, $length, $CompCode, $Reason);

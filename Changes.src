@@ -3,6 +3,71 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.20
+
+=head2 Improve MQSeries::Command::PCG support for clusters
+
+Minor fixes for the C<InquireClusterQueueManager> command; add support
+for C<RefreshCluster> command.  At this time, support for
+C<ResetCluster>, C<SuspendQueueManagerCluster> and
+C<ResumeQueueManagerCluster> is not planned (patches are welcome).
+
+=head2 Support file handles in writeFile() for MQSeries::Config::ChannelTable
+
+T. Rob Wyatt requested the ability to write to a caller-supplied
+filehandle in the MQSeries::Config::ChannelTable C<writeFile> method;
+this allows him to supply channel tables from a CGI script without
+having to create temporary files.
+
+Support for this is now provided using the new C<FileHandle> parameter
+to the C<writeFile> method.
+
+=head2 Support for V6 channel tables in MQSeries::Config::ChannelTable
+
+Mike Surikov contributed patches to support reading and writing of
+version 6 client channel table files.  Previous releases did not
+handle all fields.  The default version of files written is now
+version 6, though generation and parsing of the older version format
+is still supported.
+
+=head2 New MQSeries::Message::Trigger class
+
+A new class to support trigger monitor messages; this allows you to
+write a trigger monitor in perl.
+
+=head2 Alter link libraries for Linux and HP-UX
+
+On Linux and HP-UX, the MQ libraries are different for single- and
+multi-threaded programs.  The makefile now tries to pick the right
+libraries based on the 'usethread' parameter in Config.pm.
+
+=head2 Fix the MQSeries::Command->Escape() method
+
+Mike Surikov supplied a patch that makes the 'Escape' method of
+MQSeries::Command work.  This is used when sending MQSC commands using
+PCF.
+
+=head2 Deprecated parameters generate a warning
+
+The deprecated parameters C<NoAutoConnect> for
+C<MQSeries::QueueManager> and C<NoAutoOpen> for C<MQSeries::Queue>
+will generate a run-time warning whether -w is enabled or not.  In the
+next release, the warning becomes a fatal error.
+
+=head2 Deprecated methods generate a warning
+
+The deprecated C<MQSeries::Queue> methods C<Commit>, C<Backout> and
+C<Pending> will generate a run-time warning whether -w is enabled or
+not.  In the next release, the warning becomes a fatal error.
+
+=head2 Drop old platforms and releases
+
+This release drops support for MQSeries 5.0, Solaris 2.5.1 and IRIX.
+We have not made any changes to the code that should affect these
+platforms and releases, but no longer have hese host types around.  
+If you care about these platforms, we'll be happy to merge patches to
+keep them working.
+
 =head1 Changes for 1.19
 
 =head2 API change for Get/Put methods of MQSeries::Queue
@@ -1470,9 +1535,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 22.5 2002/09/19 18:47:57 biersma Exp $
+# $Id: Changes.src,v 23.4 2003/04/11 16:53:38 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

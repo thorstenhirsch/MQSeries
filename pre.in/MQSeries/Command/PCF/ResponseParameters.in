@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ResponseParameters.in,v 21.1 2002/06/07 20:07:35 biersma Exp $
+# $Id: ResponseParameters.in,v 23.3 2003/04/11 16:39:02 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -161,6 +161,7 @@ package MQSeries::Command::PCF;
     ConnectionName		=> [ &MQCACH_CONNECTION_NAME,		&MQCFT_STRING ],
     CurrentLUWID		=> [ &MQCACH_CURRENT_LUWID,		&MQCFT_STRING ],
     ChannelDesc			=> [ &MQCACH_DESC,			&MQCFT_STRING ],
+    KeepAliveInterval           => [ &MQIACH_KEEP_ALIVE_INTERVAL,       &MQCFT_INTEGER ],
     LastLUWID			=> [ &MQCACH_LAST_LUWID,		&MQCFT_STRING ],
     LastMsgDate			=> [ &MQCACH_LAST_MSG_DATE,		&MQCFT_STRING ],
     LastMsgTime			=> [ &MQCACH_LAST_MSG_TIME,		&MQCFT_STRING ],
@@ -234,25 +235,27 @@ package MQSeries::Command::PCF;
    #
    Cluster =>
    {
-    QMgrDefinitionType		=> [ &MQIACF_Q_MGR_DEFINITION_TYPE,	&MQCFT_INTEGER,		$ResponseValues{QMgrDefinitionType} ],
-    QMgrType			=> [ &MQIACF_Q_MGR_TYPE,		&MQCFT_INTEGER,         $ResponseValues{QMgrType} ],
+    BatchHeartBeat              => [ &MQIACH_BATCH_HB,                  &MQCFT_INTEGER ],
+    ClusterQMgrName             => [ &MQCA_CLUSTER_Q_MGR_NAME,          &MQCFT_STRING ],
     ChannelStatus		=> [ &MQIACH_CHANNEL_STATUS,		&MQCFT_INTEGER,         $ResponseValues{ChannelStatus} ],
-    MCAType			=> [ &MQIACH_MCA_TYPE,			&MQCFT_INTEGER,         $ResponseValues{MCAType} ],
-    NonPersistentMsgSpeed	=> [ &MQIACH_NPM_SPEED,			&MQCFT_INTEGER,   	$ResponseValues{NonPersistentMsgSpeed} ],
-    PutAuthority		=> [ &MQIACH_PUT_AUTHORITY,		&MQCFT_INTEGER,         $ResponseValues{PutAuthority} ],
-    TransportType		=> [ &MQIACH_XMIT_PROTOCOL_TYPE,	&MQCFT_INTEGER,        	$ResponseValues{TransportType} ],
-
     ChannelName			=> [ &MQCACH_CHANNEL_NAME,		&MQCFT_STRING ],
     ConnectionName		=> [ &MQCACH_CONNECTION_NAME,		&MQCFT_STRING ],
     ChannelDesc			=> [ &MQCACH_DESC,			&MQCFT_STRING ],
+    KeepAliveInterval           => [ &MQIACH_KEEP_ALIVE_INTERVAL,       &MQCFT_INTEGER ],
+    LocalAddress                => [ &MQCACH_LOCAL_ADDRESS,             &MQCFT_STRING ],
     MCAName			=> [ &MQCACH_MCA_NAME,			&MQCFT_STRING ],
+    MCAType			=> [ &MQIACH_MCA_TYPE,			&MQCFT_INTEGER,         $ResponseValues{MCAType} ],
     MCAUserIdentifier		=> [ &MQCACH_MCA_USER_ID,		&MQCFT_STRING ],
     ModeName			=> [ &MQCACH_MODE_NAME,			&MQCFT_STRING ],
     MsgRetryExit		=> [ &MQCACH_MR_EXIT_NAME,		&MQCFT_STRING ],
     MsgRetryUserData		=> [ &MQCACH_MR_EXIT_USER_DATA,		&MQCFT_STRING ],
     MsgExit			=> [ &MQCACH_MSG_EXIT_NAME,		&MQCFT_STRING ],
     MsgUserData			=> [ &MQCACH_MSG_EXIT_USER_DATA,	&MQCFT_STRING ],
+    NonPersistentMsgSpeed	=> [ &MQIACH_NPM_SPEED,			&MQCFT_INTEGER,   	$ResponseValues{NonPersistentMsgSpeed} ],
     Password			=> [ &MQCACH_PASSWORD,			&MQCFT_STRING ],
+    PutAuthority		=> [ &MQIACH_PUT_AUTHORITY,		&MQCFT_INTEGER,         $ResponseValues{PutAuthority} ],
+    QMgrDefinitionType		=> [ &MQIACF_Q_MGR_DEFINITION_TYPE,	&MQCFT_INTEGER,		$ResponseValues{QMgrDefinitionType} ],
+    QMgrType			=> [ &MQIACF_Q_MGR_TYPE,		&MQCFT_INTEGER,         $ResponseValues{QMgrType} ],
     ReceiveExit			=> [ &MQCACH_RCV_EXIT_NAME,		&MQCFT_STRING ],
     ReceiveUserData		=> [ &MQCACH_RCV_EXIT_USER_DATA,	&MQCFT_STRING ],
     SecurityExit		=> [ &MQCACH_SEC_EXIT_NAME,		&MQCFT_STRING ],
@@ -260,6 +263,7 @@ package MQSeries::Command::PCF;
     SendExit			=> [ &MQCACH_SEND_EXIT_NAME,		&MQCFT_STRING ],
     SendUserData		=> [ &MQCACH_SEND_EXIT_USER_DATA,	&MQCFT_STRING ],
     TpName			=> [ &MQCACH_TP_NAME,			&MQCFT_STRING ],
+    TransportType		=> [ &MQIACH_XMIT_PROTOCOL_TYPE,	&MQCFT_INTEGER,        	$ResponseValues{TransportType} ],
     UserIdentifier		=> [ &MQCACH_USER_ID,			&MQCFT_STRING ],
     XmitQName			=> [ &MQCACH_XMIT_Q_NAME,		&MQCFT_STRING ],
     AlterationDate		=> [ &MQCA_ALTERATION_DATE,		&MQCFT_STRING ],
@@ -287,6 +291,9 @@ package MQSeries::Command::PCF;
     SeqNumberWrap		=> [ &MQIACH_SEQUENCE_NUMBER_WRAP,	&MQCFT_INTEGER ],
     ShortRetryCount		=> [ &MQIACH_SHORT_RETRY,		&MQCFT_INTEGER ],
     ShortRetryInterval		=> [ &MQIACH_SHORT_TIMER,		&MQCFT_INTEGER ],
+    SSLCipherSpec               => [ &MQCACH_SSL_CIPHER_SPEC,           &MQCFT_STRING ],
+    SSLClientAuth               => [ &MQIACH_SSL_CLIENT_AUTH,           &MQCFT_INTEGER,                 $ResponseValues{SSLClientAuth} ],
+    SSLPeerName                 => [ &MQCACH_SSL_PEER_NAME,             &MQCFT_STRING ],
    },
 
    Namelist =>

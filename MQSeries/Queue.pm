@@ -1,7 +1,7 @@
 #
-# $Id: Queue.pm,v 22.4 2002/09/19 18:40:30 biersma Exp $
+# $Id: Queue.pm,v 23.4 2003/05/05 15:30:13 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -26,7 +26,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 sub new {
     my $proto = shift;
@@ -165,13 +165,10 @@ sub new {
     # must be set to 0 (false) to avoid auto-opening.  We still
     # support the old flag for backwards compatibility.
     #
-    # NOTE: Will warn for NoAutoOpen usage in later releases,
-    # even if $^W is not set.
+    # NOTE: This will becoem a fatal error in the next release.
     #
     if (exists $args{'NoAutoOpen'}) {
-        if ($^W) {
-            warn "Use of 'NoAutoOpen' is deprecated and will go away in a later release";
-        }
+        warn "Use of 'NoAutoOpen' is deprecated and will go away in a later release";
         if (exists $args{'AutoOpen'}) {
             $self->{Carp}->("Both 'AutoOpen' and 'NoAutoOpen' specified, ignoring 'NoAutoOpen'");
         } else {
@@ -685,9 +682,7 @@ sub QueueManager {
 # methods will go away in a future release.
 #
 sub Backout {
-    if ($^W) {
-        warn "The MQSeries::Queue->Backout() method is deprecated.  Use MQSeries::QueueManager->Backout() instead.";
-    }
+    warn "The MQSeries::Queue->Backout() method is deprecated.  Use MQSeries::QueueManager->Backout() instead.";
 
     my $self = shift;
     return unless $self->Open();
@@ -696,9 +691,7 @@ sub Backout {
 
 
 sub Commit {
-    if ($^W) {
-        warn "The MQSeries::Queue->Commit() method is deprecated.  Use MQSeries::QueueManager->Commit() instead.";
-    }
+    warn "The MQSeries::Queue->Commit() method is deprecated.  Use MQSeries::QueueManager->Commit() instead.";
 
     my $self = shift;
     return unless $self->Open();
@@ -707,9 +700,7 @@ sub Commit {
 
 
 sub Pending {
-    if ($^W) {
-        warn "The MQSeries::Queue->Pending() method is deprecated.  Use MQSeries::QueueManager->Pending() instead.";
-    }
+    warn "The MQSeries::Queue->Pending() method is deprecated.  Use MQSeries::QueueManager->Pending() instead.";
 
     my $self = shift;
     return unless $self->Open();
@@ -1296,11 +1287,10 @@ constructur will then fail only if there is a problem parsing the
 constructor arguments.  The subsequent call to C<Open()> can be error
 checked independently of the C<new()> constructor.
 
-NOTE: This parameter used to be called C<AutoOpen>, obviously with
+NOTE: This parameter used to be called C<NoAutoOpen>, obviously with
 reverse meaning for true and false.  The old behavior is still
-supported for backwards compatibility, though a warning is generated
-if C<-w> is on.  Future release will start issuing a warning and
-eventually C<NoAutoOpen> will go away.
+supported for backwards compatibility, though a warning is generated.
+The C<NoAutoOpen> parameter will go away in the next release.
 
 =item ObjDesc
 
@@ -1438,7 +1428,7 @@ queue object.
   RetryReasons			HASH Reference
 
 This method is called automatically by the constructor, unless the
-NoAutoOpen argument is given.
+C<AutoOpen> argument is given.
 
 Note that this is a new method as of the 1.06 release, and is provided
 to enable more fine grained error checking.  See the ERROR HANDLING
@@ -1917,7 +1907,7 @@ manager object has been created, code like
   $queue->QueueManager()->Backout()
 
 should be used.  The queue-level Commit(), Backout() and Pending()
-methods will go away in a future release.
+methods will go away in the next release.
 
 =head2 Commit
 

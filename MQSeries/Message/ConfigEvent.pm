@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::ConfigEvent - Config Event Message
 #
-# (c) 2002 Morgan Stanley Dean Witter and Co.
+# (c) 2002-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: ConfigEvent.pm,v 22.2 2002/09/19 15:02:42 biersma Exp $
+# $Id: ConfigEvent.pm,v 23.3 2003/04/10 19:14:08 biersma Exp $
 # 
 
 package MQSeries::Message::ConfigEvent;
@@ -13,11 +13,11 @@ use strict;
 use Carp;
 use Convert::EBCDIC;
 
-use MQSeries qw(:functions 1.19);
+use MQSeries qw(:functions);
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Message/ConfigEvent.pl";
@@ -232,6 +232,13 @@ internally by MQSeries::Queue::Get().
 
 GetConvert() decodes a configuration event into a hash-reference that
 described the event in detail.
+
+=head1 WARNING
+
+When you configure the z/OS queue manager to forward the messages on
+the SYSTEM.ADMIN.CONFIG.EVENT queue to a Unix or Windows queue
+managers, make sure that the channel used has DataConversion set to
+off.
 
 =head1 SEE ALSO
 

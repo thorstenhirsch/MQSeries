@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: RulesFormat.xs,v 20.3 2002/03/19 21:49:45 wpm Exp $";
+static char rcsid[] = "$Id: RulesFormat.xs,v 23.1 2003/04/10 19:09:13 biersma Exp $";
 
 /*
-  (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+  (c) 1999-2003 Morgan Stanley Dean Witter and Co.
   See ..../src/LICENSE for terms of distribution.
  */
 

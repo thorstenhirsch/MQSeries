@@ -1,8 +1,8 @@
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 20.1 2002/03/18 20:34:27 biersma Exp $
+# $Id: Makefile.PL,v 23.1 2003/04/10 19:10:22 biersma Exp $
 #
 use English;
 use ExtUtils::MakeMaker;

@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Message::ConfigEvent;
@@ -47,7 +47,7 @@ package MQSeries::Message::ConfigEvent;
    2039                                  => 'CFStructName',
    2041                                  => 'IntraGroupUser',
    2040                                  => 'QSharingGroupName',
-   2022                                  => 'StorageClass',
+   2022                                  => 'StorageClassName',
 
    70                                    => 'CFStructLevel',
    71                                    => 'Recovery',
@@ -55,8 +55,11 @@ package MQSeries::Message::ConfigEvent;
    65                                    => 'IntraGroupAuthority',
    57                                    => 'IndexType',
    64                                    => 'IntraGroupQueueing',
+   62                                    => 'PageSetId',
    63                                    => 'QSharingGroupDisposition',
    69                                    => 'SSLTasks',
+   2043                                  => 'XCFGroupName',
+   2044                                  => 'XCFMemberName',
 
    1566                                  => 'KeepAliveInterval',
   );

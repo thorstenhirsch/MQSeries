@@ -1,7 +1,7 @@
 #
-# $Id: ChannelTable.pm,v 22.1 2002/07/23 20:27:31 biersma Exp $
+# $Id: ChannelTable.pm,v 23.4 2003/04/10 20:13:33 biersma Exp $
 #
-# (c) 2001-2002 Morgan Stanley Dean Witter and Co.
+# (c) 2001-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use vars qw(
 	    %StrucLength
 	   );
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 @MQCDFields =
   (
@@ -65,7 +65,7 @@ $VERSION = '1.19';
    [qw(	MsgRetryCount		Number		4	3	0	)],
    [qw(	MsgRetryInterval	Number		4	3	0	)],
 
-   [qw(	HeartbeatInterval	Number		4	4	0	)],
+   [qw(	HeartbeatInterval	Number		4	4	1	)],
    [qw(	BatchInterval		Number		4	4	0	)],
    [qw(	NonPersistentMsgSpeed	Number		4	4	0	)],
    [qw(	StrucLength		Number		4	4	0	)],
@@ -149,14 +149,14 @@ $VERSION = '1.19';
 #
 %SystemDefClntconn =
   (
-   Version			=> 4,
+   Version			=> 6,
    ChannelName			=> 'SYSTEM.DEF.CLNTCONN',
    ChannelType			=> 'Clntconn',
    TransportType		=> 'TCP',
    MaxMsgLength			=> 4194304,
    MCAType			=> 1,
    HeartbeatInterval		=> 300,
-   StrucLength			=> 1540,
+   StrucLength			=> 1648,
    ExitNameLength		=> 128,
    ExitDataLength		=> 32,
   );
@@ -281,11 +281,13 @@ sub readFile {
 	if ( $clntconn->{Version} >= 6 ) {
 
 	    $mqcd_offset += 68;
+	    $mqcd_offset += 64;	# More 64 unknown spaces
 
 	    my @keys = qw(MsgExit MsgUserData SendExit SendUserData ReceiveExit ReceiveUserData);
 	    my @fields = split("\x01",substr($mqcd,$mqcd_offset));
 
 	    for ( my $index = 0 ; $index < 6 ; $index++ ) {
+		next unless defined $fields[$index];
 		$clntconn->{$keys[$index]} = [split("\x02",$fields[$index])];
 	    }
 
@@ -301,7 +303,16 @@ sub readFile {
 
 sub writeFile {
     my ($class, %args) = @_;
-    my ($filename,$clntconn,$version) = @args{qw(Filename Clntconn Version)};
+    my ($filename, $fh, $clntconn,$version) = 
+      @args{qw(Filename FileHandle Clntconn Version)};
+    $version ||= $SystemDefClntconn{'Version'};
+
+    #
+    # Either Filename or FileHandle must be supplied, but not both
+    #
+    if (defined $filename == defined $fh) {
+        confess "You must supply either 'Filename' or 'FileHandle'";
+    }
 
     my $data = "AMQR";
     my $offset = length($data);
@@ -372,6 +383,7 @@ sub writeFile {
     for ( my $index = 0 ; $index <= $#channel ; $index++ ) {
 
 	my $channel = $channel[$index];
+	$channel->{ShortConnectionName} ||= $channel->{ConnectionName};
 
 	my $mqcd = "";
 
@@ -392,7 +404,7 @@ sub writeFile {
 	    #
 	    if ( $key =~ /^(Msg|Send|Receive)(Exit|User)(Data)?$/ ) {
 		if ( $version >= 6 ) {
-		    $mqcd .= " " x $length;
+		    $mqcd .= "\0" x $length;
 		} else {
 		    $mqcd .= $class->$method($channel->{$key},$length);
 		}
@@ -438,8 +450,9 @@ sub writeFile {
 	    $mqcd .= "\0" x 8;
 	    $mqcd .= $class->writeNumber(length($exitstring));
 	    # something else we have no clue about....  welcome to reverse engineering
-	    $mqcd .= " " x 52;
+	    $mqcd .= "\0" x 52;
 	    $mqcd .= $class->writeNumber(time);
+	    $mqcd .= " " x 64;	# More 64 unknown spaces
 	    $mqcd .= $exitstring;
 
 	} else {
@@ -530,10 +543,19 @@ sub writeFile {
     # Trailing zero
     $data .= "\0" x 4;
 
-    open(FILE, ">$filename") || confess "Unable to write to $filename: $!\n";
-    binmode(FILE);              # Required for Windows NT
-    print FILE $data;
-    close(FILE) || confess "Unable to close $filename: $!\n";
+    #
+    # Write to file or file-handle?
+    #
+    if (defined $fh) {
+        print $fh $data;
+    } else {
+        open(FILE, ">$filename") || 
+          confess "Unable to write to $filename: $!\n";
+        binmode(FILE);          # Required for Windows NT
+        print FILE $data;
+        close(FILE) || 
+          confess "Unable to close $filename: $!\n";
+    }
 
     return 1;
 }
@@ -711,7 +733,15 @@ successfully, and if not, a fatal exception is raised.
 =item Filename
 
 This is the pathname to which to write the new file, which will be
-overwritten if it exists, mercilessly.
+overwritten if it exists, mercilessly.  Either this parameter, or
+the 'FileHandle' parameter, must be supplied.
+
+=item FileHandle
+
+Instead of 'Filename', a previously opened file handle may be
+supplied.  This can for example be used to print to STDOUT in a CGI
+program delivering channel table files from the web.  On Windows, the
+caller is responsible to call C<binmode> on the filehandle.
 
 =item Clntconn
 
@@ -953,7 +983,8 @@ Syntax chart:
   +8		MQLONG		length		length of MQCDExitStrings
   +12		MQBYTE52	0
   +64		MQLONG		timestamp	alteration date/time
-  +68		MQCDExitStrings			exit names and data lists
+  +68		MQCHAR64	' ' x 64	unknown spaces
+  +132		MQCDExitStrings			exit names and data lists
 
   MQCDExitStrings:
   [MsgExit 02]... 01
@@ -987,6 +1018,9 @@ MsgExit attribute for channels in the "MQSeries Programmable Systems
 Management" document suggests that MsgExits are B<not> supported for
 CLNTCONNs, yet they are treated specially in the channel table file
 itself.
+
+UserIdentifier and Password fields contains data in ciphered form
+provided but not opened by IBM.
 
 If the author ever gets a clear explanation from IBM, this document
 will be amended.

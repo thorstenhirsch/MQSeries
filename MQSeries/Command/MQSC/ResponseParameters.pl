@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 22.2 2002/09/19 15:11:03 biersma Exp $
+# $Id: ResponseParameters.pl,v 23.2 2003/04/15 13:34:28 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -220,6 +220,7 @@ package MQSeries::Command::MQSC;
     QMNAME	=> [ "QMgrName" ],
     RCVDATA	=> [ "ReceiveUserData" ],
     RCVEXIT	=> [ "ReceiveExit" ],
+    RQMNAME	=> [ "RemoteQMgrName" ],
     SCYEXIT	=> [ "SecurityExit" ],
     SCYDATA	=> [ "SecurityUserData" ],
     SENDDATA	=> [ "SendUserData" ],

@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameterRemap.pl,v 20.1 2002/03/18 20:33:46 biersma Exp $
+# $Id: RequestParameterRemap.pl,v 23.1 2003/04/10 19:09:42 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -29,6 +29,7 @@ package MQSeries::Command::PCF;
    DeleteQueue			=> [ qw(QType Purge) ],
 
    InquireQueueStatus           => [ qw(StatusType OpenType QStatusAttrs) ],
+   InquireClusterQueueManager   => [ qw(Channel ClusterName ClusterQMgrAtrrs) ],
   );
 
 1;

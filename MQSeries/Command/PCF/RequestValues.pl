@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -373,6 +373,7 @@ package MQSeries::Command::PCF;
    #
    Cluster =>
    {
+    All                         => 1009,
     AlterationDate              => 2027,
     AlterationTime              => 2028,
     BatchInterval               => 1564,
@@ -521,7 +522,7 @@ package MQSeries::Command::PCF;
    {
     Queue                       => 1105,
     Handle                      => 1104,
-   },    
+   },
 
    #
    # Morgan Stanley extensions

@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -170,6 +170,7 @@ package MQSeries::Command::PCF;
     ConnectionName		=> [ 3506,                    		4 ],
     CurrentLUWID		=> [ 3532,                  		4 ],
     ChannelDesc			=> [ 3502,         			4 ],
+    KeepAliveInterval           => [ 1566,                               3 ],
     LastLUWID			=> [ 3531,               		4 ],
     LastMsgDate			=> [ 3525,                  		4 ],
     LastMsgTime			=> [ 3524,                  		4 ],
@@ -243,25 +244,27 @@ package MQSeries::Command::PCF;
    #
    Cluster =>
    {
-    QMgrDefinitionType		=> [ 1084,                          	3,		$ResponseValues{QMgrDefinitionType} ],
-    QMgrType			=> [ 1085,               		3,         $ResponseValues{QMgrType} ],
+    BatchHeartBeat              => [ 1567,                               3 ],
+    ClusterQMgrName             => [ 2031,                               4 ],
     ChannelStatus		=> [ 1527,                   		3,         $ResponseValues{ChannelStatus} ],
-    MCAType			=> [ 1517,             			3,         $ResponseValues{MCAType} ],
-    NonPersistentMsgSpeed	=> [ 1562,              			3,   	$ResponseValues{NonPersistentMsgSpeed} ],
-    PutAuthority		=> [ 1508,                  		3,         $ResponseValues{PutAuthority} ],
-    TransportType		=> [ 1501,                       	3,        	$ResponseValues{TransportType} ],
-
     ChannelName			=> [ 3501,                 		4 ],
     ConnectionName		=> [ 3506,                    		4 ],
     ChannelDesc			=> [ 3502,         			4 ],
+    KeepAliveInterval           => [ 1566,                               3 ],
+    LocalAddress                => [ 3520,                               4 ],
     MCAName			=> [ 3507,             			4 ],
+    MCAType			=> [ 1517,             			3,         $ResponseValues{MCAType} ],
     MCAUserIdentifier		=> [ 3527,                		4 ],
     ModeName			=> [ 3503,              			4 ],
     MsgRetryExit		=> [ 3534,                 		4 ],
     MsgRetryUserData		=> [ 3535,                      		4 ],
     MsgExit			=> [ 3509,                  		4 ],
     MsgUserData			=> [ 3514,                       	4 ],
+    NonPersistentMsgSpeed	=> [ 1562,              			3,   	$ResponseValues{NonPersistentMsgSpeed} ],
     Password			=> [ 3518,             			4 ],
+    PutAuthority		=> [ 1508,                  		3,         $ResponseValues{PutAuthority} ],
+    QMgrDefinitionType		=> [ 1084,                          	3,		$ResponseValues{QMgrDefinitionType} ],
+    QMgrType			=> [ 1085,               		3,         $ResponseValues{QMgrType} ],
     ReceiveExit			=> [ 3511,                  		4 ],
     ReceiveUserData		=> [ 3516,                       	4 ],
     SecurityExit		=> [ 3508,                  		4 ],
@@ -269,6 +272,7 @@ package MQSeries::Command::PCF;
     SendExit			=> [ 3510,                   		4 ],
     SendUserData		=> [ 3515,                        	4 ],
     TpName			=> [ 3504,            			4 ],
+    TransportType		=> [ 1501,                       	3,        	$ResponseValues{TransportType} ],
     UserIdentifier		=> [ 3517,            			4 ],
     XmitQName			=> [ 3505,                		4 ],
     AlterationDate		=> [ 2027,                  		4 ],
@@ -296,6 +300,9 @@ package MQSeries::Command::PCF;
     SeqNumberWrap		=> [ 1509,                         	3 ],
     ShortRetryCount		=> [ 1505,                		3 ],
     ShortRetryInterval		=> [ 1504,                		3 ],
+    SSLCipherSpec               => [ 3544,                               4 ],
+    SSLClientAuth               => [ 1568,                               3,                 $ResponseValues{SSLClientAuth} ],
+    SSLPeerName                 => [ 3545,                               4 ],
    },
 
    Namelist =>

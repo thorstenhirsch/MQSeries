@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>1.19/src/Changes.src</TITLE> 
+	    <TITLE>1.20/src/Changes.src</TITLE> 
 	</HEAD>
 
 	<BODY>
@@ -10,6 +10,20 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_20">Changes for 1.20</A>
+	<UL>
+
+		<LI><A HREF="#Improve_MQSeries_Command_PCG_s">Improve MQSeries::Command::PCG support for clusters</A>
+		<LI><A HREF="#Support_file_handles_in_writeFil">Support file handles in writeFile() for MQSeries::Config::ChannelTable</A>
+		<LI><A HREF="#Support_for_V6_channel_tables_in">Support for V6 channel tables in MQSeries::Config::ChannelTable</A>
+		<LI><A HREF="#New_MQSeries_Message_Trigger_c">New MQSeries::Message::Trigger class</A>
+		<LI><A HREF="#Alter_link_libraries_for_Linux_a">Alter link libraries for Linux and HP-UX</A>
+		<LI><A HREF="#Fix_the_MQSeries_Command_Escap">Fix the MQSeries::Command->Escape() method</A>
+		<LI><A HREF="#Deprecated_parameters_generate_a">Deprecated parameters generate a warning</A>
+		<LI><A HREF="#Deprecated_methods_generate_a_wa">Deprecated methods generate a warning</A>
+		<LI><A HREF="#Drop_old_platforms_and_releases">Drop old platforms and releases</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_19">Changes for 1.19</A>
 	<UL>
 
@@ -206,6 +220,125 @@
 </A></H1>
 This file documents the changes to each and every release of the MQSeries
 perl API, going back as far as the 1.02 release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_20">Changes for 1.20
+
+</A></H1>
+<P>
+<HR>
+<H2><A NAME="Improve_MQSeries_Command_PCG_s">Improve MQSeries::Command::PCG support for clusters
+
+</A></H2>
+Minor fixes for the <CODE>InquireClusterQueueManager</CODE> command; add support for <CODE>RefreshCluster</CODE> command. At this time, support for
+<CODE>ResetCluster</CODE>, <CODE>SuspendQueueManagerCluster</CODE> and
+<CODE>ResumeQueueManagerCluster</CODE> is not planned (patches are welcome).
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Support_file_handles_in_writeFil">Support file handles in writeFile() for MQSeries::Config::ChannelTable
+
+</A></H2>
+T. Rob Wyatt requested the ability to write to a caller-supplied filehandle
+in the MQSeries::Config::ChannelTable <CODE>writeFile</CODE> method; this allows him to supply channel tables from a CGI script without
+having to create temporary files.
+
+
+<P>
+
+Support for this is now provided using the new <CODE>FileHandle</CODE> parameter to the <CODE>writeFile</CODE> method.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Support_for_V6_channel_tables_in">Support for V6 channel tables in MQSeries::Config::ChannelTable
+
+</A></H2>
+Mike Surikov contributed patches to support reading and writing of version
+6 client channel table files. Previous releases did not handle all fields.
+The default version of files written is now version 6, though generation
+and parsing of the older version format is still supported.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="New_MQSeries_Message_Trigger_c">New MQSeries::Message::Trigger class
+
+</A></H2>
+A new class to support trigger monitor messages; this allows you to write a
+trigger monitor in perl.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Alter_link_libraries_for_Linux_a">Alter link libraries for Linux and HP-UX
+
+</A></H2>
+On Linux and HP-UX, the MQ libraries are different for single- and
+multi-threaded programs. The makefile now tries to pick the right libraries
+based on the 'usethread' parameter in Config.pm.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Fix_the_MQSeries_Command_Escap">Fix the MQSeries::Command->Escape() method
+
+</A></H2>
+Mike Surikov supplied a patch that makes the 'Escape' method of
+MQSeries::Command work. This is used when sending MQSC commands using PCF.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Deprecated_parameters_generate_a">Deprecated parameters generate a warning
+
+</A></H2>
+The deprecated parameters <A HREF="#item_NoAutoConnect">NoAutoConnect</A> for
+<CODE>MQSeries::QueueManager</CODE> and <A HREF="#item_NoAutoOpen">NoAutoOpen</A> for <CODE>MQSeries::Queue</CODE>
+will generate a run-time warning whether -w is enabled or not. In the next
+release, the warning becomes a fatal error.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Deprecated_methods_generate_a_wa">Deprecated methods generate a warning
+
+</A></H2>
+The deprecated <CODE>MQSeries::Queue</CODE> methods <CODE>Commit</CODE>, <CODE>Backout</CODE> and
+<CODE>Pending</CODE> will generate a run-time warning whether -w is enabled or not. In the next
+release, the warning becomes a fatal error.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Drop_old_platforms_and_releases">Drop old platforms and releases
+
+</A></H2>
+This release drops support for MQSeries 5.0, Solaris 2.5.1 and IRIX. We
+have not made any changes to the code that should affect these platforms
+and releases, but no longer have hese host types around. If you care about
+these platforms, we'll be happy to merge patches to keep them working.
 
 
 <P>

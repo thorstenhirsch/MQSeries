@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 22.3 2002/08/07 12:27:00 biersma Exp $
+# $Id: Base.pm,v 23.7 2003/04/23 14:32:36 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 sub new {
 
@@ -219,7 +219,6 @@ sub _TranslatePCF {
 	    push @ordered_params, $param 
               unless $ParameterOrderHash{$param};
 	}
-
     }
 
     foreach my $param (@ordered_params) {
@@ -264,7 +263,7 @@ sub _TranslatePCF {
 	if ( $paramtype == MQSeries::MQCFT_INTEGER ) {
 	    if ( ref $ValueMap ) {
 		unless ( exists $ValueMap->{$origvalue} ) {
-		    $self->{Carp}->("Unknown value '$origvalue' for " .
+		    $self->{Carp}->("Unknown int value '$origvalue' for " .
 				    "parameter '$param', command '$command'");
 		    return;
 		}
@@ -278,7 +277,7 @@ sub _TranslatePCF {
 	    foreach my $value ( @$origvalue ) {
 		if ( ref $ValueMap ) {
 		    unless ( exists $ValueMap->{$value} ) {
-			$self->{Carp}->("Unknown value '$origvalue' for " .
+			$self->{Carp}->("Unknown intlist value '$origvalue' for " .
 					"parameter '$param', command '$command'");
 			return;
 		    }
@@ -306,6 +305,24 @@ sub _UnTranslatePCF {
     my ($header,$origparams) = @_;
 
     my $command = $header->{Command};
+
+    #
+    # The (rather obscure) 'Escape' command requires special handling
+    # of the reply reminiscent of the MQSC command handling.  Courtesy
+    # of Mike Surikov.
+    #
+    # NOTE: Since MQIACF_ESCAPE_TYPE conflicts with the Morgan Stanley
+    #       extension for MQIAE_AUTH_PASSID, we have to exclude the
+    #       MQCMDE_INQUIRE_AUTHORITY from this processing.
+    #
+    if( $command != MQSeries::MQCMDE_INQUIRE_AUTHORITY &&
+        $self->isa("MQSeries::Command::Response") &&
+        scalar(@$origparams) &&
+        exists($origparams->[0]->{Parameter}) &&
+        ($origparams->[0]->{Parameter} == MQSeries::MQIACF_ESCAPE_TYPE ||
+         $origparams->[0]->{Parameter} == MQSeries::MQCACF_ESCAPE_TEXT) ) {
+        $command = MQSeries::MQCMD_ESCAPE;
+    }
 
     my $parameters = {};
 
@@ -869,7 +886,7 @@ sub MQDecodeMQSC {
 	# damn easy....
 	#
 	elsif ( $buffer =~ s{
-			     ^(CONNAME)\( 	# Evil keyword with embedded parens
+			     ^(CONNAME|LOCLADDR)\( # Evil keyword with embedded parens
 			     (			# the usual hostname(port) syntax
 			      [^\(\)]+ 		#           hostname
 			      \( 		#                   (

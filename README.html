@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>1.19/src/README</TITLE> 
+	    <TITLE>1.20/src/README</TITLE> 
 	</HEAD>
 
 	<BODY>
@@ -59,13 +59,13 @@ HREF="http://www.ibm.com/software/mqseries">http://www.ibm.com/software/mqseries
 
 </A></H1>
 This release requires perl5.005 or later, and some release of the IBM
-MQSeries product installed, either V2, V5.0, V5.1, V5.2 or V5.3.
+MQSeries product installed, either V5.1, V5.2 or V5.3.
 
 
 <P>
 
 The PubSub extensions, and the RulesFormat message support require either
-V5.2, V5.1, or V5.0 with CSD05 or later. MQSI is not supported.
+V5.2 or V5.1. MQSI is not supported.
 
 
 <P>
@@ -76,27 +76,29 @@ V5.2, V5.1, or V5.0 with CSD05 or later. MQSI is not supported.
 
 </A></H1>
 This package has been known to build with the following combinations of
-software. Those marked with an asterix (*) are platforms the author can not
-test personally, so there is a remote possibility that there may be new
-bugs in these platforms. Please report problems to the author, of course.
+software. Those marked with an asterix (*) are platforms the maintainer can
+not test personally, so there is a remote possibility that there may be new
+bugs in these platforms. Please report problems to the maintainer.
 
 
 <P>
 
 <PRE>  Operating System      MQSeries Version        Perl Version    
   ================      ================        ============    
-  SunOS 5.5.1           5.0                     5.00502
+* SunOS 5.5.1           5.0                     5.00502
                                                 5.00503
                                                 5.6.1
-  SunOS 5.6             5.0                     5.00503
-  SunOS 5.7             5.1                     Same as SunOS 5.5.1
-  SunOS 5.7             5.2                     Same as SunOS 5.5.1
-  SunOS 5.7             5.3                     Same as SunOS 5.5.1
-  SunOS 5.8             5.1                     Same as SunOS 5.5.1
-  SunOS 5.8             5.2                     Same as SunOS 5.5.1
-  SunOS 5.8             5.3                     Same as SunOS 5.5.1
- *IRIX 6.5              2.x                     Same as SunOS 5.5.1     
-  IRIX 6.5              5.0                     Same as SunOS 5.5.1     
+* SunOS 5.6             5.0                     5.00503
+  SunOS 5.7             5.1                     5.00503
+                                                5.6.1
+                                                5.8.0
+  SunOS 5.7             5.2                     Same as SunOS 5.7 / MQ 5.1
+  SunOS 5.7             5.3                     Same as SunOS 5.7 / MQ 5.1
+  SunOS 5.8             5.1                     Same as SunOS 5.7 / MQ 5.1
+  SunOS 5.8             5.2                     Same as SunOS 5.7 / MQ 5.1
+  SunOS 5.8             5.3                     Same as SunOS 5.7 / MQ 5.1
+ *IRIX 6.5              2.x                     Same as SunOS 5.5.1
+ *IRIX 6.5              5.0                     Same as SunOS 5.5.1     
  *HP-UX 11.0 32bit      5.1                     5.00503
  *HP-UX 11.0 32bit      5.2                     5.6.1
  *NT 4.0                5.0                     AS build 521
@@ -104,15 +106,27 @@ bugs in these platforms. Please report problems to the author, of course.
  *NT 4.0                5.1                     AS build 617
  *NT 4.0                5.1                     AS build 617
  *Windows 2000          5.2                     ??
+ *Windows 2000 Pro SP1  5.2                     ActivePerl 5.8
+                        5.3                     ActivePerl 5.8
+ *Windows 2000 Pro SP2  5.2                     ActivePerl 5.8
+                        5.3                     ActivePerl 5.8
+ *Windows 2000 Pro SP3  5.2                     ActivePerl 5.8
+                        5.3                     ActivePerl 5.8
  *AIX 4.3.3             5.1                     5.00503
  *AIX 4.3.3             5.2                     5.6.1
  *SuSE Linux 6.3        5.1                     5.00503
  *HP-UX 10.20           ??                      ??
+ *HP-UX 11              5.3                     5.6.1
  *Redhat Linux 5.2      ??                      ??
-  Redhat Linux 6.1      5.1                     5.00503
-  Redhat Linux 6.2      5.1                     5.6.0
+ *Redhat Linux 6.1      5.1                     5.00503
+ *Redhat Linux 6.2      5.1                     5.6.0
   Redhat Linux 7.x      5.2                     5.00503
                                                 5.6.1
+                                                5.8.0
+  Redhat Linux 8.x      5.2                     5.00503
+                                                5.6.1
+                                                5.8.0
+  Redhat Linux 8.x      5.3                     Same as Red Hat 8 / MQ 5.2
 </PRE>
 
 <P>
@@ -128,30 +142,6 @@ me know what version of MQSeries, compiler, perl, etc. you built it with.
 If you succeed in making this work on any other platform, please send the
 changes (in the form of a context diff) to the author, so I can integrate
 it.
-
-
-<P>
-
-ANOTHER NOTE: The IRIX 6.5 tests were client only, as we used the
-WillowTech port of the 2.x code base, which doesn't include support for the
-MQSeries server.
-
-
-<P>
-
-ANOTHER NOTE: We have reports that the server bindings do not work on HP-UX
-with MQSeries release 5.1 and 5.2, as the server bindings want to override
-various pthread functions already linked to the perl interpreter. As we do
-not have HP-UX systems here, we are unable to verify whether the client
-bindings work properly.
-
-
-<P>
-
-YET ANOTHER NOTE: I do not have an NT 4.0 MQSeries 5.0 queue manager
-against which to test, but the same code works fine for 5.1, so I assume it
-will work. I would appreciate a positive confirmation if anyone can test
-this configuration.
 
 
 <P>
@@ -178,6 +168,15 @@ you will have to customize this file to match your local environment.
 The CONFIG file has comments which document each of the parameters, so
 go read it for more information.
 </PRE>
+
+<P>
+
+On some platforms (notably Linux and HP-UX), you need to link to different
+libraries depending on whether your perl has been set up to run
+multi-theaded or not. The MQClient/Makefile.PL script tries to figure this
+out automatically; if you run into issues, patches to that script will be
+welcome.
+
 
 <P>
 

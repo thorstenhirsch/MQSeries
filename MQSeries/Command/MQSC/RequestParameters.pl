@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameters.pl,v 22.1 2002/08/07 12:28:05 biersma Exp $
+# $Id: RequestParameters.pl,v 23.2 2003/04/10 19:09:43 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -33,7 +33,7 @@ package MQSeries::Command::MQSC;
     Force			=> [ "FORCE" ],
     InhibitEvent		=> [ "INHIBTEV",	$RequestValues{Enabled} ],
     IntraGroupAuthority         => [ "IGQAUT",          $RequestValues{IntraGroupAuthority} ],
-    IntraGroupQueuing           => [ "IGQ",             $RequestValues{Enabled} ], 
+    IntraGroupQueueing          => [ "IGQ",             $RequestValues{Enabled} ], 
     IntraGroupUser              => [ "IGQUSER",         "string" ],
     LocalEvent			=> [ "LOCALEV",		$RequestValues{Enabled} ],
     MaxHandles			=> [ "MAXHANDS", 	"integer" ],

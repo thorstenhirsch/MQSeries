@@ -4,7 +4,7 @@
 # resulting files.  My RCS tools like there to be one of htese, so it
 # gets "re-used".  
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This bit of hackery parses the IBM HTML docs for reason code, and
@@ -90,9 +90,9 @@ foreach my $type ( qw( ReasonText ReasonMacro ) ) {
 #
 #    ..../src/util/extract_reason_codes
 #
-# \$Id: extract_reason_codes,v 21.1 2002/07/08 14:58:40 biersma Exp $
+# \$Id: extract_reason_codes,v 23.1 2003/04/10 19:11:10 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

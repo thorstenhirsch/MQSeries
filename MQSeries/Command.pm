@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 22.3 2002/09/19 15:00:44 biersma Exp $
+# $Id: Command.pm,v 23.3 2003/04/10 19:09:33 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -23,7 +23,7 @@ use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
 
 use vars qw($VERSION);
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 sub new {
     my ($proto, %args) = @_;
@@ -119,6 +119,7 @@ sub new {
             $self->Carp("CommandQueue: argument $fld is not allowed");
             return;
         }
+        $self->{'RealQueueManager'} = $args{'RealQueueManager'};
     } elsif ($args{CommandQueueName}) {
         #
         # NOTE: This may be distribution-list notation

@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::IIH - IMS Bridge Message
 #
-# (c) 2002 Morgan Stanley Dean Witter and Co.
+# (c) 2002-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: IIH.pm,v 22.2 2002/09/12 18:48:54 biersma Exp $
+# $Id: IIH.pm,v 23.2 2003/04/10 19:10:15 biersma Exp $
 # 
 
 package MQSeries::Message::IIH;
@@ -15,7 +15,7 @@ use Carp;
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 @ISA = qw(MQSeries::Message);
 
 #

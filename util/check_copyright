@@ -1,8 +1,8 @@
 #!/ms/dist/perl5/bin/perl
 #
-# $Id: check_copyright,v 20.1 2002/03/18 20:31:25 biersma Exp $
+# $Id: check_copyright,v 23.1 2003/04/10 19:11:08 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This hack is just to sanity check that my copyright is found

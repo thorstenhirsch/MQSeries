@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::QMgr.pm - Queue manager configuration from qm.ini
 #
-# (c) 2000-2002 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: QMgr.pm,v 22.1 2002/07/23 20:27:34 biersma Exp $
+# $Id: QMgr.pm,v 23.2 2003/04/10 19:10:00 biersma Exp $
 #
 
 package MQSeries::Config::QMgr;
@@ -16,7 +16,7 @@ use MQSeries::Config::Machine;
 
 use vars qw($VERSION);
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 #
 # Constructor: Read and parse the /var/mqm/qmgrs/XYYZY/qm.ini file.

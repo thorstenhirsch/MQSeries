@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000, 2001, 2002 Morgan Stanley Dean Witter and Co.
+# (c) 2000, 2001, 2002, 2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 # 
-# $Id: descriptions.pl,v 21.2 2002/07/08 15:57:42 biersma Exp $
+# $Id: descriptions.pl,v 23.2 2003/04/11 17:58:29 biersma Exp $
 #
 
 #
@@ -272,15 +272,15 @@ $error_table =
 
    'AMQ7203' => [ "The purchased processor allowance for this installation has not been set\\." ],
 
-   'AMQ7214' => [ "The module '(\\S+)' for Api Exit '(\\w+)' could not be loaded for reason (\\S+)\\.",
+   'AMQ7214' => [ "The module '(\\S+)' for A[Pp][Ii] Exit '(\\w+)' could not be loaded for reason (\\S+)\\.",
                   "Module", "Exit", "Reason" ],
 
-   'AMQ7216' => [ "The Api Exit '(\\w+)' function '(\\w+)' in the module '(\\S+)' returned CompCode ($code_patt) and ReasonCode ($rc_patt)",
+   'AMQ7216' => [ "The A[Pp][Ii] Exit '(\\w+)' function '(\\w+)' in the module '(\\S+)' returned CompCode ($code_patt) and ReasonCode ($rc_patt)",
 
                   "Exit", "Function", "Module", "Code", "Reason" ],
 
    # NOTE: This was found with empty strings, rather useless...
-   'AMQ7217' => [ "The Api Exit '' module '' function'' returned a response code '($code_patt)' that is not valid in the ExitResponse field of the Api Exit parameters \\(MQAXP\\)\\.",
+   'AMQ7217' => [ "The A[Pp][Ii] Exit '' module '' function'' returned a response code '($code_patt)' that is not valid in the ExitResponse field of the Api Exit parameters \\(MQAXP\\)\\.",
                   "Reason" ],
 
    'AMQ7310' => [ "The attempt to put a report message on queue ($qname_patt) on queue manager ($qmgr_patt) failed with reason code ($reason_patt)\\. The message will be put on the dead-letter queue\\.",
@@ -428,18 +428,34 @@ $error_table =
    'AMQ9245' => [ "$product_patt was unable to obtain the account details for MCA user ID '(\\w+)'\\. This user ID was the MCA user ID for channel '($channel_patt)' on queue manager '($qmgr_patt)' and may have been defined in the channel definition, or supplied either by a channel exit or by a client\\.",
                   "Userid", "Channel", "QMgr" ],
 
+   'AMQ9255' => [ "Listener already running\\." ],
+
    'AMQ9409' => [ "The repository manager ended abnormally\\." ],
 
    'AMQ9410' => [ "The repository manager started successfully\\." ],
 
    'AMQ9411' => [ "The repository manager (?:ended|stopped) normally\\." ],
+   'AMQ9418' => [ "Only one repository for cluster (\\S+)\\.",
+                  "Cluster" ],
+
+   'AMQ9420' => [ "No repositories for cluster (\\S+)\\.",
+                  "Cluster" ],
 
    'AMQ9422' => [ "Repository manager error, RC=(\\d+)",
                   "Reason" ],
+   
+   'AMQ9431' => [ "CLUSSDR channel ($channel_patt) is altered so that it can no longer be used to access queue manager \\S+ within cluster (\\S+)\\.",
+                  "Channel", "Cluster" ],
 
-   'AMQ9437' => [ "Unable to commit repository changes.\\" ],
+   'AMQ9437' => [ "Unable to commit repository changes\\." ],
+
+   'AMQ9442' => [ "The Refresh Cluster\\((\\S+)\\) command caused \\d+ objects to be refreshed and \\d+ objects to be republished\\.",
+                  "Cluster" ],
 
    'AMQ9447' => [ "Following an error, the repository manager tried to backout some updates to the repository, but was unsuccessful\\. The repository manager terminates\\." ],
+
+   'AMQ9457' => [ "Repository available, cluster (\\S+), channel ($channel_patt), sender (\\S+)\\.",
+                  "Cluster", "Channel", "Sender" ],
 
    'AMQ9496' => [ "Channel program '($channel_patt)' was ended because the channel exit at the remote end requested it\\.",
                   "Channel" ],

@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 21.1 2002/05/14 16:30:00 biersma Exp $
+# $Id: parse_headers,v 23.1 2003/04/10 19:11:15 biersma Exp $
 #
-# (c) 1999-2002 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2003 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
