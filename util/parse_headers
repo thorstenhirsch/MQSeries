@@ -1,0 +1,155 @@
+#-*-perl-*-
+#
+# $Id: parse_headers,v 9.3 1999/10/29 22:29:45 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+# This code pulls in all of the #define definitions, and creates
+# arrays for each type of constant.  This will be used in
+# constants.c.PL to autogenerate the functions which expand the
+# macros.
+#
+
+use English;
+
+@headers = <$include/cm*.h>;
+
+foreach my $header ( @headers ) {
+
+    #print "Searching $header\n";
+
+    open(HEADER,$header) or die "Unable to open $header: $ERRNO\n";
+
+    while ( <HEADER> ) {
+
+	s/^\s*//;
+	chomp;
+
+	#
+	# Handle line continuation
+	#
+	while ( m:\\$: ) {
+	    s/\\$//;
+	    my $cont = <HEADER>;
+	    $cont =~ s/^\s*//;
+	    $_ .= $cont;
+	    chomp;
+	}
+
+	next unless /\#define/;
+
+	#
+	# Strip trailing C comments (there are a few in the V2 header
+	# files), and trailing white space.
+	#
+	s:\s+/\*.*\*/::;
+	s/\s*$//;
+
+	my ($key,$value) = (split(/\s+/,$_,3))[1,2];
+
+	next if $key eq "MQENTRY";
+	next if $key eq "MQPOINTER";
+
+	#
+	# Skip a bunch of stuff needed only by handicapped C
+	# programmers (we, OTOH, have perl ;-)
+	#
+	next if $key =~ /_ARRAY$/;
+	next if $key =~ /_INCLUDED$/;
+	next if $key =~ /_A$/;
+
+	#
+	# Skip some bogus macros added to 5.1 that we ain't gonna add
+	# the already overly bloated MQSeries namespace.
+	#
+	next if $key eq 'MQCHANNELEXIT';
+	next if $key eq 'MQCHANNELAUTODEFEXIT';
+	next if $key eq 'MQDATACONVEXIT';
+	next if $key eq 'MQTRANSPORTEXIT';
+
+	#
+	# We have to be careful only to skip the definitions which are
+	# for default structures.
+	#
+	next if ( $key =~ /_DEFAULT$/ && $value =~ /,/ );
+
+	$value =~ s/^\(//;
+	$value =~ s/\)$//;
+
+	#
+	# Special case: Look for indication that this host has a
+	# version of MQSeries installed which support the MQRFH
+	# structure.    This is required to build RulesFormat.xs
+	#
+	if ( $key eq "MQRFH_STRUC_ID" ) {
+	    $::has_mqrfh = 1;
+	}
+
+	#
+	# Hex 
+	#
+	if ( $value =~ /^0x/ ) {
+	    $value =~ s/L$//;
+	    $constant_hex{$key} = eval($value);
+	}
+	#
+	# Numeric
+	#
+	elsif ( $value =~ /L$/ ) {
+	    $value =~ s/L$//;
+	    $constant_numeric{$key} = $value;
+	}
+	#
+	# Null strings -- very special
+	#
+	elsif ( $value =~ /^\"\\0/ ) {
+	    # Strip all of the double quotes, and give us just the \0's
+	    $value =~ s/\"//g;
+	    # Count the null characters (i.e. count everything, and
+	    # divide by 2, 'cause this is a string like "\0\0\0\0")
+	    $constant_null{$key} = length($value)/2;
+	}
+	#
+	# Non-null strings
+	#
+	elsif ( $value =~ /^\"/ ) {
+	    # Strip all of the double quotes, and give us just the contents
+	    # NOTE: This will handle line wrapped stuff (embedded "")
+	    $value =~ s/\"//g;
+	    # 5.1 encodes a bunch of characters in hex for some wierd reason...
+	    $value =~ s/\\x(\w{2})/chr(hex($1))/ge;
+	    $constant_string{$key} = $value;
+	}
+	#
+	# Single character string
+	#
+	elsif ( $value =~ /\'/ ) {
+	    $value =~ s/\'//g;
+	    $value =~ s/\\x(\w{2})/chr(hex($1))/ge;
+	    $constant_char{$key} = $value;
+	}
+	#
+	# Ignore the function macros in cmqbc.h
+	#
+	elsif ( $value =~ /^mq[A-Z]/ ) {
+	    next;
+	}
+	#
+	# Don't know how to parse....
+	#
+	else {
+	    warn "Unrecognized value: '$key' => '$value'\n";
+	}
+
+	# Debugging....
+	# s/\s*/\t/;
+	# print "$_\n";
+
+    }
+
+    close(HEADER);
+
+}
+
+1;

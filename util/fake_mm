@@ -1,0 +1,40 @@
+#-*-perl-*-
+#
+# $Id: fake_mm,v 9.1 1999/10/22 22:28:38 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+#
+# I need to fake this out for pre-5.005 per interpreters, as the older
+# make maker doesn't have this, and it is *very* convenient for
+# skipping sections of the build.
+#
+sub myWriteEmptyMakefile {
+
+    if ( defined &ExtUtils::MakeMaker::WriteEmptyMakefile ) {
+	ExtUtils::MakeMaker::WriteEmptyMakefile();
+	return 1;
+    }
+
+    open(MF,">Makefile") || die "Unable to open Makefile: $!\n";
+
+    print MF <<"EndOfMakefile";
+all:
+ 
+clean:
+ 
+install:
+ 
+makemakerdflt:
+ 
+test:
+ 
+EndOfMakefile
+
+    close(MF) || die "Unable to close Makefile: $!\n";
+
+}
+
+1;

@@ -1,0 +1,195 @@
+#-*-perl-*-
+#
+# $Id: ResponseValues.in,v 9.2 1999/10/25 15:34:08 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package MQSeries::Command::PCF;
+
+%ResponseValues =
+  (
+
+   Platform =>
+   {
+    &MQPL_MVS                           => "MVS",
+    &MQPL_NSK                           => "NSK",
+    &MQPL_OS2                           => "OS2",
+    &MQPL_OS400                         => "OS400",
+    &MQPL_UNIX                          => "UNIX",
+    &MQPL_WINDOWS                       => "Win16",
+    &MQPL_WINDOWS_NT                    => "Win32",
+   },
+
+   QType =>
+   {
+    &MQQT_ALIAS                         => "Alias",
+    &MQQT_CLUSTER                       => "Cluster",
+    &MQQT_LOCAL                         => "Local",
+    &MQQT_MODEL                         => "Model",
+    &MQQT_REMOTE                        => "Remote",
+   },
+
+   DefInputOpenOption =>
+   {
+    &MQOO_INPUT_EXCLUSIVE               => "Exclusive",
+    &MQOO_INPUT_SHARED                  => "Shared",
+   },
+
+   MsgDeliverySequence =>
+   {
+    &MQMDS_FIFO                         => "FIFO",
+    &MQMDS_PRIORITY                     => "Priority",
+   },
+
+   DefinitionType =>
+   {
+    &MQQDT_PERMANENT_DYNAMIC            => "Permanent",
+    &MQQDT_PREDEFINED                   => "Predefined",
+    &MQQDT_TEMPORARY_DYNAMIC            => "Temporary",
+   },
+
+   Usage =>
+   {
+    &MQUS_NORMAL                        => "Normal",
+    &MQUS_TRANSMISSION                  => "XMITQ",
+   },
+
+   TriggerType =>
+   {
+    &MQTT_DEPTH                         => "Depth",
+    &MQTT_EVERY                         => "Every",
+    &MQTT_FIRST                         => "First",
+    &MQTT_NONE                          => "None",
+   },
+
+   Scope =>
+   {
+    &MQSCO_CELL                         => "Cell",
+    &MQSCO_Q_MGR                        => "QMgr",
+   },
+
+   QServiceIntervalEvent =>
+   {
+    &MQQSIE_HIGH                        => "High",
+    &MQQSIE_NONE                        => "None",
+    &MQQSIE_OK                          => "OK",
+   },
+
+   ChannelType =>
+   {
+    &MQCHT_CLNTCONN                     => "Clntconn",
+    &MQCHT_CLUSRCVR                     => "ClusterReceiver",
+    &MQCHT_CLUSSDR                      => "ClusterSender",
+    &MQCHT_RECEIVER                     => "Receiver",
+    &MQCHT_REQUESTER                    => "Requester",
+    &MQCHT_SENDER                       => "Sender",
+    &MQCHT_SERVER                       => "Server",
+    &MQCHT_SVRCONN                      => "Svrconn",
+   },
+
+   ChannelInstanceType =>
+   {
+    &MQOT_CURRENT_CHANNEL               => "Current",
+    &MQOT_SAVED_CHANNEL                 => "Saved",
+   },
+
+   MCAStatus =>
+   {
+    &MQMCAS_RUNNING                     => "Running", 
+    &MQMCAS_STOPPED                     => "Stopped", 
+   },
+
+   TransportType =>
+   {
+    &MQXPT_DECNET                       => "DECnet",
+    &MQXPT_LU62                         => "LU62",
+    &MQXPT_NETBIOS                      => "NetBIOS",
+    &MQXPT_SPX                          => "SPX",
+    &MQXPT_TCP                          => "TCP",
+    &MQXPT_UDP                          => "UDP",
+   },
+
+   PutAuthority =>
+   {
+    &MQPA_CONTEXT                       => "Context",
+    &MQPA_DEFAULT                       => "Default",
+   },
+
+   MCAType =>
+   {
+    &MQMCAT_PROCESS                     => "Process",
+    &MQMCAT_THREAD                      => "Thread",
+   },
+
+   NonPersistentMsgSpeed =>
+   {
+    &MQNPMS_FAST                        => "Fast",
+    &MQNPMS_NORMAL                      => "Normal",
+   },
+
+   ChannelStatus =>
+   {
+    &MQCHS_BINDING                      => "Binding",
+    &MQCHS_INACTIVE                     => "Inactive",
+    &MQCHS_INITIALIZING                 => "Initializing",
+    &MQCHS_PAUSED                       => "Paused",
+    &MQCHS_REQUESTING                   => "Requesting",
+    &MQCHS_RETRYING                     => "Retrying",
+    &MQCHS_RUNNING                      => "Running",
+    &MQCHS_STARTING                     => "Starting", 
+    &MQCHS_STOPPED                      => "Stopped",
+    &MQCHS_STOPPING                     => "Stopping",
+   },
+
+   ApplType =>
+   {
+    &MQAT_CICS                          => "CICS",
+    &MQAT_DOS                           => "DOS",
+    &MQAT_IMS                           => "IMS",
+    &MQAT_MVS                           => "MVS",
+    &MQAT_OS2                           => "OS2",
+    &MQAT_OS400                         => "OS400",
+    &MQAT_UNIX                          => "UNIX",
+    &MQAT_VMS                           => "VMS",
+    &MQAT_WINDOWS                       => "Win16",
+    &MQAT_WINDOWS_NT                    => "Win32",
+   },
+
+   EscapeType =>
+   {
+    &MQET_MQSC                          => "MQSC",
+   },
+
+   QMgrDefinitionType =>
+   {
+    &MQQMDT_AUTO_CLUSTER_SENDER         => "AutoClusterSender",
+    &MQQMDT_AUTO_EXP_CLUSTER_SENDER     => "AutoExplicitClusterSender",
+    &MQQMDT_CLUSTER_RECEIVER            => "ClusterReceiver",
+    &MQQMDT_EXPLICIT_CLUSTER_SENDER     => "ExplicitClusterSender",
+   },
+
+   QMgrType =>
+   {
+    &MQQMT_NORMAL                       => "Normal",
+    &MQQMT_REPOSITORY                   => "Repository",
+   },
+
+   ClusterQType =>
+   {
+    &MQCQT_ALIAS_Q                      => "Alias",
+    &MQCQT_LOCAL_Q                      => "Local",
+    &MQCQT_Q_MGR_ALIAS                  => "QMgrAlias",
+    &MQCQT_REMOTE_Q                     => "Remote",
+   },
+
+   DefBind =>
+   {
+    &MQBND_BIND_NOT_FIXED               => "NotFixed",
+    &MQBND_BIND_ON_OPEN                 => "OnOpen",
+   },
+
+  );
+
+1;

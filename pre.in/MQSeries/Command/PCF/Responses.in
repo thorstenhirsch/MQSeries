@@ -1,0 +1,50 @@
+#-*-perl-*-
+#
+# $Id: Responses.in,v 9.1 1999/10/14 22:06:21 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package MQSeries::Command::PCF;
+
+%Responses =
+  (
+   &MQCMD_CHANGE_CHANNEL                => [ "ChangeChannel",                   $ResponseParameters{Channel} ],
+   &MQCMD_CHANGE_PROCESS                => [ "ChangeProcess",                   $ResponseParameters{Process} ],
+   &MQCMD_CHANGE_Q                      => [ "ChangeQueue",                     $ResponseParameters{Queue} ],
+   &MQCMD_CHANGE_Q_MGR                  => [ "ChangeQueueManager",              $ResponseParameters{QueueManager} ],
+   &MQCMD_CLEAR_Q                       => [ "ClearQueue",                      $ResponseParameters{Queue} ],
+   &MQCMD_COPY_CHANNEL                  => [ "CopyChannel",                     $ResponseParameters{Channel} ],
+   &MQCMD_COPY_PROCESS                  => [ "CopyProcess",                     $ResponseParameters{Process} ],
+   &MQCMD_COPY_Q                        => [ "CopyQueue",                       $ResponseParameters{Queue} ],
+   &MQCMD_CREATE_CHANNEL                => [ "CreateChannel",                   $ResponseParameters{Channel} ],
+   &MQCMD_CREATE_PROCESS                => [ "CreateProcess",                   $ResponseParameters{Process} ],
+   &MQCMD_CREATE_Q                      => [ "CreateQueue",                     $ResponseParameters{Queue} ],
+   &MQCMD_DELETE_CHANNEL                => [ "DeleteChannel",                   $ResponseParameters{Channel} ],
+   &MQCMD_DELETE_PROCESS                => [ "DeleteProcess",                   $ResponseParameters{Process} ],
+   &MQCMD_DELETE_Q                      => [ "DeleteQueue",                     $ResponseParameters{Queue} ],
+   &MQCMD_ESCAPE                        => [ "Escape",                          $ResponseParameters{Escape} ],
+   &MQCMD_INQUIRE_CHANNEL               => [ "InquireChannel",                  $ResponseParameters{Channel} ],
+   &MQCMD_INQUIRE_CHANNEL_NAMES         => [ "InquireChannelNames",             $ResponseParameters{Channel} ],
+   &MQCMD_INQUIRE_CHANNEL_STATUS        => [ "InquireChannelStatus",            $ResponseParameters{Channel} ],
+   &MQCMD_INQUIRE_CLUSTER_Q_MGR         => [ "InquireClusterQueueManager",      $ResponseParameters{Cluster} ],
+   &MQCMD_INQUIRE_NAMELIST              => [ "InquireNamelist",                 $ResponseParameters{Namelist} ],
+   &MQCMD_INQUIRE_NAMELIST_NAMES        => [ "nquireNamelistNames",             $ResponseParameters{Namelist} ],
+   &MQCMD_INQUIRE_PROCESS               => [ "InquireProcess",                  $ResponseParameters{Process} ],
+   &MQCMD_INQUIRE_PROCESS_NAMES         => [ "InquireProcessNames",             $ResponseParameters{Process} ],
+   &MQCMD_INQUIRE_Q                     => [ "InquireQueue",                    $ResponseParameters{Queue} ],
+   &MQCMD_INQUIRE_Q_MGR                 => [ "InquireQueueManager",             $ResponseParameters{QueueManager} ],
+   &MQCMD_INQUIRE_Q_NAMES               => [ "InquireQueueNames",               $ResponseParameters{Queue} ],
+   &MQCMD_PING_CHANNEL                  => [ "PingChannel",                     $ResponseParameters{Channel} ],
+   &MQCMD_PING_Q_MGR                    => [ "PingQueueManager",                $ResponseParameters{QueueManager} ],
+   &MQCMD_RESET_CHANNEL                 => [ "ResetChannel",                    $ResponseParameters{Channel} ],
+   &MQCMD_RESET_Q_STATS                 => [ "ResetQueueStatistics",            $ResponseParameters{Queue} ],
+   &MQCMD_RESOLVE_CHANNEL               => [ "ResolveChannel",                  $ResponseParameters{Channel} ],
+   &MQCMD_START_CHANNEL                 => [ "StartChannel",                    $ResponseParameters{Channel} ],
+   &MQCMD_START_CHANNEL_INIT            => [ "StartChannelInitiator",           $ResponseParameters{Channel} ],
+   &MQCMD_START_CHANNEL_LISTENER        => [ "StartChannelListener",            $ResponseParameters{Channel} ],
+   &MQCMD_STOP_CHANNEL                  => [ "StopChannel",                     $ResponseParameters{Channel} ],
+  );
+
+1;

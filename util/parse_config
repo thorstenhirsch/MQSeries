@@ -1,0 +1,110 @@
+#-*-perl-*-
+#
+# $Id: parse_config,v 9.3 1999/10/14 23:54:16 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+# 
+# Parse our config file to get the parameters we need
+#
+
+foreach my $relpath ( qw( . .. ../.. ../../.. ) ) {
+    next unless -f "$relpath/CONFIG";
+    $config = "$relpath/CONFIG";
+    last;
+}
+
+die "Unable to locate CONFIG file\n" unless -f $config;
+
+#
+# In the test scripts, we need to disable the non-lazy loading of
+# symbols, since the IRIX client has lots of undefined symbols that
+# can't be resolved.  Normally, these are never called, so not a
+# problem.  However, since the non-lazy loading is an important test,
+# we only disable it on IRIX.
+#
+use Config;
+if ( $Config{osname} =~ /irix/ ) {
+    $ENV{PERL_DL_NONLAZY} = '0';
+}
+
+open(CONFIG,"$config") or
+  die "Unable to open CONFIG file: $ERRNO\n";
+
+while ( <CONFIG> ) {
+    next if /^\#/;
+    next unless ($key,$value) = /^(\w+)\s*=\s*(.*)\s*$/;
+    if ( $ENV{$key} ) {
+	warn "Environment variable '$key' overrides CONFIG definition\n";
+	$myconfig{$key} = $ENV{$key};
+    }
+    else {
+	$myconfig{$key} = $value;
+    }
+}
+
+close(CONFIG) or
+  die "Unable to close CONFIG file: $ERRNO\n";
+
+#
+# Validate the structure of the MQMTOP directory.  It has to exist,
+# and have lib and inc (or include) subdirectories.
+#
+if ( defined $myconfig{MQMTOP} ) {
+    $mqmtop = $myconfig{MQMTOP};
+}
+else {
+    if ( $Config{osname} =~ /aix/ ) {
+	$mqmtop = "/usr/lpp/mqm";
+    }
+    else {
+	$mqmtop = "/opt/mqm";
+    }
+}
+
+unless ( -d $mqmtop ) {
+    warn "No such directory '$mqmtop', defaulting to /opt/mqm\n";
+    $mqmtop = "/opt/mqm";
+}
+
+unless ( -d "$mqmtop/lib" ) {
+    die "Missing lib directory in $mqmtop\n";
+}
+
+if ( -d "$mqmtop/inc" ) {
+    $include = "$mqmtop/inc";
+}
+elsif ( -d "$mqmtop/include" ) {
+    $include = "$mqmtop/include";
+}
+else {
+    die "Missing inc or include directory in $mqmtop\n";
+}
+
+#
+# Ugh.  Need to figure out which version we are.  This is kinda ugly...
+#
+$mqversion = 2;
+
+open(CMQC,"$include/cmqc.h")
+  or die "Unable to open $include/cmqc.h: $ERRNO\n";
+
+while ( <CMQC> ) {
+    next unless /MQCNO_NONE/;
+    $mqversion = 5;
+    last;
+}
+
+close(CMQC);
+
+#
+# This hack is probably going to go away in the future...
+#
+if ( defined $myconfig{MQMLOCALE} ) {
+    $mqmlocale = $myconfig{MQMLOCALE};
+}
+else {
+    $mqmlocale = "";
+}
+
+1;

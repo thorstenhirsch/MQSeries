@@ -1,0 +1,167 @@
+#-*-perl-*-
+#
+# $Id: MQSeries.pm.in,v 9.8 1999/10/29 22:29:11 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package __APITYPE__::MQSeries;
+
+use strict;
+use English;
+use Config;
+use Carp;
+use vars qw( $VERSION @ISA @EXPORT $AUTOLOAD );
+
+require Exporter;
+require DynaLoader;
+require AutoLoader;
+
+require "MQSeries/Constants.pl";
+
+@ISA = qw(Exporter DynaLoader);
+
+$VERSION = '1.06';
+
+#
+# This nonsense is only necessary if you don't have the locale files
+# in the default location.  The MQSeries installation scribbles them
+# into the OS local directories (eg. /usr/lib/locale on Solaris), so
+# normally you don't need this.
+#
+# Note that this probably looks wierd if MQMLOCALE is not specified in
+# the CONFIG directory at compile time.  if ( "" ) is normal.  Had you
+# specified a directory, it would have appeared there, making that
+# condition true.
+#
+if ( "__LOCALE__" ne "" ) {
+    
+    #
+    # We'll need some default values of the LANG and NLSPATH environment
+    # variables, or the MQI will not report errors properly.
+    #
+    if ( defined $ENV{LANG} ) {
+	unless ( -d "__LOCALE__/$ENV{LANG}" ) {
+	    warn "Invalid LANG specification.  Reverting to 'C'.\n";
+	    $ENV{LANG} = 'C';
+	}
+    }
+    else {
+	$ENV{LANG} = 'C';
+    }
+    
+    unless ( defined $ENV{NLSPATH} ) {
+	$ENV{NLSPATH} = "__LOCALE__/%L/LC_MESSAGES/%N.cat";
+    }
+    
+}
+
+# Items to export into callers namespace by default. Note: do not
+# export names by default without a very good reason. Use EXPORT_OK
+# instead.  Do not simply export all your public
+# functions/methods/constants.
+
+@EXPORT = qw(
+
+	     MQCONN
+	     MQCONNX
+	     MQDISC
+	     MQOPEN
+	     MQCLOSE
+	     MQPUT
+	     MQPUT1
+	     MQGET
+	     MQINQ
+	     MQSET
+	     MQBEGIN
+	     MQCMIT
+	     MQBACK
+
+	     MQReasonToStrings
+	     MQReasonToText
+             MQReasonToMacro
+
+	     __CONSTANTS__
+
+	    );
+
+sub MQReasonToText {
+    my ($reason) = @_;
+    return (MQReasonToStrings($reason))[0];
+}
+
+sub MQReasonToMacro {
+    my ($reason) = @_;
+    return (MQReasonToStrings($reason))[1];
+}
+
+sub MQReasonToStrings {
+    my ($reason) = @_;
+    return (
+	    $MQSeries::Constants::ReasonText{$reason},
+	    $MQSeries::Constants::ReasonMacro{$reason}
+	   );
+}
+
+#
+# This AUTOLOAD function looks for the constant first via the
+# constant_numeric function, then via constant_string.
+#
+sub AUTOLOAD {
+
+    my ($constant,$numeric,$string,$null,$char);
+    ($constant = $AUTOLOAD) =~ s/.*:://;
+
+    $numeric = constant_hex($constant);
+    unless ( $ERRNO ) {
+	eval "sub $AUTOLOAD { $numeric }";
+	goto &$AUTOLOAD;
+    }
+
+    $numeric = constant_numeric($constant);
+    unless ( $ERRNO ) {
+	eval "sub $AUTOLOAD { $numeric }";
+	goto &$AUTOLOAD;
+    }
+
+    $string = constant_string($constant);
+    unless ( $ERRNO ) {
+	eval "sub $AUTOLOAD { \"$string\" }";
+	goto &$AUTOLOAD;
+    }
+
+    $char = constant_char($constant);
+    unless ( $ERRNO ) {
+	eval "sub $AUTOLOAD { chr(" . ord($char) . ") }";
+	goto &$AUTOLOAD;
+    }
+
+    $null = constant_null($constant);
+    if ( defined $null ) {
+	eval "sub $AUTOLOAD { \"\\0\" x $null }";
+	goto &$AUTOLOAD;
+    }
+
+    croak "Undefined MQSeries constant: $constant";
+
+}
+
+#
+# Special case handling of those pesky strings of NULLs.  
+#
+my %_constant_null = 
+  (
+   __CONSTANT_NULL__
+  );
+    
+sub constant_null {
+    my ($constant) = @_;
+    return exists $_constant_null{$constant} ? $_constant_null{$constant} : undef;
+}
+
+bootstrap __APITYPE__::MQSeries $VERSION;
+
+1;
+
+__END__

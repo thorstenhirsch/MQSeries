@@ -1,0 +1,21 @@
+# -*-c-*-
+#
+# $Id: 40MQBACK,v 9.2 1999/10/15 16:19:28 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+void
+MQBACK(Hconn,CompCode,Reason)
+	MQHCONN	Hconn
+	MQLONG	CompCode
+	MQLONG	Reason
+
+	CODE:
+	MQBACK(Hconn,&CompCode,&Reason);
+	OUTPUT:
+	Hconn
+	CompCode
+	Reason
+

@@ -1,0 +1,21 @@
+# -*-c-*-
+#
+# $Id: 38MQDISC,v 9.2 1999/10/15 16:19:06 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+void
+MQDISC(Hconn,CompCode,Reason)
+	MQHCONN	Hconn
+	MQLONG	CompCode
+	MQLONG	Reason
+
+	CODE:
+	MQDISC(&Hconn,&CompCode,&Reason);
+	OUTPUT:
+	Hconn
+	CompCode
+	Reason
+

@@ -1,0 +1,59 @@
+#-*-perl-*-
+#
+# $Id: Requests.in,v 9.1 1999/10/14 21:41:06 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package MQSeries::Command::PCF;
+
+%Requests =
+  (
+   ChangeChannel                => [ &MQCMD_CHANGE_CHANNEL,             $RequestParameters{Channel} ],
+   ChangeNamelist               => [ &MQCMD_CHANGE_NAMELIST,            $RequestParameters{Namelist} ],
+   ChangeProcess                => [ &MQCMD_CHANGE_PROCESS,             $RequestParameters{Process} ],
+   ChangeQueue                  => [ &MQCMD_CHANGE_Q,                   $RequestParameters{Queue} ],
+   ChangeQueueManager           => [ &MQCMD_CHANGE_Q_MGR,               $RequestParameters{QueueManager} ],
+   ClearQueue                   => [ &MQCMD_CLEAR_Q,                    $RequestParameters{Queue} ],
+   CopyChannel                  => [ &MQCMD_COPY_CHANNEL,               $RequestParameters{Channel} ],
+   CopyNamelist                 => [ &MQCMD_COPY_NAMELIST,              $RequestParameters{Namelist} ],
+   CopyProcess                  => [ &MQCMD_COPY_PROCESS,               $RequestParameters{Process} ],
+   CopyQueue                    => [ &MQCMD_COPY_Q,                     $RequestParameters{Queue} ],
+   CreateChannel                => [ &MQCMD_CREATE_CHANNEL,             $RequestParameters{Channel} ],
+   CreateNamelist               => [ &MQCMD_CREATE_NAMELIST,            $RequestParameters{Namelist} ],
+   CreateProcess                => [ &MQCMD_CREATE_PROCESS,             $RequestParameters{Process} ],
+   CreateQueue                  => [ &MQCMD_CREATE_Q,                   $RequestParameters{Queue} ],
+   DeleteChannel                => [ &MQCMD_DELETE_CHANNEL,             $RequestParameters{Channel} ],
+   DeleteNamelist               => [ &MQCMD_DELETE_NAMELIST,            $RequestParameters{Namelist} ],
+   DeleteProcess                => [ &MQCMD_DELETE_PROCESS,             $RequestParameters{Process} ],
+   DeleteQueue                  => [ &MQCMD_DELETE_Q,                   $RequestParameters{Queue} ],
+   Escape                       => [ &MQCMD_ESCAPE,                     $RequestParameters{Escape} ],
+   InquireChannel               => [ &MQCMD_INQUIRE_CHANNEL,            $RequestParameters{Channel} ],
+   InquireChannelNames          => [ &MQCMD_INQUIRE_CHANNEL_NAMES,      $RequestParameters{Channel} ],
+   InquireChannelStatus         => [ &MQCMD_INQUIRE_CHANNEL_STATUS,     $RequestParameters{Channel} ],
+   InquireClusterQueueManager   => [ &MQCMD_INQUIRE_CLUSTER_Q_MGR,      $RequestParameters{Cluster} ],
+   InquireNamelist              => [ &MQCMD_INQUIRE_NAMELIST,           $RequestParameters{Namelist} ],
+   InquireNamelistNames         => [ &MQCMD_INQUIRE_NAMELIST_NAMES,     $RequestParameters{Namelist} ],
+   InquireProcess               => [ &MQCMD_INQUIRE_PROCESS,            $RequestParameters{Process} ],
+   InquireProcessNames          => [ &MQCMD_INQUIRE_PROCESS_NAMES,      $RequestParameters{Process} ],
+   InquireQueue                 => [ &MQCMD_INQUIRE_Q,                  $RequestParameters{Queue} ],
+   InquireQueueManager          => [ &MQCMD_INQUIRE_Q_MGR,              $RequestParameters{QueueManager} ],
+   InquireQueueNames            => [ &MQCMD_INQUIRE_Q_NAMES,            $RequestParameters{Queue} ],
+   PingChannel                  => [ &MQCMD_PING_CHANNEL,               $RequestParameters{Channel} ],
+   PingQueueManager             => [ &MQCMD_PING_Q_MGR,                 $RequestParameters{QueueManager} ],
+   RefreshCluster               => [ &MQCMD_REFRESH_CLUSTER,            $RequestParameters{Cluster} ],
+   ResetChannel                 => [ &MQCMD_RESET_CHANNEL,              $RequestParameters{Channel} ],
+   ResetCluster                 => [ &MQCMD_RESET_CLUSTER,              $RequestParameters{Cluster} ],
+   ResetQueueStatistics         => [ &MQCMD_RESET_Q_STATS,              $RequestParameters{Queue} ],
+   ResolveChannel               => [ &MQCMD_RESOLVE_CHANNEL,            $RequestParameters{Channel} ],
+   ResumeQueueManagerCluster    => [ &MQCMD_RESUME_Q_MGR_CLUSTER,       $RequestParameters{Cluster} ],
+   StartChannel                 => [ &MQCMD_START_CHANNEL,              $RequestParameters{Channel} ],
+   StartChannelInitiator        => [ &MQCMD_START_CHANNEL_INIT,         $RequestParameters{Channel} ],
+   StartChannelListener         => [ &MQCMD_START_CHANNEL_LISTENER,     $RequestParameters{Channel} ],
+   StopChannel                  => [ &MQCMD_STOP_CHANNEL,               $RequestParameters{Channel} ],
+   SuspendQueueManagerCluster   => [ &MQCMD_SUSPEND_Q_MGR_CLUSTER,      $RequestParameters{Cluster} ],
+  );
+
+
+1;

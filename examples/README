@@ -1,0 +1,16 @@
+#
+# $Id: README,v 9.1 1999/11/04 20:31:29 wpm Exp $ 
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+As you will quickly discover, this set of examples is a work in
+progress.
+
+I did not have time to get anything respectable together for the 1.06
+release, but I hope to eventually have perl versions of all of IBM
+sample code.
+
+The side by side comparison of the C vs. perl really shows how much
+easier the perl API is to use.  But then, I'm biased...

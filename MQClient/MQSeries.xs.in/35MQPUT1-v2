@@ -1,0 +1,29 @@
+# -*-c-*-
+#
+# $Id: 35MQPUT1-v2,v 9.4 1999/10/15 16:17:59 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+void
+MQPUT1(Hconn,ObjDesc,MsgDesc,PutMsgOpts,Msg,CompCode,Reason)
+	MQHCONN	Hconn
+	MQOD	ObjDesc
+	MQMD	MsgDesc
+	MQPMO	PutMsgOpts
+	SV *	Msg
+	MQLONG	CompCode
+	MQLONG	Reason
+
+	CODE:
+	{
+	PMQCHAR Buffer = SvPV(Msg,na);
+	MQPUT1(Hconn,&ObjDesc,&MsgDesc,&PutMsgOpts,SvCUR(Msg),Buffer,&CompCode,&Reason);
+	}
+	OUTPUT:
+	ObjDesc
+	MsgDesc
+	PutMsgOpts
+	CompCode
+	Reason

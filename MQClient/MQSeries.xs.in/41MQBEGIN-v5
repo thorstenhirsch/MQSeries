@@ -1,0 +1,28 @@
+# -*-c-*-
+#
+# $Id: 41MQBEGIN-v5,v 9.2 1999/10/15 16:19:40 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+#ifdef MQBO_NONE
+
+void
+MQBEGIN(Hconn,BeginOpts,CompCode,Reason)
+	MQHCONN		Hconn
+	MQBO		BeginOpts
+	MQLONG		CompCode
+	MQLONG		Reason
+
+	CODE:
+	MQBEGIN(Hconn,
+		&BeginOpts,
+		&CompCode,
+		&Reason);
+	OUTPUT:
+	BeginOpts
+	CompCode
+	Reason
+
+#endif

@@ -1,0 +1,428 @@
+#-*-perl-*-
+#
+# $Id: RequestValues.in,v 9.2 1999/10/22 20:10:43 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package MQSeries::Command::PCF;
+
+%RequestValues =
+  (
+   #
+   # QueueManager 
+   #
+   QueueManager =>
+   {
+    All                         => &MQIACF_ALL,
+    AlterationDate              => &MQCA_ALTERATION_DATE,
+    AlterationTime              => &MQCA_ALTERATION_TIME,
+    AuthorityEvent              => &MQIA_AUTHORITY_EVENT,
+    ChannelAutoDef              => &MQIA_CHANNEL_AUTO_DEF,
+    ChannelAutoDefEvent         => &MQIA_CHANNEL_AUTO_DEF_EVENT,
+    ChannelAutoDefExit          => &MQCA_CHANNEL_AUTO_DEF_EXIT,
+    ClusterWorkLoadData         => &MQCA_CLUSTER_WORKLOAD_DATA,
+    ClusterWorkLoadExit         => &MQCA_CLUSTER_WORKLOAD_EXIT,
+    ClusterWorkLoadLength       => &MQIA_CLUSTER_WORKLOAD_LENGTH,
+    CodedCharSetId              => &MQIA_CODED_CHAR_SET_ID,
+    CommandInputQName           => &MQCA_COMMAND_INPUT_Q_NAME,
+    CommandLevel                => &MQIA_COMMAND_LEVEL,
+    DeadLetterQName             => &MQCA_DEAD_LETTER_Q_NAME,
+    DefXmitQName                => &MQCA_DEF_XMIT_Q_NAME,
+    DistLists                   => &MQIA_DIST_LISTS,
+    InhibitEvent                => &MQIA_INHIBIT_EVENT,
+    LocalEvent                  => &MQIA_LOCAL_EVENT,
+    MaxHandles                  => &MQIA_MAX_HANDLES,
+    MaxMsgLength                => &MQIA_MAX_MSG_LENGTH,
+    MaxPriority                 => &MQIA_MAX_PRIORITY,
+    MaxUncommittedMsgs          => &MQIA_MAX_UNCOMMITTED_MSGS,
+    PerformanceEvent            => &MQIA_PERFORMANCE_EVENT,
+    Platform                    => &MQIA_PLATFORM,
+    QMgrDesc                    => &MQCA_Q_MGR_DESC,
+    QMgrIdentifier              => &MQCA_Q_MGR_IDENTIFIER,
+    QMgrName                    => &MQCA_Q_MGR_NAME,
+    RemoteEvent                 => &MQIA_REMOTE_EVENT,
+    RepositoryName              => &MQCA_REPOSITORY_NAME,
+    RepositoryNamelist          => &MQCA_REPOSITORY_NAMELIST,
+    StartStopEvent              => &MQIA_START_STOP_EVENT,
+    SyncPoint                   => &MQIA_SYNCPOINT,
+    TriggerInterval             => &MQIA_TRIGGER_INTERVAL,
+   },
+
+   #
+   # Process
+   #
+   Process =>
+   {
+    All                         => &MQIACF_ALL,
+    AlterationDate              => &MQCA_ALTERATION_DATE,
+    AlterationTime              => &MQCA_ALTERATION_TIME,
+    ApplId                      => &MQCA_APPL_ID,
+    ApplType                    => &MQIA_APPL_TYPE,
+    EnvData                     => &MQCA_ENV_DATA,
+    ProcessDesc                 => &MQCA_PROCESS_DESC,
+    ProcessName                 => &MQCA_PROCESS_NAME,
+    ProcessNames                => &MQCACF_PROCESS_NAMES,
+    UserData                    => &MQCA_USER_DATA,
+   },
+
+   ApplType =>
+   {
+    AIX                         => &MQAT_AIX,
+    CICS                        => &MQAT_CICS,
+    DOS                         => &MQAT_DOS,
+    Default                     => &MQAT_UNIX,
+    IMS                         => &MQAT_IMS,
+    MVS                         => &MQAT_MVS,
+    NSK                         => &MQAT_NSK,
+    OS2                         => &MQAT_OS2,
+    OS400                       => &MQAT_OS400,
+    UNIX                        => &MQAT_UNIX,
+    VMS                         => &MQAT_VMS,
+    Win16                       => &MQAT_WINDOWS,
+    Win32                       => &MQAT_WINDOWS_NT,
+   },
+
+   #
+   # Queue
+   #
+   Queue =>
+   {
+    All                         => &MQIACF_ALL,
+    AlterationDate              => &MQCA_ALTERATION_DATE,
+    AlterationTime              => &MQCA_ALTERATION_TIME,
+    BackoutRequeueName          => &MQCA_BACKOUT_REQ_Q_NAME,
+    BackoutThreshold            => &MQIA_BACKOUT_THRESHOLD,
+    BaseQName                   => &MQCA_BASE_Q_NAME,
+    ClusterDate                 => &MQCA_CLUSTER_DATE,
+    ClusterName                 => &MQCA_CLUSTER_NAME,
+    ClusterNamelist             => &MQCA_CLUSTER_NAMELIST,
+    ClusterQType                => &MQIA_CLUSTER_Q_TYPE,
+    ClusterTime                 => &MQCA_CLUSTER_TIME,
+    CreationDate                => &MQCA_CREATION_DATE,
+    CreationTime                => &MQCA_CREATION_TIME,
+    CurrentQDepth               => &MQIA_CURRENT_Q_DEPTH,
+    DefBind                     => &MQIA_DEF_BIND,
+    DefInputOpenOption          => &MQIA_DEF_INPUT_OPEN_OPTION,
+    DefPersistence              => &MQIA_DEF_PERSISTENCE,
+    DefPriority                 => &MQIA_DEF_PRIORITY,
+    DefinitionType              => &MQIA_DEFINITION_TYPE,
+    DistLists                   => &MQIA_DIST_LISTS,
+    HardenGetBackout            => &MQIA_HARDEN_GET_BACKOUT,
+    HighQDepth                  => &MQIA_HIGH_Q_DEPTH,
+    InhibitGet                  => &MQIA_INHIBIT_GET,
+    InhibitPut                  => &MQIA_INHIBIT_PUT,
+    InitiationQName             => &MQCA_INITIATION_Q_NAME,
+    MaxMsgLength                => &MQIA_MAX_MSG_LENGTH,
+    MaxQDepth                   => &MQIA_MAX_Q_DEPTH,
+    MsgDeliverySequence         => &MQIA_MSG_DELIVERY_SEQUENCE,
+    MsgDeqCount                 => &MQIA_MSG_DEQ_COUNT,
+    MsgEnqCount                 => &MQIA_MSG_ENQ_COUNT,
+    OpenInputCount              => &MQIA_OPEN_INPUT_COUNT,
+    OpenOutputCount             => &MQIA_OPEN_OUTPUT_COUNT,
+    ProcessName                 => &MQCA_PROCESS_NAME,
+    QDepthHighEvent             => &MQIA_Q_DEPTH_HIGH_EVENT,
+    QDepthHighLimit             => &MQIA_Q_DEPTH_HIGH_LIMIT,
+    QDepthLowEvent              => &MQIA_Q_DEPTH_LOW_EVENT,
+    QDepthLowLimit              => &MQIA_Q_DEPTH_LOW_LIMIT,
+    QDepthMaxEvent              => &MQIA_Q_DEPTH_MAX_EVENT,
+    QDesc                       => &MQCA_Q_DESC,
+    QMgrIdentifier              => &MQCA_Q_MGR_IDENTIFIER,
+    QMgrName                    => &MQCA_CLUSTER_Q_MGR_NAME,
+    QName                       => &MQCA_Q_NAME,
+    QNames                      => &MQCACF_Q_NAMES,
+    QServiceInterval            => &MQIA_Q_SERVICE_INTERVAL,
+    QServiceIntervalEvent       => &MQIA_Q_SERVICE_INTERVAL_EVENT,
+    QType                       => &MQIA_Q_TYPE,
+    RemoteQMgrName              => &MQCA_REMOTE_Q_MGR_NAME,
+    RemoteQName                 => &MQCA_REMOTE_Q_NAME,
+    RetentionInterval           => &MQIA_RETENTION_INTERVAL,
+    Scope                       => &MQIA_SCOPE,
+    Shareability                => &MQIA_SHAREABILITY,
+    TimeSinceReset              => &MQIA_TIME_SINCE_RESET,
+    TriggerControl              => &MQIA_TRIGGER_CONTROL,
+    TriggerData                 => &MQCA_TRIGGER_DATA,
+    TriggerDepth                => &MQIA_TRIGGER_DEPTH,
+    TriggerMsgPriority          => &MQIA_TRIGGER_MSG_PRIORITY,
+    TriggerType                 => &MQIA_TRIGGER_TYPE,
+    Usage                       => &MQIA_USAGE,
+    XmitQName                   => &MQCA_XMIT_Q_NAME,
+   },
+   
+   QType =>
+   {
+    Alias                       => &MQQT_ALIAS,
+    All                         => &MQQT_ALL,
+    Cluster                     => &MQQT_CLUSTER,
+    Local                       => &MQQT_LOCAL,
+    Model                       => &MQQT_MODEL,
+    Remote                      => &MQQT_REMOTE,
+   },
+
+   DefInputOpenOption =>
+   {
+    Exclusive                   => &MQOO_INPUT_EXCLUSIVE,
+    Shared                      => &MQOO_INPUT_SHARED,
+   },
+
+   MsgDeliverySequence =>
+   {
+    FIFO                        => &MQMDS_FIFO,
+    Priority                    => &MQMDS_PRIORITY,
+   },
+
+   Usage =>
+   {
+    Normal                      => &MQUS_NORMAL,
+    XMITQ                       => &MQUS_TRANSMISSION,
+   },
+
+   TriggerType =>
+   {
+    Depth                       => &MQTT_DEPTH,
+    Every                       => &MQTT_EVERY,
+    First                       => &MQTT_FIRST,
+    None                        => &MQTT_NONE,
+   },
+
+   DefinitionType =>
+   {
+    Permanent                   => &MQQDT_PERMANENT_DYNAMIC,
+    Temporary                   => &MQQDT_TEMPORARY_DYNAMIC,
+   },
+
+   Scope =>
+   {
+    Cell                        => &MQSCO_CELL,
+    QMgr                        => &MQSCO_Q_MGR,
+   },
+
+   QServiceIntervalEvent =>
+   {
+    High                        => &MQQSIE_HIGH,
+    None                        => &MQQSIE_NONE,
+    OK                          => &MQQSIE_OK,
+   },
+
+   #
+   # Channels
+   #
+   Channel =>
+   {
+    All                         => &MQIACF_ALL,
+    AlterationDate              => &MQCA_ALTERATION_DATE,
+    AlterationTime              => &MQCA_ALTERATION_TIME,
+    BatchInterval               => &MQIACH_BATCH_INTERVAL,
+    BatchSize                   => &MQIACH_BATCH_SIZE,
+    Batches                     => &MQIACH_BATCHES,
+    BuffersReceived             => &MQIACH_BUFFERS_RCVD,
+    BuffersSent                 => &MQIACH_BUFFERS_SENT,
+    BytesReceived               => &MQIACH_BYTES_RCVD,
+    BytesSent                   => &MQIACH_BYTES_SENT,
+    ChannelDesc                 => &MQCACH_DESC,
+    ChannelInstanceType         => &MQIACH_CHANNEL_INSTANCE_TYPE,
+    ChannelName                 => &MQCACH_CHANNEL_NAME,
+    ChannelNames                => &MQCACH_CHANNEL_NAMES,
+    ChannelStartDate            => &MQCACH_CHANNEL_START_DATE,
+    ChannelStartTime            => &MQCACH_CHANNEL_START_TIME,
+    ChannelStatus               => &MQIACH_CHANNEL_STATUS,
+    ChannelType                 => &MQIACH_CHANNEL_TYPE,
+    ClusterName                 => &MQCA_CLUSTER_NAME,
+    ClusterNamelist             => &MQCA_CLUSTER_NAMELIST,
+    ConnectionName              => &MQCACH_CONNECTION_NAME,
+    CurrentLUWID                => &MQCACH_CURRENT_LUWID,
+    CurrentMsgs                 => &MQIACH_CURRENT_MSGS,
+    CurrentSequenceNumber       => &MQIACH_CURRENT_SEQ_NUMBER,
+    DataConversion              => &MQIACH_DATA_CONVERSION,
+    DiscInterval                => &MQIACH_DISC_INTERVAL,
+    HeartbeatInterval           => &MQIACH_HB_INTERVAL,
+    InDoubtStatus               => &MQIACH_INDOUBT_STATUS,
+    LastLUWID                   => &MQCACH_LAST_LUWID,
+    LastMsgDate                 => &MQCACH_LAST_MSG_DATE,
+    LastMsgTime                 => &MQCACH_LAST_MSG_TIME,
+    LastSequenceNumber          => &MQIACH_LAST_SEQ_NUMBER,
+    LongRetriesLeft             => &MQIACH_LONG_RETRIES_LEFT,
+    LongRetryCount              => &MQIACH_LONG_RETRY,
+    LongRetryInterval           => &MQIACH_LONG_TIMER,
+    MCAJobName                  => &MQCACH_MCA_JOB_NAME,
+    MCAName                     => &MQCACH_MCA_NAME,
+    MCAStatus                   => &MQIACH_MCA_STATUS,
+    MCAType                     => &MQIACH_MCA_TYPE,
+    MCAUserIdentifier           => &MQCACH_MCA_USER_ID,
+    MaxMsgLength                => &MQIACH_MAX_MSG_LENGTH,
+    ModeName                    => &MQCACH_MODE_NAME,
+    MsgExit                     => &MQCACH_MSG_EXIT_NAME,
+    MsgRetryCount               => &MQIACH_MR_COUNT,
+    MsgRetryExit                => &MQCACH_MR_EXIT_NAME,
+    MsgRetryInterval            => &MQIACH_MR_INTERVAL,
+    MsgRetryUserData            => &MQCACH_MR_EXIT_USER_DATA,
+    MsgUserData                 => &MQCACH_MSG_EXIT_USER_DATA,
+    Msgs                        => &MQIACH_MSGS,
+    NetworkPriority             => &MQIACH_NETWORK_PRIORITY,
+    NonPersistentMsgSpeed       => &MQIACH_NPM_SPEED,
+    Password                    => &MQCACH_PASSWORD,
+    PutAuthority                => &MQIACH_PUT_AUTHORITY,
+    QMgrName                    => &MQCA_Q_MGR_NAME,
+    ReceiveExit                 => &MQCACH_RCV_EXIT_NAME,
+    ReceiveUserData             => &MQCACH_RCV_EXIT_USER_DATA,
+    SecurityExit                => &MQCACH_SEC_EXIT_NAME,
+    SecurityUserData            => &MQCACH_SEC_EXIT_USER_DATA,
+    SendExit                    => &MQCACH_SEND_EXIT_NAME,
+    SendUserData                => &MQCACH_SEND_EXIT_USER_DATA,
+    SeqNumberWrap               => &MQIACH_SEQUENCE_NUMBER_WRAP,
+    ShortRetriesLeft            => &MQIACH_SHORT_RETRIES_LEFT,
+    ShortRetryCount             => &MQIACH_SHORT_RETRY,
+    ShortRetryInterval          => &MQIACH_SHORT_TIMER,
+    StopRequested               => &MQIACH_STOP_REQUESTED,
+    TpName                      => &MQCACH_TP_NAME,
+    TransportType               => &MQIACH_XMIT_PROTOCOL_TYPE,
+    UserIdentifier              => &MQCACH_USER_ID,
+    XmitQName                   => &MQCACH_XMIT_Q_NAME,
+   },
+
+   ChannelType =>
+   {
+    All                         => &MQCHT_ALL,
+    Clntconn                    => &MQCHT_CLNTCONN,
+    ClusterReceiver             => &MQCHT_CLUSRCVR,
+    ClusterSender               => &MQCHT_CLUSSDR,
+    Receiver                    => &MQCHT_RECEIVER,
+    Requester                   => &MQCHT_REQUESTER,
+    Sender                      => &MQCHT_SENDER,
+    Server                      => &MQCHT_SERVER,
+    Svrconn                     => &MQCHT_SVRCONN,
+   },
+
+   TransportType =>
+   {
+    DECnet                      => &MQXPT_DECNET,
+    LU62                        => &MQXPT_LU62,
+    NetBIOS                     => &MQXPT_NETBIOS,
+    SPX                         => &MQXPT_SPX,
+    TCP                         => &MQXPT_TCP,
+    UDP                         => &MQXPT_UDP,
+   },
+
+   PutAuthority =>
+   {
+    Context                     => &MQPA_CONTEXT,
+    Default                     => &MQPA_DEFAULT,
+   },
+
+   MCAType =>
+   {
+    Process                     => &MQMCAT_PROCESS,
+    Thread                      => &MQMCAT_THREAD,
+   },
+
+   NonPersistentMsgSpeed =>
+   {
+    Normal                      => &MQNPMS_NORMAL,
+    Fast                        => &MQNPMS_FAST,
+   },
+
+   ChannelTable =>
+   {
+    Clntconn                    => &MQCHTAB_CLNTCONN,
+    QMgr                        => &MQCHTAB_Q_MGR,
+   },
+
+   ChannelInstanceType =>
+   {
+    Current                     => &MQOT_CURRENT_CHANNEL,
+    Saved                       => &MQOT_SAVED_CHANNEL,
+   },
+
+   InDoubt =>
+   {
+    Backout                     => &MQIDO_BACKOUT,
+    Commit                      => &MQIDO_COMMIT,
+   },
+
+   #
+   # Escape
+   #
+   EscapeType =>
+   {
+    MQSC                        => &MQET_MQSC,
+   },
+
+   #
+   # New entries for MQSeries 5.1
+   #
+   Cluster =>
+   {
+    AlterationDate              => &MQCA_ALTERATION_DATE,
+    AlterationTime              => &MQCA_ALTERATION_TIME,
+    BatchInterval               => &MQIACH_BATCH_INTERVAL,
+    BatchSize                   => &MQIACH_BATCH_SIZE,
+    ChannelStatus               => &MQIACH_CHANNEL_STATUS,
+    ClusterDate                 => &MQCA_CLUSTER_DATE,
+    ClusterName                 => &MQCA_CLUSTER_NAME,
+    ClusterTime                 => &MQCA_CLUSTER_TIME,
+    ConnectionName              => &MQCACH_CONNECTION_NAME,
+    DataConversion              => &MQIACH_DATA_CONVERSION,
+    Description                 => &MQCACH_DESC,
+    DiscInterval                => &MQIACH_DISC_INTERVAL,
+    HeartbeatInterval           => &MQIACH_HB_INTERVAL,
+    LongRetryCount              => &MQIACH_LONG_RETRY,
+    LongRetryInterval           => &MQIACH_LONG_TIMER,
+    MCAName                     => &MQCACH_MCA_NAME,
+    MCAType                     => &MQIACH_MCA_TYPE,
+    MCAUserIdentifier           => &MQCACH_MCA_USER_ID,
+    MaxMsgLength                => &MQIACH_MAX_MSG_LENGTH,
+    ModeName                    => &MQCACH_MODE_NAME,
+    MsgExit                     => &MQCACH_MSG_EXIT_NAME,
+    MsgRetryCount               => &MQIACH_MR_COUNT,
+    MsgRetryExit                => &MQCACH_MR_EXIT_NAME,
+    MsgRetryInterval            => &MQIACH_MR_INTERVAL,
+    MsgRetryUserData            => &MQCACH_MR_EXIT_USER_DATA,
+    MsgUserData                 => &MQCACH_MSG_EXIT_USER_DATA,
+    NetworkPriority             => &MQIACH_NETWORK_PRIORITY,
+    NonPersistentMsgSpeed       => &MQIACH_NPM_SPEED,
+    Password                    => &MQCACH_PASSWORD,
+    PutAuthority                => &MQIACH_PUT_AUTHORITY,
+    QMgrDefinitionType          => &MQIACF_Q_MGR_DEFINITION_TYPE,
+    QMgrIdentifier              => &MQCA_Q_MGR_IDENTIFIER,
+    QMgrType                    => &MQIACF_Q_MGR_TYPE,
+    ReceiveExit                 => &MQCACH_RCV_EXIT_NAME,
+    ReceiveUserData             => &MQCACH_RCV_EXIT_USER_DATA,
+    SecurityExit                => &MQCACH_SEC_EXIT_NAME,
+    SecurityUserData            => &MQCACH_SEC_EXIT_USER_DATA,
+    SendExit                    => &MQCACH_SEND_EXIT_NAME,
+    SendUserData                => &MQCACH_SEND_EXIT_USER_DATA,
+    SeqNumberWrap               => &MQIACH_SEQUENCE_NUMBER_WRAP,
+    ShortRetryCount             => &MQIACH_SHORT_RETRY,
+    ShortRetryInterval          => &MQIACH_SHORT_TIMER,
+    Suspend                     => &MQIACF_SUSPEND,
+    TpName                      => &MQCACH_TP_NAME,
+    TransportType               => &MQIACH_XMIT_PROTOCOL_TYPE,
+    UserIdentifier              => &MQCACH_USER_ID,
+    XmitQName                   => &MQCACH_XMIT_Q_NAME,
+   },
+
+   Namelist =>
+   {
+    All				=> &MQIACF_ALL,
+    AlterationDate              => &MQCA_ALTERATION_DATE,
+    AlterationTime              => &MQCA_ALTERATION_TIME,
+    NamelistDesc                => &MQCA_NAMELIST_DESC,
+    NamelistName                => &MQCA_NAMELIST_NAME,
+    Names                       => &MQCA_NAMES,
+   },
+
+   Action =>
+   {
+    ForceRemove                 => &MQACT_FORCE_REMOVE,
+   },
+
+   DefBind =>
+   {
+    OnOpen                      => &MQBND_BIND_ON_OPEN,
+    NotFixed                    => &MQBND_BIND_NOT_FIXED,
+   },
+
+  );
+
+1;

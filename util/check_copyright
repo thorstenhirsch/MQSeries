@@ -1,0 +1,59 @@
+#!/ms/dist/perl5/bin/perl
+#
+# $Id: check_copyright,v 9.1 1999/10/15 00:14:34 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+# This hack is just to sanity check that my copyright is found
+# everywhere....
+#
+# To run this, from the top level source directory, ./util/write_manifest
+#
+
+%skip = map { $_ => 1 } 
+qw(
+   .options/rcsMajor
+   .msbaseline
+   .exclude
+   MANIFEST
+  );
+
+warn "Searching source tree for files...\n";
+
+open(FIND,"find . -type f -print |") || 
+  die "Unable to fork find: $!\n";
+
+while ( <FIND> ) {
+    chomp;
+    s|^\./||;
+    next if $skip{$_};
+    next if /~$/;
+    push(@file,$_);
+}
+
+close(FIND) || 
+  die "Error running find: $!\n";
+
+foreach my $file ( sort @file ) {
+
+    open(FILE,$file) || die "Unable to open $file: $!\n";
+    my $found = 0;
+    while ( <FILE> ) {
+	# If anyone calls this a Y2K bug, I'll shoot them...
+	next unless /\(c\) 1999 Morgan Stanley Dean Witter and Co\./;
+	$found = 1;
+	last;
+    }
+    close(FILE);
+
+    push(@missing,$file) unless $found;
+
+}
+
+if ( @missing ) {
+    warn("The following files have no copyright notice:\n\t" .
+	 join("\n\t",@missing) . "\n");
+}
+
+exit 0;

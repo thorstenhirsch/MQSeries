@@ -1,0 +1,68 @@
+# -*-perl-*-
+#
+# $Id: AdminMessage.in,v 9.6 1999/11/09 20:56:20 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package MQSeries::PubSub::AdminMessage;
+
+%Responses =
+  (
+   &MQCMD_DELETE_PUBLICATION            => "DeletePublication",
+   &MQCMD_DEREGISTER_PUBLISHER          => "DeregisterPublisher", 
+   &MQCMD_DEREGISTER_SUBSCRIBER         => "DeregisterSubscriber",
+   &MQCMD_PUBLISH                       => "Publish",
+   &MQCMD_REGISTER_PUBLISHER            => "RegisterPublisher",
+   &MQCMD_REGISTER_SUBSCRIBER           => "RegisterSubscriber",
+   &MQCMD_REQUEST_UPDATE                => "RequestUpdate",
+   &MQCMD_BROKER_INTERNAL               => "BrokerInternal",
+  );
+
+%ResponseParameters =
+  (
+   &MQCACF_CHILD_Q_MGR_NAME             => "QMgrName",
+   &MQCACF_PARENT_Q_MGR_NAME            => "QMgrName",
+   &MQCACF_PUBLISH_TIMESTAMP            => "PublishTimestamp",
+   &MQCACF_REG_CORREL_ID                => "RegistrationCorrelId",
+   &MQCACF_REG_Q_MGR_NAME               => "RegistrationQMgrName",
+   &MQCACF_REG_Q_NAME                   => "RegistrationQName",
+   &MQCACF_REG_STREAM_NAME              => "RegistrationStreamName",
+   &MQCACF_REG_TIME                     => "RegistrationTime",
+   &MQCACF_REG_TOPIC                    => "RegistrationTopic",
+   &MQCACF_REG_USER_ID                  => "RegistrationUserIdentifier",
+   &MQCACF_STREAM_NAME                  => "StreamName",
+   &MQCACF_SUPPORTED_STREAM_NAME        => "SupportedStreamName",
+   &MQCACF_TOPIC                        => "Topic",
+   &MQIACF_ANONYMOUS_COUNT              => "AnonymousCount",
+   &MQIACF_APPL_COUNT                   => "ApplCount",
+   &MQIACF_BROKER_COUNT                 => "BrokerCount",
+   &MQIACF_PUBLICATION_OPTIONS          => "PublicationOptions",
+   &MQIACF_REGISTRATION_OPTIONS         => "RegistrationOptions",
+   &MQIACF_REG_REG_OPTIONS              => "RegistrationRegistrationOptions",
+  );
+
+%RegistrationOptions =
+  (
+   &MQREGO_CORREL_ID_AS_IDENTITY        => "CorrelAsId",
+   &MQREGO_ANONYMOUS                    => "Anon",
+   &MQREGO_LOCAL                        => "Local",
+   &MQREGO_DIRECT_REQUESTS              => "DirectReq",
+   &MQREGO_NEW_PUBLICATIONS_ONLY        => "NewPubsOnly",
+   &MQREGO_PUBLISH_ON_REQUEST_ONLY      => "PubOnReqOnly",
+   &MQREGO_DEREGISTER_ALL               => "DeregAll",
+   &MQREGO_INCLUDE_STREAM_NAME          => "InclStreamName",
+   &MQREGO_INFORM_IF_RETAINED           => "InformIfRet",
+  );
+
+%PublicationOptions =
+  (
+   &MQPUBO_CORREL_ID_AS_IDENTITY        => "CorrelAsId",
+   &MQPUBO_RETAIN_PUBLICATION           => "RetPub",
+   &MQPUBO_OTHER_SUBSCRIBERS_ONLY       => "OtherSubOnly",
+   &MQPUBO_NO_REGISTRATION              => "NoReg",
+   &MQPUBO_IS_RETAINED_PUBLICATION      => "IsRetPub",
+  );
+
+1;

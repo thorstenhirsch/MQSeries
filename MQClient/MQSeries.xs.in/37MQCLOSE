@@ -1,0 +1,23 @@
+# -*-c-*-
+#
+# $Id: 37MQCLOSE,v 9.3 1999/10/15 16:18:53 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+void
+MQCLOSE(Hconn,Hobj,Options,CompCode,Reason)
+	MQHCONN	Hconn
+	MQHOBJ	Hobj
+	MQLONG	Options
+	MQLONG	CompCode
+	MQLONG	Reason
+
+	CODE:
+	MQCLOSE(Hconn,&Hobj,Options,&CompCode,&Reason);
+	OUTPUT:
+	Hobj
+	CompCode
+	Reason
+

@@ -1,0 +1,21 @@
+# -*-c-*- 
+#
+# $Id: 30MQCONN,v 9.3 1999/10/15 16:16:17 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+MQHCONN
+MQCONN(Name,CompCode,Reason)
+	MQCHAR48	Name
+	MQLONG		CompCode
+	MQLONG		Reason
+
+	CODE:
+	MQCONN(Name,&RETVAL,&CompCode,&Reason);
+	OUTPUT:
+	RETVAL
+	CompCode
+	Reason
+

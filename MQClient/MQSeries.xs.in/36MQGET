@@ -1,0 +1,53 @@
+# -*-c-*-
+#
+# $Id: 36MQGET,v 9.5 1999/10/16 00:33:12 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+SV *
+MQGET(Hconn,Hobj,MsgDesc,GetMsgOpts,Length,CompCode,Reason)
+	MQHCONN	Hconn
+	MQHOBJ	Hobj
+	MQMD	MsgDesc
+	MQGMO	GetMsgOpts
+	MQLONG  Length
+	MQLONG	CompCode
+	MQLONG	Reason
+
+	CODE:
+	{
+	PMQCHAR pBuffer = NULL; /* guess at the beginning size */
+	MQLONG  bufLen  = Length;
+	MQLONG  dataLen = 0;
+
+	CompCode = MQCC_FAILED;
+	Reason = MQRC_UNEXPECTED_ERROR;
+	sv_setiv(ST(5),(IV)CompCode);
+	sv_setiv(ST(6),(IV)Reason);
+	
+	if ( (pBuffer = malloc(bufLen)) == NULL ) {
+	  warn("Unable to allocate memory in MQGET!\n");
+	  XSRETURN_EMPTY;
+	}
+
+	MQGET(Hconn,Hobj,&MsgDesc,&GetMsgOpts,bufLen,pBuffer,&dataLen,&CompCode,&Reason);
+	Length = dataLen;
+	if (CompCode != MQCC_FAILED) {
+	  RETVAL = newSVpv(pBuffer,(dataLen < bufLen ? dataLen : bufLen));
+	}
+	else
+	  RETVAL = newSV(0);
+
+	if (pBuffer)
+	  free(pBuffer);
+	}
+	OUTPUT:
+	RETVAL
+	MsgDesc
+	GetMsgOpts
+	Length
+	CompCode
+	Reason
+

@@ -1,0 +1,456 @@
+
+=head1 Introduction
+
+This file documents the changes to each and every release of the
+MQSeries perl API, going back as far as the 1.02 release.
+
+=head1 Changes for 1.06
+
+This release is the first to make it to CPAN (the Comprehensive Perl
+Archive Network), as the primary distribution mechanism, rather than
+IBM's proprietary Support Pac web site.  In addition, this code is now
+copyrighted by MSDW (the author's employer) but released under a
+license which is based on the Perl Artistic License.
+
+It is now truly Open Source.  Viva the Revolution, baby...
+
+=head2 MQSeries::PubSub::*
+
+The entire Publish/Subscribe API is new with this release.  This
+includes the following modules:
+
+=over 4
+
+=item MQSeries::PubSub::Command
+
+A base class for all of the Publish/Subscribe commands, this module is
+not used directly, but rather one of its two subclasses is.
+
+=item MQSeries::PubSub::Broker
+
+This subclass of MQSeries::PubSub::Command, and
+MQSeries::QueueManager, implements an interface to the Broker-specific
+Publish/Subscribe commands.
+
+This module also supports an set of "Extended Commands", which are
+higher level interfaces to the contents of the administrative
+inforamtion in the metatopics.
+
+=item MQSeries::PubSub::Stream
+
+This subclass of MQSeries::PubSub::Command, and MQSeries::Queue,
+implements an interface to the Stream-specific Publish/Subscribe
+commands.
+
+=item MQSeries::PubSub::Message
+
+This subclass of MQSeries::Message::RulesFormat provides an interface
+for creating and parsing MQRFH-formated Publish/Subscribe messages.
+
+=item MQSeries::PubSub::AdminMessage
+
+This quasi-subclass (not a *true* OO subclass, but who's looking) of
+MQSeries::Message::PCF provides an interface to the Publish/Subscribe
+administrative messages published in PCF format.
+
+=back
+
+=head2 MQSeries::Message::PCF
+
+This is a new class which provides a much more generic interface to
+PCF messages.  Prior to this release, there were several routines
+which parsed implementation-specific formats, with a lot of duplicated
+code.
+
+This class can be used directly, but it was primary designed so that
+its two core functions (MQEncodePCF and MQDecodePCF) would be used as
+building blocks for the implementation-specific formats, such as
+Performance Events (MQSeries::Message::Event), Command server requests
+and responses (MQSeries::Command::*), and the Publish/Subscribe
+administrative messages (MQSeries::PubSub::AdminMessage).
+
+=head2 MQSeries::Message::RulesFormat
+
+This is a new class which provides an interface to the MQRFH Rules and
+Format messages used by the Publish/Subscribe system.  This can also
+be used to create messages for working with the NEON MQIntegrator 1.X
+product suites, since the format is the same, although the author
+hasn't actually tried this yet.  
+
+=head2 MQSeries::Message::XML-Dumper
+
+This is a new subclass of MQSeries::Message which encodes/decodes
+complex perl data structures using the XML-Dumper module.  This was
+mostly done as a proof of principle, and to please some XML zealots.
+
+Note that the parsing of XML is much more expensive than the Storable
+approach, and if you have a perl process on the sending and receiving
+end of a message flow, the author still recommends using Storable.
+
+This requires the CPAN XML::Dumper and XML::Parser modules.
+
+=head2 MQSeries::Command
+
+=over 4
+
+=item More complete documentation
+
+The various strings used to represent the PCF parameters and values
+have finally been documented, so someone other than the author may
+actually be able to use this code.
+
+=item Extended to V5.1 PCF Commands
+
+All of the new Commands for V5.1 are supported, and in fact, even if
+you compile the MQSeries API with 5.0, you can still use the new
+commands, and parse the resulting PCF parameters.  The code which maps
+numeric parameters to key strings has been "flattened" such that it
+doesn't use the actual C macros.
+
+These files (MQSeries/Command/PCF/*.pl) were auto-generated on an
+MQSeries 5.1 host, so the macro-to-number mapping has already been
+done, and it is not necessary for the C macro to have been compiled
+into constants.c.
+
+=item Extended to V2.1 MQSC Commands
+
+Most, but not all, of the MQSC commands (i.e. commands sent to an
+MQSC-only command server, for example an MVS queue manager) have been
+supported, and the API can parse all of new V2.1 object attributes
+(like "ALTDATE" and "ALTTIME").
+
+WARNING: The MQSC code has not been extensively tested, so use it with
+caution.
+
+=back
+
+=head2 MQSeries::QueueManager 
+
+=over 4
+
+=item NoAutoConnect option
+
+The call to MQCONN is normally done in the constructor, but if it
+fails, the error checking semantics are ugly.  A new option
+(NoAutoConnect) disables the implicit call to ->Connect(), and allows
+the developer to make this call, and error check it explicitly.
+
+The Connect() method is also new.
+
+=item Inquire/MQINQ Support
+
+Method calls have added to support the MQINQ() call against the queue
+manager itself.  This includes both Open() and Close() methods, which
+were not previously available.
+
+The Open() method is also new, although it is just a rename of the
+older semi-private _mqopen() method call.
+
+=back
+
+=head2 MQSeries::Queue
+
+=over 4
+
+=item NoAutoOpen option
+
+The call to MQOPEN is normally done in the constructor, but if it
+fails, the error checking semantics are ugly.  A new option
+(NoAutoOpen) disables the implicit call to ->Open(), and allows the
+developer to make this call, and error check it explicitly.
+
+=item Inquire/Set MQINQ/MQSET Support
+
+Method calls have added to support the MQINQ() and MQSET() calls
+against queues.  
+
+=item Close method call
+
+Objects can now be explicitly closed.  In previous releases this was
+done via the object destructor, and thus couldn't be error checked.
+Implicit closing is still preferred, but CloseOptions can be given to
+the constructor to control how the object is closed.
+
+This is particularly useful for creating permanent dynamic queues
+(which can accept persistent messages) which are purged and deleted
+upon close.
+
+=back
+
+=head2 MQSeries core module
+
+=over 4
+
+=item Null-valued macros properly supported
+
+There are several macros, such as MQCI_NONE, which are a fixed length
+string of null characters.  These were not properly defined in the
+constants.c file, and thus couldn't be used as expected.
+
+Now, these macros all evaluate to a string of nulls of the correct
+length, this you can use them precisely as documented in the MQI docs.
+
+=item MQParseEvent, MQCommandRequestPCF, MQCommandResponsePCF and MQParseDeadLetter
+
+These core module subroutines were removed.
+
+MQParseDeadLetter never worked, and it will be implemented
+(eventually) in the same way that MQSeries::Message::RulesFormat was
+done, with its own XS source file.
+
+The other 3 all dealt with very specific implementations of the PCF
+format, and these were replaced by the MQSeries::Message::PCF class,
+which provides very generic PCF parsing and encoding routines
+(MQEncodePCF and MQDecodePCF).
+
+Mapping the generic PCF into message format specific data is done by
+"private" class methods _TranslatePCF in each of the relevant OO
+modules.
+
+This was a key prerequisite for developing
+MQSeries::PubSub::AdminMessage, which is also based on a PCF message
+format.  Future implementations of special formats based on PCF should
+be easy.  Of course, now IBM wants to move to XML for everything,
+so...
+
+=item MQReasonToStrings
+
+This subroutine's implementation was dramatically reworked.
+
+This used to be implemented in C, inside the XS routine, but now the
+hash of key/value pairs mapping a numeric ReasonCode to a readable
+test string is done via a pair of automatically compiled files
+(MQSeries/Constants/Reason*.pl)
+
+In fact, all of the files in MQSeries/Constants are auto-generated from
+templates in src/pre.in, by the tool src/util/flatten_macros.  This is
+a huge win, as it basically does the macro-to-value mapping such that
+the perl API is dealing with raw numbers.  
+
+There is a non-trivial startup cost otherwise, as each and every macro
+has to be looked up in the symbol table, the AUTOLOAD function called,
+a C subroutine called, etc.  This saves a few seconds of startup time.
+
+=item XS code streamlined
+
+Most of the non-MQI subroutines were removed entirely, or moved
+elsewhere.  The MQSeries.xs.in directory is much more lean.
+
+=item XS code no longer leaks memory
+
+The author now fully understands the XS concepts of mortality and
+reference counts, and the code returns correctly mortalized, and
+properly reference counted values.  
+
+=item Support for "default" queue manager
+
+The QueueManager key is no longer required by most of the OO API
+constructors.  If you have configured a default queue manager for your
+environment, then you can use it with the OO API as of this release.
+Before, the QueueManager key was required to have a true value, and
+since the default queue manager is "", and "" is false...
+
+=back
+
+=head2 Installation Procedures, and other Miscellany
+
+=over 4 
+
+=item 5.004 required, not 5.005
+
+The 5.005 prerequisite was relaxed to 5.004, and the requirement that
+the perl interpreter itself be linked directly with -lthread (or
+-lpthread, or whatever) was removed.  The MQSeries.so libraries are
+themselves compiled with the appropriate dependencies on libthread,
+and this code now works fine with a standard, out-of-the-tarball
+compile of perl5.004 or later.
+
+=item New CONFIG parameters
+
+It is now possible to explicitly disable either the server or client
+API compile.  The Makefile.PL now does a more generic job of
+determining whether or not you appear to have support for the server
+API, which is the more common case (eg. Linux, SunOS and IRIX only
+have client implementations available).
+
+At least one site didn't support clients at all, and they didn't want
+to build in the support, so they can now turn it off via CONFIG.
+
+=item MANIFEST and .exclude auto-generated
+
+These files are now auto-generated by development utilities in the
+util subdirectory, rather than being updated manually.
+
+=back
+
+=head1 Changes for 1.05
+
+This release required 5.005, built with thread support (this
+restriction was subsequently removed in 1.06).
+
+=head2 Installation Procedures
+
+=over 4
+
+=item MQServer::MQSeries made optional
+
+Compilation of the MQServer::MQSeries API is automatically disabled on
+SunOS 4.1.3 and IRIX hosts, for which we do not have a server API.
+
+=item constants.c.PL added
+
+The huge, growing list of MQSeries C macros are now extracted from the
+MQSeries C include files automatically, and the @EXPORT list is built
+dynamically.  The code for constants.c is also auto-generated, and the
+code handles several different types of constant (hex, string,
+character, etc).
+
+The code also parses all of the available C header files, and makes
+all possible macros available.  This makes maintenance of the macro
+list easy, but it does result in significant bloat of the namespace
+exported by MQSeries.  So be it.
+
+=item Test suite
+
+The test suite was reorganized to a SysV-style rc.d directory syntax,
+with files named 10foo.t, 20bar.t, etc.
+
+=back
+
+=head2 MQSeries
+
+=over 4
+
+=item Distribution List Support
+
+Support for Distribution lists was added to the core MQI functions,
+such as MQOPEN, MQPUT and MQPUT1.  This required a significant
+re-architecture of these functions.  The OO API classes were also
+extended to support dist lists as well.
+
+This functionality is all enabled only if one compiles with V5, of
+course.
+
+=back
+
+=head2 MQSeries::QueueManager
+
+=over 
+
+=item MQCONN retry logic
+
+The MQCONN retry logic is disabled by default.
+
+=back
+
+=head2 MQSeries::Queue
+
+=over 4
+
+=item MQOPEN retry logic
+
+This was stripped out of the code entirely, since it never really
+worked, and I doubt it ever would have.  Bad idea.
+
+=item AutoResize logic
+
+Logic was added to adjust the buffer size automatically, and retry an
+MQGET() call, when a truncated message is received, and truncated
+messages are not accepted.  This functionality is available in the C++
+API, the source of inspiration for the idea.
+
+=back
+
+=head2 MQSeries::Command
+
+=over 4
+
+=item Documentation
+
+This module was finally documented, but only the object constructor
+and basic methods were documented.  Complete documentation of the
+command syntax was not added until 1.06.
+
+=back
+
+=head1 Changes for 1.04
+
+=head2 MQSeries
+
+Supports explicit loading of MQClient::MQSeries or MQServer::MQSeries,
+rather than implicit only.
+
+=head2 MQSeries::Command
+
+Introduce the Command Server API, for both PCF and MQSC command
+messages.
+
+=head2 MQSeries::Message::Storable
+
+Uses nfreeze, which is supposed to use network byte order, rather than
+freeze.
+
+=head1 Changes for 1.03
+
+=over 4 
+
+=item OO API
+
+First implementation of the OO portion of the API
+
+=item XS source
+
+Eliminated the dual XS file templates, using one source for both V2
+and V5
+
+=item MQSeries core
+
+Added two new utility functions to the core API:
+
+    MQParseEvent
+    MQReasonToText
+
+=item Locale hacks
+
+MQSeries.pm will automagically set reasonable values for the LANG and
+NLSPATH environment variables, if not set.
+
+=item Documentation
+
+Significantly expanded documentation
+
+=back
+
+=head1 Changes for 1.02
+
+=over 4
+
+=item Introduced the extended test suite
+
+=item Dual client/server support
+
+Introduced the dual namespaces to make client vs. server usage
+transparent.  That is, MQSeries.pm really pulls in
+MQServer/MQSeries.pm on a queue manager, and MQClient/MQSeries.pm
+otherwise.
+
+=item PLMQ -> MQSeries
+
+Change the module name from PLMQ to MQSeries, and changed the API
+calls from GET to MQGET, etc., making the function mapping one to one.
+
+=item typemap.PL
+
+Automated the typemap generation using a typemap.PL file
+
+=back
+
+=cut
+
+#
+# $Id: Changes.src,v 9.4 1999/11/09 21:24:44 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+

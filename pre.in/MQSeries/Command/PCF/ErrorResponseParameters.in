@@ -1,0 +1,20 @@
+#-*-perl-*-
+#
+# $Id: ErrorResponseParameters.in,v 9.1 1999/10/14 22:05:43 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+package MQSeries::Command::PCF;
+
+%ErrorResponseParameters =
+  (
+   &MQIACF_ERROR_ID                     => [ "ErrorId" ],
+   &MQIACF_ERROR_OFFSET                 => [ "ErrorOffset" ],
+   &MQIACF_PARAMETER_ID                 => [ "ParameterId" ],
+   &MQIACF_SELECTOR                     => [ "Selector" ],
+   &MQIA_CODED_CHAR_SET_ID              => [ "CodedCharSetId" ],
+  );
+
+1;

@@ -1,0 +1,27 @@
+# -*-c-*-
+#
+# $Id: 31MQCONNX-v5,v 9.3 1999/10/15 16:16:29 wpm Exp $
+#
+# (c) 1999 Morgan Stanley Dean Witter and Co.
+# See ..../src/LICENSE for terms of distribution.
+#
+
+#ifdef MQCNO_NONE
+
+MQHCONN
+MQCONNX(Name,ConnectOpts,CompCode,Reason)
+	MQCHAR48	Name
+	MQCNO		ConnectOpts
+	MQLONG		CompCode
+	MQLONG		Reason
+
+	CODE:
+	MQCONNX(Name,&ConnectOpts,&RETVAL,&CompCode,&Reason);
+	OUTPUT:
+	ConnectOpts
+	RETVAL
+	CompCode
+	Reason
+
+#endif
+
