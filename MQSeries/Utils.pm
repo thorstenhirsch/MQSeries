@@ -1,7 +1,7 @@
 #
-# $Id: Utils.pm,v 26.1 2004/01/15 19:35:17 biersma Exp $
+# $Id: Utils.pm,v 27.2 2007/01/11 20:20:36 molinam Exp $
 #
-# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,7 +16,7 @@ use Exporter;
 use vars qw(@ISA @EXPORT_OK $VERSION);
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(ConvertUnit VerifyNamedParams);
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 #
 # Convert a Unit value from a symbolic value to the value

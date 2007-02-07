@@ -1,7 +1,7 @@
 #
-# $Id: MQSC.pm,v 26.1 2004/01/15 19:34:35 biersma Exp $
+# $Id: MQSC.pm,v 27.2 2007/01/11 20:20:03 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -15,7 +15,7 @@ use vars qw(
 
 @ISA = qw(MQSeries::Command);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 use MQSeries qw(:functions);
 

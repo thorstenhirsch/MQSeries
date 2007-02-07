@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::Machine.pm - Machine configuration from mqs.ini
 #
-# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Machine.pm,v 26.1 2004/01/15 19:34:46 biersma Exp $
+# $Id: Machine.pm,v 27.2 2007/01/11 20:20:26 molinam Exp $
 #
 
 package MQSeries::Config::Machine;
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 #
 # Constructor: Read and parse the /var/mqm/mqs.ini file.

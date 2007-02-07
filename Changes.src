@@ -3,6 +3,26 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.24
+
+=head2 Add support for MQ v6 in MQSeries::Command
+
+Support for all new parameters in PCF and MQSC commands; support for
+mainframe PCF commands; and several new PCF commands such as
+C<InquireQueueManagerStatus>, C<InquireUsage> and the
+authority-related commands.
+
+=head2 Fix a bug in MQSeries::Config::QMgr
+
+Monique Diaz reported a bug in MQSeries::Config::QMgr, where
+re-parsing a changed queue manager config file would lead to an
+incorrect method invocation.
+
+=head2 Fix documentation for Carp parameter
+
+Herb Williams reported that the examples for the 'Carp' parameter were
+broken.  They should now make more sense and actually work.
+
 =head1 Changes for 1.23
 
 =head2 New MQSeries::Message::RFH2 class
@@ -1675,9 +1695,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 26.1 2004/04/08 13:03:52 biersma Exp $
+# $Id: Changes.src,v 27.2 2007/01/11 20:19:51 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 

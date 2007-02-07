@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_config,v 25.1 2004/01/14 19:10:46 biersma Exp $
+# $Id: parse_config,v 27.3 2007/01/11 20:20:50 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # Parse our config file to get the parameters we need
@@ -15,7 +15,6 @@ foreach my $relpath ( qw( . .. ../.. ../../.. ) ) {
 }
 
 die "Unable to locate CONFIG file\n" unless -f $config;
-
 use File::Basename;
 #
 # In the test scripts, we need to disable the non-lazy loading of

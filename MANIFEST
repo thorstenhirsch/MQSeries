@@ -3,6 +3,7 @@ COPYRIGHT
 Changes.html
 Changes.src
 LICENSE
+MANIFEST
 MQClient/MQSeries.pm.in
 MQClient/MQSeries.xs.in/00header
 MQClient/MQSeries.xs.in/21core
@@ -45,7 +46,6 @@ MQSeries-OAM/OAM.pm
 MQSeries-OAM/OAM.xs
 MQSeries-OAM/t/oam.t
 MQSeries-PubSub/Makefile.PL
-MQSeries-PubSub/PubSub/AdminMessage.pl
 MQSeries-PubSub/PubSub/AdminMessage.pm
 MQSeries-PubSub/PubSub/Broker.pm
 MQSeries-PubSub/PubSub/Command.pm
@@ -66,14 +66,6 @@ MQSeries/Command/MQSC/ResponseParameters.pl
 MQSeries/Command/MQSC/ResponseValues.pl
 MQSeries/Command/MQSC/Responses.pl
 MQSeries/Command/PCF.pm
-MQSeries/Command/PCF/RequestParameterOrder.pl
-MQSeries/Command/PCF/RequestParameterRequired.pl
-MQSeries/Command/PCF/RequestParameters.pl
-MQSeries/Command/PCF/RequestValues.pl
-MQSeries/Command/PCF/Requests.pl
-MQSeries/Command/PCF/ResponseParameters.pl
-MQSeries/Command/PCF/ResponseValues.pl
-MQSeries/Command/PCF/Responses.pl
 MQSeries/Command/Request.pm
 MQSeries/Command/Response.pm
 MQSeries/Config/Authority.pm
@@ -81,12 +73,6 @@ MQSeries/Config/ChannelTable.pm
 MQSeries/Config/Machine.pm
 MQSeries/Config/QMgr.pm
 MQSeries/Constants.pl
-MQSeries/Constants/AttributeLength.pl
-MQSeries/Constants/AttributeString.pl
-MQSeries/Constants/ReasonMacro.pl
-MQSeries/Constants/ReasonText.pl
-MQSeries/Constants/StringAttribute.pl
-MQSeries/Constants/ValidPutMsgRecFields.pl
 MQSeries/ErrorLog/Entry.pm
 MQSeries/ErrorLog/Parser.pm
 MQSeries/ErrorLog/Tail.pm
@@ -95,9 +81,7 @@ MQSeries/FDC/Entry.pm
 MQSeries/FDC/Parser.pm
 MQSeries/FDC/Tail.pm
 MQSeries/Message.pm
-MQSeries/Message/ConfigEvent.pl
 MQSeries/Message/ConfigEvent.pm
-MQSeries/Message/Event.pl
 MQSeries/Message/Event.pm
 MQSeries/Message/IIH.pm
 MQSeries/Message/RFH2.pm
@@ -144,6 +128,7 @@ t.in/50oo-command.t
 t.in/60-logs.t
 t.in/70-config.t
 util/check_copyright
+util/check_pcf_mqsc
 util/check_version
 util/extract_reason_codes
 util/fake_mm

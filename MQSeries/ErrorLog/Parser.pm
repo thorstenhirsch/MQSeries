@@ -2,10 +2,10 @@
 # MQSeries::ErrorLog::Parser.pm - Parse error-log files into error-log
 #                                 entry objects
 #
-# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 26.1 2004/01/15 19:34:52 biersma Exp $
+# $Id: Parser.pm,v 27.3 2007/01/11 20:20:32 molinam Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -27,7 +27,7 @@ use vars qw(
 
 require "MQSeries/ErrorLog/descriptions.pl";
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 #
 # Constructor
@@ -77,9 +77,9 @@ sub parse_data {
            };
 
         # DEBUG CODE - this finds ill-formatted entries
-        #if ($@) {
-        #    $this->{'Carp'}->("Parse error: $@\n");
-        #};
+        if ($@) {
+            $this->{'Carp'}->("Parse error: $@\n");
+        };
               
     }
 
@@ -145,10 +145,23 @@ sub parse_one_chunk {
     # NOTE: Depending on the MQSeries release, the text of the
     #       error code & summary may or may not start on the next line.
     #
-    #                1 2      3      4        5      6      7
-    if ($chunk =~ m!^((\d\d)/(\d\d)/(\d\d)\s+(\d\d):(\d\d):(\d\d))\s*(?=\n|AMQ)!g) {
+    # Thanks to Mike Carr [mcarr@qualcomm.com] for pointing this out.
+    # Added support for multiple time stamp formats - depending on LOCALE settings.
+    # Also to handle WMQ6.0 errorlog format.
+    #
+    #                1 2      3      4           5      6      7         8
+    if ($chunk =~ m!^((\d\d)/(\d\d)/(\d{2,4})\s+(\d\d):(\d\d):(\d\d))\s+([AaPp][Mm]|).*\s*(?=\n|AMQ)!g) {
         $data->{'timestamp'} = $1;
-        $data->{'ctime'} = timelocal($7, $6, $5, $3, $2-1, 2000+$4);
+	my $hour = $5;
+	if ($8 ne '') {
+	   my $am_pm = $8;
+	   if ($am_pm =~ m!AM!i && $hour eq "12") { 
+	      $hour = 0;
+	   } elsif ($am_pm =~ m!PM!i && $hour ne "12") {
+	      $hour += 12;
+	   }
+	}
+        $data->{'ctime'} = timelocal($7, $6, $hour, $3, $2-1, $4);
     } else {
         confess "Cannot parse timestamp in [$chunk]";
     }

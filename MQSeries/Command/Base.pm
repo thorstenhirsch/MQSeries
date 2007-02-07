@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 26.1 2004/01/15 19:34:33 biersma Exp $
+# $Id: Base.pm,v 27.17 2007/01/11 20:20:03 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 sub new {
 
@@ -97,6 +97,7 @@ sub new {
     # The Parameters argument is optional
     #
     if ( $args{Parameters} ) {
+
 	if ( ref $args{Parameters} eq 'HASH' ) {
 	    $self->{Parameters} = $args{Parameters};
 	} else {
@@ -210,8 +211,10 @@ sub _TranslatePCF {
 	    next unless defined $origparams->{$param};
 	    push @ordered_params, $param;
 	}
+	#print STDERR "Ordered: @ordered_params\n";
 
 	foreach my $param (keys %$origparams) {
+	    
 	    next if ($type eq 'Required' && 
                      not exists $ParameterRequired->{$param});
 	    next if ($type eq 'Optional' && 
@@ -220,11 +223,24 @@ sub _TranslatePCF {
               unless $ParameterOrderHash{$param};
 	}
     }
+    #print STDERR "Ordered: @ordered_params\n";
 
     foreach my $param (@ordered_params) {
 	my $origvalue = $origparams->{$param};
 
+#	print STDERR "Param : $param\n";
+#	if (ref $origvalue) {
+#	    print STDERR "OrigVal:", @$origvalue,"\n";
+#	}
+
+
 	my ($paramkey,$paramtype,$ValueMap) = @{ $ParameterMap->{$param} };
+
+#	print STDERR "PKey: $paramkey\n";
+#	print STDERR "PType: $paramtype\n";
+#	if (ref $ValueMap) {
+#	    print STDERR "ValMap:", %$ValueMap, "\n";
+#	}
 
 	my $newparameter =
 	  {
@@ -262,6 +278,7 @@ sub _TranslatePCF {
 
 	if ( $paramtype == MQSeries::MQCFT_INTEGER ) {
 	    if ( ref $ValueMap ) {
+		#print STDERR %$ValueMap, "\n"; #FIXME
 		unless ( exists $ValueMap->{$origvalue} ) {
 		    $self->{Carp}->("Unknown int value '$origvalue' for " .
 				    "parameter '$param', command '$command'");
@@ -274,8 +291,9 @@ sub _TranslatePCF {
 	}
 
 	if ( $paramtype == MQSeries::MQCFT_INTEGER_LIST ) {
-	    foreach my $value ( @$origvalue ) {
+	    foreach my $value ( @$origvalue ) {	
 		if ( ref $ValueMap ) {
+		    
 		    unless ( exists $ValueMap->{$value} ) {
 			$self->{Carp}->("Unknown intlist value '$origvalue' for " .
 					"parameter '$param', command '$command'");
@@ -287,9 +305,19 @@ sub _TranslatePCF {
 		}
 	    }
 	}
-
 	push(@$parameters,$newparameter);
     }
+   # print STDERR "Params returned:", @$parameters,"\n";
+
+  #  foreach my $el(@$parameters) {
+#	print "Element:", %$el,"\n";
+#	foreach my $val(values %$el) {
+#	    if (ref $val) {
+#		print "Values: ", @$val, "\n";
+#	    }
+#	}
+#    }
+
 
     return ($header,$parameters);
 }
@@ -305,7 +333,6 @@ sub _UnTranslatePCF {
     my ($header,$origparams) = @_;
 
     my $command = $header->{Command};
-
     #
     # The (rather obscure) 'Escape' command requires special handling
     # of the reply reminiscent of the MQSC command handling.  Courtesy
@@ -330,6 +357,7 @@ sub _UnTranslatePCF {
 		         \%MQSeries::Command::PCF::_Responses :
 			 \%MQSeries::Command::PCF::_Requests );
 
+    
     my $CommandMap = $ReverseMap->{$command} || do {
 	$self->{Carp}->("Unknown command '$command'");
 	return;
@@ -343,10 +371,12 @@ sub _UnTranslatePCF {
 
     foreach my $origparam ( @$origparams ) {
 
+#	print "OrigP: $origparam\n";
 	my $paramkey = $ParameterMap->{$origparam->{Parameter}}->[0];
 	my $paramvalue = "";
 
 	#print STDERR "ParamKey: [$origparam->{Parameter}] [$paramkey]\n";
+
 	if ( exists $origparam->{String} ) {
 	    ( $parameters->{$paramkey} = $origparam->{String} ) =~ s/\s+$//;
 	    next;
@@ -384,7 +414,9 @@ sub _UnTranslatePCF {
 		}
 	    }
 	    $parameters->{$paramkey} = $newvalue;
+
 	} else {
+	   
 	    if ( exists $ValueMap->{$paramvalue} ) {
 		$parameters->{$paramkey} = $ValueMap->{$paramvalue};
 	    } elsif ( $self->{StrictMapping} ) {
@@ -396,7 +428,6 @@ sub _UnTranslatePCF {
 	}
 
     }
-
     return ($header,$parameters);
 
 }
@@ -460,6 +491,7 @@ sub PutConvert {
     }
 
     if ( $self->{Type} eq 'PCF' ) {
+
 	my ($header,$parameters) = $self->_TranslatePCF($self->{Header},$self->{Parameters}) or do {
 	    $self->{Carp}->("Unable to translate Command/Parameters into MQEncodePCF input\n");
 	    return undef;
@@ -602,7 +634,6 @@ sub MQEncodeMQSC {
     } else {
 	@parameters = keys %$parameters;
     }
-
     foreach my $parameter ( @parameters ) {
 	next if $skipparam{$parameter};
 
@@ -616,7 +647,10 @@ sub MQEncodeMQSC {
 	}
 
 	my ($key,$type) = @{$requestparameters->{$parameter}};
+
 	my $value = $parameters->{$parameter};
+
+#	print STDERR "$parameter: Key:$key: Type:$type: Value: $value\n";
 
 	if ( $key ) {
 
@@ -669,7 +703,24 @@ sub MQEncodeMQSC {
 		    push(@buffer,"$key($type->[0])");
 		}
 	    } elsif ( ref $type eq 'HASH' ) {
-		push(@buffer,"$key($type->{$value})");
+
+		#
+		# Fix for Header Compression and Message Compression introduced in V6
+		#
+		if ( ref $value eq 'ARRAY' ) {
+		    if ( scalar(@$value) ) {
+			foreach my $string ( @$value ) {
+			    unless (defined $type->{$string} ) {
+				$self->{Carp}->("Unknown value '$string' for parameter '$parameter'\n");
+				return;
+			    }
+			    push(@buffer,"$key($type->{$string})");
+			}
+		    }
+		} else {
+		    push(@buffer,"$key($type->{$value})");
+		}		
+		
 	    } else {
 		push(@buffer,$key);
 	    }
@@ -841,10 +892,11 @@ sub MQDecodeMQSC {
     $buffer =~ s/\s+$//;
 
     #
-    # In MQ 5.2 for OS/390, there is also a leading *<QMgrName>
-    # at the start of the buffer, so we strip that off here.
+    # In MQ 5.2 for OS/390, there is also a leading *<QMgrName> or
+    # +<QMgrName> at the start of the buffer, so we strip that off
+    # here.
     #
-    $buffer =~ s!^\*\S+\s+!!;
+    $buffer =~ s!^[\*\+]\S+\s+!!;
 
     #
     # This is used solely for debugging, since we strip $buffer to
@@ -928,7 +980,7 @@ sub MQDecodeMQSC {
 	}
 
 	unless ( $responseparameters->{$key} ) {
-	    $self->{Carp}->("Unrecognized response parameter '$key' for command '$command'\n");
+	    $self->{Carp}->("Unrecognized response parameter '$key' (with value '$value') for command '$command'\n");
 	    next;
 	}
 

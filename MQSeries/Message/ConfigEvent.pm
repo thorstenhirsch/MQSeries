@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::ConfigEvent - Config Event Message
 #
-# (c) 2002-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2002-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: ConfigEvent.pm,v 26.1 2004/01/15 19:35:04 biersma Exp $
+# $Id: ConfigEvent.pm,v 27.3 2007/01/11 20:20:34 molinam Exp $
 # 
 
 package MQSeries::Message::ConfigEvent;
@@ -17,7 +17,7 @@ use MQSeries qw(:functions);
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Message/ConfigEvent.pl";
@@ -98,9 +98,9 @@ sub GetConvert {
             confess "Invalid [$label] entry (list with length zero) at offset [$offset]" unless ($count);
             my $data = [];
             my $loff = 20;
+            my $str_len = $this->_readNumber($buffer, $loff, 4);
+            $loff += 4;
             foreach my $entry (1..$count) {
-                my $str_len = $this->_readNumber($buffer, $loff, 4);
-                $loff += 4;
                 my $bytes = $this->_readByte($buffer, $loff, $str_len);
                 $loff += $str_len;
                 $bytes = Convert::EBCDIC::ebcdic2ascii($bytes);
@@ -110,8 +110,8 @@ sub GetConvert {
 
             $value = $data;
         } elsif ($type == 9) { # MQSeries::MQCFT_BYTE_STRING
-            my $datalen = $this->_readNumber($buffer, $offset+16, 4);
-            my $bytes = $this->_readByte($buffer, $offset+20, $datalen);
+            my $datalen = $this->_readNumber($buffer, $offset+12, 4);
+            my $bytes = $this->_readByte($buffer, $offset+16, $datalen);
             $bytes =~ s!(.)!sprintf("%02x ", ord($1))!eg;
             $value = $bytes;
         } elsif ($type == MQSeries::MQCFT_INTEGER) {
@@ -135,6 +135,37 @@ sub GetConvert {
             } else {
                 # Value is okay
             }
+        } elsif ($type == 5 ) { # MQSeries::MQCFT_INTEGER_LIST) 
+	    my $count = $this->_readNumber($buffer, $offset+12, 4);
+	    confess "Invalid [$label] entry (list with length zero) at offset [$offset]" unless ($count);
+	    my $data = [];
+	    my $loff = 16;
+	    foreach my $entry (1..$count) {
+		my $lvalue = $this->_readNumber($buffer, $offset+$loff, 4);
+		$loff += 4;
+		my $enum = $MQSeries::Message::ConfigEvent::ResponseEnums{$label};
+		my $renum = $MQSeries::Command::PCF::ResponseValues{$label};
+		if (defined $enum) {
+		    if (defined $enum->{$lvalue}) {
+			$lvalue = $enum->{$lvalue};
+		    } else {
+			$lvalue .= " - <unknown $label>";
+		    }
+		} elsif (defined $renum) {
+		    #print STDERR "Have reverse enum [$label]\n";
+		    foreach my $key (keys %$renum) {
+			my $rval = $renum->{$key};
+			next unless ($lvalue == $rval);
+			$lvalue = $key;
+			last;
+		    }
+		} else {
+		    # Value is okay
+		}
+		push @$data, $lvalue;
+	    }
+	    $value = $data;
+	     
         } else {
             confess "Unexpected chunk type [$type] for id [$id] [$label] at offset [$offset]";
         }

@@ -11,9 +11,9 @@
 #
 #    ..../src/util/extract_reason_codes
 #
-# $Id: ReasonMacro.in,v 25.1 2004/01/14 19:10:40 biersma Exp $
+# $Id: ReasonMacro.in,v 27.2 2007/01/11 20:20:41 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -147,6 +147,7 @@ package MQSeries::Constants;
    &MQRCCF_QUIESCE_VALUE_ERROR      => "MQRCCF_QUIESCE_VALUE_ERROR",
    &MQRCCF_Q_ALREADY_IN_CELL        => "MQRCCF_Q_ALREADY_IN_CELL",
    &MQRCCF_Q_MGR_CCSID_ERROR        => "MQRCCF_Q_MGR_CCSID_ERROR",
+   &MQRCCF_Q_MGR_NOT_IN_QSG         => "MQRCCF_Q_MGR_NOT_IN_QSG",
    &MQRCCF_Q_TYPE_ERROR             => "MQRCCF_Q_TYPE_ERROR",
    &MQRCCF_Q_WRONG_TYPE             => "MQRCCF_Q_WRONG_TYPE",
    &MQRCCF_RCV_EXIT_NAME_ERROR      => "MQRCCF_RCV_EXIT_NAME_ERROR",

@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::Authority.pm - Parse Unix authority files
 #
-# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Authority.pm,v 26.1 2004/01/15 19:34:41 biersma Exp $
+# $Id: Authority.pm,v 27.2 2007/01/11 20:20:26 molinam Exp $
 #
 
 package MQSeries::Config::Authority;
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 use MQSeries qw(:functions);
 use MQSeries::Config::Machine;  # For localqmgrs()

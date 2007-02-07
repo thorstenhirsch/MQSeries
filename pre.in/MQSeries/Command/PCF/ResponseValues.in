@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ResponseValues.in,v 26.1 2004/04/08 12:47:21 biersma Exp $
+# $Id: ResponseValues.in,v 27.10 2007/01/11 20:20:40 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -144,7 +144,7 @@ package MQSeries::Command::PCF;
     Requesting			=> &MQCHS_REQUESTING,
     Retrying			=> &MQCHS_RETRYING,
     Running			=> &MQCHS_RUNNING,
-    Starting			=> &MQCHS_STARTING, 
+    Starting			=> &MQCHS_STARTING,
     Stopped			=> &MQCHS_STOPPED,
     Stopping			=> &MQCHS_STOPPING,
    },
@@ -234,7 +234,7 @@ package MQSeries::Command::PCF;
     CRLLDAP                     => &MQAIT_CRL_LDAP,
    },
 
-   QStatusInputType => 
+   QStatusInputType =>
    {
     Exclusive                   => &MQQSO_EXCLUSIVE,
     No                          => &MQQSO_NO,
@@ -248,9 +248,530 @@ package MQSeries::Command::PCF;
    },
 
    #
-   # Used with the Morgan Stanley extended Authority commands
+   # New with MQv6
+   #
+   AdoptNewMCACheck =>
+   {
+    All				=> &MQADOPT_CHECK_ALL,
+    NetworkAddress		=> &MQADOPT_CHECK_NET_ADDR,
+    None			=> &MQADOPT_CHECK_NONE,
+    QMgrName			=> &MQADOPT_CHECK_Q_MGR_NAME,
+   },
+
+   AdoptNewMCAType =>
+   {
+    All				=> &MQADOPT_TYPE_ALL,
+    No				=> &MQADOPT_TYPE_NO,
+   },
+
+   #
+   # Authority (MQ v6 on distributed platforms)
+   #
+   Authority =>
+   {
+    AltUser			=> &MQAUTH_ALT_USER_AUTHORITY,
+    Browse			=> &MQAUTH_BROWSE,
+    Change			=> &MQAUTH_CHANGE,
+    Clear			=> &MQAUTH_CLEAR,
+    Connect			=> &MQAUTH_CONNECT,
+    Create			=> &MQAUTH_CREATE,
+    Delete			=> &MQAUTH_DELETE,
+    Display			=> &MQAUTH_DISPLAY,
+    Input			=> &MQAUTH_INPUT,
+    Inquire			=> &MQAUTH_INQUIRE,
+    None			=> &MQAUTH_NONE,
+    Output			=> &MQAUTH_OUTPUT,
+    PassAllContext		=> &MQAUTH_PASS_ALL_CONTEXT,
+    PassIdentityContext		=> &MQAUTH_PASS_IDENTITY_CONTEXT,
+    Set				=> &MQAUTH_SET,
+    SetAllContext		=> &MQAUTH_SET_ALL_CONTEXT,
+    SetIdentityContext		=> &MQAUTH_SET_IDENTITY_CONTEXT,
+   },
+
+   ChannelDisposition =>
+   {
+    All				=> &MQCHLD_ALL,
+    Private			=> &MQCHLD_PRIVATE,
+    Shared			=> &MQCHLD_SHARED,
+   },
+
+   ChannelInitiatorControl =>
+   {				
+    Manual			=> &MQSVC_CONTROL_MANUAL,
+    QMgr			=> &MQSVC_CONTROL_Q_MGR,
+   },
+
+   ChannelEvent =>
+   {
+    Disabled			=> &MQEVR_DISABLED,
+    Enabled			=> &MQEVR_ENABLED,
+    Exception			=> &MQEVR_EXCEPTION,
+   },
+
+   QMgrChannelMonitoring =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    None                        => &MQMON_NONE,
+    Off				=> &MQMON_OFF,
+   },
+
+   QMgrChannelStatistics =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    None                        => &MQMON_NONE,
+    Off				=> &MQMON_OFF,
+   },
+
+   ChannelStatistics =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    QMgr                        => &MQMON_Q_MGR,
+    Off				=> &MQMON_OFF,
+   },
+
+   ChannelMonitoring =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    QMgr                        => &MQMON_Q_MGR,
+    Off				=> &MQMON_OFF,
+   },
+
+   ChannelSubState =>
+   {
+    ChannelAutoDefinitionExit	=> &MQCHSSTATE_IN_CHADEXIT,
+    Compressing			=> &MQCHSSTATE_COMPRESSING,
+    EndOfBatch			=> &MQCHSSTATE_END_OF_BATCH,
+    HeartBeating		=> &MQCHSSTATE_HEARTBEATING,
+    ExecutingMQICall		=> &MQCHSSTATE_IN_MQI_CALL,
+    MessageExit			=> &MQCHSSTATE_IN_MSGEXIT,
+    NameServerRequest		=> &MQCHSSTATE_NAME_SERVER,
+    NetworkConnect		=> &MQCHSSTATE_NET_CONNECTING,
+    NetworkReceive		=> &MQCHSSTATE_RECEIVING,
+    NetworkSend			=> &MQCHSSTATE_SENDING,
+    Other			=> &MQCHSSTATE_OTHER,
+    PerformingMQGET		=> &MQCHSSTATE_IN_MQGET,
+    PerformingMQPUT		=> &MQCHSSTATE_IN_MQPUT,
+    ReceiveExit			=> &MQCHSSTATE_IN_RCVEXIT,
+    Resynching			=> &MQCHSSTATE_RESYNCHING,
+    RetryExit			=> &MQCHSSTATE_IN_MREXIT,
+    SecurityExit		=> &MQCHSSTATE_IN_SCYEXIT,
+    SendExit			=> &MQCHSSTATE_IN_SENDEXIT,
+    Serializing			=> &MQCHSSTATE_SERIALIZING,
+    SSLHandshaking		=> &MQCHSSTATE_SSL_HANDSHAKING,
+   },
+
+   CommandEvent =>
+   {
+    Disabled			=> &MQEVR_DISABLED,
+    Enabled			=> &MQEVR_ENABLED,
+    NoDisplay			=> &MQEVR_NO_DISPLAY,
+   },
+
+   ClusterSenderMonitoringDefault =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    QMgr                        => &MQMON_Q_MGR,
+    Off				=> &MQMON_OFF,
+   },
+
+   ClusterSenderStatistics =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    QMgr                        => &MQMON_Q_MGR,
+    Off				=> &MQMON_OFF,
+   },
+
+   #
+   # EntityType is for InquireAuthorityRecords (MQ v6 on distributed)
    #
    EntityType =>
+   {
+    Group			=> &MQZAET_GROUP,
+    Principal			=> &MQZAET_PRINCIPAL,
+    Unknown			=> &MQZAET_UNKNOWN,
+   },
+
+   HeaderCompression =>
+   {
+    None			=> &MQCOMPRESS_NONE,
+    System			=> &MQCOMPRESS_SYSTEM,
+   },
+
+   IGQPutAuthority =>
+   {
+    AltIGQ			=> &MQIGQPA_ALTERNATE_OR_IGQ,
+    Context			=> &MQIGQPA_CONTEXT,
+    Default			=> &MQIGQPA_DEFAULT,
+    OnlyIGQ			=> &MQIGQPA_ONLY_IGQ,
+   },
+
+   IndexType =>
+   {
+    CorrelId			=> &MQIT_CORREL_ID,
+    GroupId			=> &MQIT_GROUP_ID,
+    MsgId			=> &MQIT_MSG_ID,
+    MsgToken			=> &MQIT_MSG_TOKEN,
+    None			=> &MQIT_NONE,
+   },
+
+   IPAddressVersion =>
+   {
+    IPv4			=> &MQIPADDR_IPV4,
+    IPv6			=> &MQIPADDR_IPV6,
+   },
+
+   KeepAliveInterval =>
+   {
+    Auto			=> &MQKAI_AUTO,
+   },
+
+   ListenerStartMode =>
+   {
+    Manual                      => &MQSVC_CONTROL_MANUAL,
+    QMgr                        => &MQSVC_CONTROL_Q_MGR,
+    QMgrStart                   => &MQSVC_CONTROL_Q_MGR_START,
+   },
+
+   ListenerStatus =>
+   {
+    Running                     => &MQSVC_STATUS_RUNNING,
+    Starting                    => &MQSVC_STATUS_STARTING,
+    Stopping                    => &MQSVC_STATUS_STOPPING,
+   },
+
+   ListenerTransportType =>
+   {
+    TCP                         => &MQXPT_TCP,
+    LU62                        => &MQXPT_LU62,
+    NetBIOS                     => &MQXPT_NETBIOS,
+    SPX                         => &MQXPT_SPX,
+   },
+
+   MessageCompression =>
+   {
+    Any				=> &MQCOMPRESS_ANY,
+    None			=> &MQCOMPRESS_NONE,
+    Rle				=> &MQCOMPRESS_RLE,
+    ZlibFast			=> &MQCOMPRESS_ZLIBFAST,
+    ZlibHigh			=> &MQCOMPRESS_ZLIBHIGH,
+   },
+
+   QMgrChlMonitoring =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    None                        => &MQMON_NONE,
+    Off				=> &MQMON_OFF,
+   },
+
+   QMgrClusterMonitoring =>	       
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    QMgr			=> &MQMON_Q_MGR,
+    Off				=> &MQMON_OFF,
+   },
+
+   QMgrMonitoring =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    None                        => &MQMON_NONE,
+    Off				=> &MQMON_OFF,
+   },
+
+   QueueMonitoring =>
+   {
+    High			=> &MQMON_HIGH,
+    Low				=> &MQMON_LOW,
+    Medium			=> &MQMON_MEDIUM,
+    QMgr                        => &MQMON_Q_MGR,
+    Off				=> &MQMON_OFF,
+   },
+
+   QMgrQueueStatistics =>
+   {
+    Off                         => &MQMON_OFF,
+    On                          => &MQMON_ON,
+    None                        => &MQMON_NONE,
+   },
+
+   QueueStatistics =>
+   {
+    Off                         => &MQMON_OFF,
+    On                          => &MQMON_ON,
+    QMgr                        => &MQMON_Q_MGR,
+   },
+
+   MonitoringDft =>
+   {
+    Off                         => &MQMON_OFF,
+    QMgr                        => &MQMON_Q_MGR,
+    Low                         => &MQMON_LOW,
+    Medium                      => &MQMON_MEDIUM,
+    High                        => &MQMON_HIGH,
+   },
+   
+   NamelistType =>
+   {
+    AuthInfo			=> &MQNT_AUTH_INFO,
+    Cluster			=> &MQNT_CLUSTER,
+    None			=> &MQNT_NONE,
+    Queue			=> &MQNT_Q,
+   },
+
+   SharedQQmgrName =>
+   {
+    Ignore			=> &MQSQQM_IGNORE,
+    Use				=> &MQSQQM_USE,
+   },
+
+   QMgrCLWLUseQ =>		# QMgr-level
+   {
+    Any				=> &MQCLWL_USEQ_ANY,
+    Local			=> &MQCLWL_USEQ_LOCAL,
+   },
+
+   CommandServerControl =>
+   {				
+    Manual			=> &MQSVC_CONTROL_MANUAL,
+    QMgr			=> &MQSVC_CONTROL_Q_MGR,
+   },
+
+   QMgrServiceStatus =>
+   {
+    Starting			=> &MQSVC_STATUS_STARTING,
+    Running			=> &MQSVC_STATUS_RUNNING,
+    Stopped			=> &MQSVC_STATUS_STOPPED,
+    Stopping			=> &MQSVC_STATUS_STOPPING,
+   },
+
+   QMgrStatus =>
+   {
+    Starting			=> &MQQMSTA_STARTING,
+    Running			=> &MQQMSTA_RUNNING,
+    Quiescing			=> &MQQMSTA_QUIESCING,
+   },
+
+   QueueCLWLUseQ =>		# Queue-level
+   {
+    Any				=> &MQCLWL_USEQ_ANY,
+    Local			=> &MQCLWL_USEQ_LOCAL,
+    QMgr			=> &MQCLWL_USEQ_AS_Q_MGR,
+   },
+
+   QueueAccounting =>	       
+   {
+    On                         => &MQMON_ON,
+    Off                        => &MQMON_OFF,
+    QMgr                       => &MQMON_Q_MGR,
+   },
+
+   QMgrAccounting =>		# QMgr-level QueueAccounting
+   {
+    None                       => &MQMON_NONE,
+    On                         => &MQMON_ON,
+    Off                        => &MQMON_OFF,
+   },
+
+   QSharingGroupDisposition =>
+   {
+    Copy			=> &MQQSGD_COPY,
+    Group			=> &MQQSGD_GROUP,
+    QMgr			=> &MQQSGD_Q_MGR,
+    Shared			=> &MQQSGD_SHARED,
+   },
+
+   QSGDisposition =>
+   {
+    Copy			=> &MQQSGD_COPY,
+    Group			=> &MQQSGD_GROUP,
+    QMgr			=> &MQQSGD_Q_MGR,
+    Shared			=> &MQQSGD_SHARED,
+   },
+
+   ReceiveTimeoutType =>
+   {
+    Add				=> &MQRCVTIME_ADD,
+    Equal			=> &MQRCVTIME_EQUAL,
+    Multiply			=> &MQRCVTIME_MULTIPLY,
+   },
+
+   ActivityRecording =>	       
+   {
+    Disabled                    => &MQRECORDING_DISABLED,
+    Msg                         => &MQRECORDING_MSG,
+    Queue                       => &MQRECORDING_Q,
+   },
+
+   SecuritySwitch =>
+   {
+    AlternateUser		=> &MQSECSW_ALTERNATE_USER,
+    Command			=> &MQSECSW_COMMAND,
+    CommandResource		=> &MQSECSW_COMMAND_RESOURCES,
+    Connection			=> &MQSECSW_CONNECTION,
+    Context			=> &MQSECSW_CONTEXT,
+    Namelist			=> &MQSECSW_NAMELIST,
+    QMgr			=> &MQSECSW_Q_MGR,
+    QSG				=> &MQSECSW_QSG,
+    Queue			=> &MQSECSW_Q,
+    Process			=> &MQSECSW_PROCESS,
+    Subsystem			=> &MQSECSW_SUBSYSTEM,
+   },
+
+   SecuritySwitchSetting =>
+   {
+    OffError			=> &MQSECSW_OFF_ERROR,
+    OffFound			=> &MQSECSW_OFF_FOUND,
+    OffNotFound			=> &MQSECSW_OFF_NOT_FOUND,
+    OnFound			=> &MQSECSW_ON_FOUND,
+    OnNotFound			=> &MQSECSW_ON_NOT_FOUND,
+    OnOverridden		=> &MQSECSW_ON_OVERRIDDEN,
+   },
+
+   StartMode =>
+   {
+    Manual			=> &MQSVC_CONTROL_MANUAL,
+    QMgr			=> &MQSVC_CONTROL_Q_MGR,
+    QMgrStart			=> &MQSVC_CONTROL_Q_MGR_START,
+   },
+
+   ServiceStatus =>
+   {
+    Running			=> &MQSVC_STATUS_RUNNING,
+    Starting			=> &MQSVC_STATUS_STARTING,
+    Stopping			=> &MQSVC_STATUS_STOPPING,
+   },
+
+   ServiceType =>
+   {
+    Command			=> &MQSVC_TYPE_COMMAND,
+    Server			=> &MQSVC_TYPE_SERVER,
+   },
+
+   TCPStackType =>
+   {
+    Multiple                    => &MQTCPSTACK_MULTIPLE,
+    Single                      => &MQTCPSTACK_SINGLE,
+   },
+
+   TraceRouteRecording =>	       
+   {
+    Disabled                    => &MQRECORDING_DISABLED,
+    Msg                         => &MQRECORDING_MSG,
+    Queue                       => &MQRECORDING_Q,
+   },
+
+   #
+   # The UsageXXX hashes are for the 'InquireUsage' command for MQ on z/OS
+   #
+   UsageType =>
+   {
+    BufferPool			=> &MQIACF_USAGE_BUFFER_POOL,
+    DataSet			=> &MQIACF_USAGE_DATA_SET,
+    Pageset			=> &MQIACF_USAGE_PAGESET,
+   },
+
+   UsageDataSetType =>
+   {
+    OldestActiveUOW		=> &MQUSAGE_DS_OLDEST_ACTIVE_UOW,
+    OldestCFRecovery		=> &MQUSAGE_DS_OLDEST_CF_RECOVERY,
+    OldestPSRecovery		=> &MQUSAGE_DS_OLDEST_PS_RECOVERY,
+   },
+
+   UsageExpandType =>
+   {
+    None			=> &MQUSAGE_EXPAND_NONE,
+    User			=> &MQUSAGE_EXPAND_USER,
+    System			=> &MQUSAGE_EXPAND_SYSTEM,
+   },
+
+   UsagePageSetStatus =>
+   {
+    Available			=> &MQUSAGE_PS_AVAILABLE,
+    Defined			=> &MQUSAGE_PS_DEFINED,
+    NotDefined			=> &MQUSAGE_PS_NOT_DEFINED,
+    Offline			=> &MQUSAGE_PS_OFFLINE,
+   },
+
+   #
+   # For Inquire Connection in V6
+   #
+   ConnInfoType =>
+   {
+    Conn                        => &MQIACF_CONN_INFO_CONN,
+    Handle                      => &MQIACF_CONN_INFO_HANDLE,
+    All                         => &MQIACF_CONN_INFO_ALL
+    },
+
+   HandleObjectType =>
+   {
+    Queue                      => &MQOT_Q,
+    Process                    => &MQOT_PROCESS,
+    Namelist                   => &MQOT_NAMELIST,
+    QMgr                       => &MQOT_Q_MGR,
+    Channel                    => &MQOT_CHANNEL,
+    AuthInfo                   => &MQOT_AUTH_INFO,
+    },
+
+   HandleQSGDisposition =>
+   {
+    Copy                      => &MQQSGD_COPY,
+    QMgr                      => &MQQSGD_Q_MGR,
+    Shared                    => &MQQSGD_SHARED,
+   },
+
+   ConnApplType =>
+   {
+    QMgr                      => &MQAT_QMGR,
+    ChannelInitiator          => &MQAT_CHANNEL_INITIATOR,
+    User                      => &MQAT_USER,
+    Batch                     => &MQAT_BATCH,
+    RRSBatch                  => &MQAT_RRS_BATCH,
+    CICS                      => &MQAT_CICS,
+   },
+
+   HandleState =>
+   {
+    Active                    => MQHSTATE_ACTIVE,
+    Inactive                  => MQHSTATE_INACTIVE,
+    },
+
+   UOWState =>
+   {
+    None                     => MQUOWST_NONE,
+    Active                   => MQUOWST_ACTIVE,
+    Prepared                 => MQUOWST_PREPARED,
+    Unresolved               => MQUOWST_UNRESOLVED,
+   },
+
+   UOWType =>
+   {
+    QMgr                    => MQUOWT_Q_MGR,
+    CICS                    => MQUOWT_CICS,
+    RRS                     => MQUOWT_RRS,
+    IMS                     => MQUOWT_IMS,
+    XA                      => MQUOWT_XA,
+   },
+   #
+   # Used with the Morgan Stanley extended Authority commands
+   #
+   MorganEntityType =>
    {
     Principal			=> &MQETE_PRINCIPAL,
     Group			=> &MQETE_GROUP,

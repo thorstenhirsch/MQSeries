@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 26.1 2004/01/15 19:34:32 biersma Exp $
+# $Id: Command.pm,v 27.8 2007/01/11 20:20:02 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -23,14 +23,16 @@ use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
 
 use vars qw($VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 sub new {
     my ($proto, %args) = @_;
     my $class = ref($proto) || $proto;
     VerifyNamedParams(\%args, 
                       [ ],
-                      [ qw(QueueManager Type Carp DynamicQName Expiry Wait
+                      [ qw(QueueManager Type Carp DynamicQName 
+			   Expiry 
+			   Wait
                            ModelQName StrictMapping
                            CommandQueue
                            CommandQueueName RealQueueManager
@@ -41,7 +43,8 @@ sub new {
        Reason			=> 0,
        CompCode			=> 0,
        Wait 			=> 60000, # 60 second wait for replies...
-       Expiry			=> 600,	# 60 second expiry on requests
+       #Expiry			=> 600,	# 60 second expiry on requests
+       Expiry                   => 999999999,
        Carp			=> \&carp,
        Type			=> 'PCF',
        ModelQName		=> 'SYSTEM.DEFAULT.MODEL.QUEUE',
@@ -419,7 +422,7 @@ sub CreateObject {
 
     my @KeyNames		= qw(ChannelName NamelistName ProcessName 
                                      QName StorageClassName AuthInfoName
-                                     CFStructName);
+                                     CFStructName ListenerName ServiceName);
     my $KeyCount		= 0;
 
     #
@@ -499,6 +502,18 @@ sub CreateObject {
 	$Change			= "ChangeCFStruct";
 	$Key			= "CFStructName";
 	$Type			= "CFStruct";
+    } elsif ( $Attrs->{ServiceName} ) {
+	$Inquire		= "InquireService";
+	$Create			= "CreateService";
+	$Change			= "ChangeService";
+	$Key			= "ServiceName";
+	$Type			= "Service";
+    } elsif ( $Attrs->{ListenerName} ) {
+	$Inquire		= "InquireChannelListener";
+	$Create			= "CreateChannelListener";
+	$Change			= "ChangeChannelListener";
+	$Key			= "ListenerName";
+	$Type			= "Listener";
     }
 
     #
@@ -522,7 +537,7 @@ sub CreateObject {
 	$method = $Change;
 
 	#
-	# If an object has been created with QSharingGroupDisposition
+	# If an object has been created with QSGDisposition
 	# 'Group', then a normal 'Inquire' command returns QSPDisp
 	# 'Copy' - which, if the queue manager is up, represents the
 	# object unless it is just being changed on another queue
@@ -531,9 +546,9 @@ sub CreateObject {
 	# We'll amend that to read QSGDisp 'Group', as that is what
 	# we need to compare against.
 	#
-	if (defined $Object->{'QSharingGroupDisposition'} &&
-	    $Object->{'QSharingGroupDisposition'} eq 'Copy') {
-	    $Object->{'QSharingGroupDisposition'} = 'Group';
+	if (defined $Object->{'QSGDisposition'} &&
+	    $Object->{'QSGDisposition'} eq 'Copy') {
+	    $Object->{'QSGDisposition'} = 'Group';
 	}
 
 	#
@@ -591,8 +606,8 @@ sub CreateObject {
     }
 
     #
-    # If a Queue QType has changed, or any object CouplingStructure or
-    # QSharingGroupDisposition has changed, we'll have to delete the
+    # If a Queue QType has changed, or any object CFStructure or
+    # QSGDisposition has changed, we'll have to delete the
     # old object first.
     #
     # NOTE: We do *not* purge, unless the 'Clear' flag is specified.
@@ -603,8 +618,8 @@ sub CreateObject {
     if ($Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType}) {
 	$delete_first = 1;
     } elsif ($Object) {
-	foreach my $fld (qw(QSharingGroupDisposition 
-			    CouplingStructure)) {
+	foreach my $fld (qw(QSGDisposition 
+			    CFStructure)) {
 	    if (defined $Attrs->{$fld} && $Attrs->{$fld} ne $Object->{$fld}) {
 		$delete_first = 1;
 	    }
@@ -619,22 +634,25 @@ sub CreateObject {
 	# must be sent with CommandScope '*'.
 	#
 	my $need_cmdscope = 0;
-	my $qsgdisp_attr = $Attrs->{QSharingGroupDisposition};
+	my $qsgdisp_attr = $Object->{QSGDisposition};
 	if (defined $qsgdisp_attr && 
 	    $qsgdisp_attr =~ m!^(?:Copy|Shared)$!) {
 	    $need_cmdscope = 1;
+	    #print STDERR "XXX: deleting shared object, need CmdScope '*'\n";
 	}
 
 	$self->$Delete
 	  (
 	   $Key			=> $Attrs->{$Key},
 	   QType		=> $Object->{QType},
-	   ($need_cmdscope ?
-	    (CommandScope       => '*') : ()
-	   ),
 	   (
 	    $Clear && $Key eq 'QName' && $Object->{QType} eq 'Local' ?
-	    ( Purge		=> 1 ) : ()
+	    ( Purge		=> 1 ) : (),
+	   ($need_cmdscope ?
+	    (CommandScope             => '*',
+	     QSGDisposition => $Object->{QSGDisposition}) 
+	    : ()
+	   ),
 	   )
 	  ) || do {
 	      $self->Carp("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
@@ -644,6 +662,7 @@ sub CreateObject {
 
 	$method = $Create;
         $Changes = $Callback->($Attrs);
+	$Object = undef;
     }
 
     unless ( $Quiet ) {
@@ -666,12 +685,10 @@ sub CreateObject {
     }
 
     #
-    # If the QSharingGroupDisposition field is set in the object,
+    # If the QSGDisposition field is set in the object,
     # also set it in the changes.
     #
-    # FIXME: Also for command scope?
-    #
-    my $disp_field = 'QSharingGroupDisposition';
+    my $disp_field = 'QSGDisposition';
     if (defined $Object->{$disp_field}) {
 	$Changes->{$disp_field} = $Object->{$disp_field};
     }
@@ -716,6 +733,7 @@ sub CreateObject {
 # and MQSC command formats.
 #
 sub _Command {
+
     my $self 			= shift;
     my $command			= shift;
     my $parameters	 	= shift;
@@ -752,12 +770,14 @@ sub _Command {
        InquireChannelNames	=> 'ChannelName',
        InquireChannelStatus	=> 'ChannelName',
        InquireStorageClass	=> 'StorageClassName',
-       InquireStorageClassNames	=> 'StorageClassName',       
+       InquireStorageClassNames	=> 'StorageClassName',
+       InquireService           => 'ServiceName',
        InquireAuthInfo          => 'AuthInfoName',
        InquireAuthInfoNames	=> 'AuthInfoName',       
        InquireCFStruct          => 'CFStructName',
        InquireCFStructNames     => 'CFStructName',
-       InquireThread	        => 'ThreadName',
+       InquireThread		=> 'ThreadName',
+       InquireChannelListener   => 'ListenerName',
       );	
 
     if ( $command2name{$command} ) {
@@ -785,6 +805,7 @@ sub _Command {
        InquireStorageClass		=> 'StorageClassAttrs',
        InquireAuthInfo                  => 'AuthInfoAttrs',
        InquireCFStruct                  => 'CFStructAttrs',
+       InquireService                   => 'ServiceAttrs',
       );
 
     if ( $command2all{$command} ) {
@@ -827,7 +848,7 @@ sub _Command {
         #print STDERR "XXX: Adding set-all context to PMO\n";
         $putmsg_options->{Options} |= MQSeries::MQPMO_SET_ALL_CONTEXT;
     }
-    
+
     $self->{Request} = MQSeries::Command::Request::->
       new(MsgDesc 	=> $req_msgdesc,
           Type		=> $self->{Type},
@@ -884,7 +905,6 @@ sub _Command {
                  $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
                  return;
              };
-	
 	my $getresult = $self->{ReplyToQ}->
           Get(Message	=> $response,
               Wait	=> $self->{Wait},
@@ -1365,26 +1385,37 @@ producing data responses:
   Escape
   Inquire AuthInfo
   Inquire AuthInfo Names
+  Inquire Authority Records
+  Inquire Authority Service
   Inquire Channel
+  Inquire Channel Listener
+  Inquire Channel Listener Status
   Inquire Channel Names
   Inquire Channel Status
   Inquire Cluster Queue Manager
+  Inquire Connection
   Inquire Namelist
   Inquire Namelist Names
   Inquire Process
   Inquire Process Names
   Inquire Queue
   Inquire Queue Manager
+  Inquire Queue Manager Status
   Inquire Queue Names
   Inquire Queue Status
+  Inquire Service
+  Inquire Service Status
   Reset Queue Statistics
 
 plus the following equivalents for MQSC
 
-  Inquire StorageClass
-  Inquire StorageClass Names
   Inquire CFStruct
   Inquire CFStruct Names
+  Inquire CFStruct Status
+  Inquire Usage
+  Inquire Security
+  Inquire StorageClass
+  Inquire StorageClass Names
 
 return interesting information.  Most of these will return an array of
 hash references, one for each object matching the query criteria.  For
@@ -1401,12 +1432,12 @@ Some of these commands, however, have a simplified return value.  All
 seven of:
 
   Inquire AuthInfo Names
+  Inquire CFStruct Names
   Inquire Channel Names
   Inquire Namelist Names
   Inquire Process Names
   Inquire Queue Names
   Inquire StorageClass Names
-  Inquire CFStruct Names
 
 simply return an array of strings, containing the names which matched
 the query criteria.
@@ -1609,9 +1640,9 @@ redirect how they get logged.
 For example, one might want everything to be logged via syslog:
 
   sub MyLogger {
-      my $message = @_;
-      foreach my $line ( split(/\n+/,$message) ) {
-          syslog("err",$message);
+      my ($message) = @_;
+      foreach my $line (split(/\n+/, $message)) {
+          syslog("err", $line);
       }
   }
 
@@ -1892,208 +1923,10 @@ either on (true) or off (false).
 
 =back
 
-In order to reduce needless redundancy, only the keys which have
-special value mappings, or which have Boolean values will be listed
-here.  For all others, the IBM documentation is sufficient.
-
-=head2 Channel Commands
-
-Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the commands for the specific list.
-
-  Change Channel
-  Copy Channel
-  Create Channel
-  Delete Channel
-  Inquire Channel
-  Inquire Channel Names
-  Inquire Channel Status
-  Ping Channel
-  Reset Channel
-  Resolve Channel
-  Start Channel
-  Start Channel Initiator
-  Start Channel Listener
-  Stop Channel
-
-The following keys have special value mappings:
-
-=over 4
-
-=item ChannelType 		(integer)
-
-    Key				Macro
-    ===				=====
-    Clntconn                    MQCHT_CLNTCONN
-    ClusterReceiver             MQCHT_CLUSRCVR
-    ClusterSender               MQCHT_CLUSSDR
-    Receiver                    MQCHT_RECEIVER
-    Requester                   MQCHT_REQUESTER
-    Sender                      MQCHT_SENDER
-    Server                      MQCHT_SERVER
-    Svrconn                     MQCHT_SVRCONN
-
-=item TransportType		(integer)
-
-    Key				Macro
-    ===				=====
-    DECnet                      MQXPT_DECNET
-    LU62                        MQXPT_LU62
-    NetBIOS                     MQXPT_NETBIOS
-    SPX                         MQXPT_SPX
-    TCP                         MQXPT_TCP
-    UDP                         MQXPT_UDP
-
-=item PutAuthority 		(integer)
-
-    Key				Macro
-    ===				=====
-    Context                     MQPA_CONTEXT
-    Default                     MQPA_DEFAULT
-
-=item MCAType 			(integer)
-
-    Key				Macro
-    ===				=====
-    Process                     MQMCAT_PROCESS
-    Thread                      MQMCAT_THREAD
-
-=item NonPersistentMsgSpeed	(integer)
-
-    Key				Macro
-    ===				=====
-    Normal                      MQNPMS_NORMAL
-    Fast                        MQNPMS_FAST
-
-=item ChannelTable		(integer)
-
-    Key				Macro
-    ===				=====
-    Clntconn                    MQCHTAB_CLNTCONN
-    QMgr                        MQCHTAB_Q_MGR
-
-=item ChannelInstanceAttrs	(integer list)
-
-Same as ChannelAttrs:
-
-=item ChannelAttrs		(integer list)
-
-    Key				Macro
-    ===				=====
-    All                         MQIACF_ALL
-    AlterationDate              MQCA_ALTERATION_DATE
-    AlterationTime              MQCA_ALTERATION_TIME
-    BatchHeartBeat              MQIACH_BATCH_HB
-    BatchInterval               MQIACH_BATCH_INTERVAL
-    BatchSize                   MQIACH_BATCH_SIZE
-    Batches                     MQIACH_BATCHES
-    BuffersReceived             MQIACH_BUFFERS_RCVD
-    BuffersSent                 MQIACH_BUFFERS_SENT
-    BytesReceived               MQIACH_BYTES_RCVD
-    BytesSent                   MQIACH_BYTES_SENT
-    ChannelDesc                 MQCACH_DESC
-    ChannelInstanceType         MQIACH_CHANNEL_INSTANCE_TYPE
-    ChannelName                 MQCACH_CHANNEL_NAME
-    ChannelNames                MQCACH_CHANNEL_NAMES
-    ChannelStartDate            MQCACH_CHANNEL_START_DATE
-    ChannelStartTime            MQCACH_CHANNEL_START_TIME
-    ChannelStatus               MQIACH_CHANNEL_STATUS
-    ChannelType                 MQIACH_CHANNEL_TYPE
-    ClusterName                 MQCA_CLUSTER_NAME
-    ClusterNamelist             MQCA_CLUSTER_NAMELIST
-    ConnectionName              MQCACH_CONNECTION_NAME
-    CurrentLUWID                MQCACH_CURRENT_LUWID
-    CurrentMsgs                 MQIACH_CURRENT_MSGS
-    CurrentSequenceNumber       MQIACH_CURRENT_SEQ_NUMBER
-    DataConversion              MQIACH_DATA_CONVERSION
-    DiscInterval                MQIACH_DISC_INTERVAL
-    HeartbeatInterval           MQIACH_HB_INTERVAL
-    InDoubtStatus               MQIACH_INDOUBT_STATUS
-    LastLUWID                   MQCACH_LAST_LUWID
-    LastMsgDate                 MQCACH_LAST_MSG_DATE
-    LastMsgTime                 MQCACH_LAST_MSG_TIME
-    LastSequenceNumber          MQIACH_LAST_SEQ_NUMBER
-    LocalAddress                MQCACH_LOCAL_ADDRESS
-    LongRetriesLeft             MQIACH_LONG_RETRIES_LEFT
-    LongRetryCount              MQIACH_LONG_RETRY
-    LongRetryInterval           MQIACH_LONG_TIMER
-    MCAJobName                  MQCACH_MCA_JOB_NAME
-    MCAName                     MQCACH_MCA_NAME
-    MCAStatus                   MQIACH_MCA_STATUS
-    MCAType                     MQIACH_MCA_TYPE
-    MCAUserIdentifier           MQCACH_MCA_USER_ID
-    MaxMsgLength                MQIACH_MAX_MSG_LENGTH
-    ModeName                    MQCACH_MODE_NAME
-    MsgExit                     MQCACH_MSG_EXIT_NAME
-    MsgRetryCount               MQIACH_MR_COUNT
-    MsgRetryExit                MQCACH_MR_EXIT_NAME
-    MsgRetryInterval            MQIACH_MR_INTERVAL
-    MsgRetryUserData            MQCACH_MR_EXIT_USER_DATA
-    MsgUserData                 MQCACH_MSG_EXIT_USER_DATA
-    Msgs                        MQIACH_MSGS
-    NetworkPriority             MQIACH_NETWORK_PRIORITY
-    NonPersistentMsgSpeed       MQIACH_NPM_SPEED
-    Password                    MQCACH_PASSWORD
-    PutAuthority                MQIACH_PUT_AUTHORITY
-    QMgrName                    MQCA_Q_MGR_NAME
-    ReceiveExit                 MQCACH_RCV_EXIT_NAME
-    ReceiveUserData             MQCACH_RCV_EXIT_USER_DATA
-    SecurityExit                MQCACH_SEC_EXIT_NAME
-    SecurityUserData            MQCACH_SEC_EXIT_USER_DATA
-    SendExit                    MQCACH_SEND_EXIT_NAME
-    SendUserData                MQCACH_SEND_EXIT_USER_DATA
-    SeqNumberWrap               MQIACH_SEQUENCE_NUMBER_WRAP
-    ShortRetriesLeft            MQIACH_SHORT_RETRIES_LEFT
-    ShortRetryCount             MQIACH_SHORT_RETRY
-    ShortRetryInterval          MQIACH_SHORT_TIMER
-    SSLCipherSpec               MQCACH_SSL_CIPHER_SPEC
-    SSLClientAuth               MQIACH_SSL_CLIENT_AUTH
-    SSLPeerName                 MQCACH_SSL_PEER_NAME
-    StopRequested               MQIACH_STOP_REQUESTED
-    TpName                      MQCACH_TP_NAME
-    TransportType               MQIACH_XMIT_PROTOCOL_TYPE
-    UserIdentifier              MQCACH_USER_ID
-    XmitQName                   MQCACH_XMIT_Q_NAME
-
-=item ChannelInstanceType  	(integer)
-
-    Key				Macro
-    ===				=====
-    Current                     MQOT_CURRENT_CHANNEL
-    Saved                       MQOT_SAVED_CHANNEL
-
-=item InDoubt			(integer)
-
-    Key				Macro
-    ===				=====
-    Backout                     MQIDO_BACKOUT
-    Commit                      MQIDO_COMMIT
-
-=item SSLClientAuth             (integer)
-
-    Key				Macro
-    ===				=====
-    Optional                    MQSCA_OPTIONAL
-    Required                    MQSCA_REQUIRED
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Replace
-
-=item DataConversion
-
-=item Quiesce
-
-=back
+Note: List of keys are not documented anymore to avoid needless redundancy.
+Please refer to the IBM documentation for the names and values of keys.
 
 =head2 AuthInfo Commands
-
-Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the commands for the specific list.
 
   Change AuthInfo
   Copy AuthInfo
@@ -2102,36 +1935,37 @@ See the documentation for each of the commands for the specific list.
   Inquire AuthInfo
   Inquire AuthInfo Names
 
-The following keys have special value mappings:
+=head2 Authority Records Commands
 
-=over 4
+  Delete Authority Records
+  Inquire Authority Records
+  Set Authority Record
 
-=item AuthInfoType 		(integer)
+=head2 Channel Commands
 
-    Key				Macro
-    ===				=====
-    CRLLDAP                     MQAIT_CRL_LDAP
-
-=item AuthInfoAttrs		(integer list)
-
-    Key				Macro
-    ===				=====
-    All                         MQIACF_ALL
-    AlterationDate              MQCA_ALTERATION_DATE
-    AlterationTime              MQCA_ALTERATION_TIME
-    AuthInfoConnName            MQCA_AUTH_INFO_CONN_NAME,
-    AuthInfoDesc                MQCA_AUTH_INFO_DESC,
-    AuthInfoName                MQCA_AUTH_INFO_NAME,
-    AuthInfoType                MQIA_AUTH_INFO_TYPE,
-    LDAPPassword                MQCA_LDAP_PASSWORD,
-    LDAPUserName                MQCA_LDAP_USER_NAME,
-
-=back
+  Change Channel
+  Change Channel Listener
+  Copy Channel
+  Copy Channel Listener
+  Create Channel
+  Create Channel Listener
+  Delete Channel
+  Delete Channel Listener
+  Inquire Channel
+  Inquire Channel Listener
+  Inquire Channel Names
+  Inquire Channel Status
+  Inquire Channel Listener Status
+  Ping Channel
+  Reset Channel
+  Resolve Channel
+  Start Channel
+  Start Channel Initiator
+  Start Channel Listener
+  Stop Channel
+  Stop Channel Listener
 
 =head2 Namelist Commands
-
-Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the commands for the specific list.
 
   Change Namelist
   Copy Namelist
@@ -2140,34 +1974,7 @@ See the documentation for each of the commands for the specific list.
   Inquire Namelist
   Inquire Namelist Names
 
-The following keys have special value mappings:
-
-=over 4
-
-=item NamelistAttrs		(integer list)
-
-    Key				Macro
-    ===				=====
-    AlterationDate              MQCA_ALTERATION_DATE
-    AlterationTime              MQCA_ALTERATION_TIME
-    NamelistDesc                MQCA_NAMELIST_DESC
-    NamelistName                MQCA_NAMELIST_NAME
-    Names                       MQCA_NAMES
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Replace
-
-=back
-
 =head2 Process Commands
-
-Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the commands for the specific list.
 
   Change Process
   Copy Process
@@ -2176,57 +1983,7 @@ See the documentation for each of the commands for the specific list.
   Inquire Process
   Inquire ProcessNames
 
-The following keys have special value mappings:
-
-=over 4
-
-=item ApplType    		(integer)
-
-    Key				Macro
-    ===				=====
-    AIX                         MQAT_AIX
-    CICS                        MQAT_CICS
-    DOS                         MQAT_DOS
-    Default                     MQAT_UNIX
-    IMS                         MQAT_IMS
-    MVS                         MQAT_MVS
-    NSK                         MQAT_NSK
-    OS2                         MQAT_OS2
-    OS400                       MQAT_OS400
-    UNIX                        MQAT_UNIX
-    VMS                         MQAT_VMS
-    Win16                       MQAT_WINDOWS
-    Win32                       MQAT_WINDOWS_NT
-
-=item ProcessAttrs		(interger list)
-
-    Key				Macro
-    ===				=====
-    All                         MQIACF_ALL
-    AlterationDate              MQCA_ALTERATION_DATE
-    AlterationTime              MQCA_ALTERATION_TIME
-    ApplId                      MQCA_APPL_ID
-    ApplType                    MQIA_APPL_TYPE
-    EnvData                     MQCA_ENV_DATA
-    ProcessDesc                 MQCA_PROCESS_DESC
-    ProcessName                 MQCA_PROCESS_NAME
-    ProcessNames                MQCACF_PROCESS_NAMES
-    UserData                    MQCA_USER_DATA
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Replace
-
-=back
-
 =head2 Queue Commands
-
-Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the commands for the specific list.
 
   Change Queue
   Clear Queue
@@ -2235,185 +1992,13 @@ See the documentation for each of the commands for the specific list.
   Delete Queue
   Inquire Queue
   Inquire Queue Names
+  Move Queue
   Reset Queue Statistics
-
-The following keys have special value mappings:
-
-=over 4
-
-=item DefBind  			(integer)
-
-    Key				Macro
-    ===				=====
-    OnOpen                      MQBND_BIND_ON_OPEN
-    NotFixed                    MQBND_BIND_NOT_FIXED
-
-=item DefinitionType		(integer)
-
-    Key				Macro
-    ===				=====
-    Permanent                   MQQDT_PERMANENT_DYNAMIC
-    Temporary                   MQQDT_TEMPORARY_DYNAMIC
-
-=item DefInputOpenOption    	(integer)
-
-    Key				Macro
-    ===				=====
-    Exclusive                   MQOO_INPUT_EXCLUSIVE
-    Shared                      MQOO_INPUT_SHARED
-
-=item MsgDeliverySequence    	(integer)
-
-    Key				Macro
-    ===				=====
-    FIFO                        MQMDS_FIFO
-    Priority                    MQMDS_PRIORITY
-
-=item QAttrs			(integer list)
-
-    Key				Macro
-    ===				=====
-    All                         MQIACF_ALL
-    AlterationDate              MQCA_ALTERATION_DATE
-    AlterationTime              MQCA_ALTERATION_TIME
-    BackoutRequeueName          MQCA_BACKOUT_REQ_Q_NAME
-    BackoutThreshold            MQIA_BACKOUT_THRESHOLD
-    BaseQName                   MQCA_BASE_Q_NAME
-    ClusterDate                 MQCA_CLUSTER_DATE
-    ClusterName                 MQCA_CLUSTER_NAME
-    ClusterNamelist             MQCA_CLUSTER_NAMELIST
-    ClusterQType                MQIA_CLUSTER_Q_TYPE
-    ClusterTime                 MQCA_CLUSTER_TIME
-    CreationDate                MQCA_CREATION_DATE
-    CreationTime                MQCA_CREATION_TIME
-    CurrentQDepth               MQIA_CURRENT_Q_DEPTH
-    DefBind                     MQIA_DEF_BIND
-    DefInputOpenOption          MQIA_DEF_INPUT_OPEN_OPTION
-    DefPersistence              MQIA_DEF_PERSISTENCE
-    DefPriority                 MQIA_DEF_PRIORITY
-    DefinitionType              MQIA_DEFINITION_TYPE
-    DistLists                   MQIA_DIST_LISTS
-    HardenGetBackout            MQIA_HARDEN_GET_BACKOUT
-    HighQDepth                  MQIA_HIGH_Q_DEPTH
-    InhibitGet                  MQIA_INHIBIT_GET
-    InhibitPut                  MQIA_INHIBIT_PUT
-    InitiationQName             MQCA_INITIATION_Q_NAME
-    MaxMsgLength                MQIA_MAX_MSG_LENGTH
-    MaxQDepth                   MQIA_MAX_Q_DEPTH
-    MsgDeliverySequence         MQIA_MSG_DELIVERY_SEQUENCE
-    MsgDeqCount                 MQIA_MSG_DEQ_COUNT
-    MsgEnqCount                 MQIA_MSG_ENQ_COUNT
-    OpenInputCount              MQIA_OPEN_INPUT_COUNT
-    OpenOutputCount             MQIA_OPEN_OUTPUT_COUNT
-    ProcessName                 MQCA_PROCESS_NAME
-    QDepthHighEvent             MQIA_Q_DEPTH_HIGH_EVENT
-    QDepthHighLimit             MQIA_Q_DEPTH_HIGH_LIMIT
-    QDepthLowEvent              MQIA_Q_DEPTH_LOW_EVENT
-    QDepthLowLimit              MQIA_Q_DEPTH_LOW_LIMIT
-    QDepthMaxEvent              MQIA_Q_DEPTH_MAX_EVENT
-    QDesc                       MQCA_Q_DESC
-    QMgrIdentifier              MQCA_Q_MGR_IDENTIFIER
-    QMgrName                    MQCA_CLUSTER_Q_MGR_NAME
-    QName                       MQCA_Q_NAME
-    QNames                      MQCACF_Q_NAMES
-    QServiceInterval            MQIA_Q_SERVICE_INTERVAL
-    QServiceIntervalEvent       MQIA_Q_SERVICE_INTERVAL_EVENT
-    QType                       MQIA_Q_TYPE
-    RemoteQMgrName              MQCA_REMOTE_Q_MGR_NAME
-    RemoteQName                 MQCA_REMOTE_Q_NAME
-    RetentionInterval           MQIA_RETENTION_INTERVAL
-    Scope                       MQIA_SCOPE
-    Shareability                MQIA_SHAREABILITY
-    TimeSinceReset              MQIA_TIME_SINCE_RESET
-    TriggerControl              MQIA_TRIGGER_CONTROL
-    TriggerData                 MQCA_TRIGGER_DATA
-    TriggerDepth                MQIA_TRIGGER_DEPTH
-    TriggerMsgPriority          MQIA_TRIGGER_MSG_PRIORITY
-    TriggerType                 MQIA_TRIGGER_TYPE
-    Usage                       MQIA_USAGE
-    XmitQName                   MQCA_XMIT_Q_NAME
-
-=item QServiceIntervalEvent    	(integer)
-
-    Key				Macro
-    ===				=====
-    High                        MQQSIE_HIGH
-    None                        MQQSIE_NONE
-    OK                          MQQSIE_OK
-
-=item QType    			(integer)
-
-    Key				Macro
-    ===				=====
-    Alias                       MQQT_ALIAS
-    All                         MQQT_ALL
-    Cluster                     MQQT_CLUSTER
-    Local                       MQQT_LOCAL
-    Model                       MQQT_MODEL
-    Remote                      MQQT_REMOTE
-
-=item Scope    			(integer)
-
-    Key				Macro
-    ===				=====
-    Cell                        MQSCO_CELL
-    QMgr                        MQSCO_Q_MGR
-
-=item TriggerType    		(integer)
-
-    Key				Macro
-    ===				=====
-    Depth                       MQTT_DEPTH
-    Every                       MQTT_EVERY
-    First                       MQTT_FIRST
-    None                        MQTT_NONE
-
-=item Usage    			(integer)
-
-    Key				Macro
-    ===				=====
-    Normal                      MQUS_NORMAL
-    XMITQ                       MQUS_TRANSMISSION
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Replace
-
-=item Force
-
-=item InhibitPut
-
-=item DefPersistence
-
-=item InhibitGet
-
-=item Shareability
-
-=item HardenGetBackout
-
-=item DistLists
-
-=item TriggerControl
-
-=item QDepthMaxEvent
-
-=item QDepthHighEvent
-
-=item QDepthLowEvent
-
-=item Purge
-
-=back
 
 =head2 Inquire Queue Status Command
 
 The C<InquireQueueStatus> command does not behave like the other queue
-commands.  In addition, the documentation is incorrect and incomplete,
-so the following is subject to change.
+commands.  Please refer to IBM documentation for complete details.
 
 For a request, the following keys are supported:
 
@@ -2422,207 +2007,28 @@ For a request, the following keys are supported:
     OpenType
     QStatusAttrs
 
-The following keys have special value mappings:
-
-=over 4
-
-=item StatusType                (integer)
-
-    Key				Macro
-    ===				=====
-    Queue                       MQIACF_Q_STATUS
-    Handle                      MQIACF_Q_HANDLE
-
-=item OpenType                  (integer)
-
-    Key				Macro
-    ===				=====
-    All                         MQQSOT_ALL
-    Input                       MQQSOT_INPUT
-    Output                      MQQSOT_OUTPUT
-
-=item QStatusAttrs		(integer list)
-
-    Key				Macro
-    ===				=====
-    All                         MQIACF_ALL
-    ApplTag                     MQCACF_APPL_TAG
-    ApplType                    MQIA_APPL_TYPE
-    ChannelName                 MQCACH_CHANNEL_NAME
-    Conname                     MQCACH_CONNECTION_NAME
-    CurrentQDepth               MQIA_CURRENT_Q_DEPTH
-    OpenInputCount              MQIA_OPEN_INPUT_COUNT
-    OpenOptions                 MQIACF_OPEN_OPTIONS
-    OpenOutputCount             MQIA_OPEN_OUTPUT_COUNT
-    ProcessId                   MQIACF_PROCESS_ID
-    QName                       MQCA_Q_NAME
-    ThreadId                    MQIACF_THREAD_ID
-    UncommittedMsgs             MQIACF_UNCOMMITTED_MSGS
-    UserIdentifier              MQCACF_USER_IDENTIFIER
-
-=back
-
 The output of the C<InquireQueueStatus> is dependent on the
 C<StatusType> specified.
 
-For C<StatusType> 'Queue' (the default), the following fields are returned:
-
-    Key				Macro
-    ===				=====
-    CurrentQDepth               MQIA_CURRENT_Q_DEPTH
-    OpenInputCount              MQIA_OPEN_INPUT_COUNT
-    OpenOutputCount             MQIA_OPEN_OUTPUT_COUNT
-    QName                       MQCA_Q_NAME
-    UncommittedMsgs             MQIACF_UNCOMMITTED_MSGS
-
-The following keys have Boolean values:
-
-=over 4
-
-=item UncommittedMsgs
-
-=back
-
-For C<StatusType> 'Handle', the following fields are returned:
-
-    Key				Macro
-    ===				=====
-    ApplTag                     MQCACF_APPL_TAG
-    ApplType                    MQIA_APPL_TYPE
-    Browse                      MQIACF_OPEN_BROWSE
-    ChannelName                 MQCACH_CHANNEL_NAME
-    Conname                     MQCACH_CONNECTION_NAME
-    InputType                   MQIACF_OPEN_INPUT_TYPE
-    Inquire                     MQIACF_OPEN_INQUIRE
-    Output                      MQIACF_OPEN_OUTPUT
-    ProcessId                   MQIACF_PROCESS_ID
-    QName                       MQCA_Q_NAME
-    Set                         MQIACF_OPEN_SET
-    ThreadId                    MQIACF_THREAD_ID
-    UserIdentifier              MQCACF_USER_IDENTIFIER
-
-The following keys have special value mappings:
-
-=over 4
-
-=item ApplType			(integer)
-
-    Key				Macro
-    ===				=====
-    CHINIT                      MQAT_CHANNEL_INITIATOR
-    QMGR                        MQAT_QMGR
-    USER                        MQAT_USER
-
-=item OpenType			(integer)
-
-    Key				Macro
-    ===				=====
-    Exclusive                   MQQSO_EXCLUSIVE
-    No                          MQQSO_NO
-    Shared                      MQQSO_SHARED
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Browse
-
-=item Inquire
-
-=item Output
-
-=item Set
-
-=back
-
 =head2 Queue Manager Commands
-
-Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the commands for the specific list.
 
   Change Queue Manager
   Inquire Queue Manager
+  Inquire Queue Manager Status
   Ping Queue Manager
 
-The following keys have special value mappings:
+=head2 Service Commands
 
-=over 4
-
-=item QMgrAttrs			(integer list)
-
-    Key				Macro
-    ===				=====
-    All                         MQIACF_ALL
-    AlterationDate              MQCA_ALTERATION_DATE
-    AlterationTime              MQCA_ALTERATION_TIME
-    AuthorityEvent              MQIA_AUTHORITY_EVENT
-    ChannelAutoDef              MQIA_CHANNEL_AUTO_DEF
-    ChannelAutoDefEvent         MQIA_CHANNEL_AUTO_DEF_EVENT
-    ChannelAutoDefExit          MQCA_CHANNEL_AUTO_DEF_EXIT
-    ClusterWorkLoadData         MQCA_CLUSTER_WORKLOAD_DATA
-    ClusterWorkLoadExit         MQCA_CLUSTER_WORKLOAD_EXIT
-    ClusterWorkLoadLength       MQIA_CLUSTER_WORKLOAD_LENGTH
-    CodedCharSetId              MQIA_CODED_CHAR_SET_ID
-    CommandInputQName           MQCA_COMMAND_INPUT_Q_NAME
-    CommandLevel                MQIA_COMMAND_LEVEL
-    ConfigurationEvent          MQIA_CONFIGURATION_EVENT
-    DeadLetterQName             MQCA_DEAD_LETTER_Q_NAME
-    DefXmitQName                MQCA_DEF_XMIT_Q_NAME
-    DistLists                   MQIA_DIST_LISTS
-    InhibitEvent                MQIA_INHIBIT_EVENT
-    LocalEvent                  MQIA_LOCAL_EVENT
-    MaxHandles                  MQIA_MAX_HANDLES
-    MaxMsgLength                MQIA_MAX_MSG_LENGTH
-    MaxPriority                 MQIA_MAX_PRIORITY
-    MaxUncommittedMsgs          MQIA_MAX_UNCOMMITTED_MSGS
-    PerformanceEvent            MQIA_PERFORMANCE_EVENT
-    Platform                    MQIA_PLATFORM
-    QMgrDesc                    MQCA_Q_MGR_DESC
-    QMgrIdentifier              MQCA_Q_MGR_IDENTIFIER
-    QMgrName                    MQCA_Q_MGR_NAME
-    RemoteEvent                 MQIA_REMOTE_EVENT
-    RepositoryName              MQCA_REPOSITORY_NAME
-    RepositoryNamelist          MQCA_REPOSITORY_NAMELIST
-    SSLCRLNamelist              MQCA_SSL_CRL_NAMELIST
-    SSLCryptoHardware           MQCA_SSL_CRYPTO_HARDWARE
-    SSLKeyRepository            MQCA_SSL_KEY_REPOSITORY
-    StartStopEvent              MQIA_START_STOP_EVENT
-    SyncPoint                   MQIA_SYNCPOINT
-    TriggerInterval             MQIA_TRIGGER_INTERVAL
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Force
-
-=item AuthorityEvent
-
-=item InhibitEvent
-
-=item LocalEvent
-
-=item RemoteEvent
-
-=item StartStopEvent
-
-=item PerformanceEvent
-
-=item ChannelAutoDef
-
-=item ChannelAutoDefEvent
-
-=back
+  Change Service
+  Copy Service
+  Create Service
+  Delete Service
+  Inquire Service
+  Inquire Service Status
+  Start Service
+  Stop Service
 
 =head2 StorageClass Commands
-
-Subsets of the these keys are applicable to the following commands.
-As these are not PCF commands, see the MQSC command reference to see
-which keys are applicable for each each.
 
   Change StorageClass
   Create StorageClass
@@ -2630,40 +2036,7 @@ which keys are applicable for each each.
   Inquire StorageClass
   Inquire StorageClass Names
 
-The following keys have special value mappings:
-
-=over 4
-
-=item StorageClassAttrs
-
-    Key
-    ===
-    AlterationDate
-    AlterationTime
-    PageSetId
-    QSharingGroupDisposition
-    StorageClassDesc
-    StorageClassName 
-    XCFGroupName
-    XCFMemberName
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Replace
-
-=back
-
 =head2 CFStruct Commands
-
-Subsets of the these keys are applicable to the following commands.
-As these are not PCF commands, see the MQSC command reference to see
-which keys are applicable for each each.  Note that the CFStruct
-(Coupling Facility Application Structure) commands are available
-starting with release 5.3 of WebSphere MQ for z/OS.
 
   Change CFStruct
   Create CFStruct
@@ -2671,107 +2044,13 @@ starting with release 5.3 of WebSphere MQ for z/OS.
   Inquire CFStruct
   Inquire CFStruct Names
 
-The following keys have special value mappings:
-
-=over 4
-
-=item StorageClassAttrs
-
-    Key
-    ===
-    AlterationDate
-    AlterationTime
-    CFStructDesc
-    CFStructLevel
-    CFStructName
-    Recovery
-
-=back
-
-=back
-
 =head2 Cluster Commands
-
-Subsets of the these keys are applicable to the following commands.
-See the documentation for each of the commands for the specific list.
 
   Inquire Cluster Queue Manager
   Refresh Cluster
   Reset Cluster
   Resume Queue Manager Cluster
   Suspend Queue Manager Cluster
-
-The following keys have special value mappings:
-
-=over 4
-
-=item ClusterQMgrAttrs		(integer list)
-
-    Key				Macro
-    ===				=====
-    AlterationDate              MQCA_ALTERATION_DATE
-    AlterationTime              MQCA_ALTERATION_TIME
-    BatchInterval               MQIACH_BATCH_INTERVAL
-    BatchSize                   MQIACH_BATCH_SIZE
-    ChannelStatus               MQIACH_CHANNEL_STATUS
-    ClusterDate                 MQCA_CLUSTER_DATE
-    ClusterName                 MQCA_CLUSTER_NAME
-    ClusterTime                 MQCA_CLUSTER_TIME
-    ConnectionName              MQCACH_CONNECTION_NAME
-    DataConversion              MQIACH_DATA_CONVERSION
-    Description                 MQCACH_DESC
-    DiscInterval                MQIACH_DISC_INTERVAL
-    HeartbeatInterval           MQIACH_HB_INTERVAL
-    LongRetryCount              MQIACH_LONG_RETRY
-    LongRetryInterval           MQIACH_LONG_TIMER
-    MCAName                     MQCACH_MCA_NAME
-    MCAType                     MQIACH_MCA_TYPE
-    MCAUserIdentifier           MQCACH_MCA_USER_ID
-    MaxMsgLength                MQIACH_MAX_MSG_LENGTH
-    ModeName                    MQCACH_MODE_NAME
-    MsgExit                     MQCACH_MSG_EXIT_NAME
-    MsgRetryCount               MQIACH_MR_COUNT
-    MsgRetryExit                MQCACH_MR_EXIT_NAME
-    MsgRetryInterval            MQIACH_MR_INTERVAL
-    MsgRetryUserData            MQCACH_MR_EXIT_USER_DATA
-    MsgUserData                 MQCACH_MSG_EXIT_USER_DATA
-    NetworkPriority             MQIACH_NETWORK_PRIORITY
-    NonPersistentMsgSpeed       MQIACH_NPM_SPEED
-    Password                    MQCACH_PASSWORD
-    PutAuthority                MQIACH_PUT_AUTHORITY
-    QMgrDefinitionType          MQIACF_Q_MGR_DEFINITION_TYPE
-    QMgrIdentifier              MQCA_Q_MGR_IDENTIFIER
-    QMgrType                    MQIACF_Q_MGR_TYPE
-    ReceiveExit                 MQCACH_RCV_EXIT_NAME
-    ReceiveUserData             MQCACH_RCV_EXIT_USER_DATA
-    SecurityExit                MQCACH_SEC_EXIT_NAME
-    SecurityUserData            MQCACH_SEC_EXIT_USER_DATA
-    SendExit                    MQCACH_SEND_EXIT_NAME
-    SendUserData                MQCACH_SEND_EXIT_USER_DATA
-    SeqNumberWrap               MQIACH_SEQUENCE_NUMBER_WRAP
-    ShortRetryCount             MQIACH_SHORT_RETRY
-    ShortRetryInterval          MQIACH_SHORT_TIMER
-    Suspend                     MQIACF_SUSPEND
-    TpName                      MQCACH_TP_NAME
-    TransportType               MQIACH_XMIT_PROTOCOL_TYPE
-    UserIdentifier              MQCACH_USER_ID
-    XmitQName                   MQCACH_XMIT_Q_NAME
-
-=item Action			(integer)
-
-    Key				Macro
-    ===				=====
-    ForceRemove                 MQACT_FORCE_REMOVE
-
-=back
-
-The following keys have Boolean values:
-
-=over 4
-
-=item Quiesce
-
-=back
 
 =head2 Escape Command
 
@@ -2797,16 +2076,6 @@ actual command methods depends on the specific command.  All of the
 "Inquire*Names" commands return a list of the actual names returned,
 which greatly simplifies the parsing of the return value.
 
-The commands which return a list of names are:
-
-  Inquire AuthInfo Names
-  Inquire Channel Names
-  Inquire Namelist Names
-  Inquire Process Names
-  Inquire Queue Names
-  Inquire StorageClass Names (z/OS)
-  Inquire CFStruct Names (z/OS)
-
 For example:
 
   @qnames = $command->InquireQueueNames( QName => 'FOO.*' );
@@ -2817,20 +2086,7 @@ queue names starting with FOO.
 The rest of the commands return a list of Parameters HASH references,
 extracted from each of the messages sent back from the command server.
 In a scalar context, only the first Parameters HASH reference is
-returned.  This applies to all of the following commands:
-
-  Escape
-  Inquire AuthInfo
-  Inquire CFStruct
-  Inquire Channel
-  Inquire Channel Status
-  Inquire Cluster Queue Manager
-  Inquire Namelist
-  Inquire Process
-  Inquire Queue
-  Inquire Queue Manager
-  Inquire Storage Class
-  Reset Queue Statistics
+returned. Refer to the L</RETURN VALUES> section for the list of commands. 
 
 For example:
 
@@ -2845,141 +2101,7 @@ macro values back into the same strings described above for
 simplifying the input Parameters.
 
 However, there are a few keys in the responses which are not supported
-as keys in the inquiry.  In general, the return values are left
-unmolested, with the exception of the keys documented above for each
-command type, as well as the following:
-
-=head2 Inquire Channel Status Response
-
-The following keys have special value mappings:
-
-=over 4
-
-=item ChannelStatus			(integer)
-
-    Macro				Key
-    =====				===
-    MQCHS_BINDING                       Binding
-    MQCHS_INACTIVE                      Inactive
-    MQCHS_INITIALIZING                  Initializing
-    MQCHS_PAUSED                        Paused
-    MQCHS_REQUESTING                    Requesting
-    MQCHS_RETRYING                      Retrying
-    MQCHS_RUNNING                       Running
-    MQCHS_STARTING                      Starting
-    MQCHS_STOPPED                       Stopped
-    MQCHS_STOPPING                      Stopping
-
-=item MCAStatus				(integer)
-
-    Macro				Key
-    =====				===
-    MQMCAS_RUNNING                      Running
-    MQMCAS_STOPPED                      Stopped
-
-=back
-
-The following keys can be interpreted in a Boolean context:
-
-=over 4
-
-=item InDoubtStatus
-
-=item StopRequested
-
-=back
-
-=head2 Inquire Cluster Queue Manager Response
-
-The following keys have special value mappings:
-
-=over 4
-
-=item QMgrDefinitionType 		(integer)
-
-    Macro				Key
-    =====				===
-    MQQMDT_AUTO_CLUSTER_SENDER          AutoClusterSender
-    MQQMDT_AUTO_EXP_CLUSTER_SENDER      AutoExplicitClusterSender
-    MQQMDT_CLUSTER_RECEIVER             ClusterReceiver
-    MQQMDT_EXPLICIT_CLUSTER_SENDER      ExplicitClusterSender
-
-=item QMgrType				(integer)
-
-    Macro				Key
-    =====				===
-    MQQMT_NORMAL                        Normal
-    MQQMT_REPOSITORY                    Repository
-
-=item ChannelStatus			(integer)
-
-    Macro				Key
-    =====				===
-    MQCHS_BINDING                       Binding
-    MQCHS_INACTIVE                      Inactive
-    MQCHS_INITIALIZING                  Initializing
-    MQCHS_PAUSED                        Paused
-    MQCHS_REQUESTING                    Requesting
-    MQCHS_RETRYING                      Retrying
-    MQCHS_RUNNING                       Running
-    MQCHS_STARTING                      Starting
-    MQCHS_STOPPED                       Stopped
-    MQCHS_STOPPING                      Stopping
-
-=back
-
-The following keys can be interpreted in a Boolean context:
-
-=over 4
-
-=item Suspend
-
-=back
-
-=head2 Inquire Queue Response
-
-The following keys have special value mappings:
-
-=over 4
-
-=item ClusterQType			(integer)
-
-    Macro				Key
-    =====				===
-    MQCQT_ALIAS_Q                       Alias
-    MQCQT_LOCAL_Q                       Local
-    MQCQT_Q_MGR_ALIAS                   QMgrAlias
-    MQCQT_REMOTE_Q                      Remote
-
-=back
-
-=head2 Inquire Queue Manager Response
-
-The following keys have special value mappings:
-
-=over 4
-
-=item Platform				(integer)
-
-    Macro				Key
-    =====				===
-    MQPL_MVS                            MVS
-    MQPL_NSK                            NSK
-    MQPL_OS2                            OS2
-    MQPL_OS400                          OS400
-    MQPL_UNIX                           UNIX
-    MQPL_WINDOWS                        Win16
-    MQPL_WINDOWS_NT                     Win32
-
-=back
-
-The following keys can be interpreted in a Boolean context:
-
-=over 4
-
-=item DistLists
-
-=item SyncPoint
+as keys in the inquiry.  In general, the return values are left unmolested.
 
 =back
 
@@ -3005,5 +2127,9 @@ For WebSphere MQ 5.3, this is:
   Part 1. Programmable Command Formats
     Chapter 4. Definitions of the Programmable Command Formats
     Chapter 5. Structures used for commands and responses
+
+For WebSphere MQ 6.0, this is:
+
+  Same as 5.3 except the Chapter numbers. In 6.0 doc they are Chapter 3 and 4.
 
 =cut

@@ -11,9 +11,9 @@
 #
 #    ..../src/util/extract_reason_codes
 #
-# $Id: ReasonText.in,v 25.1 2004/01/14 19:10:41 biersma Exp $
+# $Id: ReasonText.in,v 27.2 2007/01/11 20:20:41 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -147,6 +147,7 @@ package MQSeries::Constants;
    &MQRCCF_QUIESCE_VALUE_ERROR      => "Quiesce value not valid.",
    &MQRCCF_Q_ALREADY_IN_CELL        => "Queue already exists in cell.",
    &MQRCCF_Q_MGR_CCSID_ERROR        => "Queue manager coded character set identifier error.",
+   &MQRCCF_Q_MGR_NOT_IN_QSG         => "Queue manager not in Queue Sharing Group.",
    &MQRCCF_Q_TYPE_ERROR             => "Queue type not valid.",
    &MQRCCF_Q_WRONG_TYPE             => "Action not valid for the queue of specified type.",
    &MQRCCF_RCV_EXIT_NAME_ERROR      => "Channel receive exit name error.",

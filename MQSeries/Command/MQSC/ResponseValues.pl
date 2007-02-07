@@ -1,7 +1,7 @@
 #
-# $Id: ResponseValues.pl,v 26.1 2004/04/08 13:03:15 biersma Exp $
+# $Id: ResponseValues.pl,v 27.8 2007/01/11 20:20:05 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -9,6 +9,13 @@ package MQSeries::Command::MQSC;
 
 %ResponseValues =
   (
+   ActivityRecording =>	       
+   {
+    DISABLED                   => "Disabled",
+    MSG                        => "Msg",
+    QUEUE                      => "Queue",
+   },
+
    Disabled =>                  # InhibitGet/InhbitPut have reversed logic
    {
     DISABLED		=> 1,
@@ -27,6 +34,26 @@ package MQSeries::Command::MQSC;
     YES			=> 1,
    },
 
+   OnOff =>
+   {
+    OFF			=> "Off",
+    ON			=> "On",
+   },
+
+   AdoptNewMCACheck =>
+   {
+    ALL			=> "All",
+    NETADDR		=> "NetworkAddress",
+    NONE		=> "None",
+    QMNAME		=> "QMgrName",
+   },
+
+   AdoptNewMCAType =>
+   {
+    ALL			=> "All",
+    NO			=> "No",
+   },
+
    Available =>
    {
     UNAVAILABLE		=> 0,
@@ -38,6 +65,45 @@ package MQSeries::Command::MQSC;
     ALL                 => "All",
     PRIVATE             => "Private",
     SHARED              => "Shared",
+   },
+
+   ChannelEvent =>
+   {
+    DISABLED           => "Disabled",
+    ENABLED            => "Enabled",
+    EXCEPTION          => "Exception",
+   },
+
+   ChannelMonitoring =>
+   {
+    HIGH                       => "High",
+    LOW			       => "Low",
+    MEDIUM		       => "Medium",
+    NONE                       => "None",
+    OFF			       => "Off",
+   },
+
+   ClusterSenderMonitoringDefault =>
+   {
+    HIGH			=> "High",
+    LOW				=> "Low",
+    MEDIUM			=> "Medium",
+    QMGR                        => "QMgr",
+    OFF				=> "Off",
+   },
+
+   CLWLUseQ =>
+   {
+    ANY    		=> "Any",
+    LOCAL    		=> "Local",
+    QMGR    		=> "QMgr", # Only returned by queue CLWLUseQ
+   },
+
+   CommandEvent =>
+   {
+    DISABLED           => "Disabled",
+    ENABLED            => "Enabled",
+    NODISPLAY          => "NoDisplay",
    },
 
    DefInputOpenOption =>
@@ -54,12 +120,27 @@ package MQSeries::Command::MQSC;
     TEMPDYN	    	=> "Temporary",
    },
 
-   IntraGroupAuthority =>
+   IGQPutAuthority =>
    {
     ALTIGQ              => "AltIGQ",
     CTX                 => "Context",
     DEF                 => "Default",
     ONLYIGQ             => "OnlyIGQ",
+   },
+
+   IPAddressVersion =>
+   {
+    IPV4		=> "IPv4",
+    IPV6		=> "IPv6",
+   },
+
+   MonitoringDft =>
+   {
+    OFF                         => "Off",
+    QMGR                        => "QMgr",
+    LOW                         => "Low",
+    MEDIUM                      => "Medium",
+    HIGH                        => "High",
    },
 
    MsgDeliverySequence =>
@@ -74,7 +155,21 @@ package MQSeries::Command::MQSC;
     NORMAL		=> "Normal",
    },
 
-   QSharingGroupDisposition =>
+   QMgrAccounting =>	      # QMgr-level QueueAccounting
+   {
+    NONE                       => "None",
+    ON                         => "On",
+    OFF                        => "Off",
+   },
+
+   QueueAccounting =>
+   {
+    OFF			=> "Off",
+    ON			=> "On",
+    QMGR		=> "QMgr",
+   },
+
+   QSGDisposition =>
    {
     COPY                => "Copy",
     GROUP               => "Group",
@@ -98,10 +193,36 @@ package MQSeries::Command::MQSC;
     QMODEL    		=> "Model",
    },
 
+   ReceiveTimeoutType =>
+   {
+    ADD    		=> "Add",
+    EQUAL    		=> "Equal",
+    MULTIPLY   		=> "Multiply",
+   },
+
    Scope =>
    {
-    QMGR    		=> "QMgr",
     CELL    		=> "Cell",
+    QMGR    		=> "QMgr",
+   },
+
+   SharedQQmgrName =>
+   {
+    IGNORE   		=> "Ignore",
+    USE   		=> "Use",
+   },
+
+   TCPStackType =>
+   {
+    MULTIPLE   		=> "Multiple",
+    SINGLE   		=> "Single",
+   },
+
+   TraceRouteRecording =>
+   {
+    DISABLED   		=> "Disabled",
+    MSG   		=> "Msg",
+    QUEUE   		=> "Queue",
    },
 
    TriggerType =>
@@ -116,6 +237,11 @@ package MQSeries::Command::MQSC;
    {
     NORMAL    		=> "Normal",
     XMITQ    		=> "XMITQ",
+   },
+
+   KeepAliveInterval =>
+   {
+    AUTO    		=> "Auto",
    },
 
    ChannelStatus =>
@@ -216,6 +342,21 @@ package MQSeries::Command::MQSC;
     CLUSSDR		=> "ClusterSender",
    },
 
+   Compression =>
+   {
+    NONE		=> "None",
+    SYSTEM		=> "System",
+   },
+
+   MessageCompression =>
+   {
+    ANY				=> "Any",
+    NONE			=> "None",
+    RLE				=> "Rle",
+    ZLIBFAST			=> "ZlibFast",
+    ZLIBHIGH			=> "ZlibHigh",
+   },
+
    TraceType =>
    {
     GLOBAL		=> "Global",
@@ -279,6 +420,38 @@ package MQSeries::Command::MQSC;
     AUTHINFO            => "AuthInfo",
    },
 
+   QMgrMonitoring =>
+   {
+    HIGH			=> "High",
+    LOW				=> "Low",
+    MEDIUM			=> "Medium",
+    NONE                        => "None",
+    OFF				=> "Off",
+   },
+
+   QueueMonitoring =>
+   {
+    HIGH			=> "High",
+    LOW				=> "Low",
+    MEDIUM			=> "Medium",
+    QMGR                        => "QMgr",
+    OFF				=> "Off",
+   },
+   TraceRouteRecording =>	       
+   {
+    DISABLED                   => "Disabled",
+    MSG                        => "Msg",
+    QUEUE                      => "Queue",
+   },
+
  );
+
+#
+# These parameter names changed from the guess in MQSeries 1.23 and
+# before and the PCF name in 1.24 and later.  Add this for backwards
+# compatibility.
+#
+$ResponseValues{IntraGroupAuthority} = $ResponseValues{IGQPutAuthority};
+$ResponseValues{QSharingGroupDisposition} = $ResponseValues{QSGDisposition};
 
 1;

@@ -1,7 +1,7 @@
 #
-# $Id: Requests.pl,v 25.1 2004/01/14 19:10:24 biersma Exp $
+# $Id: Requests.pl,v 27.2 2007/01/11 20:20:04 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -176,7 +176,20 @@ package MQSeries::Command::MQSC;
    InquireAuthInfoNames		=> [ "DISPLAY",      	$RequestParameters{AuthInfo} ],
 
    #
+   # CFStruc Commands
+   #
+   ChangeCFStruc		=> [ "ALTER",     	$RequestParameters{CFStruc} ],
+   CreateCFStruc		=> [ "DEFINE", 	     	$RequestParameters{CFStruc} ],
+   DeleteCFStruc		=> [ "DELETE",     	$RequestParameters{CFStruc} ],
+   InquireCFStruc		=> [ "DISPLAY",      	$RequestParameters{CFStruc},
+				     $RequestArgs{CFStruc}, ],
+   InquireCFStrucNames		=> [ "DISPLAY",      	$RequestParameters{CFStruc} ],
+
+   #
    # CFStruct Commands
+   #
+   # NOTE: CFStruct is for backwards compatibility with pre-1.24 MQSC
+   #       New code should use CFStruc (no final 't')
    #
    ChangeCFStruct		=> [ "ALTER",     	$RequestParameters{CFStruct} ],
    CreateCFStruct		=> [ "DEFINE", 	     	$RequestParameters{CFStruct} ],

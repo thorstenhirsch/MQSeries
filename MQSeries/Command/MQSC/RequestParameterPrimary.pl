@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameterPrimary.pl,v 25.1 2004/01/14 19:10:23 biersma Exp $
+# $Id: RequestParameterPrimary.pl,v 27.2 2007/01/11 20:20:03 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -61,6 +61,18 @@ package MQSeries::Command::MQSC;
 
    #
    # Coupling Facility Structure commands
+   #
+   ChangeCFStruc		=> "CFStrucName",
+   CopyCFStruc			=> "CFStrucName",
+   CreateCFStruc		=> "CFStrucName",
+   DeleteCFStruc		=> "CFStrucName",
+   InquireCFStruc		=> "CFStrucName",
+
+   #
+   # Coupling Facility Structure commands
+   #
+   # NOTE: CFStruct is for backwards compatibility with pre-1.24 MQSC
+   #       New code should use CFStruc (no final 't')
    #
    ChangeCFStruct		=> "CFStructName",
    CopyCFStruct			=> "CFStructName",

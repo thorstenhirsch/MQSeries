@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameters.pl,v 26.1 2004/04/08 13:03:31 biersma Exp $
+# $Id: RequestParameters.pl,v 27.5 2007/01/11 20:20:04 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -18,39 +18,73 @@ package MQSeries::Command::MQSC;
    #
    QueueManager =>
    {
+    ActivityRecording           => [ "ACTIVREC",        $RequestValues{ActivityRecording} ],
     AuthorityEvent		=> [ "AUTHOREV", 	$RequestValues{Enabled} ],
     ChannelAutoDef		=> [ "CHAD",		$RequestValues{Enabled} ],
     ChannelAutoDefEvent		=> [ "CHADEV",		$RequestValues{Enabled} ],
     ChannelAutoDefExit 		=> [ "CHADEXIT",	"string" ],
+    ChannelEvent                => [ "CHLEV",           $RequestValues{ChannelEvent} ],
+    ChannelMonitoring           => [ "MONCHL",          $RequestValues{ChannelMonitoring} ],
+    ChinitAdapters              => [ "CHIADAPS",        "string" ],
+    ChinitDispatchers           => [ "CHIDISPS",        "string" ],
+    ChinitTraceAutoStart        => [ "TRAXSTR",         "integer" ],
+    ChinitTraceTableSize        => [ "TRAXTBL",         "string" ],
+    ClusterSenderMonitoringDefault => [ "MONACLS",      $RequestValues{ClusterSenderMonitoringDefault} ],
     ClusterWorkLoadExit		=> [ "CLWLEXIT",	"string" ],
     ClusterWorkLoadData		=> [ "CLWLDATA",	"string" ],
     ClusterWorkLoadLength	=> [ "CLWLLEN",		"string" ],
+    CLWLMRUChannels             => [ "CLWLMRUC",        "string" ],
+    CLWLUseQ                    => [ "CLWLUSEQ",        $RequestValues{CLWLUseQ} ],
     CodedCharSetId		=> [ "CCSID",		"integer" ],
+    CommandEvent                => [ "CMDEV",           $RequestValues{CommandEvent} ],
     ConfigurationEvent          => [ "CONFIGEV",        $RequestValues{Enabled} ],
     DeadLetterQName		=> [ "DEADQ", 		"string" ],
     DefXmitQName		=> [ "DEFXMITQ",	"string" ],
     ExpiryInterval              => [ "EXPRYINT",        "string" ], # OFF / Number
     Force			=> [ "FORCE" ],
+    IGQPutAuthority             => [ "IGQAUT" ,        $RequestValues{IGQPutAuthority} ],
     InhibitEvent		=> [ "INHIBTEV",	$RequestValues{Enabled} ],
-    IntraGroupAuthority         => [ "IGQAUT",          $RequestValues{IntraGroupAuthority} ],
+    IGQPutAuthority         => [ "IGQAUT",          $RequestValues{IGQPutAuthority} ],
     IntraGroupQueueing          => [ "IGQ",             $RequestValues{Enabled} ], 
-    IntraGroupUser              => [ "IGQUSER",         "string" ],
+    IGQUserId                    => [ "IGQUSER",         "string" ],
+    IPAddressVersion             => [ "IPADDRV",         $RequestValues{IPAddressVersion} ],
+    ListenerTimer                => [ "LSTRTMR",         "string" ],
     LocalEvent			=> [ "LOCALEV",		$RequestValues{Enabled} ],
+    LU62ARMSuffix               => [ "LU62ARM",         "integer" ],
+    LU62Channels                => [ "LU62CHL",         "integer" ],
+    LUGroupName                 => [ "LUGROUP",         "string" ],
+    LUName                      => [ "LUNAME",          "string" ],
     MaxHandles			=> [ "MAXHANDS", 	"integer" ],
+    MaxActiveChannels           => [ "ACTCHL",          "integer" ],
+    MaxChannels                 => [ "MAXCHL",          "integer" ],
     MaxMsgLength		=> [ "MAXMSGL",		"integer" ],
     MaxUncommittedMsgs		=> [ "MAXUMSGS", 	"integer" ],
     NonPersistentMsgClass       => [ "NPMCLASS",        $RequestValues{NonPersistentMsgClass} ],
+    OutboundPortMax             => [ "OPORTMAX",        "integer" ],
+    OutboundPortMin             => [ "OPORTMIN",        "integer" ],
     PerformanceEvent		=> [ "PERFMEV",		$RequestValues{Enabled} ],
     QMgrDesc			=> [ "DESCR", 		"string" ],
     QMgrAttrs			=> [ "",		$RequestValues{QMgrAttrs} ],
-    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
+    QueueAccounting             => [ "ACCTQ",           $RequestValues{QMgrAccounting} ],
+    QueueMonitoring             => [ "MONQ",            $RequestValues{QMgrMonitoring} ],
+    ReceiveTimeout              => [ "RCVTIME",         "integer" ],
+    ReceiveTimeoutMin           => [ "RCVTMIN",         "integer" ],
+    ReceiveTimeoutType          => [ "RCVTTYPE",        $RequestValues{ReceiveTimeoutType} ],
     RemoteEvent			=> [ "REMOTEEV",	$RequestValues{Enabled} ],
     RepositoryName 		=> [ "REPOS",		"string" ],
     RepositoryNamelist		=> [ "REPOSNL",		"string" ],
+    SharedQQMgrName             => [ "SQQMNAME",        $RequestValues{SharedQQMgrName} ],
     SSLCRLNamelist              => [ "SSLCRLNL",        "string" ],
+    SSLEvent                    => [ "SSLEV",           $RequestValues{Enabled} ],
     SSLKeyRepository            => [ "SSLKEYR",         "string" ],
+    SSLKeyResetCount            => [ "SSLRKEYC",        "integer" ],
     SSLTasks                    => [ "SSLTASKS",        "integer" ],
     StartStopEvent		=> [ "STRSTPEV",	$RequestValues{Enabled} ],
+    TCPChannels                 => [ "TCPCHL",          "integer" ],
+    TCPKeepAlive                => [ "TCPKEEP",         $RequestValues{Yes} ],
+    TCPName                     => [ "TCPNAME",         "string" ],
+    TCPStackType                => [ "TCPSTACK",        $RequestValues{TCPStackType} ],
+    TraceRouteRecording         => [ "ROUTEREC",        $RequestValues{TraceRouteRecording} ],
     TriggerInterval		=> [ "TRIGINT", 	"integer" ],
    },
 
@@ -66,7 +100,8 @@ package MQSeries::Command::MQSC;
     FromProcessName		=> [ "LIKE",		"string" ],
     ProcessDesc			=> [ "DESCR",		"string" ],
     ProcessAttrs		=> [ "",		$RequestValues{ProcessAttrs} ],
-    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
+    QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
+   # QSGDisposition		=> [ "QSGDISP",         $RequestValues{QSGDisposition} ],
    },
 
    InquireQueueNames =>
@@ -81,7 +116,13 @@ package MQSeries::Command::MQSC;
     BackoutThreshold		=> [ "BOTHRESH", 	"integer" ],
     BaseQName			=> [ "TARGQ", 		"string" ],
     CommandScope                => [ "CMDSCOPE",        "string" ],
-    CouplingStructure           => [ "CFSTRUCT",        "string" ],
+    # CFStructure is for backwards compatibility with pre-1.24 (new: CFStructure)
+    CFStructure                => [ "CFSTRUCT",        "string" ],
+    #CFStructure		=> [ "CFSTRUCT",        "string" ],
+    ClusterInfo			=> [ "CLUSINFO" ],
+    CLWLQueuePriority           => [ "CLWLPRTY" ,      "integer" ],
+    CLWLQueueRank               => [ "CLWLRANK",       "integer" ],
+    CLWLUseQ                    => [ "CLWLUSEQ",        $RequestValues{CLWLUseQ} ],
     DefInputOpenOption		=> [ "DEFSOPT",		$RequestValues{DefInputOpenOption} ],
     DefPersistence		=> [ "DEFPSIST",	$RequestValues{Yes} ],
     DefPriority			=> [ "DEFPRTY", 	"integer" ],
@@ -106,8 +147,11 @@ package MQSeries::Command::MQSC;
     QName			=> [ "QUEUE",		"string" ],
     QServiceInterval		=> [ "QSVCINT",		"integer" ],
     QServiceIntervalEvent 	=> [ "QSVCIEV",		$RequestValues{QServiceIntervalEvent} ],
-    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
+   # QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
+    QSGDisposition		=> [ "QSGDISP",         $RequestValues{QSGDisposition} ],
     QType			=> [ "TYPE",		$RequestValues{QType} ],
+    QueueAccounting             => [ "ACCTQ",           $RequestValues{QueueAccounting} ],
+    QueueMonitoring             => [ "MONQ",            $RequestValues{QueueMonitoring} ],
     RemoteQMgrName		=> [ "RQMNAME", 	"string" ],
     RemoteQName			=> [ "RNAME",		"string" ],
     Replace			=> [ "",		$RequestValues{Replace} ],
@@ -115,6 +159,7 @@ package MQSeries::Command::MQSC;
     Scope 			=> [ "SCOPE", 		$RequestValues{Scope} ],
     Shareability		=> [ "",		$RequestValues{Shareability} ],
     ToQName			=> [ "QUEUE",		"string" ],
+ #   TPipeNames                  => [ "TPIPE",           "string"],
     TriggerControl		=> [ "",		$RequestValues{TriggerControl} ],
     TriggerData			=> [ "TRIGDATA",      	"string" ],
     TriggerDepth		=> [ "TRIGDPTH", 	"integer" ],
@@ -134,8 +179,8 @@ package MQSeries::Command::MQSC;
     ClusterName			=> [ "CLUSTER",		"string" ],
     ClusterNamelist		=> [ "CLUSNL",		"string" ],
     DefBind			=> [ "DEFBIND",		$RequestValues{DefBind} ],
+    # ClusInfo is for backwards compatibility with pre-1.24 (new: ClusterInfo)
     ClusInfo			=> [ "CLUSINFO" ],
-
    },
 
    InquireChannelNames =>
@@ -162,10 +207,14 @@ package MQSeries::Command::MQSC;
     ChannelInstanceAttrs 	=> [ "",		$RequestValues{ChannelAttrs} ],
     ChannelInstanceType		=> [ "",		$RequestValues{ChannelInstanceType} ],
     ChannelName			=> [ "CHANNEL",		"string" ],
+    ChannelMonitoring           => [ "MONCHL",          $RequestValues{QueueMonitoring} ],
     ChannelTable		=> [ "CHLTABLE", 	$RequestValues{ChannelTable} ],
     ChannelType 		=> [ "CHLTYPE",		$RequestValues{ChannelType} ],
     ClusterName			=> [ "CLUSTER",		"string" ],
     ClusterNamelist		=> [ "CLUSNL",		"string" ],
+    CLWLChannelRank             => [ "CLWLRANK",        "integer" ],
+    CLWLChannelPriority         => [ "CLWLPRTY",        "integer" ],
+    CLWLChannelWeight           => [ "CLWLWGHT",        "integer" ],
     CommandScope                => [ "CMDSCOPE",        "string" ],
     ConnectionName		=> [ "CONNAME",		"string" ],
     DataConversion		=> [ "CONVERT",		$RequestValues{Yes} ],
@@ -173,6 +222,7 @@ package MQSeries::Command::MQSC;
     DiscInterval		=> [ "DISCINT",		"integer" ],
     EnvironmentParameters	=> [ "ENVPARM",		"string" ],
     FromChannelName		=> [ "LIKE",		"string" ],
+    HeaderCompression           => [ "COMPHDR",         $RequestValues{HeaderCompression} ],
     HeartbeatInterval		=> [ "HBINT",		"integer" ],
     InDoubt 			=> [ "ACTION",		$RequestValues{InDoubt} ],
     InitiationQName 		=> [ "INITQ",		"string" ],
@@ -185,6 +235,7 @@ package MQSeries::Command::MQSC;
     MCAType			=> [ "MCATYPE",		$RequestValues{MCAType} ],
     MCAUserIdentifier		=> [ "MCAUSER",		"string" ],
     MaxMsgLength		=> [ "MAXMSGL",		"integer" ],
+    MessageCompression          => [ "COMPMSG",         $RequestValues{MessageCompression} ],
     ModeName			=> [ "MODENAME",      	"string" ],
     MsgExit			=> [ "MSGEXIT",		"string" ],
     MsgRetryCount		=> [ "MRRTY",		"integer" ],
@@ -200,7 +251,8 @@ package MQSeries::Command::MQSC;
     Port			=> [ "PORT",		"integer" ],
     PutAuthority		=> [ "PUTAUT",		$RequestValues{PutAuthority} ],
     QMgrName			=> [ "QMNAME",		"string" ],
-    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
+    QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
+   # QSGDisposition		=> [ "QSGDISP",         $RequestValues{QSGDisposition} ],
     Quiesce 			=> [ "MODE",		$RequestValues{Quiesce} ],
     ReceiveExit			=> [ "RCVEXIT",		"string" ],
     ReceiveUserData		=> [ "RCVDATA",		"string" ],
@@ -234,7 +286,8 @@ package MQSeries::Command::MQSC;
     
     CommandScope                => [ "CMDSCOPE",        "string" ],
     FromNamelistName		=> [ "LIKE",		"string" ],
-    QSharingGroupDisposition    => [ "QSGDISP",         $RequestValues{QSharingGroupDisposition} ],
+    QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
+   # QSGDisposition		=> [ "QSGDISP",         $RequestValues{QSGDisposition} ],
     ToNamelistName 		=> [ "NAMELIST",	"string" ],
 
     NamelistAttrs		=> [ "",		$RequestValues{NamelistAttrs} ],
@@ -280,6 +333,8 @@ package MQSeries::Command::MQSC;
    {
     StorageClassName		=> [ "STGCLASS",	"string" ],
     PageSetId			=> [ "PSID",		"integer" ],
+    QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
+    #QSGDisposition		=> [ "QSGDISP",         $RequestValues{QSGDisposition} ],
     StorageClassDesc		=> [ "DESCR",		"string" ],
     XCFGroupName		=> [ "XCFGNAME",	"string" ],
     XCFMemberName		=> [ "XCFMNAME",	"string" ],
@@ -307,9 +362,10 @@ package MQSeries::Command::MQSC;
     AuthInfoType                => [ "AUTHTYPE",        $RequestValues{AuthInfoType} ],
     LDAPPassword                => [ "LDAPPWD",         "string" ],
     LDAPUserName                => [ "LDAPUSER",        "string" ],
+    QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
+   # QSGDisposition		=> [ "QSGDISP",         $RequestValues{QSGDisposition} ],
     AuthInfoAttrs               => [ "",                $RequestValues{AuthInfoAttrs} ],
    },
-
 
    #
    # These parameters are used to defined or update specific CF Structure
@@ -317,13 +373,33 @@ package MQSeries::Command::MQSC;
    # the values are encoded.  A related list in RequestValues.pl
    # specifies the attributes that can be inquired ("DISPLAY CFSTRUCT").
    #
+   CFStruc =>
+   {
+    CFStrucAttrs		=> [ "",                $RequestValues{CFStrucAttrs} ],
+
+    CFLevel			=> [ "CFLEVEL",         "integer" ],
+    CFStrucDesc			=> [ "DESCR",           "string", ],
+    CFStrucName			=> [ "CFSTRUCT",        "string" ],
+    Recovery                    => [ "RECOVER",         $RequestValues{Yes} ],
+   },
+
+   #
+   # These parameters are used to defined or update specific CF Structure
+   # attributes ("DEFINE CFSTRUCT", "ALTER CFSTRUCT"), and specify how
+   # the values are encoded.  A related list in RequestValues.pl
+   # specifies the attributes that can be inquired ("DISPLAY CFSTRUCT").
+   #
+   # NOTE: CFStruct is for backwards compatibility with pre-1.24 MQSC
+   #       New code should use CFStruc (no final 't')
+   #
    CFStruct =>
    {
+    CFStructAttrs               => [ "",                $RequestValues{CFStructAttrs} ],
+
     CFStructDesc                => [ "DESCR",           "string", ],
     CFStructLevel               => [ "CFLEVEL",         "integer" ],
     CFStructName                => [ "CFSTRUCT",        "string" ],
     Recovery                    => [ "RECOVER",         $RequestValues{Yes} ],
-    CFStructAttrs               => [ "",                $RequestValues{CFStructAttrs} ],
    },
 
 

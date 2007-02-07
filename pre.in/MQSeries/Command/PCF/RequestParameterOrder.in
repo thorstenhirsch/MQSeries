@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: RequestParameterOrder.in,v 25.1 2004/01/14 19:10:37 biersma Exp $
+# $Id: RequestParameterOrder.in,v 27.2 2007/01/11 20:20:39 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,6 +21,7 @@ package MQSeries::Command::PCF;
 
    InquireQueueStatus           => [ qw(StatusType OpenType QStatusAttrs) ],
    InquireClusterQueueManager   => [ qw(Channel ClusterName ClusterQMgrAtrrs) ],
+   InquireConnection                   => [ qw(ConnectionId GenericConnectionId) ],
   );
 
 1;

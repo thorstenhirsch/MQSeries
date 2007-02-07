@@ -1,7 +1,7 @@
 #
-# $Id: Queue.pm,v 26.1 2004/01/15 19:35:13 biersma Exp $
+# $Id: Queue.pm,v 27.3 2007/01/11 20:20:35 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -26,7 +26,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 sub new {
     my $proto = shift;
@@ -1264,9 +1264,9 @@ redirect how they get logged.
 For example, one might want everything to be logged via syslog:
 
   sub MyLogger {
-      my $message = @_;
-      foreach my $line ( split(/\n+/,$message) ) {
-          syslog("err",$message);
+      my ($message) = @_;
+      foreach my $line (split(/\n+/, $message)) {
+          syslog("err", $line);
       }
   }
 

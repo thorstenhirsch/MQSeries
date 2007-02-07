@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 25.1 2004/01/14 19:10:15 biersma Exp $";
+static char rcsid[] = "$Id: PCF.xs,v 27.5 2007/01/11 20:19:58 molinam Exp $";
 
 /*
-  (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+  (c) 1999-2007 Morgan Stanley Dean Witter and Co.
   See ..../src/LICENSE for terms of distribution.
  */
 
@@ -81,154 +81,156 @@ MODULE = MQSeries::Message::PCF		PACKAGE = MQSeries::Message::PCF
 
 void
 MQDecodePCF(pBuffer)
-	PMQCHAR pBuffer;
+     PMQCHAR pBuffer;
 
-	PPCODE:
-	{
+     PPCODE:
+     {
+	 PMQCHAR   pTemp = pBuffer;
+	 PMQCHAR   pSListTemp;
+	 MQCFST   *pStringParam;
+#ifdef MQCFT_BYTE_STRING
+	 MQCFBS   *pByteStringParam;
+#endif
+	 MQCFIN   *pIntegerParam;
+	 MQCFSL   *pStringParamList;
+	 MQCFIL   *pIntegerParamList;
+	 MQLONG    StringLength;
 
-	  PMQCHAR pTemp = pBuffer;
-	  PMQCHAR pSListTemp;
-	  MQCFST *pStringParam;
-	  MQCFIN *pIntegerParam;
-	  MQCFSL *pStringParamList;
-	  MQCFIL *pIntegerParamList;
-	  MQLONG StringLength;
+	 HV       *HeaderHV, *DataHV;
+	 AV       *DataAV, *ListAV;
+	 SV      **svp;
+	 int       count, listcount, errors = 0, tmpStringLength;
 
-	  HV *HeaderHV, *DataHV;
-	  AV *DataAV, *ListAV;
-	  SV **svp;
-	  int count, listcount, foundtype, tmpStringLength;
+	 MQCFH     Header = *(MQCFH *)pTemp;
+	 pTemp += Header.StrucLength;
 
-	  MQCFH Header = *(MQCFH *)pTemp;
-	  pTemp += Header.StrucLength;
+	 /* Create hash with header fields */
+	 HeaderHV = newHV();	
 
-	  HeaderHV = newHV();	
+	 hv_store(HeaderHV,"Type",4,(newSViv(Header.Type)),0);
+	 hv_store(HeaderHV,"Version",7,(newSViv(Header.Version)),0);
+	 hv_store(HeaderHV,"Command",7,(newSViv(Header.Command)),0);
+	 hv_store(HeaderHV,"MsgSeqNumber",12,(newSViv(Header.MsgSeqNumber)),0);
+	 hv_store(HeaderHV,"Control",7,(newSViv(Header.Control)),0);
+	 hv_store(HeaderHV,"CompCode",8,(newSViv(Header.CompCode)),0);
+	 hv_store(HeaderHV,"Reason",6,(newSViv(Header.Reason)),0);
+	 hv_store(HeaderHV,"ParameterCount",14,(newSViv(Header.ParameterCount)),0);
 
-	  hv_store(HeaderHV,"Type",4,(newSViv(Header.Type)),0);
-	  hv_store(HeaderHV,"Version",7,(newSViv(Header.Version)),0);
-	  hv_store(HeaderHV,"Command",7,(newSViv(Header.Command)),0);
-	  hv_store(HeaderHV,"MsgSeqNumber",12,(newSViv(Header.MsgSeqNumber)),0);
-	  hv_store(HeaderHV,"Control",7,(newSViv(Header.Control)),0);
-	  hv_store(HeaderHV,"CompCode",8,(newSViv(Header.CompCode)),0);
-	  hv_store(HeaderHV,"Reason",6,(newSViv(Header.Reason)),0);
-	  hv_store(HeaderHV,"ParameterCount",14,(newSViv(Header.ParameterCount)),0);
-
-	  XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
+	 XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
 	  
-	  DataAV = newAV();
+	 /* Create array with data */
+	 DataAV = newAV();
+	 
+	 for ( count = 0 ; count < (int)Header.ParameterCount ; count++ ) {
+	     /*
+	      * FIXME for MQV6:
+	      * - Byte
+	      * - Byte list
+	      * - Group
+	      * - 64-bit integer
+	      * - 64-bit integer list
+	      * - Display unknown type number
+	      */
+	     pStringParam = (MQCFST *)pTemp;
+#ifdef MQCFT_BYTE_STRING
+	     pByteStringParam = (MQCFBS *)pTemp;
+#endif
+	     pIntegerParam = (MQCFIN *)pTemp;
+	     pStringParamList = (MQCFSL *)pTemp;
+	     pIntegerParamList = (MQCFIL *)pTemp;
 
-	  for ( count = 0 ; count < (int)Header.ParameterCount ; count++ ) {
-
-	    pStringParam = (MQCFST *)pTemp;
-	    pIntegerParam = (MQCFIN *)pTemp;
-	    pStringParamList = (MQCFSL *)pTemp;
-	    pIntegerParamList = (MQCFIL *)pTemp;
-
-	    foundtype = 0;
-
-	    if ( pStringParam->Type == MQCFT_STRING ) {
-
-	      DataHV = newHV();
+	     /* warn("PCF parameter %d is of type %d, structure length %d, parameter %d\n", count, pStringParam->Type, pStringParam->StrucLength, pStringParam->Parameter); */
+	     
+	     if ( pStringParam->Type == MQCFT_STRING ) {
+		 DataHV = newHV();
 	      
-	      hv_store(DataHV,"Type",4,(newSViv(pStringParam->Type)),0);
-	      hv_store(DataHV,"Parameter",9,(newSViv(pStringParam->Parameter)),0);
-	      hv_store(DataHV,"CodedCharSetId",14,(newSViv(pStringParam->CodedCharSetId)),0);
-	      hv_store(DataHV,"String",6,(newSVpvn(pStringParam->String,pStringParam->StringLength)),0);
+		 hv_store(DataHV,"Type",4,(newSViv(pStringParam->Type)),0);
+		 hv_store(DataHV,"Parameter",9,(newSViv(pStringParam->Parameter)),0);
+		 hv_store(DataHV,"CodedCharSetId",14,(newSViv(pStringParam->CodedCharSetId)),0);
+		 hv_store(DataHV,"String",6,(newSVpvn(pStringParam->String,pStringParam->StringLength)),0);
 	      
-	      av_push(DataAV,newRV_noinc((SV*)DataHV));
-
-	      pTemp += pStringParam->StrucLength;
-
-	      foundtype = 1;
-		
-	    }
-
-	    if ( pIntegerParam->Type == MQCFT_INTEGER ) {
-
-	      DataHV = newHV();
+		 av_push(DataAV,newRV_noinc((SV*)DataHV));
+		 pTemp += pStringParam->StrucLength;
+#ifdef MQCFT_BYTE_STRING
+	     } else if ( pByteStringParam->Type == MQCFT_BYTE_STRING ) {
+		 DataHV = newHV();
 	      
-	      hv_store(DataHV,"Type",4,(newSViv(pIntegerParam->Type)),0);
-	      hv_store(DataHV,"Parameter",9,(newSViv(pIntegerParam->Parameter)),0);
-	      hv_store(DataHV,"Value",5,(newSViv(pIntegerParam->Value)),0);
-
-	      av_push(DataAV,newRV_noinc((SV*)DataHV));
-
-	      pTemp += pIntegerParam->StrucLength;
-
-	      foundtype = 1;
-
-	    }	
-
-	    if ( pStringParamList->Type == MQCFT_STRING_LIST ) {
-
-	      DataHV = newHV();
+		 hv_store(DataHV,"Type",4,(newSViv(pByteStringParam->Type)),0);
+		 hv_store(DataHV,"Parameter",9,(newSViv(pByteStringParam->Parameter)),0);
+		 hv_store(DataHV,"ByteString",10,(newSVpvn(pByteStringParam->String,pByteStringParam->StringLength)),0);
 	      
-	      hv_store(DataHV,"Type",4,(newSViv(pStringParamList->Type)),0);
-	      hv_store(DataHV,"Parameter",9,(newSViv(pStringParamList->Parameter)),0);
-	      hv_store(DataHV,"CodedCharSetId",14,(newSViv(pStringParamList->CodedCharSetId)),0);
-
-	      ListAV = newAV();
-	      pSListTemp = pStringParamList->Strings;
-
-	      for ( listcount = 0 ; listcount < (int)pStringParamList->Count ; listcount++ ) {
-
-		tmpStringLength = 0;
-		
-		while ( 
-		       tmpStringLength < pStringParamList->StringLength &&
-		       pSListTemp[tmpStringLength] != '\0'
-		       ) {
-		  tmpStringLength++;
-		}
-
-		av_push(ListAV,newSVpvn(pSListTemp,tmpStringLength));
-		pSListTemp += pStringParamList->StringLength;
-
-	      }
-
-	      hv_store(DataHV,"Strings",7,(newRV_noinc((SV*)ListAV)),0);
-
-	      av_push(DataAV,newRV_noinc((SV*)DataHV));
-
-	      pTemp += pStringParamList->StrucLength;
-
-	      foundtype = 1;
+		 av_push(DataAV,newRV_noinc((SV*)DataHV));
+		 pTemp += pByteStringParam->StrucLength;
+#endif /*MQCFT_BYTE_STRING  */
+	     } else if ( pIntegerParam->Type == MQCFT_INTEGER ) {
+		 DataHV = newHV();
 	      
-	    }
-	    
-	    if ( pIntegerParamList->Type == MQCFT_INTEGER_LIST ) {
-
-	      DataHV = newHV();
-
-	      hv_store(DataHV,"Type",4,(newSViv(pIntegerParamList->Type)),0);
-	      hv_store(DataHV,"Parameter",9,(newSViv(pIntegerParamList->Parameter)),0);
-
-	      ListAV = newAV();
+		 hv_store(DataHV,"Type",4,(newSViv(pIntegerParam->Type)),0);
+		 hv_store(DataHV,"Parameter",9,(newSViv(pIntegerParam->Parameter)),0);
+		 hv_store(DataHV,"Value",5,(newSViv(pIntegerParam->Value)),0);
+		 
+		 av_push(DataAV,newRV_noinc((SV*)DataHV));
+		 pTemp += pIntegerParam->StrucLength;
+	     } else if ( pStringParamList->Type == MQCFT_STRING_LIST ) {
+		 DataHV = newHV();
 	      
-	      for ( listcount = 0 ; listcount < (int)pIntegerParamList->Count ; listcount++ ) {
-		av_push(ListAV,newSViv(pIntegerParamList->Values[listcount]));
-	      }
+		 hv_store(DataHV,"Type",4,(newSViv(pStringParamList->Type)),0);
+		 hv_store(DataHV,"Parameter",9,(newSViv(pStringParamList->Parameter)),0);
+		 hv_store(DataHV,"CodedCharSetId",14,(newSViv(pStringParamList->CodedCharSetId)),0);
+		 
+		 ListAV = newAV();
+		 pSListTemp = pStringParamList->Strings;
+		 
+		 for ( listcount = 0 ; listcount < (int)pStringParamList->Count ; listcount++ ) {
+		     
+		     tmpStringLength = 0;
+		     
+		     while ( 
+			    tmpStringLength < pStringParamList->StringLength &&
+			    pSListTemp[tmpStringLength] != '\0'
+			    ) {
+			 tmpStringLength++;
+		     }
+		     
+		     av_push(ListAV,newSVpvn(pSListTemp,tmpStringLength));
+		     pSListTemp += pStringParamList->StringLength;
+		 }
 
-	      hv_store(DataHV,"Values",6,(newRV_noinc((SV*)ListAV)),0);
-	      
-	      av_push(DataAV,newRV_noinc((SV*)DataHV));
+		 hv_store(DataHV,"Strings",7,(newRV_noinc((SV*)ListAV)),0);
+		 av_push(DataAV,newRV_noinc((SV*)DataHV));
+		 pTemp += pStringParamList->StrucLength;
+	     } else if ( pIntegerParamList->Type == MQCFT_INTEGER_LIST ) {
+		 DataHV = newHV();
 
-	      pTemp += pIntegerParamList->StrucLength;
+		 hv_store(DataHV,"Type",4,(newSViv(pIntegerParamList->Type)),0);
+		 hv_store(DataHV,"Parameter",9,(newSViv(pIntegerParamList->Parameter)),0);
 
-	      foundtype = 1;
+		 ListAV = newAV();
+		 
+		 for ( listcount = 0 ; listcount < (int)pIntegerParamList->Count ; listcount++ ) {
+		     av_push(ListAV,newSViv(pIntegerParamList->Values[listcount]));
+		 }
+		 
+		 hv_store(DataHV,"Values",6,(newRV_noinc((SV*)ListAV)),0);
+		 av_push(DataAV,newRV_noinc((SV*)DataHV));
+		 pTemp += pIntegerParamList->StrucLength;
+	     } else {
+		 /* Unknown type - assume basic structure is the same */
+		 warn("Unknown PCF parameter %d is of type %d, structure length %d, parameter %d\n", count, pStringParam->Type, pStringParam->StrucLength, pStringParam->Parameter);
+		 errors++;
+		 pTemp += pIntegerParamList->StrucLength;
+	     }
+	 } /* End foreach: PCF parameter */
+		 
+	 if (errors) {
+	     warn("MQDecodePCF: %d unrecognized parameters in data list.\n",
+		  errors);
+	     XSRETURN_EMPTY;
+	 }
+	 
+	 XPUSHs(sv_2mortal(newRV_noinc((SV *)DataAV)));	
+     }
 
-	    }
-
-	    if ( !foundtype ) {
-	      warn("MQDecodePCF: Unrecognized parameter in data list.\n");
-	      XSRETURN_EMPTY;
-	    }
-
-	  }
-
-	  XPUSHs(sv_2mortal(newRV_noinc((SV *)DataAV)));	
-
-	}
 
 void
 MQEncodePCF(Header,ParameterList)

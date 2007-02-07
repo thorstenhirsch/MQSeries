@@ -1,8 +1,8 @@
 #!/ms/dist/perl5/bin/perl5.005-thread
 #
-# $Id: request.pl,v 25.1 2004/01/14 19:10:35 biersma Exp $
+# $Id: request.pl,v 27.1 2007/01/11 20:20:37 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code sends requests to a queue, and listens for responses on a

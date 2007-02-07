@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 25.3 2004/01/14 19:10:12 biersma Exp $
+# $Id: Makefile.PL,v 27.6 2007/01/19 19:49:41 lonstein Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -34,7 +34,7 @@ else {
 #
 if ( $Config{osname} =~ /(irix|sunos)/ ) {
     # NOTE: On IRIX and SunOS 4.x, we can *only* build the client.
-    warn("No support for MQServer compiles on platform '$Config{osname}'\n") 
+    warn("No support for MQServer compiles on platform '$Config{osname}'\n")
       if $apitype eq 'MQServer'; # Whine once...
     $myconfig{NOSERVER}++;
 }
@@ -85,15 +85,12 @@ if (
 #
 if ( $mqmtop =~ /\s/ ) {
     $libdir = "-L'$mqmtop/lib'";
-} elsif ($Config{archname} =~ /ia64-linux/) {
-    #
-    # XXX: Detect when /opt/mqm/lib64 is required.  This will change
-    #      when we see more 64-bit platforms...
-    #
+} elsif ( $Config{use64bitall} ) {
     $libdir = "-L$mqmtop/lib64";
 } else {
     $libdir = "-L$mqmtop/lib";
 }
+
 
 if ( $Config{osname} =~ /os390/ ) {
     $libs = "-l\"//'$hlq.SCSQLOAD'\"";
@@ -301,16 +298,91 @@ if ($Config{osname} =~ /win32/i) {
 			     'typemap.PL'     	=> 'typemap',
 			    };
 }
-if ($Config{archname} =~ /^ia64-linux/) {
+
+#
+# Force RPATH to pick up mq libs
+#
+my $rpath = $libdir;
+$rpath =~ s!-L!!;
+
+if ( $Config{archname} =~ /linux/ ) {
     #
-    # XXX: On Linux/Itanium, we need to slap the linker to DTRT.  This
-    #      will hopefully go away...
+    # gcc and icc use same flags
     #
-    my @libs = split(' ', $lib_string);
-    my $rpath = $libdir;
-    $rpath =~ s!-L!!;
-    my $lddlflags = " -shared -Wl,--enable-new-dtags -Wl,-rpath -Wl,$rpath";
+    # are there others in common use that don't
+    # use these flags?
+    #
+    my $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
+
+    if ( $Config{use64bitall} ) {
+        $lddlflags .= '64';
+        $extra_args{LDDLFLAGS} .= $lddlflags;
+    }
+    elsif( $Config{archname} =~ /^x86_64-linux/ ) {
+        $lddlflags .= '64';
+        $extra_args{LDDLFLAGS} .= $lddlflags;
+    }
+    elsif ( $Config{archname} =~ /^i[3456]86-linux/ ) {
+        $extra_args{LDDLFLAGS} .= $lddlflags;
+    }
+    else {
+        #
+        # non-x86 Linux?
+        #
+        # try anyway and warn
+        #
+        print STDERR "Recognized linux [$Config{archname}], trying default flags and rpath";
+        $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
+        $extra_args{LDDLFLAGS} .= $lddlflags;
+    }
+}
+elsif ($Config{archname} =~ /^sun/) {
+    if ($Config{cc} =~ /^gcc/) {
+        my $lddlflags = " -Wl,-rpath -Wl,$rpath";
+        $extra_args{LDDLFLAGS} .= $lddlflags;
+
+    }
+    elsif (
+           $Config{cc}        =~ /^cc$/
+        || $Config{cc}        =~ /^sun/
+        || $Config{ccname}    =~ /sun/i
+        || $Config{ccname}    =~ /workshop/i
+        || $Config{ccversion} =~ /workshop/i
+    ) {
+        #
+        # Do we have the case where you compile with GCC
+        # but link using the Sun linker? Try handling with
+        #   -Wl,-R,$rpath
+        #
+        my $lddlflags .= " -R$rpath";
+        $extra_args{LDDLFLAGS} .= $lddlflags;
+    }
+    else {
+        #
+        # Some other compiler on Sun...
+        #
+        goto NO_RPATH;
+    }
+}
+elsif ( $Config{archname} =~ /aix/ ) {
+    #
+    # One or both of these might work for AIX
+    #
+    $ENV{LIBPATH} = join(':',$ENV{LIBPATH},$rpath);
+    my $lddflags = " -blibpath:$rpath";
     $extra_args{LDDLFLAGS} .= $lddlflags;
+}
+else {
+    #
+    # FIXME
+    #
+    # Do nothing and hope.
+    #
+    # Patches for your archname/compiler/linker welcome!
+    #
+  NO_RPATH:
+    print STDERR "Unrecognized architecture [", $Config{archname},
+        "] and compiler [", $Config{cc},"]. Not setting rpath.\n";
 }
 
 WriteMakefile(

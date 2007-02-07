@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::Trigger - Trigger Message
 #
-# (c) 2003-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2003-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Trigger.pm,v 26.1 2004/01/15 19:35:11 biersma Exp $
+# $Id: Trigger.pm,v 27.3 2007/01/11 20:20:35 molinam Exp $
 #
 
 package MQSeries::Message::Trigger;
@@ -15,10 +15,10 @@ use Carp;
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 @ISA = qw(MQSeries::Message);
 
-require "MQSeries/Command/PCF/ResponseParameters.pl"; # For ApplType
+require "MQSeries/Command/PCF/ResponseValues.pl"; # For ApplType
 my %ApplType =
   reverse %{ $MQSeries::Command::PCF::ResponseValues{'ApplType'} };
 

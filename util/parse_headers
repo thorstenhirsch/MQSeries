@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 25.1 2004/01/14 19:08:49 biersma Exp $
+# $Id: parse_headers,v 27.1 2007/01/02 13:54:46 biersma Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
@@ -42,12 +42,11 @@ unless ( $headers{"$include/cmqcfce.h"} ) {
 
 
 #
-# Handle 64-bit support, depending on the platform.  At this time, we
-# only handle Linux/IA64.  Patches for other 64-bit clients are
-# welcome.
+# Handle 64-bit support.  If your platform is 64 bit but doesn't set
+# "use64bitall", please get us the details.
 #
 my $use_64_bit = 0;
-if ($Config{archname} =~ /^ia64-linux/) {
+if( $Config{use64bitall} ) {
     $use_64_bit = 1;
 }
 

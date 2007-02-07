@@ -1,11 +1,11 @@
 #
 # MQSeries::Message::IIH - IMS Bridge Message
 #
-# (c) 2002-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2002-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: IIH.pm,v 26.1 2004/01/15 19:35:08 biersma Exp $
-# 
+# $Id: IIH.pm,v 27.3 2007/01/11 20:20:34 molinam Exp $
+#
 
 package MQSeries::Message::IIH;
 
@@ -15,7 +15,7 @@ use Carp;
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 @ISA = qw(MQSeries::Message);
 
 #
@@ -34,7 +34,7 @@ my @IIH_Struct =
    [ qw(Flags                   Number          4       0       ) ],
    [ qw(LTermOverride           String          8               ) ],
    [ qw(MFSMapName              String          8       ) ],
-   [ qw(ReplyToFormat           String          8       MQSTR) ],
+   [ qw(ReplyToFormat           String          8       MQFMT_IMS_VAR_STRING) ],
    [ qw(Authenticator           String          8       ) ],
    [ qw(TranInstanceId          Byte            16      ) ],
    [ qw(TranState               String          1       ) ],
@@ -118,7 +118,7 @@ sub GetConvert {
     $this->{Buffer} = $buffer;
 
     my $offset = 0;
-    
+
     foreach my $field (@IIH_Struct) {
         my ($key, $method, $length, $dft) = @$field;
         $method = "_read$method";
@@ -135,25 +135,19 @@ sub GetConvert {
     }
 
     #
-    # The IIH data is returned as an array-ref of hash-references,
-    # each with a 'Transaction' and an 'Body' field.
+    # The IIH data is returned as an array-ref of strings.
     #
-    # For one array element (the default), return a single hash-reference.
-    #
-    my @retval;
+    my $retval = [];
     while ($offset < length($buffer)) {
         #print STDERR "XXX: Offset [$offset]\n";
         my $datalen = $this->_readShort($buffer, $offset, 2);
         #print STDERR"XXX: Have data length [$datalen]\n";
 
-        my $entry = {};
-        $entry->{Transaction} = $this->_readString($buffer, $offset+4, 8);
-        $entry->{Body} = substr($buffer, $offset+12, $datalen-12);
+	push @$retval, substr($buffer, $offset + 4, $datalen - 4);
         $offset += $datalen;
         #print STDERR "Have TR [$entry->{Transaction}] Body [$entry->{Body}]\n";
-        push @retval, $entry;
     }
-    return (@retval == 1 ? $retval[0] : \@retval);
+    return $retval;
 }
 
 
@@ -171,7 +165,7 @@ sub PutConvert {
 
     my $buffer = '';
     my $offset = 0;
-    
+
     foreach my $field (@IIH_Struct) {
         my ($key, $method, $length, $dft) = @$field;
         $method = "_write$method";
@@ -201,7 +195,7 @@ sub PutConvert {
 	# There should only be 1 space between IMS Tran code and the Data
 	#
         my $tranIDLength = length($entry->{Transaction})+1;
-        substr($buffer, $offset+4,$tranIDLength ) = 
+        substr($buffer, $offset+4,$tranIDLength ) =
 	  $this->_writeString($entry->{Transaction}, $tranIDLength);
         $buffer .= $entry->{Body};
         $offset += $datalen;
@@ -341,9 +335,7 @@ MQSeries::Message::IIH -- Class to send/receive IMS Bridge Header (IIH) messages
         Mode         => 'input');
   my $msg = MQSeries::Message::IIH->new();
   $queue->Get(Message => $msg);
-  my $data = $msg->Data();
-  print "Have transaction '", $data->{Transaction}, 
-    "' and body '", $data->{Body}, "'\n";
+  my $data = $msg->Data(); # Array-reference
 
 =head1 DESCRIPTION
 
@@ -353,25 +345,22 @@ experimental, as it was based on the documentation and a few sample
 messages; feedback as to how well it works is welcome.
 
 An IMS Bridge Header message contains an IIH header, followed by one
-more data chunks with IMS transaction data.  Each chunk has a
-transaction name and a body.
+more data chunks with IMS transaction data.  For requests, each chunk
+has a transaction name and a body; for replies, each chunk is free
+form.
 
 =head1 METHODS
 
-=head2 PutConvert, GetConvert
+=head2 PutConvert
 
-Neither of these methods are called by the users application, but are
-used internally by MQSeries::Queue::Put() and MQSeries::Queue::Get(),
-as well as MQSeries::QueueManager::Put1().
+This method is not called by the user's application, but used
+internally by MQSeries::Queue::Put() and
+MQSeries::QueueManager::Put1().
 
 PutConvert() encodes the data supplied by the programmer into a series
 of chunks as required by IMS.
 
-GetConvert() decodes IMS data into a series of chunks, each which a
-transaction name and body.
-
-For both PutConvert() and GetConvert() (message creation or message
-data extraction), the data can come in two forms:
+The data can come in two forms:
 
 =over 4
 
@@ -386,6 +375,14 @@ A reference to an array with hash-references, each in the same format
 as before.  I am not sure whether anyone would actually use this...
 
 =back
+
+=head2 GetConvert
+
+This method is not called by the user's application, but used
+internally by MQSeries::Queue::Get().
+
+GetConvert() decodes IMS data into a series of chunks, returned
+as an array-reference containing strings.
 
 =head1 _setEndianess
 
@@ -415,7 +412,7 @@ message for a queue manager running on Solaris:
 
 =head1 AUTHORS
 
-Hildo Biersma, Jeff Dunn
+Hildo Biersma, Jeff Dunn, Javier Ripoll Villagómez
 
 =head1 SEE ALSO
 

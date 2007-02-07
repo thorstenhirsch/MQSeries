@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 # 
-# $Id: descriptions.pl,v 25.1 2004/01/14 19:10:29 biersma Exp $
+# $Id: descriptions.pl,v 27.2 2007/01/11 20:20:33 molinam Exp $
 #
 
 #
@@ -38,6 +38,7 @@ my $resourcemgr_patt = '\w+\s+\w+';
 my $xa_operation_patt = 'xa_\w+';
 my $seqno_patt = '\d+';
 my $product_patt = '(?:MQSeries|WebSphere MQ)';
+my $broker_patt = '(?:message|Publish\/Subscribe) broker';
 
 #
 # NOTE: Keep this table in alphabetical order for ease of maintenance
@@ -59,7 +60,7 @@ $error_table =
    # Messages AMQ5000-5999 are Installable Services Messages
    #
 
-   'AMQ5008' => [ "An essential $product_patt process ($pid_patt) cannot be found and is assumed to be terminated\\.",
+   'AMQ5008' => [ "An essential $product_patt process ($pid_patt) (?:\\(.*\\)|) cannot be found and is assumed to be terminated\\.",
                   "Pid" ],
 
    'AMQ5009' => [ "$product_patt agent process ($pid_patt) has terminated unexpectedly\\.",
@@ -71,78 +72,78 @@ $error_table =
    'AMQ5520' => [ "The system could not load the module '(.*?)' for the installable service '(.*?)' component '(.*?)'\\. The system return code was ($rc_patt)\\. The Queue Manager is continuing without this component\\.",
                   "Module", "Service", "Component", "Code" ],
 
-   'AMQ5806' => [ "$product_patt message broker started for queue manager ($qmgr_patt)\\.",
+   'AMQ5806' => [ "$product_patt $broker_patt started for queue manager ($qmgr_patt)\\.",
                   "QMgr" ],
 
-   'AMQ5807' => [ "$product_patt message broker for queue manager ($qmgr_patt) ended\\.",
+   'AMQ5807' => [ "$product_patt $broker_patt for queue manager ($qmgr_patt) ended\\.",
                   "QMgr" ],
 
-   'AMQ5817' => [ "An invalid stream queue \\(($qname_patt)\\s*\\) has been detected by the $product_patt message broker\\.",
+   'AMQ5817' => [ "An invalid stream queue \\(($qname_patt)\\s*\\) has been detected by the $product_patt $broker_patt\\.",
                   "Stream" ],
 
    # NOTE: Have encountered this guy without an actual broker name...
-   'AMQ5818' => [ "Unable to open $product_patt message broker stream queue \\((.*?)\\s*\\) for reason (\\d+,\\d+)\." ],
+   'AMQ5818' => [ "Unable to open $product_patt $broker_patt stream queue \\((.*?)\\s*\\) for reason (\\d+,\\d+)\." ],
 
-   'AMQ5819' => [ "$product_patt message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
+   'AMQ5819' => [ "$product_patt $broker_patt stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
                   "Stream", "Reason" ],
 
-   'AMQ5820' => [ "$product_patt message broker stream \\(\\s*($qname_patt)\\s*\\) restarted.",
+   'AMQ5820' => [ "$product_patt $broker_patt stream \\(\\s*($qname_patt)\\s*\\) restarted.",
                   "Stream" ],
    
-   'AMQ5821' => [ "$product_patt message broker unable to contact parent broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\.",
+   'AMQ5821' => [ "$product_patt $broker_patt unable to contact parent broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\.",
                   "Broker", "Reason" ],
 
-   'AMQ5822' => [ "$product_patt message broker failed to register as a child of broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\. .* The problem is likely to be caused by the parent broker not yet existing, or a problem with the ($qname_patt) queue at the parent broker\\.",
+   'AMQ5822' => [ "$product_patt $broker_patt failed to register as a child of broker \\(($qmgr_patt) \\) for reason ($reason_patt)\\. .* The problem is likely to be caused by the parent broker not yet existing, or a problem with the ($qname_patt) queue at the parent broker\\.",
                   "Broker", "Reason", "QName" ],
 
-   'AMQ5826' => [ "$product_patt message broker failed to propagate subscription to stream \\(($qname_patt) \\) at broker \\(($qmgr_patt) \\)\\. Reason codes ($reason_patt) and ($reason_patt)\\.",
+   'AMQ5826' => [ "$product_patt $broker_patt failed to propagate subscription to stream \\(($qname_patt) \\) at broker \\(($qmgr_patt) \\)\\. Reason codes ($reason_patt) and ($reason_patt)\\.",
                   "Stream", "Broker", "Reason1", "Reason2" ],
 
-   'AMQ5832' => [ "$product_patt message broker failed to publish configuration information on ($qname_patt)\\.",
+   'AMQ5832' => [ "$product_patt $broker_patt failed to publish configuration information on ($qname_patt)\\.",
                   "QName" ],
 
-   'AMQ5833' => [ "A loop has been detected in the $product_patt message broker hierarchy\\." ],
+   'AMQ5833' => [ "A loop has been detected in the $product_patt $broker_patt hierarchy\\." ],
 
-   'AMQ5834' => [ "Conflicting queue manager names in the $product_patt message broker hierarchy\\..* The names of the queue managers \\(($qmgr_patt)\\s*\\) and \\(($qmgr_patt)\\s*\\) in the $product_patt message broker hierarchy both start with the same 12 characters\\." ],
+   'AMQ5834' => [ "Conflicting queue manager names in the $product_patt $broker_patt hierarchy\\..* The names of the queue managers \\(($qmgr_patt)\\s*\\) and \\(($qmgr_patt)\\s*\\) in the $product_patt $broker_patt hierarchy both start with the same 12 characters\\." ],
 
-   'AMQ5838' => [ "$product_patt message broker cannot be deleted as child \\(($qmgr_patt)\\s*\\) is still registered\\.",
+   'AMQ5838' => [ "$product_patt $broker_patt cannot be deleted as child \\(($qmgr_patt)\\s*\\) is still registered\\.",
                   "Child" ],
 
    # FIXME: So far, encountered this guy without an actual broker name...
-   'AMQ5839' => [ "$product_patt message broker received (?:an )?unexpected inter-broker communication" ],
+   'AMQ5839' => [ "$product_patt $broker_patt received (?:an )?unexpected inter-broker communication" ],
 
-   'AMQ5840' => [ "$product_patt message broker (?unable to delete|failed to delete the) queue \\(($qname_patt)\\s*\\) for reason ($reason_patt)\\.",
+   'AMQ5840' => [ "$product_patt $broker_patt (?unable to delete|failed to delete the) queue \\(($qname_patt)\\s*\\) for reason ($reason_patt)\\.",
                   "QName", "Reason" ],
 
-   'AMQ5841' => [ "$product_patt message broker \\(($qmgr_patt)\\) deleted.",
+   'AMQ5841' => [ "$product_patt $broker_patt \\(($qmgr_patt)\\) deleted.",
                   "Broker" ],
 
-   'AMQ5842' => [ "$product_patt message broker \\(($qmgr_patt)\\) cannot be deleted for reason '($reason_patt)'\\.",
+   'AMQ5842' => [ "$product_patt $broker_patt \\(($qmgr_patt)\\) cannot be deleted for reason '($reason_patt)'\\.",
                   "Broker", "Reason" ],
 
-   'AMQ5843' => [ "$product_patt message broker \\(($qmgr_patt)\\) cannot be started as it is partially deleted\\.",
+   'AMQ5843' => [ "$product_patt $broker_patt \\(($qmgr_patt)\\) cannot be started as it is partially deleted\\.",
                   "Broker" ],
 
    # NOTE: This guy often has blank relation names, cannot be parsed reliably
-   'AMQ5844' => [ "$product_patt message broker relation \\(.*\\) is unknown to broker \\(($qmgr_patt)\\)\\.",
+   'AMQ5844' => [ "$product_patt $broker_patt relation \\(.*\\) is unknown to broker \\(($qmgr_patt)\\)\\.",
                   "Broker" ],
 
-   'AMQ5847' => [ "$product_patt message broker \\(($qmgr_patt)\\) has removed knowledge of relation \\(($qmgr_patt)\\)\\.",
+   'AMQ5847' => [ "$product_patt $broker_patt \\(($qmgr_patt)\\) has removed knowledge of relation \\(($qmgr_patt)\\)\\.",
                   "Broker", "Relation" ],
 
    # FIXME: So far, enountered this guy without an actual relation name...
-   'AMQ5848' => [ "$product_patt message broker \\(($qmgr_patt)\\) has failed to remove references to relation \\(\\) for reason '($reason_patt)'\\.",
+   'AMQ5848' => [ "$product_patt $broker_patt \\(($qmgr_patt)\\) has failed to remove references to relation \\(\\) for reason '($reason_patt)'\\.",
                   "Broker", "Reason" ],
 
-   'AMQ5849' => [ "$product_patt message broker \\(($qmgr_patt) \\) may not change parent from \\(($qmgr_patt) \\) to \\(($qmgr_patt) \\)\\.",
+   'AMQ5849' => [ "$product_patt $broker_patt \\(($qmgr_patt) \\) may not change parent from \\(($qmgr_patt) \\) to \\(($qmgr_patt) \\)\\.",
                   "Broker", "OldParent", "NewParent" ],
 
    # NOTE: The 'related broker' can be a queue manager name or 
    #       'unknown relation', so be generous in accepting that pattern
-   'AMQ5852' => [ "$product_patt message broker failed to propagate delete publication command for stream \\(($qname_patt)\\s*\\) to related broker \\(.*?\\s*\\) for reason ($reason_patt)\\.",
+   'AMQ5852' => [ "$product_patt $broker_patt failed to propagate delete publication command for stream \\(($qname_patt)\\s*\\) to related broker \\(.*?\\s*\\) for reason ($reason_patt)\\.",
                   "Stream", "Related", "Reason" ],
 
-   'AMQ5855' => [ "$product_patt message broker \\(($qmgr_patt)\\) (?:but the broker has )?ended for reason '($reason_patt)'\\.",
+   'AMQ5855' => [ "$product_patt $broker_patt \\(($qmgr_patt)\\) (?:but the broker has )?ended for reason '($reason_patt)'\\.",
                   "Broker", "Reason" ],
 
    'AMQ5856' => [ "Broker publish command message cannot be processed\\. Reason code ($reason_patt)\\..* The $product_patt broker failed to process a publish message for stream \\(($qname_patt)\\s*\\)\\.",
@@ -157,20 +158,20 @@ $error_table =
    'AMQ5866' => [ "Broker command message has been discarded\\. Reason code ($reason_patt)\\.",
                   "Reason" ],
 
-   'AMQ5867' => [ " $product_patt message broker stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
+   'AMQ5867' => [ " $product_patt $broker_patt stream \\(($qname_patt)\\s*\\) has ended abnormally for reason ($reason_patt)\\.",
                   "Stream", "Reason" ],
 
-   'AMQ5869' => [ "$product_patt message broker is checkpointing registrations\\..*registrations of stream \\(($qname_patt)\\s*\\)\\.",
+   'AMQ5869' => [ "$product_patt $broker_patt is checkpointing registrations\\..*registrations of stream \\(($qname_patt)\\s*\\)\\.",
                   "Stream" ],
 
    # NOTE: The queue-manager name is missing here
-   'AMQ5876' => [ "A parent conflict has been detected in the $product_patt message broker hierarchy\\." ],
+   'AMQ5876' => [ "A parent conflict has been detected in the $product_patt $broker_patt hierarchy\\." ],
 
-   'AMQ5878' => [ "$product_patt message broker recovery failure detected\\." ],
+   'AMQ5878' => [ "$product_patt $broker_patt recovery failure detected\\." ],
      
    # NOTE: The 'Stream' field here may look like 'uncreated stream',
    #       hence not match the qname_pattern normally used.
-   'AMQ5882' => [ "The $product_patt message broker has written a message to the dead-letter queue \\(($qname_patt)\\s*\\) for reason '($reason_patt)'.*for stream \\((.*?)\\s*\\)",
+   'AMQ5882' => [ "The $product_patt $broker_patt has written a message to the dead-letter queue \\(($qname_patt)\\s*\\) for reason '($reason_patt)'.*for stream \\((.*?)\\s*\\)",
                    "DeadletterQueue", "Reason", "Stream" ],
 
    # 

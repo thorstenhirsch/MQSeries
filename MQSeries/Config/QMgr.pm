@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::QMgr.pm - Queue manager configuration from qm.ini
 #
-# (c) 2000-2004 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: QMgr.pm,v 26.1 2004/01/15 19:34:48 biersma Exp $
+# $Id: QMgr.pm,v 27.3 2007/01/11 20:20:26 molinam Exp $
 #
 
 package MQSeries::Config::QMgr;
@@ -16,7 +16,7 @@ use MQSeries::Config::Machine;
 
 use vars qw($VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 #
 # Constructor: Read and parse the /var/mqm/qmgrs/XYYZY/qm.ini file.
@@ -25,7 +25,7 @@ $VERSION = '1.23';
 # - Class name
 # - Queue manager name
 # - Optional base directory, if not /var/mqm
-# Returns: 
+# Returns:
 # - New MQSeries::Config::QMgr object
 #
 sub new {
@@ -49,7 +49,7 @@ sub new {
 # - MQSeries::Config::QMgr object
 # Returns:
 # - Array of stanza names
-# 
+#
 sub stanzas {
     my ($this) = @_;
 
@@ -57,7 +57,7 @@ sub stanzas {
     # If the disk modification time has changed, re-parse
     #
     if ((stat $this->{'filename'})[9] != $this->{'mtime'}) {
-        $this->parse();
+        $this->_parse();
     }
 
     return keys %{ $this->{'data'} };
@@ -67,7 +67,7 @@ sub stanzas {
 #
 # Get information for a particular stanza. Will re-parse the file
 # if the timestamp has changed.
-# 
+#
 # Parameters:
 # - MQSeries::Config::QMgr object
 # - Stanza name
@@ -82,7 +82,7 @@ sub lookup {
     # If the disk modification time has changed, re-parse
     #
     if ((stat $this->{'filename'})[9] != $this->{'mtime'}) {
-        $this->parse();
+        $this->_parse();
     }
 
     return unless (defined $this->{'data'}{$stanza});
@@ -96,7 +96,7 @@ sub lookup {
 
 #
 # PRIVATE support method: Parse the file
-# 
+#
 # Parameters:
 # - MQSeries::Config::Machine object
 # Returns:
@@ -108,7 +108,7 @@ sub _parse {
     # Get the directory name for this queue manager -
     # by asking the machine configuration for it.
     #
-    $this->{'machine'} ||= 
+    $this->{'machine'} ||=
       MQSeries::Config::Machine->new($this->{'basename'} . '/mqs.ini');
     my $local = $this->{'machine'}->localqmgrs();
     unless (defined $local->{ $this->{'qmgr'} }) {
@@ -140,12 +140,12 @@ sub _parse {
 
         #
         # A data line belongs to a stanza and looks like 'Prefix=/var/mqm'
-        # 
+        #
 	if (/^\s*(\S+)=(\S+)/) {
 	    my ($key, $value) = ($1, $2);
             confess "Have data line before first stanza in [$filename]: $_"
               unless (defined $stanza);
-            
+
             if (defined $stanza_data->{$key}) {
                 carp "Duplicate key [$key] in stanza [$stanza] of [$filename]";
             }

@@ -1,7 +1,7 @@
 #
-# $Id: Response.pm,v 26.1 2004/01/15 19:34:40 biersma Exp $
+# $Id: Response.pm,v 27.2 2007/01/11 20:20:25 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -22,7 +22,7 @@ use vars qw(@ISA $VERSION);
 	  MQSeries::Message
 	 );
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 1;
 

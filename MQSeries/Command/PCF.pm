@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 26.1 2004/01/15 19:34:37 biersma Exp $
+# $Id: PCF.pm,v 27.3 2007/01/11 20:20:05 molinam Exp $
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -15,7 +15,7 @@ use vars qw(
 
 @ISA = qw(MQSeries::Command);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 use MQSeries qw(:functions);
 
@@ -124,15 +124,17 @@ sub _ReverseMap {
     my $ReverseKeyMap = shift;
 
     foreach my $command ( keys %$ForwardKeyMap ) {
+	#print "COMMAND: $command\n";
 
 	my $ForwardCommandMap = $ForwardKeyMap->{$command};
+
 
 	my $ForwardParameterMap = $ForwardCommandMap->[1];
 
 	my $ReverseParameterMap = {};
 
 	foreach my $parameter ( keys %$ForwardParameterMap ) {
-
+	    
 	    my $ForwardValueMap = $ForwardParameterMap->{$parameter}->[2];
 
 	    if ( ref $ForwardValueMap eq 'HASH' ) {
@@ -142,6 +144,7 @@ sub _ReverseMap {
 		foreach my $value ( keys %$ForwardValueMap ) {
 		    $ReverseValueMap->{ $ForwardValueMap->{$value} } = $value;
 		}
+		
 
 		$ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
 		  [ $parameter, $ReverseValueMap ];

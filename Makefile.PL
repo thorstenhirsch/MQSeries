@@ -1,8 +1,8 @@
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 25.1 2004/01/14 19:10:33 biersma Exp $
+# $Id: Makefile.PL,v 27.2 2007/01/11 20:20:36 molinam Exp $
 #
 use English;
 use ExtUtils::MakeMaker;
@@ -62,7 +62,7 @@ foreach my $dest ( sort keys %files ) {
 	warn "Copying $src -> $dest\n";
 
 	copy($src,$dest) || die "Unable to copy $src to $dest: $ERRNO\n";
-	
+
     }
 
 }
@@ -76,13 +76,8 @@ WriteMakefile(
 		MAN3PODS	=> {},
 	       ) : ()
 	      ),
-	      (
-	       $] ge '5.005' ?
-	       (
-		AUTHOR		=> 'W. Phillip Moore (Phil.Moore@morganstanley.com)',
-		ABSTRACT	=> "Interface to IBM's MQSeries Product",
-	       ) : ()
-	      ),
-	     );
+              AUTHOR    => 'Michelle Beloff <Michelle.Molina@MorganStnaley.com>, Hildo Biersma <Hildo.Biersma@MorganStanley.com>',
+              ABSTRACT	=> "Interface to IBM's MQSeries Product",
+          );
 
 

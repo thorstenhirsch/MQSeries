@@ -1,89 +1,66 @@
-    <HTML> 
-	<HEAD> 
-	    <TITLE>1.23/src/README</TITLE> 
-	</HEAD>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>1.24/src/README</title>
+<link rev="made" href="mailto:perlcore@ms.com" />
+</head>
 
-	<BODY>
+<body style="background-color: white">
 
+<p><a name="__index__"></a></p>
 <!-- INDEX BEGIN -->
 
-<UL>
+<ul>
 
-	<LI><A HREF="#INTRODUCTION">INTRODUCTION</A>
-	<LI><A HREF="#PREREQUISITES">PREREQUISITES</A>
-	<LI><A HREF="#PLATFORMS">PLATFORMS</A>
-	<LI><A HREF="#INSTALLATION">INSTALLATION</A>
-	<LI><A HREF="#RELEASE_NOTES">RELEASE NOTES</A>
-	<LI><A HREF="#DOCUMENTATION">DOCUMENTATION</A>
-	<LI><A HREF="#AUTHORS">AUTHORS</A>
-</UL>
+	<li><a href="#introduction">INTRODUCTION</a></li>
+	<li><a href="#prerequisites">PREREQUISITES</a></li>
+	<li><a href="#platforms">PLATFORMS</a></li>
+	<li><a href="#installation">INSTALLATION</a></li>
+	<li><a href="#release_notes">RELEASE NOTES</a></li>
+	<li><a href="#warnings_regarding_wmq_v6_pcf_support">WARNINGS REGARDING WMQ V6 PCF SUPPORT</a></li>
+	<li><a href="#documentation">DOCUMENTATION</a></li>
+	<li><a href="#authors">AUTHORS</a></li>
+</ul>
 <!-- INDEX END -->
 
-<HR>
-<P>
-<H1><A NAME="INTRODUCTION">INTRODUCTION
-
-</A></H1>
-This module implements a perl5 API for the IBM MQSeries / WebSphere MQ
-messaging middleware product API (often referred to as the MQI), as well
-as:
-
-
-<P>
-
-<DL>
-<DT><STRONG><A NAME="item_Object">Object Oriented (OO) interface to the MQI
-
-</A></STRONG><DD>
-<DT><STRONG><A NAME="item_OO">OO interface to the MQSeries administrative commands via PCF or MQSC
-
-</A></STRONG><DD>
-<DT><STRONG>OO interface to the Publish/Subscribe subsystem
-
-</A></STRONG><DD>
-<DT><STRONG>OO interface to the various configuration, log, and error files
-
-</A></STRONG><DD>
-</DL>
-For more information on the MQSeries / WebSphere MQ product itself, see the
-IBM website at: <A
-HREF="http://www.ibm.com/software/mqseries">http://www.ibm.com/software/mqseries</A>
-
-
-
-<P>
-
-<P>
-<HR>
-<H1><A NAME="PREREQUISITES">PREREQUISITES
-
-</A></H1>
-This release requires perl5.005 or later, and some release of the IBM
-MQSeries product installed, either V5.1, V5.2 or V5.3.
-
-
-<P>
-
-The PubSub extensions, and the RulesFormat message support require either
-V5.2 or V5.1. MQSI is not supported.
-
-
-<P>
-
-<P>
-<HR>
-<H1><A NAME="PLATFORMS">PLATFORMS
-
-</A></H1>
-This package has been known to build with the following combinations of
-software. Those marked with an asterix (*) are platforms the maintainer can
-not test personally, so there is a remote possibility that there may be new
-bugs in these platforms. Please report problems to the maintainer.
-
-
-<P>
-
-<PRE>  Operating System      MQSeries Version        Perl Version    
+<hr />
+<p>
+</p>
+<h1><a name="introduction">INTRODUCTION</a></h1>
+<p>This module implements a perl5 API for the IBM MQSeries / WebSphere MQ
+messaging middleware product API (often referred to as the MQI), as
+well as:</p>
+<dl>
+<dt><strong><a name="item_oriented">Object Oriented (OO) interface to the MQI</a></strong><br />
+</dt>
+<dt><strong><a name="item_oo_interface_to_the_mqseries_administrative_comman">OO interface to the MQSeries administrative commands via PCF or MQSC</a></strong><br />
+</dt>
+<dt><strong><a name="item_oo_interface_to_the_publish_2fsubscribe_subsystem">OO interface to the Publish/Subscribe subsystem</a></strong><br />
+</dt>
+<dt><strong><a name="item_oo_interface_to_the_various_configuration_2c_log_2">OO interface to the various configuration, log, and error files</a></strong><br />
+</dt>
+</dl>
+<p>For more information on the MQSeries / WebSphere MQ product itself,
+see the IBM website at: <a href="http://www-306.ibm.com/software/integration/wmq/">http://www-306.ibm.com/software/integration/wmq/</a></p>
+<p>
+</p>
+<hr />
+<h1><a name="prerequisites">PREREQUISITES</a></h1>
+<p>This release requires perl5.005 or later, and some release of the IBM
+MQSeries product installed, either V5.1, V5.2 or V5.3.</p>
+<p>The PubSub extensions, and the RulesFormat message support require
+either V5.2 or V5.1.  MQSI is not supported.</p>
+<p>
+</p>
+<hr />
+<h1><a name="platforms">PLATFORMS</a></h1>
+<p>This package has been known to build with the following combinations
+of software.  Those marked with an asterix (*) are platforms the
+maintainer can not test personally, so there is a remote possibility
+that there may be new bugs in these platforms.  Please report problems
+to the maintainer.</p>
+<pre>
+  Operating System      MQSeries Version        Perl Version    
   ================      ================        ============    
 * SunOS 5.5.1           5.0                     5.00502
                                                 5.00503
@@ -133,37 +110,22 @@ bugs in these platforms. Please report problems to the maintainer.
                                                 5.8.2
   Red Hat AS 3.0 / IA64 5.2                     5.6.1
                                                 5.8.2
- *SCO OpenServer 5.0.6  5.0                     ??
-</PRE>
-
-<P>
-
-NOTE: The ?? indicates that I received reports of a successful test suite
-run, but I never received confirmation of the MQSeries version. if you have
-built in on these platforms, *PLEASE* help save the free world by letting
-me know what version of MQSeries, compiler, perl, etc. you built it with.
-
-
-<P>
-
-If you succeed in making this work on any other platform, please send the
-changes (in the form of a context diff) to the author, so I can integrate
-it.
-
-
-<P>
-
-<P>
-<HR>
-<H1><A NAME="INSTALLATION">INSTALLATION
-
-</A></H1>
-This module installs much like anything else available on CPAN.
-
-
-<P>
-
-<PRE>  perl Makefile.PL
+ *SCO OpenServer 5.0.6  5.0                     ??</pre>
+<p>NOTE: The ?? indicates that I received reports of a successful test
+suite run, but I never received confirmation of the MQSeries version.
+if you have built in on these platforms, *PLEASE* help save the free
+world by letting me know what version of MQSeries, compiler, perl,
+etc. you built it with.</p>
+<p>If you succeed in making this work on any other platform, please send
+the changes (in the form of a context diff) to the author, so I can
+integrate it.</p>
+<p>
+</p>
+<hr />
+<h1><a name="installation">INSTALLATION</a></h1>
+<p>This module installs much like anything else available on CPAN.</p>
+<pre>
+  perl Makefile.PL
   make
   make test
   make install
@@ -173,162 +135,116 @@ change, minimally, the name of the queue manager against which the
 tests will run.  The rest of the defaults should be reasonable, but
 you will have to customize this file to match your local environment.
 The CONFIG file has comments which document each of the parameters, so
-go read it for more information.
-</PRE>
-
-<P>
-
-On some platforms (notably Linux and HP-UX), you need to link to different
-libraries depending on whether your perl has been set up to run
-multi-theaded or not. The MQClient/Makefile.PL script tries to figure this
-out automatically; if you run into issues, patches to that script will be
-welcome.
-
-
-<P>
-
-You will obviously need to create the queue used for the test suite on the
-queue manager you specified in the CONFIG file.
-
-
-<P>
-
-NOTE: If you do not support client channel table files, then you may have
-to set the MQSERVER environment variable in order to allow the client tests
-to work.
-
-
-<P>
-
-Any failure in the test suite should a cause for concern. In order to get
-more details from it, run it via:
-
-
-<P>
-
-<PRE>  make test TEST_VERBOSE=1
-</PRE>
-
-<P>
-
-If you can't figure out what broke, then send the author the output from
-``perl -V'', as well as the output from the verbose test run. Please
-include as many details as possible about the operating system and MQSeries
-software on both the host being used to compile this extension, as well as
-the queue manager to which the test suite is connecting.
-
-
-<P>
-
-The most common problem with this module is failure to connect to the queue
-manager. Before submitting a bug report for the MQClient::MQSeries modules,
-make sure the IBM-supplied sample utilities <CODE>amqsgetc</CODE> and <CODE>amqsputc</CODE> work.
-
-
-<P>
-
-<P>
-<HR>
-<H1><A NAME="RELEASE_NOTES">RELEASE NOTES
-
-</A></H1>
-The Changes.html file has a complete, historical list of all user-visible
-(and some invisible) changes to this code.
-
-
-<P>
-
-<P>
-<HR>
-<H1><A NAME="DOCUMENTATION">DOCUMENTATION
-
-</A></H1>
-The documentation will be installed as man pages by default, but the
-location of them depends entirely on how you have perl built and installed.
-Watch the installation, and you will see where they get installed. Prepend
-that to your MANPATH environment variable, and then, all of these man
-commands will work.
-
-
-<P>
-
-Personally, the author prefers the results of ``pod2html'', but the perl5
-Makefile.PL infrastructure won't do this for you automatically.
-
-
-<P>
-
-<PRE>  man MQSeries
-</PRE>
-
-<P>
-
-will provide the documentation for the core MQI interface, and,
-
-
-<P>
-
-<PRE>  man MQSeries::QueueManager
+go read it for more information.</pre>
+<p>On some platforms (notably Linux and HP-UX), you need to link to
+different libraries depending on whether your perl has been set up to
+run multi-theaded or not.  The MQClient/Makefile.PL script tries to
+figure this out automatically; if you run into issues, patches to that
+script will be welcome.</p>
+<p>You will obviously need to create the queue used for the test suite on
+the queue manager you specified in the CONFIG file.</p>
+<p>NOTE: If you do not support client channel table files, then you may
+have to set the MQSERVER environment variable in order to allow the
+client tests to work.</p>
+<p>Any failure in the test suite should a cause for concern.  In order to
+get more details from it, run it via:</p>
+<pre>
+  make test TEST_VERBOSE=1</pre>
+<p>If you can't figure out what broke, then send the author the output
+from ``perl -V'', as well as the output from the verbose test run.
+Please include as many details as possible about the operating system
+and MQSeries software on both the host being used to compile this
+extension, as well as the queue manager to which the test suite is
+connecting.</p>
+<p>The most common problem with this module is failure to connect to the
+queue manager.  Before submitting a bug report for the
+MQClient::MQSeries modules, make sure the IBM-supplied sample
+utilities <code>amqsgetc</code> and <code>amqsputc</code> work.</p>
+<p>
+</p>
+<hr />
+<h1><a name="release_notes">RELEASE NOTES</a></h1>
+<p>The Changes.html file has a complete, historical list of all
+user-visible (and some invisible) changes to this code.</p>
+<p>
+</p>
+<hr />
+<h1><a name="warnings_regarding_wmq_v6_pcf_support">WARNINGS REGARDING WMQ V6 PCF SUPPORT</a></h1>
+<p>You should be warned this release does not contain support for every new
+PCF command made available in V6. The following are not supported in this 
+release:</p>
+<p>Inquire Archive
+Inquire ChannelInitiator
+Inquire EntityAuthority
+Inquire Group
+Inquire Log
+Inquire System
+Move Queue
+Refresh QueueManager
+Reset QueueManager
+Resume QueueManager
+Set Archive
+Set Log
+Set System
+Stop ChannelInitiator
+Suspend QueueManager</p>
+<p>You should be warned not all new PCF commands which are supported in
+this release have been throughly tested by the maintainers. New PCF commands
+which have been throughly tested include:</p>
+<p>Change/Copy/Create/Inquire/Delete/Stop ChannelListener
+Change/Copy/Create/Inquire/Delete/Start/Stop Service
+Inquire ChannelListenerStatus
+Inquire QueueManagerStatus
+Inquire ServiceStatus</p>
+<p>Though we believe the rest to work just fine.</p>
+<p>You should be warned 'filtering' is not supported in this release. You will
+not be able to specify parameters such as 'IntegerFilterCommand', 
+'StringFilterCommand' or 'ByteStringFilterCommand' for those objects 
+where filtering has been made available.</p>
+<p>
+</p>
+<hr />
+<h1><a name="documentation">DOCUMENTATION</a></h1>
+<p>The documentation will be installed as man pages by default, but the
+location of them depends entirely on how you have perl built and
+installed.  Watch the installation, and you will see where they get
+installed.  Prepend that to your MANPATH environment variable, and
+then, all of these man commands will work.</p>
+<p>Personally, the author prefers the results of ``pod2html'', but the
+perl5 Makefile.PL infrastructure won't do this for you automatically.</p>
+<pre>
+  man MQSeries</pre>
+<p>will provide the documentation for the core MQI interface, and,</p>
+<pre>
+  man MQSeries::QueueManager
   man MQSeries::Queue
-  man MQSeries::Message
-</PRE>
-
-<P>
-
-will provide the core documentation for the OO interface.  
-
-
-<P>
-
-The following man pages document the classes that handle various special
-MQSeries message types:
-
-
-<P>
-
-<PRE>  man MQSeries::Message::Event
+  man MQSeries::Message</pre>
+<p>will provide the core documentation for the OO interface.</p>
+<p>The following man pages document the classes that handle various
+special MQSeries message types:</p>
+<pre>
+  man MQSeries::Message::Event
   man MQSeries::Message::Storable
   man MQSeries::Message::XML-Dumper
   man MQSeries::Message::PCF
   man MQSeries::Message::RulesFormat
-  man MQSeries::Message::DeadLetter
-</PRE>
-
-<P>
-
-There is an OO interface to the Command Server:
-
-
-<P>
-
-<PRE>  man MQSeries::Command
+  man MQSeries::Message::DeadLetter</pre>
+<p>There is an OO interface to the Command Server:</p>
+<pre>
+  man MQSeries::Command
   man MQSeries::Command::Request
-  man MQSeries::Command::Response
-</PRE>
-
-<P>
-
-There is also an interface to the Publish/Subscribe system:
-
-
-<P>
-
-<PRE>  man MQSeries::PubSub::Broker
+  man MQSeries::Command::Response</pre>
+<p>There is also an interface to the Publish/Subscribe system:</p>
+<pre>
+  man MQSeries::PubSub::Broker
   man MQSeries::PubSub::Stream
   man MQSeries::PubSub::Command
   man MQSeries::PubSub::Message
-  man MQSeries::PubSub::AdminMessage
-</PRE>
-
-<P>
-
-A number of utility classes have been created for parsing the various file
-formats used by the MQSeries product:
-
-
-<P>
-
-<PRE>  man MQSeries::Config::ChannelTable
+  man MQSeries::PubSub::AdminMessage</pre>
+<p>A number of utility classes have been created for parsing the various
+file formats used by the MQSeries product:</p>
+<pre>
+  man MQSeries::Config::ChannelTable
   man MQSeries::Config::Machine
   man MQSeries::Config::QMgr
   man MQSeries::ErrorLog::Parser
@@ -336,68 +252,29 @@ formats used by the MQSeries product:
   man MQSeries::ErrorLog::Entry
   man MQSeries::FDC::Parser
   man MQSeries::FDC::Tail
-  man MQSeries::FDC::Entry
-</PRE>
+  man MQSeries::FDC::Entry</pre>
+<p>
+</p>
+<hr />
+<h1><a name="authors">AUTHORS</a></h1>
+<p>The code is currently maintained and supported by:</p>
+<pre>
+  Hildo Biersma &lt;Hildo.Biersma@MorganStanley.com&gt;
+  Michelle Beloff &lt;Michelle.Molina@MorganStanley.com&gt;</pre>
+<p>Most of the previous development, maintenance and support work was
+done by:</p>
+<pre>
+  W. Phillip Moore &lt;Phil.Moore@MorganStanley.com&gt;</pre>
+<p>We also have to give credit to:</p>
+<pre>
+  Brian T. Shelden &lt;shelden@shelden-associates.com&gt;</pre>
+<p>for his help in porting and testing the code.</p>
+<p>This module was originally developed as an IBM SupportPac, so credit
+must also go to the original author:</p>
+<pre>
+  David J. Lennon &lt;davidl@bristol.com&gt;</pre>
+<p>Although, nothing remains of the original code.... (sorry, David :-)</p>
 
-<P>
+</body>
 
-<P>
-<HR>
-<H1><A NAME="AUTHORS">AUTHORS
-
-</A></H1>
-The code is currently maintained and supported by:
-
-
-<P>
-
-<PRE>  Hildo Biersma &lt;Hildo.Biersma@MorganStanley.com&gt;
-</PRE>
-
-<P>
-
-Most of the previous development, maintenance and support work was done by:
-
-
-<P>
-
-<PRE>  W. Phillip Moore &lt;Phil.Moore@MorganStanley.com&gt;
-</PRE>
-
-<P>
-
-We also have to give credit to:
-
-
-<P>
-
-<PRE>  Brian T. Shelden &lt;shelden@shelden-associates.com&gt;
-</PRE>
-
-<P>
-
-for his help in porting and testing the code.
-
-
-<P>
-
-This module was originally developed as an IBM SupportPac, so credit must
-also go to the original author:
-
-
-<P>
-
-<PRE>  David J. Lennon &lt;davidl@bristol.com&gt;
-</PRE>
-
-<P>
-
-Although, nothing remains of the original code.... (sorry, David :-)
-
-
-<P>
-
-</DL>
-    </BODY>
-
-    </HTML>
+</html>
