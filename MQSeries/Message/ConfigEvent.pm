@@ -4,7 +4,7 @@
 # (c) 2002-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: ConfigEvent.pm,v 27.3 2007/01/11 20:20:34 molinam Exp $
+# $Id: ConfigEvent.pm,v 28.1 2007/02/08 14:21:52 biersma Exp $
 # 
 
 package MQSeries::Message::ConfigEvent;
@@ -17,7 +17,7 @@ use MQSeries qw(:functions);
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Message/ConfigEvent.pl";

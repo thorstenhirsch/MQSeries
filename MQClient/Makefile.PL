@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 27.6 2007/01/19 19:49:41 lonstein Exp $
+# $Id: Makefile.PL,v 28.2 2007/02/08 19:39:25 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,8 +20,7 @@ require "../util/fake_mm";
 #
 if ( cwd =~ m:/MQClient/?: ) {
     $apitype = "MQClient";
-}
-else {
+} else {
     $apitype = "MQServer";
     # Override this for the server test (use the default queuemgr)
     $myconfig{QUEUEMGR} = "" if $myconfig{USE_DEFAULT_QMGR};
@@ -49,8 +48,7 @@ unless (
 	-f "$mqmtop/lib/libmqm.so" ||
 	-f "$mqmtop/lib/libmqm.sl" ||
 	-f "$mqmtop/lib/libmqm.a" ||
-	-f "$mqmtop/lib/mqm.lib" ||
-	$^O eq "os390"
+	-f "$mqmtop/lib/mqm.lib"
        ) {
     warn("No libmqm server library found, MQServer disabled\n")
       if $apitype eq 'MQServer'; # Whine once...
@@ -92,9 +90,7 @@ if ( $mqmtop =~ /\s/ ) {
 }
 
 
-if ( $Config{osname} =~ /os390/ ) {
-    $libs = "-l\"//'$hlq.SCSQLOAD'\"";
-} elsif ( $Config{osname} =~ /linux|hpux|aix/ ) {
+if ( $Config{osname} =~ /linux|hpux|aix/ ) {
     #
     # On Linux and HP-UX WMQ 5.3 clients, the name of the shared
     # library is different for single- and multi-threaded apps.
@@ -278,9 +274,6 @@ close(TYPEMAP);
 # Collect optional WriteMakefile args in here...
 #
 my %extra_args;
-if ($^O eq 'os390') {
-    $extra_args{MAN3PODS} = {};
-}
 if ($Config{archname} =~ /-object\b/i) {
     #
     # On Win32, we need to force the use of the CAPI with
@@ -315,17 +308,18 @@ if ( $Config{archname} =~ /linux/ ) {
     my $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
 
     if ( $Config{use64bitall} ) {
-        $lddlflags .= '64';
+	unless ( $lddlflags =~ /64$/ ) {
+	    $lddlflags .= '64';
+	}
         $extra_args{LDDLFLAGS} .= $lddlflags;
-    }
-    elsif( $Config{archname} =~ /^x86_64-linux/ ) {
-        $lddlflags .= '64';
+    } elsif( $Config{archname} =~ /^x86_64-linux/ ) {
+	unless ( $lddlflags =~ /64$/ ) {
+	    $lddlflags .= '64';
+	}
         $extra_args{LDDLFLAGS} .= $lddlflags;
-    }
-    elsif ( $Config{archname} =~ /^i[3456]86-linux/ ) {
+    } elsif ( $Config{archname} =~ /^i[3456]86-linux/ ) {
         $extra_args{LDDLFLAGS} .= $lddlflags;
-    }
-    else {
+    } else {
         #
         # non-x86 Linux?
         #
@@ -335,14 +329,11 @@ if ( $Config{archname} =~ /linux/ ) {
         $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
         $extra_args{LDDLFLAGS} .= $lddlflags;
     }
-}
-elsif ($Config{archname} =~ /^sun/) {
+} elsif ($Config{archname} =~ /^sun/) {
     if ($Config{cc} =~ /^gcc/) {
         my $lddlflags = " -Wl,-rpath -Wl,$rpath";
         $extra_args{LDDLFLAGS} .= $lddlflags;
-
-    }
-    elsif (
+    } elsif (
            $Config{cc}        =~ /^cc$/
         || $Config{cc}        =~ /^sun/
         || $Config{ccname}    =~ /sun/i
@@ -354,25 +345,22 @@ elsif ($Config{archname} =~ /^sun/) {
         # but link using the Sun linker? Try handling with
         #   -Wl,-R,$rpath
         #
-        my $lddlflags .= " -R$rpath";
+        my $lddlflags .= " -G -R$rpath";
         $extra_args{LDDLFLAGS} .= $lddlflags;
-    }
-    else {
+    } else {
         #
         # Some other compiler on Sun...
         #
         goto NO_RPATH;
     }
-}
-elsif ( $Config{archname} =~ /aix/ ) {
+} elsif ( $Config{archname} =~ /aix/ ) {
     #
     # One or both of these might work for AIX
     #
-    $ENV{LIBPATH} = join(':',$ENV{LIBPATH},$rpath);
+    $ENV{LIBPATH} = join(':', $ENV{LIBPATH}, $rpath);
     my $lddflags = " -blibpath:$rpath";
     $extra_args{LDDLFLAGS} .= $lddlflags;
-}
-else {
+} else {
     #
     # FIXME
     #
@@ -388,7 +376,7 @@ else {
 WriteMakefile(
 	      NAME		=> "${apitype}::MQSeries",
 	      VERSION_FROM	=> "MQSeries.pm",
-	      LIBS		=> [$libs],
+	      LIBS		=> [ $libs ],
 	      INC		=> qq{-I"$include" -I../include},
 	      EXE_FILES		=> [],
 	      OBJECT		=> q[MQSeries$(OBJ_EXT) constants$(OBJ_EXT)],

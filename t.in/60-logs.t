@@ -1,5 +1,5 @@
 #
-# $Id: 60-logs.t,v 27.2 2007/01/11 20:20:44 molinam Exp $
+# $Id: 60-logs.t,v 28.1 2007/02/08 14:21:54 biersma Exp $
 #
 # (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,9 +16,9 @@ BEGIN {
 
 END { print "not ok 1\n" unless $loaded; }
 
-use __APITYPE__::MQSeries 1.24;
-use MQSeries::ErrorLog::Tail 1.24;
-use MQSeries::FDC::Tail 1.24;
+use __APITYPE__::MQSeries 1.25;
+use MQSeries::ErrorLog::Tail 1.25;
+use MQSeries::FDC::Tail 1.25;
 $loaded = 1;
 print "ok 1\n";
 

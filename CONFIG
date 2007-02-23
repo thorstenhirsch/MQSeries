@@ -1,5 +1,5 @@
 #
-# $Id: CONFIG,v 27.1 2007/01/11 20:19:50 molinam Exp $
+# $Id: CONFIG,v 28.1 2007/02/08 19:43:50 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -61,21 +61,11 @@ QUEUE = PERL.MQI.TEST
 # include, for those of you who choose to standardize the directory
 # name) directories of the MQSeries installation.  If this directory
 # isn't found, or isn't specified, then it defaults to /opt/mqm (or
-# /usr/lpp/mqm on AIX, or the cwd on OS/390).
+# /usr/lpp/mqm on AIX).
 #
 # MQMTOP = /ms/dist/3rd/PROJ/MQSeries/2.2.2
 # MQMTOP = /ms/dist/3rd/PROJ/MQSeries/2.2.1/opt/mqm
 # MQMTOP = /ms/dist/3rd/PROJ/MQSeries/5.0.7
-
-#
-# This is the high level qualifier for the MQSeries OS/390 installation.
-# This is relevant on OS/390 only.  
-# The CMQC.H and CMQCFC.H pds members should be accessible 
-# via shell constructs like `cat "//'$HLQ.SCSQC370(CMQC)'`.
-# The load module should be accessible via -l"//'$HLQ.SCSQLOAD'".
-# If not specified here it will default to MQS120.
-#
-# HLQ = MQS120
 
 #
 # If you have installed the MQSeries locale files somewhere other than

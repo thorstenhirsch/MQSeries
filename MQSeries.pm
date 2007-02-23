@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 27.2 2007/01/11 20:20:02 molinam Exp $
+# $Id: MQSeries.pm,v 28.2 2007/02/08 16:12:34 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -11,7 +11,7 @@
 
 package MQSeries;
 
-require 5.005;
+use 5.006;
 
 use strict;
 use Carp;
@@ -24,7 +24,7 @@ use MQSeries::Config::Machine;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 BEGIN {
     my $server;
@@ -150,18 +150,7 @@ message formats:
   MQSeries::Message::Storable
   MQSeries::Message::Event
   MQSeries::Message::PCF
-  MQSeries::Message::RulesFormat
   MQSeries::Message::DeadLetter
-
-There is also a set of modules which provide an interface to the
-optional Publish/Subscribe system, which is available as a support
-pack for the distributed platforms using Version 5 of MQSeries.
-
-  MQSeries::PubSub::Broker
-  MQSeries::PubSub::Stream
-  MQSeries::PubSub::Command (docs only, not used directly)
-  MQSeries::PubSub::Message
-  MQSeries::PubSub::AdminMessage
 
 There is also a module which provides an interface to the command
 server PCF messages for MQSeries administration:

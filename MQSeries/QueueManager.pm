@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 27.3 2007/01/11 20:20:35 molinam Exp $
+# $Id: QueueManager.pm,v 28.2 2007/02/08 16:11:24 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::QueueManager;
 
-require 5.005;
+use 5.006;
 
 use strict;
 use Carp;
@@ -18,7 +18,7 @@ use Carp;
 use Config;
 
 use MQSeries qw(:functions);
-use MQSeries::Utils qw(VerifyNamedParams);
+use Params::Validate qw(validate);
 
 #
 # Well, now that we're using the same constants for the Inquire/Set
@@ -30,19 +30,27 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
-    my %args = @_;
-    VerifyNamedParams(\%args, [],
-                      [ qw(QueueManager Carp
-                           CompCode Reason
-                           GetConvert PutConvert
-                           RetryCount RetrySleep RetryReasons
-                           ConnectTimeout ConnectTimeoutSignal
-                           ClientConn SSLConfig AutoCommit AutoConnect) ]);
+    my %args = validate(@_, { 'QueueManager'         => 0,
+			      'Carp'                 => 0,
+			      'CompCode'             => 0,
+			      'Reason'               => 0,
+			      'GetConvert'           => 0,
+			      'PutConvert'           => 0,
+			      'RetryCount'           => 0,
+			      'RetrySleep'           => 0,
+			      'RetryReasons'         => 0,
+			      'ConnectTimeout'       => 0,
+			      'ConnectTimeoutSignal' => 0,
+			      'ClientConn'           => 0,
+			      'SSLConfig'            => 0,
+			      'AutoCommit'           => 0,
+			      'AutoConnect'          => 0,
+			    });
 
     my $self =
       {
@@ -152,8 +160,9 @@ sub new {
 
 sub Open {
     my $self = shift;
-    my %args = @_;
-    VerifyNamedParams(\%args, [], [ qw(Options ObjDesc) ]);
+    my %args = validate(@_, { 'Options' => 0,
+			      'ObjDesc' => 0,
+			    });
 
     $self->{"CompCode"} = MQSeries::MQCC_FAILED;
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
@@ -209,8 +218,7 @@ sub Open {
 
 
 sub Close {
-    my ($self, %args) = @_;
-    VerifyNamedParams(\%args, [], []);
+    my $self = shift;
 
     return 1 unless $self->{Hobj};
 
@@ -574,11 +582,17 @@ sub Put1 {
 
 sub Connect {
     my $self = shift;
-    my %args = ( %{$self->{ConnectArgs}}, @_ );
-    VerifyNamedParams(\%args, [],
-                      [ qw(RetryCount RetrySleep RetryReasons
-                           ConnectTimeout ConnectTimeoutSignal
-                           ClientConn SSLConfig AutoConnect) ]);
+    my @combined_params = ( %{$self->{ConnectArgs}}, @_ );
+    my %args = validate(@combined_params, 
+			{ 'RetryCount'           => 0,
+			  'RetrySleep'           => 0,
+			  'RetryReasons'         => 0,
+			  'ConnectTimeout'       => 0,
+			  'ConnectTimeoutSignal' => 0,
+			  'ClientConn'           => 0,
+			  'SSLConfig'            => 0,
+			  'AutoConnect'          => 0,
+			});
 
     return 1 if $self->{Hconn};
 

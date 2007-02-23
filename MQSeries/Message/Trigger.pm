@@ -4,7 +4,7 @@
 # (c) 2003-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Trigger.pm,v 27.3 2007/01/11 20:20:35 molinam Exp $
+# $Id: Trigger.pm,v 28.1 2007/02/08 14:21:53 biersma Exp $
 #
 
 package MQSeries::Message::Trigger;
@@ -15,7 +15,7 @@ use Carp;
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Command/PCF/ResponseValues.pl"; # For ApplType

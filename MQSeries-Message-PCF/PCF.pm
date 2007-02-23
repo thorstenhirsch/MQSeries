@@ -1,5 +1,5 @@
 #
-# $Id: PCF.pm,v 27.2 2007/01/11 20:19:57 molinam Exp $
+# $Id: PCF.pm,v 28.1 2007/02/08 16:07:03 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,7 +16,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 
@@ -138,9 +138,9 @@ MQSeries::Message::PCF -- Generic OO and procedurel interface to PCF (Programmab
   use MQSeries::Message::PCF;
 
   #
-  # The $header hash represents the MQCFH PCF Header.  
+  # The $header hash represents the MQCFH PCF Header.
   #
-  $header = 
+  $header =
   {
    Type		=> MQCFT_COMMAND,
    Command      => MQCMD_INQUIRE_Q,
@@ -204,7 +204,7 @@ MQSeries::Message::PCF -- Generic OO and procedurel interface to PCF (Programmab
 
   #
   # The reverse operation would be:
-  # 
+  #
   my ($header, $parameters) = MQDecodePCF($msgdata);
 
 =head1 DESCRIPTION
@@ -219,7 +219,6 @@ implementations of each of the standard PCF formats used in the
 MQSeries product, and the current release already includes support for:
 
   PCF Command Server messages 		(MQSeries::Command)
-  PubSub Administrative Messages 	(MQSeries::PubSub::AdminMessage)
   Performance Events 			(MQSeries::Message::Event)
 
 If you are reading this documentation with the intention of using it
@@ -323,15 +322,15 @@ fact, both of these keys will be entirely ignored.
 
 The "Parameter" values depend entirely on the specific usage of the
 PCF format, with one set of possible values used for PCF command
-server messages, and another for PubSub administrative messages, and
-yet another for performance events.  See the respective documentation
-for each of these formats for more information.
+server messages and another for performance events.  See the
+respective documentation for each of these formats for more
+information.
 
 =over 4
 
 =item Integer Parameter (MQCFIN)
 
-This is a HASH reference with the following input keys: 
+This is a HASH reference with the following input keys:
 
   Parameter
   Value
@@ -352,9 +351,9 @@ denoted by *):
 
   Parameter
   String
-  CodedCharSetId*  
+  CodedCharSetId*
 
-The "String" must have a string value, or an error will be raised.  
+The "String" must have a string value, or an error will be raised.
 
 When returned, is has the following output keys:
 
@@ -388,7 +387,7 @@ denoted by *):
 
   Parameter
   Strings
-  CodedCharSetId*  
+  CodedCharSetId*
 
 The "Strings" must be an ARRAY reference of string values, or an error
 will be raised.Note that the documented "Count" MQCFSL key may be
@@ -406,9 +405,8 @@ When returned, it has the following output keys:
 
 =head1 SEE ALSO
 
-  MQSeries::Message::Event(3), 
-  MQSeries::Command::Request(3), 
+  MQSeries::Message::Event(3),
+  MQSeries::Command::Request(3),
   MQSeries::Command::Response(3),
-  MQSeries::PubSub::AdminMessage(3)
 
 =cut

@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 27.17 2007/01/11 20:20:03 molinam Exp $
+# $Id: Base.pm,v 28.2 2007/02/08 16:10:47 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Command::Base;
 
-require 5.005;
+use 5.006;
 
 use strict;
 use Carp;
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 sub new {
 

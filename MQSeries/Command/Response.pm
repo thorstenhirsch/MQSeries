@@ -1,5 +1,5 @@
 #
-# $Id: Response.pm,v 27.2 2007/01/11 20:20:25 molinam Exp $
+# $Id: Response.pm,v 28.2 2007/02/08 16:10:33 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Command::Response;
 
-require 5.005;
+use 5.006;
 
 use strict;
 use Carp;
@@ -22,7 +22,7 @@ use vars qw(@ISA $VERSION);
 	  MQSeries::Message
 	 );
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 1;
 

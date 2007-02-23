@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: parse_config,v 27.3 2007/01/11 20:20:50 molinam Exp $
+# $Id: parse_config,v 28.2 2007/02/08 19:42:54 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -62,8 +62,6 @@ if ( defined $myconfig{MQMTOP} ) {
 
     if ( $Config{osname} =~ /aix/ ) {
 	$mqmtop = "/usr/lpp/mqm";
-    } elsif ( $Config{osname} eq 'os390' ) {
-	$mqmtop = dirname($config);
     } elsif ( $Config{osname} =~ /win32/i ) {
 
       require "Win32/TieRegistry.pm";
@@ -84,40 +82,6 @@ if ( defined $myconfig{MQMTOP} ) {
       $systemdir = $mqmdir . q{/qmgrs/@SYSTEM};
 
     }
-}
-
-#
-# On OS/390 we create directories and catenate the PDS members into
-# HFS files if necessary.
-#
-if ( $Config{"osname"} eq 'os390' ) {
-
-    #
-    # The high level qualifier for the .SCSQC370 header file pds
-    # members and the .SCSQLOAD load module data set.
-    #
-    if ( defined $myconfig{HLQ} ) {
-        $hlq = $myconfig{HLQ};
-    } else {
-        $hlq = 'MQS120';
-    }
-
-    mkdir ( "$mqmtop/lib", 0755 ) unless ( -d "$mqmtop/lib" );
-    mkdir ( "$mqmtop/inc", 0755 ) unless ( -d "$mqmtop/inc" );
-
-    foreach my $member (
-			qw(CMQC
-			   CMQCFC
-			   CMQXC
-			   CSQ4CBI
-			   CSQ4CB0
-			   CSQ4CMSG
-			   CSQ4TCH0
-			   CSQ4TC0)
-		       ) {
-        cat2hfs ( $member, $hlq, 'SCSQC370', "$mqmtop/inc" );
-    }
-
 }
 
 unless ( -d $mqmtop ) {
@@ -141,7 +105,9 @@ if ( -d "$mqmtop/inc" ) {
 #
 # Ugh.  Need to figure out which version we are.  This is kinda ugly...
 #
-$mqversion = 2;
+# NOTE: right now, we don't do MQ v6 yet, so it's always MQ v5.
+#
+$mqversion = 5;
 
 open(CMQC,"$include/cmqc.h")
   or die "Unable to open $include/cmqc.h: $ERRNO\n";
@@ -151,8 +117,10 @@ $mqsubversion = 0;
 while ( <CMQC> ) {
     $mqversion = 5 if /MQCNO_NONE/;
     $mqsubversion = 1 if /MQGMO_VERSION_3/;
+    #
+    # FIXME: we might want to detetc MQ 5.2, MQ 5.3
+    #
 }
-
 close(CMQC);
 
 #

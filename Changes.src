@@ -3,6 +3,43 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.25
+
+The 1.24 release, though long-delayed, was plagued by glitches.  Our
+only excuse is that it had been too long since the last release and we
+were out of practice.  Let's hope the 1.25 release is better.
+
+=head2 Add missing generated files
+
+The MQSeries 1.24 release accidentally went out without the required
+generated files.  This has been corrected.
+
+=head2 Fix link RPATH glitches on 64-bit Linux
+
+The RPATH for 64-bit linux systems ended up as /opt/mqm/lib6464 due to
+duplicate addition of the '64' postfix.  This has been fixed.
+
+=head2 Remove vestigial MQ v2 and OS/390 support
+
+Support for the MQ v2 release has been removed.  The lowest supported
+MQ release is now 5.2 and the lowest supported perl release is now
+perl 5.6.
+
+In a similar manner, the incomplete and known to be broken OS/390
+support is removed.  The module will still work with z/OS queue
+managers; it just won't try and compile on OS/390 anymore.
+
+=head2 Remove outdated PubSub support
+
+Support for the outdated pre-MQSI v2 publish/subscribe classes
+(MQSeries::PubSub, MQSeries::Message::RulesFormat) has been removed.
+
+=head2 Switch to Params::Validate
+
+The VerifyNamedParams method in the MQSeries::Utils has been dropped
+and is replaced by the use of the Params::Validate module.  This is a
+new dependency that must be installed before the MQSeries module.
+
 =head1 Changes for 1.24
 
 =head2 Add support for MQ v6 in MQSeries::Command
@@ -1695,7 +1732,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 27.2 2007/01/11 20:19:51 molinam Exp $
+# $Id: Changes.src,v 28.1 2007/02/08 19:45:03 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 27.1 2007/01/11 20:19:57 molinam Exp $
+# $Id: Makefile.PL,v 28.1 2007/02/08 19:42:22 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -14,12 +14,6 @@ WriteMakefile(
 	      NAME	   	=> 'MQSeries::Message::PCF',
 	      VERSION_FROM	=> 'PCF.pm',
 	      INC		=> qq{-I"$include"},
-	      (
-	       $^O eq 'os390' ?
-	       (
-		MAN3PODS	=> {},
-	       ) : ()
-	      ),
               (
 	       $Config{archname} =~ /-object\b/i ?
 	       (

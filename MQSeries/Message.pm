@@ -1,5 +1,5 @@
 #
-# $Id: Message.pm,v 27.3 2007/01/11 20:20:34 molinam Exp $
+# $Id: Message.pm,v 28.2 2007/02/08 16:11:42 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Message;
 
-require 5.005;
+use 5.006;
 
 use strict;
 use Carp;
@@ -17,7 +17,7 @@ use MQSeries::Utils qw(ConvertUnit);
 
 use vars qw($VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 sub new {
 

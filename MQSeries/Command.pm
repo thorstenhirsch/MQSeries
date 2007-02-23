@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 27.8 2007/01/11 20:20:02 molinam Exp $
+# $Id: Command.pm,v 28.2 2007/02/08 16:13:03 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Command;
 
-require 5.005;
+use 5.006;
 
 use strict;
 use Carp;
@@ -19,24 +19,31 @@ use MQSeries::Command::Request;
 use MQSeries::Command::Response;
 #use MQSeries::Command::PCF;
 #use MQSeries::Command::MQSC;
-use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
+use MQSeries::Utils qw(ConvertUnit);
+use Params::Validate qw(validate);
 
 use vars qw($VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 sub new {
-    my ($proto, %args) = @_;
+    my $proto = shift;
     my $class = ref($proto) || $proto;
-    VerifyNamedParams(\%args, 
-                      [ ],
-                      [ qw(QueueManager Type Carp DynamicQName 
-			   Expiry 
-			   Wait
-                           ModelQName StrictMapping
-                           CommandQueue
-                           CommandQueueName RealQueueManager
-                           ProxyQueueManager ReplyToQMgr ReplyToQ) ]);
+    my %args = validate(@_, { 'QueueManager'      => 0,
+			      'Type'              => 0,
+			      'Carp'              => 0,
+			      'DynamicQName'      => 0,
+			      'Expiry'            => 0,
+			      'Wait'              => 0,
+			      'ModelQName'        => 0,
+			      'StrictMapping'     => 0,
+			      'CommandQueue'      => 0,
+			      'CommandQueueName'  => 0,
+			      'RealQueueManager'  => 0,
+			      'ProxyQueueManager' => 0,
+			      'ReplyToQMgr'       => 0,
+			      'ReplyToQ'          => 0,
+			    });
 
     my $self =
       {
@@ -56,8 +63,7 @@ sub new {
 
     #
     # A large set of optional parameters that become data members if
-    # present.  Note that the 'Carp is code ref' check is done inside
-    # VerifyNamedParams.
+    # present.
     #
     foreach my $param (qw(Carp
                           DynamicQName ModelQName

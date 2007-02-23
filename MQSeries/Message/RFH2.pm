@@ -4,7 +4,7 @@
 # (c) 2004-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: RFH2.pm,v 27.2 2007/01/11 20:20:34 molinam Exp $
+# $Id: RFH2.pm,v 28.1 2007/02/08 14:21:53 biersma Exp $
 #
 
 package MQSeries::Message::RFH2;
@@ -15,7 +15,7 @@ use Carp;
 use MQSeries::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 @ISA = qw(MQSeries::Message);
 
 #

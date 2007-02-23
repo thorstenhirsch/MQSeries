@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 27.3 2007/01/11 20:20:35 molinam Exp $
+# $Id: Queue.pm,v 28.2 2007/02/08 16:12:01 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -7,14 +7,15 @@
 
 package MQSeries::Queue;
 
-require 5.005;
+use 5.006;
 
 use strict;
 use Carp;
 
 use MQSeries qw(:functions);
 use MQSeries::QueueManager;
-use MQSeries::Utils qw(ConvertUnit VerifyNamedParams);
+use MQSeries::Utils qw(ConvertUnit);
+use Params::Validate qw(validate);
 
 #
 # Well, now that we're using the same constants for the Inquire/Set
@@ -26,18 +27,29 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
-    my %args = @_;
-    VerifyNamedParams(\%args, [], 
-                      [ qw(Carp QueueManager Queue ObjDesc DynamicQName
-                           Options Mode CompCode Reason
-                           PutConvert GetConvert CloseOptions
-                           RetrySleep RetryCount RetryReasons
-                           AutoOpen DisableAutoResize) ]);
+    my %args = validate(@_, { 'Carp'              => 0,
+			      'QueueManager'      => 0,
+			      'Queue'             => 0,
+			      'ObjDesc'           => 0,
+			      'DynamicQName'      => 0,
+			      'Options'           => 0,
+			      'Mode'              => 0,
+			      'CompCode'          => 0,
+			      'Reason'            => 0,
+			      'PutConvert'        => 0,
+			      'GetConvert'        => 0,
+			      'CloseOptions'      => 0,
+			      'RetrySleep'        => 0,
+			      'RetryCount'        => 0,
+			      'RetryReasons'      => 0,
+			      'AutoOpen'          => 0,
+			      'DisableAutoResize' => 0,
+			    }),
 
     my %ObjDesc = ();
 
@@ -422,10 +434,15 @@ sub Put {
 # - DisableAutoResize
 #
 sub Get {
-    my ($self, %args) = @_;
-    VerifyNamedParams(\%args, [], 
-                      [ qw(Convert DisableAutoResize GetConvert 
-                           GetMsgOpts Message Sync Wait) ]);
+    my $self = shift;
+    my %args = validate(@_, { 'Convert'           => 0,
+			      'DisableAutoResize' => 0,
+			      'GetConvert'        => 0,
+			      'GetMsgOpts'        => 0,
+			      'Message'           => 0,
+			      'Sync'              => 0,
+			      'Wait'              => 0,
+			    });
 
     return unless $self->Open();
 
@@ -804,10 +821,14 @@ sub ObjDesc {
 
 sub Open {
     my $self = shift;
-    my %args = ( %{$self->{OpenArgs}}, @_ );
-    VerifyNamedParams(\%args, [],
-                      [ qw(Mode Options
-                           RetryCount RetrySleep RetryReasons) ]);
+    my @combined_params = ( %{$self->{OpenArgs}}, @_ );
+    my %args = validate(@combined_params,
+			{ 'Mode'         => 0,
+			  'Options'      => 0,
+			  'RetryCount'   => 0,
+			  'RetrySleep'   => 0,
+			  'RetryReasons' => 0,
+			});
 
     return 1 if $self->{Hobj};
 

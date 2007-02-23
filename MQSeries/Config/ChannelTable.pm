@@ -1,5 +1,5 @@
 #
-# $Id: ChannelTable.pm,v 27.2 2007/01/11 20:20:26 molinam Exp $
+# $Id: ChannelTable.pm,v 28.1 2007/02/08 14:21:51 biersma Exp $
 #
 # (c) 2001-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -19,7 +19,7 @@ use vars qw(
 	    %StrucLength
 	   );
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 @MQCDFields =
   (
