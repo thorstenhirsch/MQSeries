@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: Responses.in,v 27.7 2007/01/11 20:20:41 molinam Exp $
+# $Id: Responses.in,v 30.1 2007/09/13 14:33:51 balusuv Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -72,12 +72,16 @@ package MQSeries::Command::PCF;
    InquireCFStruct 			=> [ &MQCMD_INQUIRE_CF_STRUC,		$ResponseParameters{CFStruct} ],
    InquireCFStructNames 		=> [ &MQCMD_INQUIRE_CF_STRUC_NAMES,	$ResponseParameters{CFStruct} ],
    InquireChannel 			=> [ &MQCMD_INQUIRE_CHANNEL,		$ResponseParameters{Channel} ],
+   InquireChannelInitiator 		=> [ &MQCMD_INQUIRE_CHANNEL_INIT,	$ResponseParameters{ChannelInitiator} ],
    InquireChannelNames 			=> [ &MQCMD_INQUIRE_CHANNEL_NAMES,	$ResponseParameters{Channel} ],
    InquireChannelStatus 		=> [ &MQCMD_INQUIRE_CHANNEL_STATUS,	$ResponseParameters{ChannelStatus} ],
    InquireConnection                    => [ &MQCMD_INQUIRE_CONNECTION,         $ResponseParameters{Connection} ],
    InquireClusterQueueManager 		=> [ &MQCMD_INQUIRE_CLUSTER_Q_MGR,	$ResponseParameters{Cluster} ],
    InquireChannelListener               => [ &MQCMD_INQUIRE_LISTENER,           $ResponseParameters{Listener} ],
    InquireChannelListenerStatus		=> [ &MQCMD_INQUIRE_LISTENER_STATUS,	$ResponseParameters{ListenerStatus} ],
+   InquireEntityAuthority		=> [ &MQCMD_INQUIRE_ENTITY_AUTH,	$ResponseParameters{AuthorityRecord} ],
+   InquireGroup				=> [ &MQCMD_INQUIRE_QSG,		$ResponseParameters{QSharingGroup} ],
+   InquireLog				=> [ &MQCMD_INQUIRE_LOG,		$ResponseParameters{Log} ],
    InquireNamelist 			=> [ &MQCMD_INQUIRE_NAMELIST,		$ResponseParameters{Namelist} ],
    InquireNamelistNames 		=> [ &MQCMD_INQUIRE_NAMELIST_NAMES,	$ResponseParameters{Namelist} ],
    InquireProcess 			=> [ &MQCMD_INQUIRE_PROCESS,		$ResponseParameters{Process} ],
@@ -92,6 +96,7 @@ package MQSeries::Command::PCF;
    InquireServiceStatus			=> [ &MQCMD_INQUIRE_SERVICE_STATUS,	$ResponseParameters{ServiceStatus} ],
    InquireStorageClass 			=> [ &MQCMD_INQUIRE_STG_CLASS,		$ResponseParameters{StorageClass} ],
    InquireStorageClassNames		=> [ &MQCMD_INQUIRE_STG_CLASS_NAMES,	$ResponseParameters{StorageClass} ],
+   InquireSystem			=> [ &MQCMD_INQUIRE_SYSTEM,		$ResponseParameters{InquireSystem} ],
    InquireUsage 			=> [ &MQCMD_INQUIRE_USAGE,		$ResponseParameters{InquireUsage} ],
 
    PingChannel 				=> [ &MQCMD_PING_CHANNEL,		$ResponseParameters{Channel} ],
@@ -116,6 +121,7 @@ package MQSeries::Command::PCF;
    StartService		                => [ &MQCMD_START_SERVICE,	        $ResponseParameters{Service} ],
 
    StopChannel 				=> [ &MQCMD_STOP_CHANNEL,		$ResponseParameters{Channel} ],
+   StopChannelInitiator 		=> [ &MQCMD_STOP_CHANNEL_INIT,		$ResponseParameters{Channel} ],
    StopChannelListener			=> [ &MQCMD_STOP_CHANNEL_LISTENER,	$ResponseParameters{Listener} ],
    StopConnection                       => [ &MQCMD_STOP_CONNECTION,            $ResponseParameters{Connection} ],
    StopService		                => [ &MQCMD_STOP_SERVICE,	        $ResponseParameters{Service} ],

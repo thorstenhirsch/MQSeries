@@ -1,5 +1,5 @@
 #
-# $Id: DeadLetter.pm,v 28.1 2007/02/08 16:05:02 biersma Exp $
+# $Id: DeadLetter.pm,v 31.1 2007/09/24 15:41:46 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -18,7 +18,7 @@ use MQSeries::Message;
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 @ISA = qw( MQSeries::Message Exporter DynaLoader );
 

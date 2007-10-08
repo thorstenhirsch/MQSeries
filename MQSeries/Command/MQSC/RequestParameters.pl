@@ -1,5 +1,5 @@
 #
-# $Id: RequestParameters.pl,v 27.5 2007/01/11 20:20:04 molinam Exp $
+# $Id: RequestParameters.pl,v 30.1 2007/09/13 14:28:26 balusuv Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -228,7 +228,7 @@ package MQSeries::Command::MQSC;
     InitiationQName 		=> [ "INITQ",		"string" ],
     LongRetryCount		=> [ "LONGRTY",		"integer" ],
     LongRetryInterval		=> [ "LONGTMR",		"integer" ],
-    KeepAliveInterval           => [ "KAINT",           "integer" ],
+    KeepAliveInterval           => [ "KAINT",           "string" ], # 0/AUTO/integer
     LocalAddress                => [ "LOCLADDR",        "string" ],
     LUName			=> [ "LUNAME",		"string" ],
     MCAName			=> [ "MCANAME",		"string" ],

@@ -3,7 +3,7 @@
 # (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 28.1 2007/02/08 19:48:56 biersma Exp $
+# $Id: Entry.pm,v 31.1 2007/09/24 15:41:51 biersma Exp $
 #
 
 package MQSeries::FDC::Entry;
@@ -17,7 +17,7 @@ use overload ('""'  => 'as_string',
 
 use vars qw($VERSION);
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 #
 # Constructor

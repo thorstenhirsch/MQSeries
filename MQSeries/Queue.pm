@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 28.2 2007/02/08 16:12:01 biersma Exp $
+# $Id: Queue.pm,v 31.1 2007/09/24 15:41:54 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -27,7 +27,7 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 sub new {
     my $proto = shift;

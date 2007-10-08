@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 27.5 2007/01/11 20:19:58 molinam Exp $";
+static char rcsid[] = "$Id: PCF.xs,v 30.2 2007/09/11 18:34:51 balusuv Exp $";
 
 /*
   (c) 1999-2007 Morgan Stanley Dean Witter and Co.
@@ -246,6 +246,9 @@ MQEncodePCF(Header,ParameterList)
 	  HV *ParameterHV;
 	  
 	  MQCFST *pStringParam;
+#ifdef MQCFT_BYTE_STRING
+	  MQCFBS *pByteStringParam;
+#endif
 	  MQCFIN *pIntegerParam;
 	  MQCFSL *pStringParamList;
 	  MQCFIL *pIntegerParamList;
@@ -295,6 +298,14 @@ MQEncodePCF(Header,ParameterList)
 	      Type = MQCFT_STRING;
 	    }
 
+	    /* XS doesn't like a blank line fore an ifdef */
+#ifdef MQCFT_BYTE_STRING
+	    if ( hv_exists(ParameterHV,"ByteString",10) ) {
+	      typecount++;
+	      Type = MQCFT_BYTE_STRING;
+	    }
+#endif /* MQCFT_BYTE_STRING */
+
 	    if ( hv_exists(ParameterHV,"Values",6) ) {
 	      typecount++;
 	      Type = MQCFT_INTEGER_LIST;
@@ -307,7 +318,11 @@ MQEncodePCF(Header,ParameterList)
 
 	    if ( typecount == 0 ) {
 	      warn("MQEncodePCF: ParameterList entry '%d' has none of the following keys:\n",index);
+#ifdef MQCFT_BYTE_STRING
+	      warn("\tString ByteString Value Strings Values\n");
+#else
 	      warn("\tString Value Strings Values\n");
+#endif /* MQCFT_BYTE_STRING */
 	      XSRETURN_UNDEF;
 	    }
 	    
@@ -330,20 +345,17 @@ MQEncodePCF(Header,ParameterList)
 	    Parameter = SvIV(*svp);
 
 	    /*
-	      Extract the CodedCharSetId key, if it exists, and
-	      verify that it is an integer (notmuch else we can, or
-	      want, to do here).
-	    */
+	     * Extract the CodedCharSetId key, if it exists, and
+	     * verify that it is an integer (notmuch else we can, or
+	     * want, to do here).
+	     */
 	    if ( Type == MQCFT_STRING || Type == MQCFT_STRING_LIST ) {
-
-	      svp = hv_fetch(ParameterHV,"CodedCharSetId",14,0);
-	      if ( svp != NULL ) {
-		CodedCharSetId = SvIV(*svp);
-	      }
-	      else {
-		CodedCharSetId = MQCCSI_DEFAULT;
-	      }
-	      
+		svp = hv_fetch(ParameterHV,"CodedCharSetId",14,0);
+		if ( svp != NULL ) {
+		    CodedCharSetId = SvIV(*svp);
+		} else {
+		    CodedCharSetId = MQCCSI_DEFAULT;
+		}
 	    }
 
 	    /*
@@ -352,89 +364,136 @@ MQEncodePCF(Header,ParameterList)
 	     */
 
 	    if ( Type == MQCFT_INTEGER ) {
+		/*
+		 * Extract the Value key, and verify that it is an
+		 * integer
+		 */
+		svp = hv_fetch(ParameterHV,"Value",5,0);
+		if ( svp == NULL ) {
+		    warn("MQEncodePCF: ParameterList entry '%d' has no 'Value' key.\n",index);
+		    XSRETURN_UNDEF;
+		}
 
-	      /*
-		Extract the Value key, and verify that it is an
-		integer
-	      */
-	      svp = hv_fetch(ParameterHV,"Value",5,0);
-	      if ( svp == NULL ) {
-		warn("MQEncodePCF: ParameterList entry '%d' has no 'Value' key.\n",index);
-		XSRETURN_UNDEF;
-	      }
+		Value = SvIV(*svp);
 
-	      Value = SvIV(*svp);
+		/*
+		 * We can now create the MQCFIN structure, and
+		 * concatenate it to the ParameterResult.
+		 */
+		if ( (pIntegerParam = (MQCFIN *)malloc(MQCFIN_STRUC_LENGTH)) == NULL ) {
+		    perror("Unable to allocate memory");
+		    XSRETURN_UNDEF;
+		}
 
-	      /*
-		We can now create the MQCFIN structure, and
-		concatenate it to the ParameterResult.
-	       */
-	      if ( (pIntegerParam = (MQCFIN *)malloc(MQCFIN_STRUC_LENGTH)) == NULL ) {
-		perror("Unable to allocate memory");
-		XSRETURN_UNDEF;
-	      }
-
-	      pIntegerParam->Type = MQCFT_INTEGER;
-	      pIntegerParam->StrucLength = MQCFIN_STRUC_LENGTH;
-	      pIntegerParam->Parameter = Parameter;
-	      pIntegerParam->Value = Value;
-
-	      sv_catpvn(ParameterResult,(char *)pIntegerParam,MQCFIN_STRUC_LENGTH);
-	      
-	      free(pIntegerParam);
-
+		pIntegerParam->Type = MQCFT_INTEGER;
+		pIntegerParam->StrucLength = MQCFIN_STRUC_LENGTH;
+		pIntegerParam->Parameter = Parameter;
+		pIntegerParam->Value = Value;
+		
+		sv_catpvn(ParameterResult,(char *)pIntegerParam,MQCFIN_STRUC_LENGTH);
+		
+		free(pIntegerParam);
 	    }
 
 	    if ( Type == MQCFT_STRING ) {
+		/*
+		 * Extract the String, which must obviously be a string
+		 */
+		svp = hv_fetch(ParameterHV,"String",6,0);
+		if ( svp == NULL ) {
+		    warn("MQEncodePCF: ParameterList entry '%d' has no 'String' key.\n",index);
+		    XSRETURN_UNDEF;
+		}
+
+		if ( !SvPOK(*svp) ) {
+		    warn("MQEncodePCF: ParameterList entry '%d' String key is not a string.\n",index);
+		    XSRETURN_UNDEF;
+		}
+
+		String = SvPV(*svp,StringLength);
+
+		/*
+		 * The total size of the structure needs to be a multiple
+		 * of 4 (or some buggy IBM code will vomit somewhere, I'm
+		 * sure...)
+		 */
+		StrucLength = MQCFST_STRUC_LENGTH_FIXED + StringLength;
+		if ( StrucLength % 4 )
+		    StrucLength += 4 - (StrucLength%4);
+		
+		/*
+		 *	Create the MQCFST structure, and concatenate it to the
+		 *	ParameterResult
+		 */
+		if ( (pStringParam = (MQCFST *)malloc(StrucLength)) == NULL ) {
+		    perror("Unable to allocate memory");
+		    XSRETURN_UNDEF;
+		}
+
+		pStringParam->Type 		= MQCFT_STRING;
+		pStringParam->Parameter 	= Parameter;
+		pStringParam->CodedCharSetId 	= CodedCharSetId;
+		pStringParam->StringLength 	= StringLength;
+		pStringParam->StrucLength 	= StrucLength;
+		
+		memset(pStringParam->String,'\0',StrucLength - MQCFST_STRUC_LENGTH_FIXED);
+		strncpy(pStringParam->String,String,StringLength);
 	      
-	      /*
-		Extract the String, which must obviously be a string
-	       */
-	      svp = hv_fetch(ParameterHV,"String",6,0);
-	      if ( svp == NULL ) {
-		warn("MQEncodePCF: ParameterList entry '%d' has no 'String' key.\n",index);
-		XSRETURN_UNDEF;
-	      }
-
-	      if ( !SvPOK(*svp) ) {
-		warn("MQEncodePCF: ParameterList entry '%d' String key is not a string.\n",index);
-		XSRETURN_UNDEF;
-	      }
-
-	      String = SvPV(*svp,StringLength);
-
-	      /*
-		The total size of the structure needs to be a multiple
-		of 4 (or some buggy IBM code will vomit somewhere, I'm
-		sure...)
-	       */
-	      StrucLength = MQCFST_STRUC_LENGTH_FIXED + StringLength;
-	      if ( StrucLength % 4 )
-		StrucLength += 4 - (StrucLength%4);
-
-	      /*
-		Create the MQCFST structure, and concatenate it to the
-		ParameterResult
-	      */
-	      if ( (pStringParam = (MQCFST *)malloc(StrucLength)) == NULL ) {
-		perror("Unable to allocate memory");
-		XSRETURN_UNDEF;
-	      }
-
-	      pStringParam->Type 		= MQCFT_STRING;
-	      pStringParam->Parameter 		= Parameter;
-	      pStringParam->CodedCharSetId 	= CodedCharSetId;
-	      pStringParam->StringLength 	= StringLength;
-	      pStringParam->StrucLength 	= StrucLength;
+		sv_catpvn(ParameterResult, (char *)pStringParam, pStringParam->StrucLength);
 	      
-	      memset(pStringParam->String,'\0',StrucLength - MQCFST_STRUC_LENGTH_FIXED);
-	      strncpy(pStringParam->String,String,StringLength);
-	      
-	      sv_catpvn(ParameterResult, (char *)pStringParam, pStringParam->StrucLength);
-	      
-	      free(pStringParam);
-
+		free(pStringParam);
 	    }
+
+	    /* XS doesn't like a blank line fore an ifdef */
+#ifdef MQCFT_BYTE_STRING
+	    if (Type == MQCFT_BYTE_STRING) {
+		/*
+		 * Extract the ByteString, which must be a string
+		 */
+		svp = hv_fetch(ParameterHV, "ByteString", 10, 0);
+		if (svp == NULL) {
+		    warn("MQEncodePCF: ParameterList entry '%d' has no 'ByteString' key.\n", index);
+		    XSRETURN_UNDEF;
+		}
+
+		if ( !SvPOK(*svp) ) {
+		    warn("MQEncodePCF: ParameterList entry '%d' ByteString key is not a string.\n",index);
+		    XSRETURN_UNDEF;
+		}
+
+		String = SvPV(*svp, StringLength);
+
+		/*
+		 * The total size of the structure needs to be a multiple
+		 * of 4 (or some buggy IBM code will vomit somewhere, I'm
+		 * sure...)
+		 */
+		StrucLength = MQCFBS_STRUC_LENGTH_FIXED + StringLength;
+		if ( StrucLength % 4 )
+		    StrucLength += 4 - (StrucLength%4);
+		
+		/*
+		 *	Create the MQCFST structure, and concatenate it to the
+		 *	ParameterResult
+		 */
+		if ((pByteStringParam = (MQCFBS *)malloc(StrucLength)) == NULL) {
+		    perror("Unable to allocate memory");
+		    XSRETURN_UNDEF;
+		}
+
+		pByteStringParam->Type 		 = MQCFT_BYTE_STRING;
+		pByteStringParam->Parameter 	 = Parameter;
+		pByteStringParam->StringLength 	 = StringLength;
+		pByteStringParam->StrucLength 	 = StrucLength;
+		
+		memset(pByteStringParam->String, '\0', StrucLength - MQCFBS_STRUC_LENGTH_FIXED);
+		memcpy(pByteStringParam->String, String, StringLength);
+	      
+		sv_catpvn(ParameterResult, (char *)pByteStringParam, pByteStringParam->StrucLength);
+	      
+		free(pByteStringParam);
+	    }
+#endif /* MQCFT_BYTE_STRING */
 
 	    if ( Type == MQCFT_INTEGER_LIST ) {
 

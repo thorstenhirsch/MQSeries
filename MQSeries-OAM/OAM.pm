@@ -1,5 +1,5 @@
 #
-# $Id: OAM.pm,v 28.1 2007/02/08 16:07:55 biersma Exp $
+# $Id: OAM.pm,v 31.1 2007/09/24 15:41:47 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -16,7 +16,7 @@ use MQSeries qw(:functions);
 
 use vars qw( $VERSION @ISA @EXPORT_OK );
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 @ISA = qw( Exporter DynaLoader );
 

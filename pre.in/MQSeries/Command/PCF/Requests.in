@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: Requests.in,v 27.7 2007/01/11 20:20:40 molinam Exp $
+# $Id: Requests.in,v 30.1 2007/09/13 14:31:13 balusuv Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -75,12 +75,16 @@ package MQSeries::Command::PCF;
    InquireCFStruct              => [ &MQCMD_INQUIRE_CF_STRUC,           $RequestParameters{CFStruct} ],
    InquireCFStructNames		=> [ &MQCMD_INQUIRE_CF_STRUC_NAMES,	$RequestParameters{CFStruct} ],
    InquireChannel               => [ &MQCMD_INQUIRE_CHANNEL,            $RequestParameters{Channel} ],
+   InquireChannelInitiator      => [ &MQCMD_INQUIRE_CHANNEL_INIT,       $RequestParameters{ChannelInitiator} ],
    InquireChannelNames          => [ &MQCMD_INQUIRE_CHANNEL_NAMES,      $RequestParameters{Channel} ],
    InquireChannelStatus         => [ &MQCMD_INQUIRE_CHANNEL_STATUS,     $RequestParameters{ChannelStatus} ],
    InquireClusterQueueManager   => [ &MQCMD_INQUIRE_CLUSTER_Q_MGR,      $RequestParameters{Cluster} ],
    InquireConnection            => [ &MQCMD_INQUIRE_CONNECTION,         $RequestParameters{Connection} ],
    InquireChannelListener       => [ &MQCMD_INQUIRE_LISTENER,           $RequestParameters{Listener} ],
    InquireChannelListenerStatus	=> [ &MQCMD_INQUIRE_LISTENER_STATUS,	$RequestParameters{ListenerStatus} ],
+   InquireEntityAuthority	=> [ &MQCMD_INQUIRE_ENTITY_AUTH,	$RequestParameters{AuthorityRecords} ],
+   InquireGroup			=> [ &MQCMD_INQUIRE_QSG,		$RequestParameters{InquireGroup} ],
+   InquireLog			=> [ &MQCMD_INQUIRE_LOG,		$RequestParameters{Log} ],
    InquireNamelist              => [ &MQCMD_INQUIRE_NAMELIST,           $RequestParameters{Namelist} ],
    InquireNamelistNames         => [ &MQCMD_INQUIRE_NAMELIST_NAMES,     $RequestParameters{Namelist} ],
    InquireProcess               => [ &MQCMD_INQUIRE_PROCESS,            $RequestParameters{Process} ],
@@ -95,7 +99,10 @@ package MQSeries::Command::PCF;
    InquireServiceStatus       	=> [ &MQCMD_INQUIRE_SERVICE_STATUS,	$RequestParameters{ServiceStatus} ],
    InquireStorageClass          => [ &MQCMD_INQUIRE_STG_CLASS,          $RequestParameters{StorageClass} ],
    InquireStorageClassNames	=> [ &MQCMD_INQUIRE_STG_CLASS_NAMES,	$RequestParameters{StorageClass} ],
+   InquireSystem		=> [ &MQCMD_INQUIRE_SYSTEM,		$RequestParameters{System} ],
    InquireUsage			=> [ &MQCMD_INQUIRE_USAGE,		$RequestParameters{InquireUsage} ],
+
+   MoveQueue			=> [ &MQCMD_MOVE_Q,			$RequestParameters{Queue} ],
 
    PingChannel                  => [ &MQCMD_PING_CHANNEL,               $RequestParameters{Channel} ],
    PingQueueManager             => [ &MQCMD_PING_Q_MGR,                 $RequestParameters{QueueManager} ],
@@ -103,30 +110,37 @@ package MQSeries::Command::PCF;
    RecoverCFStruc		=> [ &MQCMD_RECOVER_CF_STRUC,		$RequestParameters{RecoverCFStruc} ],
 
    RefreshCluster               => [ &MQCMD_REFRESH_CLUSTER,            $RequestParameters{Cluster} ],
+   RefreshQueueManager		=> [ &MQCMD_REFRESH_Q_MGR,		$RequestParameters{RefreshQueueManager} ],
    RefreshSecurity		=> [ &MQCMD_REFRESH_SECURITY,		$RequestParameters{RefreshSecurity} ],
 
    ResetChannel                 => [ &MQCMD_RESET_CHANNEL,              $RequestParameters{Channel} ],
    ResetCluster                 => [ &MQCMD_RESET_CLUSTER,              $RequestParameters{Cluster} ],
+   ResetQueueManager		=> [ &MQCMD_RESET_Q_MGR,		$RequestParameters{QueueManager} ],
    ResetQueueStatistics         => [ &MQCMD_RESET_Q_STATS,              $RequestParameters{Queue} ],
 
    ResolveChannel               => [ &MQCMD_RESOLVE_CHANNEL,            $RequestParameters{Channel} ],
 
+   ResumeQueueManager		=> [ &MQCMD_RESUME_Q_MGR,		$RequestParameters{QueueManager} ],
    ResumeQueueManagerCluster    => [ &MQCMD_RESUME_Q_MGR_CLUSTER,       $RequestParameters{Cluster} ],
 
    ReverifySecurity		=> [ &MQCMD_REVERIFY_SECURITY,		$RequestParameters{ReverifySecurity} ],
 
    SetAuthorityRecord		=> [ &MQCMD_SET_AUTH_REC,		$RequestParameters{SetAuthorityRecord} ],
+   SetLog			=> [ &MQCMD_SET_LOG,			$RequestParameters{Log} ],
+   SetSystem			=> [ &MQCMD_SET_SYSTEM,			$RequestParameters{System} ],
 
-   StartChannel                 => [ &MQCMD_START_CHANNEL,              $RequestParameters{Channel} ],
-   StartChannelInitiator        => [ &MQCMD_START_CHANNEL_INIT,         $RequestParameters{Channel} ],
-   StartChannelListener         => [ &MQCMD_START_CHANNEL_LISTENER,     $RequestParameters{Listener} ],  
-   StartService		       => [ &MQCMD_START_SERVICE,	        $RequestParameters{Service} ],
+   StartChannel			=> [ &MQCMD_START_CHANNEL,		$RequestParameters{Channel} ],
+   StartChannelInitiator	=> [ &MQCMD_START_CHANNEL_INIT,		$RequestParameters{Channel} ],
+   StartChannelListener		=> [ &MQCMD_START_CHANNEL_LISTENER,	$RequestParameters{Listener} ],  
+   StartService			=> [ &MQCMD_START_SERVICE,		$RequestParameters{Service} ],
 
-   StopChannel                 => [ &MQCMD_STOP_CHANNEL,                $RequestParameters{Channel} ],
-   StopChannelListener         => [ &MQCMD_STOP_CHANNEL_LISTENER,	$RequestParameters{Listener} ],  
-   StopConnection              => [ &MQCMD_STOP_CONNECTION,             $RequestParameters{Connection} ],
-   StopService		       => [ &MQCMD_STOP_SERVICE,	        $RequestParameters{Service} ],
+   StopChannel			=> [ &MQCMD_STOP_CHANNEL,		$RequestParameters{Channel} ],
+   StopChannelInitiator		=> [ &MQCMD_STOP_CHANNEL_INIT,		$RequestParameters{Channel} ],
+   StopChannelListener		=> [ &MQCMD_STOP_CHANNEL_LISTENER,	$RequestParameters{Listener} ],  
+   StopConnection		=> [ &MQCMD_STOP_CONNECTION,		$RequestParameters{Connection} ],
+   StopService			=> [ &MQCMD_STOP_SERVICE,		$RequestParameters{Service} ],
 
+   SuspendQueueManager		=> [ &MQCMD_SUSPEND_Q_MGR,		$RequestParameters{QueueManager} ],
    SuspendQueueManagerCluster   => [ &MQCMD_SUSPEND_Q_MGR_CLUSTER,      $RequestParameters{Cluster} ],
 
    #

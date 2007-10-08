@@ -1,5 +1,5 @@
 #
-# $Id: constants.c.PL,v 27.1 2007/01/11 20:19:55 molinam Exp $
+# $Id: constants.c.PL,v 29.1 2007/04/09 11:14:42 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -35,6 +35,7 @@ print <<"EndOfHeader";
 #endif
 
 #include <errno.h>
+#include <string.h>
 
 /*
  * Constants were found from the following header files:
@@ -50,11 +51,11 @@ foreach my $header ( grep(/cmqc\.h$/,@headers),
     my $filename = basename($header);
     print "#include <$filename>\n";
 }
-	    
+	
 print "\n\n";
 
 #
-# Generate the constant_hex function 
+# Generate the constant_hex function
 #
 print <<"EndOfText";
 MQULONG
@@ -69,7 +70,7 @@ foreach $constant ( sort keys %constant_hex ) {
     print <<"EndOfText";
     if ( strcmp(name, "$constant") == 0 )
        return $constant;
-    
+
 EndOfText
 }
 
@@ -97,7 +98,7 @@ foreach $constant ( sort keys %constant_numeric ) {
     print <<"EndOfText";
     if ( strcmp(name, "$constant") == 0 )
        return $constant;
-    
+
 EndOfText
 }
 
@@ -137,7 +138,7 @@ print <<"EndOfText";
 
     errno = ENOENT;
     return 0;
-    
+
 }
 EndOfText
 
@@ -170,7 +171,7 @@ print <<"EndOfText";
 
     errno = ENOENT;
     return 0;
-    
+
 }
 EndOfText
 

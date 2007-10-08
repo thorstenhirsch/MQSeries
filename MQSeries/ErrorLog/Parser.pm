@@ -5,7 +5,7 @@
 # (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 28.1 2007/02/08 14:21:51 biersma Exp $
+# $Id: Parser.pm,v 31.1 2007/09/24 15:41:51 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -27,7 +27,7 @@ use vars qw(
 
 require "MQSeries/ErrorLog/descriptions.pl";
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 #
 # Constructor
@@ -150,7 +150,7 @@ sub parse_one_chunk {
     # Also to handle WMQ6.0 errorlog format.
     #
     #                1 2      3      4           5      6      7         8
-    if ($chunk =~ m!^((\d\d)/(\d\d)/(\d{2,4})\s+(\d\d):(\d\d):(\d\d))\s+([AaPp][Mm]|).*\s*(?=\n|AMQ)!g) {
+    if ($chunk =~ m!^((\d\d)/(\d\d)/(\d{2,4})\s+(\d\d):(\d\d):(\d\d))\s+([AaPp][Mm]|)([\w\-\(\)\.\s]*)(?=\n|AMQ)!g) {
         $data->{'timestamp'} = $1;
 	my $hour = $5;
 	if ($8 ne '') {

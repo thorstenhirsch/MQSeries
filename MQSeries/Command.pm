@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 28.2 2007/02/08 16:13:03 biersma Exp $
+# $Id: Command.pm,v 31.2 2007/10/08 18:00:13 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,13 +24,14 @@ use Params::Validate qw(validate);
 
 use vars qw($VERSION);
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = validate(@_, { 'QueueManager'      => 0,
 			      'Type'              => 0,
+			      'CommandVersion'	  => 0,
 			      'Carp'              => 0,
 			      'DynamicQName'      => 0,
 			      'Expiry'            => 0,
@@ -49,6 +50,7 @@ sub new {
       {
        Reason			=> 0,
        CompCode			=> 0,
+       CommandVersion		=> 1,
        Wait 			=> 60000, # 60 second wait for replies...
        #Expiry			=> 600,	# 60 second expiry on requests
        Expiry                   => 999999999,
@@ -67,7 +69,7 @@ sub new {
     #
     foreach my $param (qw(Carp
                           DynamicQName ModelQName
-                          StrictMapping CommandQueue
+                          StrictMapping CommandQueue CommandVersion
                           CommandQueueName ReplyToQMgr)) {
         $self->{$param} = $args{$param} if (defined $args{$param});
     }
@@ -426,9 +428,9 @@ sub CreateObject {
     my $Key			= "";
     my $Type			= "";
 
-    my @KeyNames		= qw(ChannelName NamelistName ProcessName 
+    my @KeyNames		= qw(ChannelName NamelistName ProcessName
                                      QName StorageClassName AuthInfoName
-                                     CFStructName ListenerName ServiceName);
+                                     CFStructName CFStrucName ListenerName ServiceName);
     my $KeyCount		= 0;
 
     #
@@ -502,12 +504,18 @@ sub CreateObject {
 	$Change			= "ChangeAuthInfo";
 	$Key			= "AuthInfoName";
 	$Type			= "AuthInfo";
-    } elsif ( $Attrs->{CFStructName} ) {
+    } elsif ( $Attrs->{CFStructName} ) {		# Kept for backward compatibility
 	$Inquire		= "InquireCFStruct";
 	$Create			= "CreateCFStruct";
 	$Change			= "ChangeCFStruct";
 	$Key			= "CFStructName";
 	$Type			= "CFStruct";
+    } elsif ( $Attrs->{CFStrucName} ) {
+	$Inquire		= "InquireCFStruc";
+	$Create			= "CreateCFStruc";
+	$Change			= "ChangeCFStruc";
+	$Key			= "CFStrucName";
+	$Type			= "CFStruc";
     } elsif ( $Attrs->{ServiceName} ) {
 	$Inquire		= "InquireService";
 	$Create			= "CreateService";
@@ -531,7 +539,7 @@ sub CreateObject {
     # XXX -- shouldn't we be checking for no such object specifically?
     # Of course we should...
     #
-    if ( $self->Reason() && 
+    if ( $self->Reason() &&
          $self->Reason() != MQSeries::MQRC_UNKNOWN_OBJECT_NAME &&
          $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND) {
 	$self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
@@ -599,7 +607,7 @@ sub CreateObject {
     # If we have any changes, make sure we include the QName/QType,
     # ChannelName/ChannelType, ProcessName, StorageClass,
     # AuthInfoName or CFStructName.
-    # 
+    #
     # We must do this here, as user's callbacks will get it wrong...
     #
     if (keys %$Changes) {
@@ -624,7 +632,7 @@ sub CreateObject {
     if ($Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType}) {
 	$delete_first = 1;
     } elsif ($Object) {
-	foreach my $fld (qw(QSGDisposition 
+	foreach my $fld (qw(QSGDisposition
 			    CFStructure)) {
 	    if (defined $Attrs->{$fld} && $Attrs->{$fld} ne $Object->{$fld}) {
 		$delete_first = 1;
@@ -632,7 +640,7 @@ sub CreateObject {
 	}
     }
     if ($delete_first) {
-	print "Deleting $Type $QMgr/$Attrs->{$Key}'\n" 
+	print "Deleting $Type $QMgr/$Attrs->{$Key}'\n"
           unless $Quiet;
 
 	#
@@ -641,7 +649,7 @@ sub CreateObject {
 	#
 	my $need_cmdscope = 0;
 	my $qsgdisp_attr = $Object->{QSGDisposition};
-	if (defined $qsgdisp_attr && 
+	if (defined $qsgdisp_attr &&
 	    $qsgdisp_attr =~ m!^(?:Copy|Shared)$!) {
 	    $need_cmdscope = 1;
 	    #print STDERR "XXX: deleting shared object, need CmdScope '*'\n";
@@ -656,7 +664,7 @@ sub CreateObject {
 	    ( Purge		=> 1 ) : (),
 	   ($need_cmdscope ?
 	    (CommandScope             => '*',
-	     QSGDisposition => $Object->{QSGDisposition}) 
+	     QSGDisposition => $Object->{QSGDisposition})
 	    : ()
 	   ),
 	   )
@@ -685,7 +693,7 @@ sub CreateObject {
     #
     # Take that, IBM... ;-)
     #
-    if ( $Force && $Key eq 'QName' && $Changes->{'QType'} ne 'Model' && 
+    if ( $Force && $Key eq 'QName' && $Changes->{'QType'} ne 'Model' &&
          $method eq $Change ) {
 	$Changes->{Force} = 1;
     }
@@ -708,7 +716,7 @@ sub CreateObject {
     # two-step update.
     #
     my $Changes2;
-    if ($method ne $Create && 
+    if ($method ne $Create &&
 	$Key eq 'QName' && defined $Changes->{'StorageClass'} &&
 	scalar(keys %$Changes) > 2) {
 	$Changes2->{'QType'} = $Changes->{'QType'};
@@ -779,7 +787,10 @@ sub _Command {
        InquireStorageClassNames	=> 'StorageClassName',
        InquireService           => 'ServiceName',
        InquireAuthInfo          => 'AuthInfoName',
-       InquireAuthInfoNames	=> 'AuthInfoName',       
+       InquireAuthInfoNames	=> 'AuthInfoName',
+       InquireCFStruc		=> 'CFStrucName',
+       InquireCFStrucNames	=> 'CFStrucName',
+       InquireCFStrucStatus	=> 'CFStrucName',
        InquireCFStruct          => 'CFStructName',
        InquireCFStructNames     => 'CFStructName',
        InquireThread		=> 'ThreadName',
@@ -789,6 +800,15 @@ sub _Command {
     if ( $command2name{$command} ) {
 	unless ( $parameters->{$command2name{$command}} ) {
 	    $parameters->{$command2name{$command}} = '*';
+	}
+    }
+
+    #
+    # Allow 'GenericConnectionId' of InquireConnection to default to '00'
+    #
+    if ( $command eq 'InquireConnection' ) {
+	unless ( $parameters->{'GenericConnectionId'} || $parameters->{'ConnectionId'} ) {
+	    $parameters->{'GenericConnectionId'} = '00';
 	}
     }
 
@@ -803,6 +823,7 @@ sub _Command {
        InquireChannel			=> 'ChannelAttrs',
        InquireChannelStatus		=> 'ChannelInstanceAttrs',
        InquireClusterQueueManager	=> 'ClusterQMgrAttrs',
+       InquireConnection		=> 'ConnectionAttrs',
        InquireNamelist			=> 'NamelistAttrs',
        InquireProcess			=> 'ProcessAttrs',
        InquireQueue			=> 'QAttrs',
@@ -811,6 +832,7 @@ sub _Command {
        InquireStorageClass		=> 'StorageClassAttrs',
        InquireAuthInfo                  => 'AuthInfoAttrs',
        InquireCFStruct                  => 'CFStructAttrs',
+       InquireCFStruc			=> 'CFStrucAttrs',
        InquireService                   => 'ServiceAttrs',
       );
 
@@ -828,7 +850,7 @@ sub _Command {
     # FIXME: Maybe copy ReplyToQ, ReplyToQMgr and Expiry
     #        to the default message descriptor and use that?
     #
-    my $req_msgdesc = 
+    my $req_msgdesc =
       { %{ $self->{DefaultMsgDesc} },
         ReplyToQ    => $self->{ReplyToQ}->ObjDesc("ObjectName"),
         ReplyToQMgr => $self->{ReplyToQMgr},
@@ -862,6 +884,7 @@ sub _Command {
           Parameters 	=> $parameters,
           Carp 		=> $self->{Carp},
           StrictMapping	=> $self->{StrictMapping},
+          CommandVersion => $self->{CommandVersion},
          ) || do {
              $self->{"CompCode"} = MQSeries::MQCC_FAILED;
              $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
@@ -915,7 +938,6 @@ sub _Command {
           Get(Message	=> $response,
               Wait	=> $self->{Wait},
              );
-
         #
         # Stats again: keep track of no replies, total bytes, largest
         #
@@ -944,7 +966,7 @@ sub _Command {
 	last if $self->{ReplyToQ}->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE;
 	
 	#print STDERR "XXX: Response buffer [$response->{'Buffer'}]\n"
-	#  if ($self->{Type} eq 'MQSC');
+	#   if ($self->{Type} eq 'MQSC');
 	
         #
         # Ugly hack:
@@ -992,9 +1014,9 @@ sub _Command {
     # If we didn't see the last message, then return the empty list.
     #
     unless ( $self->_LastSeen() ) {
-	$self->{"CompCode"} = MQSeries::MQCC_FAILED 
+	$self->{"CompCode"} = MQSeries::MQCC_FAILED
           if $self->{"CompCode"} == MQSeries::MQCC_OK;
-	$self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR 
+	$self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR
           if $self->{"Reason"} == MQSeries::MQRC_NONE;
 	$self->Carp("Last response message never seen\n");
 	return;
@@ -1162,7 +1184,7 @@ sub _CompareOneAttribute {
             if ($request =~ /^\d+\s*$/ ) { # Assume both numeric
                 if ($request != $found) {
                     $diff = 1;
-                }               
+                }
             } else {            # Text
                 if ($request ne $found) {
                     $diff = 1;
@@ -1179,7 +1201,7 @@ sub _CompareOneAttribute {
         } else {                # Both arrays, same size - compare elements
             for (my $index = 0; $index < scalar(@$request); $index++ ) {
                 next if ($request->[$index] =~ /^\s*$/ &&
-                         $found->[$index] =~ /^\s*$/); 
+                         $found->[$index] =~ /^\s*$/);
                 if ($request->[$index] =~ /^\d+/ ) {
                     if ($request->[$index] != $found->[$index] ) {
                         $diff = 1;
@@ -1325,16 +1347,16 @@ MQSeries::Command - OO interface to the Programmable Commands
 The MQSeries::Command class implements an interface to the
 Programmable Command Format messages documented in the:
 
-  "MQSeries Programmable System Management"
+  "WebSphere MQ Programmable Command Formats and Administration Interface"
 
 section of the MQSeries documentation.  In particular, this document
 will primarily explain how to interpret the above documentation, and
 thus use this particular implementation in perl.  Please read and
 understand the following sections of the above document:
 
-  Part 2. Programmable Command Formats
-    Chapter 8. Definitions of the Programmable Command Formats
-    Chapter 9. Structures used for commands and responses
+  Programmable Command Formats
+    Chapter . Definitions of the Programmable Command Formats
+    Chapter . Structures used for commands and responses
 
 This interface also supports the text-based MQSC format messages used
 by the queue manager of some platforms, particularly MVS.  Using the
@@ -1394,12 +1416,16 @@ producing data responses:
   Inquire Authority Records
   Inquire Authority Service
   Inquire Channel
+  Inquire Channel Initiator
   Inquire Channel Listener
   Inquire Channel Listener Status
   Inquire Channel Names
   Inquire Channel Status
   Inquire Cluster Queue Manager
   Inquire Connection
+  Inquire Entiry Authority
+  Inquire Group
+  Inquire Log
   Inquire Namelist
   Inquire Namelist Names
   Inquire Process
@@ -1411,17 +1437,16 @@ producing data responses:
   Inquire Queue Status
   Inquire Service
   Inquire Service Status
+  Inquire System
   Reset Queue Statistics
 
 plus the following equivalents for MQSC
 
-  Inquire CFStruct
-  Inquire CFStruct Names
-  Inquire CFStruct Status
+  Inquire CFStruc
+  Inquire CFStruc Status
   Inquire Usage
   Inquire Security
   Inquire StorageClass
-  Inquire StorageClass Names
 
 return interesting information.  Most of these will return an array of
 hash references, one for each object matching the query criteria.  For
@@ -1438,7 +1463,7 @@ Some of these commands, however, have a simplified return value.  All
 seven of:
 
   Inquire AuthInfo Names
-  Inquire CFStruct Names
+  Inquire CFStruc Names
   Inquire Channel Names
   Inquire Namelist Names
   Inquire Process Names
@@ -1463,6 +1488,7 @@ key/value pairs:
   ReplyToQ           String or MQSeries::Queue object
   CommandQueueName   String
   CommandQueue       MQSeries::Queue object
+  CommandVersion     Numeric (1 or 3)
   DynamicQName       String
   ModelQName	     String
   Type               String ("PCF" or "MQSC")
@@ -1565,6 +1591,19 @@ a non-standard queue name:
          ) ||
       die "Cannot create command";
 
+If both queue managers run MQ v6, then PCF commands can be used to
+communicate with MQ on z/OS.  The above example would be changed as
+follows to use PCF commands:
+
+    $cmd = MQSeries::Command::->
+      new('ProxyQueueManager' => 'UNIXQM', # Also ReplyToQMgr
+          'RealQueueManager'  => 'CSQ1',   # Displayed in messages
+          'Type'              => 'PCF',
+          'CommandVersion'    => 3,
+          'CommandQueue'      => $queue,
+         ) ||
+      die "Cannot create command";
+
 This mechanism can also be used when the command queue needs to be
 opened with special options.  This is typically combined with a call
 to the C<MsgDesc> method:
@@ -1590,6 +1629,17 @@ to the C<MsgDesc> method:
                   'UserIdentifier'   => "mqm",
                  );
 
+=item CommandVersion
+
+This argument is introduced mainly to support the new PCF commands in
+WMQ6 and to use PCF with QueueManagers on OS/390. It indicates the
+required PCF Command Version (MQCFH_CURRENT_VERSION) and Type. This is
+an optional argument and Version "1" is used as default. If a value
+'3' or higher is specified, then the Command Type "MQCFT_COMMAND_XR"
+will be used and also the version is set to
+"MQCFH_CURRENT_VERSION". Any value less then 3 will be ignored and the
+defaults are used (MQCFT_COMMAND and default version).
+
 =item Type
 
 This argument indicates whether the command server on the QueueManager
@@ -1601,7 +1651,7 @@ section "MQSC NOTES" for the Ugly Truth about the MQSC support.
 This value is used as the MQMD.Expiry field on all requests sent to
 the command server.  The value is passed to the MQSeries::Message
 constructor, and should specify the time in B<tenths of a second>.
-The default is 600, or 60 seconds.  
+The default is 600, or 60 seconds.
 
 A symbolic value ending on 's' for seconds or 'm' for minutes may
 also be specified, e.g. the symbolic value '45s' will have the same
@@ -1741,7 +1791,7 @@ origin context.  The MsgDesc method allows you to do so:
   $cmd->MsgDesc('Persistence' => 0);
 
 or
-  
+
   $cmd->MsgDesc('ApplIdentityData' => "MyData",
                 'UserIdentifier'   => "mqm",
                );
@@ -1958,10 +2008,11 @@ Please refer to the IBM documentation for the names and values of keys.
   Delete Channel
   Delete Channel Listener
   Inquire Channel
+  Inquire Channel Initiator
   Inquire Channel Listener
+  Inquire Channel Listener Status
   Inquire Channel Names
   Inquire Channel Status
-  Inquire Channel Listener Status
   Ping Channel
   Reset Channel
   Resolve Channel
@@ -1969,7 +2020,29 @@ Please refer to the IBM documentation for the names and values of keys.
   Start Channel Initiator
   Start Channel Listener
   Stop Channel
+  Stop Channel Initiator
   Stop Channel Listener
+
+=head2 CFStruct Commands
+
+  Change CFStruct
+  Create CFStruct
+  Delete CFStruct
+  Inquire CFStruct
+  Inquire CFStruct Names
+
+=head2 Cluster Commands
+
+  Inquire Cluster Queue Manager
+  Refresh Cluster
+  Reset Cluster
+  Resume Queue Manager Cluster
+  Suspend Queue Manager Cluster
+
+=head2 Connection Commands
+
+  Inquire Connection
+  Stop Connection
 
 =head2 Namelist Commands
 
@@ -2022,6 +2095,17 @@ C<StatusType> specified.
   Inquire Queue Manager
   Inquire Queue Manager Status
   Ping Queue Manager
+  RefreshQueueManager
+  ResetQueueManager
+  ResumeQueueManager
+  SuspendQueueManager
+
+=head2 Security Commands
+
+  ChangeSecurity
+  InquireSecurity
+  RefreshSecurity
+  ReverifySecurity
 
 =head2 Service Commands
 
@@ -2042,21 +2126,14 @@ C<StatusType> specified.
   Inquire StorageClass
   Inquire StorageClass Names
 
-=head2 CFStruct Commands
+=head2 System Commands
 
-  Change CFStruct
-  Create CFStruct
-  Delete CFStruct
-  Inquire CFStruct
-  Inquire CFStruct Names
-
-=head2 Cluster Commands
-
-  Inquire Cluster Queue Manager
-  Refresh Cluster
-  Reset Cluster
-  Resume Queue Manager Cluster
-  Suspend Queue Manager Cluster
+  Inquire Group
+  Inquire Log
+  Inquire System
+  Inquire Usage
+  Set Log
+  Set System
 
 =head2 Escape Command
 
@@ -2092,7 +2169,8 @@ queue names starting with FOO.
 The rest of the commands return a list of Parameters HASH references,
 extracted from each of the messages sent back from the command server.
 In a scalar context, only the first Parameters HASH reference is
-returned. Refer to the L</RETURN VALUES> section for the list of commands. 
+returned. Refer to the L</RETURN VALUES> section for the list of
+commands.
 
 For example:
 

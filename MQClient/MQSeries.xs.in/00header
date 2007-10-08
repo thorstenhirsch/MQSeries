@@ -10,7 +10,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: 00header,v 27.1 2007/01/11 20:19:51 molinam Exp $";
+static char rcsid[] = "$Id: 00header,v 29.1 2007/04/09 15:14:04 biersma Exp $";
 
 /*
   (c) 1999-2007 Morgan Stanley Dean Witter and Co.
@@ -72,3 +72,11 @@ __INCLUDES__
 #else
 #define TRACEME(x)
 #endif
+
+/*
+ * Prototypes for the functions in constants.c.PL
+ */
+MQULONG constant_hex(char *name);
+MQLONG  constant_numeric(char *name);
+int     constant_string(char * name, char *value);
+int     constant_char(char * name, char *value);

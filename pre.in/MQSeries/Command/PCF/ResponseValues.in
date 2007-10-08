@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: ResponseValues.in,v 27.10 2007/01/11 20:20:40 molinam Exp $
+# $Id: ResponseValues.in,v 30.1 2007/09/13 14:34:27 balusuv Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -203,10 +203,12 @@ package MQSeries::Command::PCF;
    ObjectType =>
    {
     AuthInfo                    => &MQOT_AUTH_INFO,
+    Listener			=> &MQOT_LISTENER,
     Namelist			=> &MQOT_NAMELIST,
     Process			=> &MQOT_PROCESS,
     Queue			=> &MQOT_Q,
     QueueManager		=> &MQOT_Q_MGR,
+    Service			=> &MQOT_SERVICE,
 
     Channel			=> &MQOT_CHANNEL,
 
@@ -239,6 +241,12 @@ package MQSeries::Command::PCF;
     Exclusive                   => &MQQSO_EXCLUSIVE,
     No                          => &MQQSO_NO,
     Shared                      => &MQQSO_SHARED,
+   },
+
+   QStatusType =>
+   {
+    Queue			=> &MQIACF_Q_STATUS,
+    Handle			=> &MQIACF_Q_HANDLE,
    },
 
    SSLClientAuth =>
@@ -710,6 +718,31 @@ package MQSeries::Command::PCF;
    },
 
    #
+   # For CFStruc on V6
+   CFStatusType =>
+   {
+    CFStatusSummary             => &MQIACF_CF_STATUS_SUMMARY,
+    CFStatusConnect             => &MQIACF_CF_STATUS_CONNECT,
+    CFStatusBackup              => &MQIACF_CF_STATUS_BACKUP,
+   },
+
+   CFStrucStatus =>
+   {
+    Active			=> &MQCFSTATUS_ACTIVE,
+    Failed			=> &MQCFSTATUS_FAILED,
+    NotFound			=> &MQCFSTATUS_NOT_FOUND,
+    InBackup			=> &MQCFSTATUS_IN_BACKUP,
+    InRecover			=> &MQCFSTATUS_IN_RECOVER,
+    Unknown			=> &MQCFSTATUS_UNKNOWN,
+   },
+
+   CFStrucType =>
+   {
+    Admin			=> &MQCFTYPE_ADMIN,
+    Appl			=> &MQCFTYPE_APPL,
+   },
+
+   #
    # For Inquire Connection in V6
    #
    ConnInfoType =>
@@ -744,30 +777,83 @@ package MQSeries::Command::PCF;
     Batch                     => &MQAT_BATCH,
     RRSBatch                  => &MQAT_RRS_BATCH,
     CICS                      => &MQAT_CICS,
+    IMS                       => &MQAT_IMS,
    },
 
    HandleState =>
    {
-    Active                    => MQHSTATE_ACTIVE,
-    Inactive                  => MQHSTATE_INACTIVE,
+    Active     	               => &MQHSTATE_ACTIVE,
+    Inactive   	               => &MQHSTATE_INACTIVE,
     },
 
    UOWState =>
    {
-    None                     => MQUOWST_NONE,
-    Active                   => MQUOWST_ACTIVE,
-    Prepared                 => MQUOWST_PREPARED,
-    Unresolved               => MQUOWST_UNRESOLVED,
+    None			=> &MQUOWST_NONE,
+    Active			=> &MQUOWST_ACTIVE,
+    Prepared			=> &MQUOWST_PREPARED,
+    Unresolved			=> &MQUOWST_UNRESOLVED,
    },
 
    UOWType =>
    {
-    QMgr                    => MQUOWT_Q_MGR,
-    CICS                    => MQUOWT_CICS,
-    RRS                     => MQUOWT_RRS,
-    IMS                     => MQUOWT_IMS,
-    XA                      => MQUOWT_XA,
+    QMgr			=> &MQUOWT_Q_MGR,
+    CICS			=> &MQUOWT_CICS,
+    RRS				=> &MQUOWT_RRS,
+    IMS				=> &MQUOWT_IMS,
+    XA				=> &MQUOWT_XA,
    },
+
+   #
+   # InquireGroup to query about QSG via a qmgr
+   #
+   QSGStatus =>
+   {
+    Active			=> &MQQSGS_ACTIVE,
+    Created			=> &MQQSGS_CREATED,
+    Inactive			=> &MQQSGS_INACTIVE,
+    Failed			=> &MQQSGS_FAILED,
+    Pending			=> &MQQSGS_PENDING,
+    Unknown			=> &MQQSGS_UNKNOWN,
+   },
+
+   CommandInformation =>
+   {
+    DB2ObsoleteMsgs		=> &MQCMDI_DB2_OBSOLETE_MSGS,
+   },
+
+   #
+   # InquireLog for z/OS
+   #
+   OffLoadStatus =>
+   {
+    AllocatingArchive		=> &MQSYSP_STATUS_ALLOC_ARCHIVE,
+    Available			=> &MQSYSP_STATUS_AVAILABLE,
+    CopyingBSDS			=> &MQSYSP_STATUS_COPYING_BSDS,
+    CopyingLog			=> &MQSYSP_STATUS_COPYING_LOG,
+    Busy			=> &MQSYSP_STATUS_BUSY,
+   },
+
+   #
+   # InquireSystem for z/OS
+   #
+   ParameterType =>
+   {
+    Initial			=> &MQSYSP_TYPE_INITIAL,
+    Set				=> &MQSYSP_TYPE_SET,
+   },
+   
+   ClusterCacheType =>
+   {
+    Static			=> &MQCLCT_STATIC,
+    Dynamic			=> &MQCLCT_DYNAMIC,
+   },
+
+   WLMIntervalUnits =>
+   {
+    Seconds			=> &MQTIME_UNIT_SECS,
+    Minutes			=> &MQTIME_UNIT_MINS,
+   },
+
    #
    # Used with the Morgan Stanley extended Authority commands
    #

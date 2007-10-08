@@ -1,5 +1,5 @@
 #
-# $Id: MQSC.pm,v 28.1 2007/02/08 14:21:49 biersma Exp $
+# $Id: MQSC.pm,v 31.1 2007/09/24 15:41:49 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -15,7 +15,7 @@ use vars qw(
 
 @ISA = qw(MQSeries::Command);
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 use MQSeries qw(:functions);
 
@@ -32,6 +32,8 @@ require "MQSeries/Command/MQSC/Requests.pl";
 require "MQSeries/Command/MQSC/ResponseValues.pl";
 require "MQSeries/Command/MQSC/ResponseParameters.pl";
 require "MQSeries/Command/MQSC/Responses.pl";
+require "MQSeries/Command/MQSC/SpecialParameters.pl";
+#require "/ms/dev/perl5/MQSeries/1.27/src/distro/MQSeries/Command/MQSC/SpecialParameters.pl";
 
 #
 # This is a bit wierd....  well, all of the MQSC stuff is wierd....

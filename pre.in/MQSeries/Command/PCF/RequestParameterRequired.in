@@ -1,6 +1,6 @@
 #-*-perl-*-
 #
-# $Id: RequestParameterRequired.in,v 27.6 2007/01/11 20:20:39 molinam Exp $
+# $Id: RequestParameterRequired.in,v 30.1 2007/09/13 14:32:41 balusuv Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -30,6 +30,11 @@ package MQSeries::Command::PCF;
     ObjectType			=> 1,
     EntityName			=> 1,
     EntityType			=> 1,
+   },
+
+   ClearQueue			=>
+   {
+    QName			=> 1,
    },
 
    CopyAuthInfo                 =>
@@ -92,14 +97,20 @@ package MQSeries::Command::PCF;
    CreateAuthInfo               =>
    {
     AuthInfoName                => 1,
-    AuthInfoConnName            => 2,
-    AuthInfoType                => 3,
+    AuthInfoConnName            => 3,
+    AuthInfoType                => 2,
    },
 
    DeleteAuthorityRecord	=>
    {
-    ObjectType			=> 1,
-    ProfileName			=> 2,
+    ObjectType			=> 2,
+    ProfileName			=> 1,
+   },
+
+   Escape			=>
+   {
+    EscapeType			=> 1,
+    EscapeText			=> 2,
    },
 
    InquireAuthorityRecords	=>
@@ -119,9 +130,31 @@ package MQSeries::Command::PCF;
     ClusterQMgrName             => 1,
    },
 
+#   InquireConnection		=>
+#   {
+#    GenericConnectionId		=> 1,
+#   },
+
+   MoveQueue			=>
+   {
+    FromQName			=> 1,
+   },
+
+   RefreshQueueManager		=>
+   {
+    RefreshType			=> 1,
+   },
+
    RefreshSecurity		=>
    {
     SecurityItem		=> 1,
+   },
+
+   ResetCluster			=>
+   {
+    ClusterName			=> 1,
+    QMgrName			=> 2,
+    Action			=> 3,
    },
 
    ReverifySecurity		=>
@@ -131,8 +164,8 @@ package MQSeries::Command::PCF;
 
    SetAuthorityRecord		=>
    {
-    ObjectType			=> 1,
-    ProfileName			=> 2,
+    ProfileName			=> 1,
+    ObjectType			=> 2,
    },
 
    SuspendQueueManagerCluster   =>
@@ -164,6 +197,7 @@ $RequestParameterRequired{InquireAuthInfo} =
 
 $RequestParameterRequired{InquireCFStruc} =
   $RequestParameterRequired{InquireCFStrucNames} =
+  $RequestParameterRequired{InquireCFStrucStatus} =
   $RequestParameterRequired{ChangeCFStruc} =
   $RequestParameterRequired{DeleteCFStruc} =
   $RequestParameterRequired{BackupCFStruc} =

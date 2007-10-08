@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 28.2 2007/02/08 16:10:47 biersma Exp $
+# $Id: Base.pm,v 31.1 2007/09/24 15:41:48 biersma Exp biersma $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 sub new {
 
@@ -115,6 +115,12 @@ sub new {
 	$self->{StrictMapping} = $args{StrictMapping};
     }
 
+    #
+    # At last, we need to pass the required PCF version to set Version and Type
+    #  in the PCF header
+    #
+    $self->{CommandVersion} = $args{CommandVersion};
+
     bless ($self, $class);
 
     return $self;
@@ -133,9 +139,21 @@ sub _TranslatePCF {
 
     my $command = $header->{Command};
 
+    #
+    # Set the type to either
+    # - MQSeries::MQCFT_COMMAND (default)
+    # - MQSeries::MQCFT_COMMAND_XR (PCF against the MF)
+    #
+    # Since MQCFT_COMMAND_XR is new in MQ v6, and we need to be able
+    # to run the module when compiled against MQ v5, use a numeric
+    # constant instead of a symbolic one.
+    #
     ($header->{Type}) = ( $self->isa("MQSeries::Command::Response") ?
 			  MQSeries::MQCFT_RESPONSE :
-			  MQSeries::MQCFT_COMMAND );
+			  ( $self->{CommandVersion} < 3 ?
+			    MQSeries::MQCFT_COMMAND :
+                            16 ) # 16 = MQSeries::MQCFT_COMMAND_XR
+			);
 
     my $parameters = [];
 
@@ -276,6 +294,15 @@ sub _TranslatePCF {
 	    }
 	}
 
+	#
+	# BYTE_STRING - Added newly for WMQ6 : Not fully tested
+	#
+	if ( $paramtype == MQSeries::MQCFT_BYTE_STRING ) {
+	    my $newvalue = length($origvalue)== 0 ? "\0" : pack("H*",$origvalue);
+	    #print "byte string orig value: [$origvalue] - new value: [$newvalue]\n";
+	    $newparameter->{ByteString} = "$newvalue";
+	}
+
 	if ( $paramtype == MQSeries::MQCFT_INTEGER ) {
 	    if ( ref $ValueMap ) {
 		#print STDERR %$ValueMap, "\n"; #FIXME
@@ -318,6 +345,14 @@ sub _TranslatePCF {
 #	}
 #    }
 
+    #
+    # Lets set the Version to work with advanced V6 cmds and V6 MF qmgrs
+    # 
+    $header->{Version} = MQSeries::MQCFH_CURRENT_VERSION
+	unless ( $self->{CommandVersion} lt 3 );
+
+    #print STDERR "Request Header: $header->{Type}, $header->{StrucLength}, $header->{Version}, $header->{Command}, $header->{Reason}, $header->{ParameterCount}...\n";
+    #print STDERR "header\n", map { "\t$_:$header->{$_}\n" } sort keys %$header;
 
     return ($header,$parameters);
 }
@@ -333,6 +368,10 @@ sub _UnTranslatePCF {
     my ($header,$origparams) = @_;
 
     my $command = $header->{Command};
+    
+    #print STDERR "Response Header - $command, $header->{Type}, $header->{Version}, $header->{Reason}, $header->{ParameterCount}\n";
+    #print STDERR "header\n", map { "\t$_:$header->{$_}\n" } sort keys %$header;
+
     #
     # The (rather obscure) 'Escape' command requires special handling
     # of the reply reminiscent of the MQSC command handling.  Courtesy
@@ -371,15 +410,20 @@ sub _UnTranslatePCF {
 
     foreach my $origparam ( @$origparams ) {
 
-#	print "OrigP: $origparam\n";
+        #print "OrigP: $origparam\n";
 	my $paramkey = $ParameterMap->{$origparam->{Parameter}}->[0];
 	my $paramvalue = "";
 
 	#print STDERR "ParamKey: [$origparam->{Parameter}] [$paramkey]\n";
+	#print  "param\n", map { "\t$_:$origparam->{$_}\n" } sort keys %$origparam;
 
 	if ( exists $origparam->{String} ) {
 	    ( $parameters->{$paramkey} = $origparam->{String} ) =~ s/\s+$//;
 	    next;
+	} elsif ( exists $origparam->{ByteString} ) {
+	   $parameters->{$paramkey} = unpack("H*",$origparam->{ByteString});
+	   #$parameters->{$paramkey} = $origparam->{ByteString};
+	   next; 
 	} elsif ( exists $origparam->{Strings} ) {
 	    foreach my $string ( @{$origparam->{Strings}} ) {
 		$string =~ s/\s+$//;
@@ -703,19 +747,22 @@ sub MQEncodeMQSC {
 		    push(@buffer,"$key($type->[0])");
 		}
 	    } elsif ( ref $type eq 'HASH' ) {
-
 		#
 		# Fix for Header Compression and Message Compression introduced in V6
 		#
-		if ( ref $value eq 'ARRAY' ) {
+		if ( ref $value eq 'ARRAY' && 
+		    exists $MQSeries::Command::MQSC::SpecialParameters{$parameter} )  {
 		    if ( scalar(@$value) ) {
+			my $completestring;
 			foreach my $string ( @$value ) {
 			    unless (defined $type->{$string} ) {
 				$self->{Carp}->("Unknown value '$string' for parameter '$parameter'\n");
 				return;
 			    }
-			    push(@buffer,"$key($type->{$string})");
+			    $completestring .= "$type->{$string}" . ',';
 			}
+			$completestring =~ s/,$//;
+			push(@buffer,"$key($completestring)");
 		    }
 		} else {
 		    push(@buffer,"$key($type->{$value})");
@@ -992,11 +1039,28 @@ sub MQDecodeMQSC {
 
 	if ( $valuetype eq 'explicit' ) {
 	    if ( ref $requestvalues eq 'HASH' ) {
-		unless ( exists $requestvalues->{$value} ) {
-		    $self->{Carp}->("Unrecognized value '$value' for parameter '$realkey' for command '$command'\n");
+		#
+		# Add a check for parameters of Array Type
+		# New in WMQ 6
+		#
+		if ( exists $MQSeries::Command::MQSC::SpecialParameters{$realkey} ) {
+		    my @split_values = split(',',$value);
+		    foreach my $eachvalue (@split_values) {
+			$eachvalue =~ s/^\s+//;
+			$eachvalue =~ s/\s+$//;
+			unless ( exists $requestvalues->{$eachvalue} ) {
+			   $self->{Carp}->("Unrecognized value '$eachvalue' for parameter '$realkey' for command '$command'\n");
+			} else {
+			   $realvalue =~ s/$eachvalue/$requestvalues->{$eachvalue}/;
+			}
+		    }
 		} else {
-		    $realvalue = $requestvalues->{$value};
-		}
+		    unless ( exists $requestvalues->{$value} ) {
+		    	$self->{Carp}->("Unrecognized value '$value' for parameter '$realkey' for command '$command'\n");
+		    } else {
+		    	$realvalue = $requestvalues->{$value};
+		    }
+		} 
 	    }
 	} else {
 	    if (defined $requestvalues and not ref $requestvalues) {

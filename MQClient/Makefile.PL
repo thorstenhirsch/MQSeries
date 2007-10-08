@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 28.2 2007/02/08 19:39:25 biersma Exp $
+# $Id: Makefile.PL,v 30.1 2007/06/08 15:30:03 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -331,7 +331,17 @@ if ( $Config{archname} =~ /linux/ ) {
     }
 } elsif ($Config{archname} =~ /^sun/) {
     if ($Config{cc} =~ /^gcc/) {
-        my $lddlflags = " -Wl,-rpath -Wl,$rpath";
+	#
+	# See if the Sun linker is used (the default) or the GNU
+	# linker.  The Sun linker uses -R for the RPATH and the NU
+	# linker used -rpath.
+	#
+	my $lddlflags;
+	if ($Config{lddlflags} =~ /-[GR]/) { # -G or -R: Definitely Sun CC
+	    $lddlflags = " -shared -Wl,-R -Wl,$rpath";
+	} else {		# Assume GNU linker
+	    $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
+	}
         $extra_args{LDDLFLAGS} .= $lddlflags;
     } elsif (
            $Config{cc}        =~ /^cc$/

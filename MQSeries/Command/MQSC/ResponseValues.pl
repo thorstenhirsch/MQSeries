@@ -1,5 +1,5 @@
 #
-# $Id: ResponseValues.pl,v 27.8 2007/01/11 20:20:05 molinam Exp $
+# $Id: ResponseValues.pl,v 30.1 2007/09/13 14:29:53 balusuv Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -239,10 +239,11 @@ package MQSeries::Command::MQSC;
     XMITQ    		=> "XMITQ",
    },
 
-   KeepAliveInterval =>
-   {
-    AUTO    		=> "Auto",
-   },
+#   KeepAliveInterval =>
+#   {
+#    AUTO    		=> "Auto",
+#    0    		=> "0",
+#   },
 
    ChannelStatus =>
    {
@@ -437,11 +438,29 @@ package MQSeries::Command::MQSC;
     QMGR                        => "QMgr",
     OFF				=> "Off",
    },
-   TraceRouteRecording =>	       
+   SubSate =>	       
    {
-    DISABLED                   => "Disabled",
-    MSG                        => "Msg",
-    QUEUE                      => "Queue",
+    ENDBATCH		=> "EndOfBatch",
+    SEND		=> "Sending",
+    RECEIVE		=> "Receiving",
+    SERIALIZE		=> "Serializing",
+    RESYNCH		=> "Resynching",
+    HEARTBEAT		=> "Heartbeating",
+    SCYEXIT		=> "SecurityExit",
+    RCVEXIT		=> "ReceiveExit",
+    SENDEXIT		=> "SendExit",
+    MSGEXIT		=> "MsgExit",
+    MREXIT		=> "MsgRetryExit",
+    CHADEXIT		=> "ChannelAutoDefExit",
+    NETCONNECT		=> "NetConnecting",
+    SSLHANDSHK		=> "SSLHandShaking",
+    NAMESERVER		=> "NameServer",
+    MQPUT		=> "InMQPut",
+    MQGET		=> "InMQGet",
+    MQICALL		=> "InMQICall",
+    COMPRESS		=> "Compressing",
+    OTHER		=> "Other",
+    ''			=> "", # Null value
    },
 
  );

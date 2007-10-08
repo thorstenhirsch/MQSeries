@@ -3,6 +3,71 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.28
+
+The following fixes are included in the 1.28 release:
+
+=head2 Compilation fixes when used with MQ v5
+
+The changes for release 1.27 broke MQSeries::Command when used with
+an MQ v5 client.
+
+=head2 Fix client/server detection on Windows
+
+Patrick Lanners supplied a patch to improve the testing for the client
+or server API on Windows.
+
+=head1 Changes for 1.27
+
+The following fixes are included in the 1.27 release:
+
+=head2 New entries in the AMQERR0x.LOG parser
+
+A number of additional message descriptions have been added to the
+configuration file for the AMQERR0x.LOG parser
+(MQSeries::ErrorLog::Parser).  The newly supported messages are
+specific to MQ v6 on Linux/Unix/Windows.
+
+The AMQERR0x.LOG parser does not yet support all new MQ v6 messages.
+Error reports (including AMQERR0x.LOG files) are welcome.
+
+=head2 Other changes made:
+
+=over 4
+
+=item *
+
+Updated MQSC command attributes for OS/390 WMQ6 queue managers.
+
+=item *
+
+Added/Updated PCF commands/attributes for both Mainframe and Distributed queue managers.
+
+=item *
+
+Added support for BYSTRING parameters like ConnectionId.
+
+=back
+
+=head1 Changes for 1.26
+
+The following fixes are included in the 1.26 release:
+
+=head2 Updated entries for AMQ9001 and AMQ9002
+
+IBM has changed the AMQERR log format for the above codes.
+Updated descriptions.pl file in the Errorlog directory.
+
+=head2 Correct the RequestParameterOrder for SetAuthorityRecord
+
+Thanks to "Jean-Yves Baudy [jy.baudy@free.fr]" for pointing this out.
+Corrected the RequestParameterOrder file to expect the correct order.
+
+=head2 Fix the InquireChannelStatus PCF command 
+
+Updated the ChannelStatus block in RequestParameters file with 
+all the necessary optional parameters.
+
 =head1 Changes for 1.25
 
 The 1.24 release, though long-delayed, was plagued by glitches.  Our
@@ -1732,7 +1797,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 28.1 2007/02/08 19:45:03 biersma Exp $
+# $Id: Changes.src,v 31.1 2007/10/08 17:55:22 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

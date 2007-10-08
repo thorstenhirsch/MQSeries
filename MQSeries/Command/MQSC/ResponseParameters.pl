@@ -1,5 +1,5 @@
 #
-# $Id: ResponseParameters.pl,v 27.9 2007/01/11 20:20:04 molinam Exp $
+# $Id: ResponseParameters.pl,v 30.1 2007/09/13 14:29:35 balusuv Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -221,9 +221,12 @@ package MQSeries::Command::MQSC;
     CLWLWGHT    => [ "CLWLChannelWeight" ],
     COMPHDR	=> [ "HeaderCompression",	$ResponseValues{Compression} ],
     COMPMSG	=> [ "MessageCompression",	$ResponseValues{MessageCompression} ],
+    COMPRATE	=> [ "CompressionRate" ],
+    COMPTIME	=> [ "CompressionTime" ],
     CURLUWID	=> [ "CurrentLUWID" ],
     CURMSGS	=> [ "CurrentMsgs" ],
     CURSEQNO	=> [ "CurrentSequenceNumber" ],
+    EXITTIME	=> [ "ExitTime" ],
     INDOUBT	=> [ "InDoubtStatus",		$ResponseValues{Yes} ],
     JOBNAME	=> [ "MCAJobName" ],
     LONGRTS	=> [ "LongRetriesLeft" ],
@@ -234,9 +237,19 @@ package MQSeries::Command::MQSC;
     MCASTAT	=> [ "MCAStatus",		$ResponseValues{MCAStatus} ],
     MONCHL	=> [ "ChannelMonitoring",	$ResponseValues{MonitoringDft} ],
     MSGS	=> [ "Msgs" ],
+    NETTIME	=> [ "NetTime" ],
     SHORTRTS	=> [ "ShortRetriesLeft" ],
+    SSLCERTI	=> [ "SSLCertRemoteIssuerName" ],
+    SSLCERTU	=> [ "SSLCertUserId" ],
+    SSLRKEYS	=> [ "SSLKeyResets" ],
+    SSLKEYTI	=> [ "SSLKeyResetTime" ],
+    SSLKEYDA	=> [ "SSLKeyResetDate" ],
     STATUS	=> [ "ChannelStatus",		$ResponseValues{ChannelStatus} ],
     STOPREQ	=> [ "StopRequested",		$ResponseValues{Yes} ],
+    SUBSTATE	=> [ "SubState",		$ResponseValues{SubSate} ],
+    XBATCHSZ	=> [ "XBatchSize" ],
+    XQMSGSA	=> [ "XQMsgAvailable" ],
+    XQTIME	=> [ "XQTime" ],
 
     CURRENT	=> [ "ChannelInstanceType",	"Current" ],
     SAVED	=> [ "ChannelInstanceType",	"Saved" ],
@@ -255,7 +268,7 @@ package MQSeries::Command::MQSC;
     DESCR	=> [ "ChannelDesc" ],
     DISCINT	=> [ "DiscInterval" ],
     HBINT	=> [ "HeartbeatInterval" ],
-    KAINT       => [ "KeepAliveInterval",	$ResponseValues{KeepAliveInterval} ],
+    KAINT       => [ "KeepAliveInterval", ],#	$ResponseValues{KeepAliveInterval} ],
     LOCLADDR    => [ "LocalAddress" ],
     LONGRTY	=> [ "LongRetryCount" ],
     LONGTMR	=> [ "LongRetryInterval" ],
@@ -277,6 +290,7 @@ package MQSeries::Command::MQSC;
     RCVDATA	=> [ "ReceiveUserData" ],
     RCVEXIT	=> [ "ReceiveExit" ],
     RQMNAME	=> [ "RemoteQMgrName" ],
+    RAPPLTAG	=> [ "RemoteApplTag" ],
     SCYEXIT	=> [ "SecurityExit" ],
     SCYDATA	=> [ "SecurityUserData" ],
     SENDDATA	=> [ "SendUserData" ],
@@ -284,7 +298,7 @@ package MQSeries::Command::MQSC;
     SEQWRAP	=> [ "SeqNumberWrap" ],
     SHORTRTY	=> [ "ShortRetryCount" ],
     SHORTTMR	=> [ "ShortRetryInterval" ],
-    SSLCAUTH => => [ "SSLClientAuth",           $ResponseValues{SSLClientAuth} ],
+    SSLCAUTH	=> [ "SSLClientAuth",           $ResponseValues{SSLClientAuth} ],
     SSLCIPH     => [ "SSLCipherSpec" ],
     SSLPEER     => [ "SSLPeerName" ],
     TPNAME	=> [ "TpName" ],

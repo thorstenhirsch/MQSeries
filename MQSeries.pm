@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 28.2 2007/02/08 16:12:34 biersma Exp $
+# $Id: MQSeries.pm,v 31.2 2007/10/08 17:56:25 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,7 +24,7 @@ use MQSeries::Config::Machine;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.25';
+$VERSION = '1.28';
 
 BEGIN {
     my $server;
@@ -42,17 +42,17 @@ BEGIN {
             $Registry->Delimiter('/');
 
             my $CurrentVersion = "LMachine/SOFTWARE/IBM/MQSeries/CurrentVersion/";
-
-            my ($systemdir) = (
-                               $Registry->{"$CurrentVersion/FilePath"} ||
-                               $Registry->{"$CurrentVersion/WorkPath"} ||
-                               "C:/Mqm"
-                              )  . q{/qmgrs/@SYSTEM};
-            if (-d $systemdir) {
-                $server = 1;
-            } else {
-                $server = 0;
-            }
+	    $server = 0;
+	    my @sdir = ( $Registry->{"$CurrentVersion/FilePath"}, 
+			 $Registry->{"$CurrentVersion/WorkPath"}, 
+			 "C:/Mqm");
+	    foreach my $try (@sdir) {
+		my $systemdir = $try . q{/qmgrs/@SYSTEM};
+		if (-d $systemdir) {
+		    $server = 1;
+		    last;
+		}
+	    }
         } else {                # Unix: check systemdir and mqs.ini
             eval {
                 my $mqMachine = MQSeries::Config::Machine->new();
@@ -118,7 +118,7 @@ The straight MQI mapping is:
   MQCMIT($Hconn,$CompCode,$Reason);
 
   $Buffer = MQGET($Hconn,$Hobj,$MsgDesc,$GetMsgOpts,$BufferLength,$CompCode,$Reason);
-  MQPUT($Hconn,$Hobj,$MsgDesc,%PutMsgOpts,$Msg,$CompCode,$Reason);
+  MQPUT($Hconn,$Hobj,$MsgDesc,$PutMsgOpts,$Msg,$CompCode,$Reason);
   MQPUT1($Hconn,$ObjDesc,$MsgDesc,$PutMsgOpts,$Msg,$CompCode,$Reason);
 
   ($Attr1,...) = MQINQ($Hconn,$Hobj,$CompCode,$Reason,$Selector1,...);
