@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 27.1 2007/01/02 13:54:46 biersma Exp $
+# $Id: parse_headers,v 32.2 2009/05/22 18:09:39 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
@@ -14,6 +14,7 @@
 use English;
 use Config;
 
+my $include = '/opt/mqm/inc';
 opendir(INCLUDE,$include) ||
   die "Unable to opendir $include: $ERRNO\n";
 
@@ -32,10 +33,10 @@ my %headers = map { $_ => 1 } @headers;
 unless ( $headers{"$include/cmqcfce.h"} ) {
     my $found = 0;
     foreach my $incdir ( qw(./include ../include ../../include ../../../include) ) {
-	next unless -f "$incdir/cmqcfce.h";
-	push(@headers,"$incdir/cmqcfce.h");
-	$found = 1;
-	last;
+        next unless -f "$incdir/cmqcfce.h";
+        push(@headers,"$incdir/cmqcfce.h");
+        $found = 1;
+        last;
     }
     die "Unable to locate cmqcfce.h\n" unless $found;
 }
@@ -60,67 +61,73 @@ foreach my $header ( @headers ) {
     # To support the 64-bit macros, we support very simple conditionals,
     # nested one deep.
     #
-    my $conditional;		# Name (undef if not in confitional)
-    my $cond_else;		# 0: if #if, 1: in #else
+    my $conditional;            # Name (undef if not in confitional)
+    my $cond_else;              # 0: if #if, 1: in #else
+
+    #
+    # Constants defined in terms of other constants are handled at the
+    # end of the file, as they frequently contain forward definitions.
+    #
+    my %postponed;
 
     while ( <HEADER> ) {
 
-	s/^\s*//;
-	chomp;
+        s/^\s*//;
+        chomp;
 
-	if (m@^#if !defined.*\s+/\* File not yet included\?\s+\*/@ ||
-	    m@^#endif\s+/\* End of header file \*/@
-	   ) {
-	    #print "Skip include guard: $_\n";
-	    next;
-	}
+        if (m@^#if !defined.*\s+/\* File not yet included\?\s+\*/@ ||
+            m@^#endif\s+/\* End of header file \*/@
+           ) {
+            #print "Skip include guard: $_\n";
+            next;
+        }
 
-	#
-	# Entering a conditional?
-	#
-	if (/^#if defined\((.*?)\)/) {
-	    if (defined $conditional) {
-		die "Cannot handle nested conditional in [$header]: while in [$conditional], found [$1]";
-	    }
-	    $conditional = $1;
-	    $cond_else = 0;
-	    #print "Entering [$conditional]\n";
-	} elsif (/^#else/) {
-	    unless (defined $conditional) {
-		die "Have #else without conditional in [$header]";
-	    }
-	    #print "Entering #else $conditional\n";
-	    $cond_else = 1;
-	} elsif (/^#endif/) {
-	    unless (defined $conditional) {
-		die "Have #endif without conditional in [$header]";
-	    }
-	    #print "Leaving [$conditional]\n";
-	    $conditional = undef;
-	}
+        #
+        # Entering a conditional?
+        #
+        if (/^#if !?defined\((.*?)\)/) {
+            if (defined $conditional) {
+                die "Cannot handle nested conditional in [$header]: while in [$conditional], found [$1]";
+            }
+            $conditional = $1;
+            $cond_else = 0;
+            #print "Entering [$conditional]\n";
+        } elsif (/^#else/) {
+            unless (defined $conditional) {
+                die "Have #else without conditional in [$header]";
+            }
+            #print "Entering #else $conditional\n";
+            $cond_else = 1;
+        } elsif (/^#endif/) {
+            unless (defined $conditional) {
+                die "Have #endif without conditional in [$header]";
+            }
+            #print "Leaving [$conditional]\n";
+            $conditional = undef;
+        }
 
-	#
-	# Handle line continuation
-	#
-	while ( m:\\$: ) {
-	    s/\\$//;
-	    my $cont = <HEADER>;
-	    $cont =~ s/^\s*//;
-	    $_ .= $cont;
-	    chomp;
-	}
+        #
+        # Handle line continuation
+        #
+        while ( m:\\$: ) {
+            s/\\$//;
+            my $cont = <HEADER>;
+            $cont =~ s/^\s*//;
+            $_ .= $cont;
+            chomp;
+        }
 
-	next unless /\#define/;
+        next unless /\#define/;
 
-	#
-	# Strip trailing C comments (there are a few in the V2 header
-	# files), and trailing white space.
-	#
-	s:\s+/\*.*\*/::;
-	s/\s*$//;
+        #
+        # Strip trailing C comments (there are a few in the V2 header
+        # files), and trailing white space.
+        #
+        s:\s+/\*.*\*/::;
+        s/\s*$//;
 
-	my ($key,$value) = (split(/\s+/,$_,3))[1,2];
-	#print STDERR "Have key [$key] value [$value]\n";
+        my ($key,$value) = (split(/\s+/,$_,3))[1,2];
+        #print STDERR "Have key [$key] value [$value]\n";
 
         #
         # Skip the MQ_64_BIT constant (which has no value)
@@ -131,146 +138,193 @@ foreach my $header ( @headers ) {
         #    print STDERR "XX: key [$key] leads to undefined value\n";
         #}
 
-	#
-	# If we're in a conditionial 64-bit block, we may have to
-	# skip a macro.
-	#
-	if (defined $conditional && $conditional eq 'MQ_64_BIT') {
-	    if ($cond_else == 0 && $use_64_bit == 0) {
-		#print "Skip 64-bit macro value [$key] [$value]\n";
-		next;
-	    } elsif ($cond_else && $use_64_bit) {
-		#print "Skip 32-bit macro value [$key] [$value]\n";
-		next;
-	    }
-	}
+        #
+        # If we're in a conditionial 64-bit block, we may have to
+        # skip a macro.
+        #
+        if (defined $conditional && $conditional eq 'MQ_64_BIT') {
+            if ($cond_else == 0 && $use_64_bit == 0) {
+                #print "Skip 64-bit macro value [$key] [$value]\n";
+                next;
+            } elsif ($cond_else && $use_64_bit) {
+                #print "Skip 32-bit macro value [$key] [$value]\n";
+                next;
+            }
+        }
 
-	next if $key eq "MQENTRY";
-	next if $key eq "MQPOINTER";
+        next if $key eq "MQENTRY";
+        next if $key eq "MQPOINTER";
 
-	#
-	# Skip a bunch of stuff needed only by handicapped C
-	# programmers (we, OTOH, have perl ;-)
-	#
-	next if $key =~ /_ARRAY$/;
-	next if $key =~ /_INCLUDED$/;
-	next if $key =~ /_A$/;
+        #
+        # Skip a bunch of stuff needed only by handicapped C
+        # programmers (we, OTOH, have perl ;-)
+        #
+        next if $key =~ /_ARRAY$/;
+        next if $key =~ /_INCLUDED$/;
+        next if $key =~ /_A$/;
 
-	#
-	# Skip some bogus macros added to 5.1 that we ain't gonna add
-	# the already overly bloated MQSeries namespace.
-	#
-	next if $key eq 'MQCHANNELEXIT';
-	next if $key eq 'MQCHANNELAUTODEFEXIT';
-	next if $key eq 'MQDATACONVEXIT';
-	next if $key eq 'MQTRANSPORTEXIT';
+        #
+        # Skip some bogus macros added to 5.1 that we ain't gonna add
+        # the already overly bloated MQSeries namespace.
+        #
+        next if $key eq 'MQCHANNELEXIT';
+        next if $key eq 'MQCHANNELAUTODEFEXIT';
+        next if $key eq 'MQDATACONVEXIT';
+        next if $key eq 'MQTRANSPORTEXIT';
 
-	#
-	# We have to be careful only to skip the definitions which are
-	# for default structures.
-	#
-	next if ( $key =~ /_DEFAULT$/ && $value =~ /,/ );
+        #
+        # We have to be careful only to skip the definitions which are
+        # for default structures.
+        #
+        next if ( $key =~ /_DEFAULT$/ && $value =~ /,/ );
 
-	$value =~ s/^\(//;
-	$value =~ s/\)$//;
+        #
+        # MQ V7 adds some defintions to data structures that we don't
+        # want to parse as constants.
+        #
+        next if ($key =~ /^MQPROP_INQUIRE_ALL/);  # ..ALL, ..ALL_USR
 
-	#
-	# Special case: Look for indication that this host has a
-	# version of MQSeries installed which support the MQRFH
-	# structure.    This is required to build RulesFormat.xs
-	#
-	if ( $key eq "MQRFH_STRUC_ID" ) {
-	    $::has_mqrfh = 1;
-	}
+        $value =~ s/^\(//;
+        $value =~ s/\)$//;
 
-	if ( $key eq "MQMD_VERSION_2" ) {
-	    $::has_mqmd2 = 1;
-	}
+        #
+        # Special case: Look for indication that this host has a
+        # version of MQSeries installed which support the MQRFH
+        # structure.    This is required to build RulesFormat.xs
+        #
+        if ( $key eq "MQRFH_STRUC_ID" ) {
+            $::has_mqrfh = 1;
+        }
 
-	#
-	# Hex
-	#
-	if ( $value =~ /^0x/ ) {
-	    $value =~ s/L$//;
-	    $constant_hex{$key} = eval($value);
-	}
+        if ( $key eq "MQMD_VERSION_2" ) {
+            $::has_mqmd2 = 1;
+        }
 
-	#
-	# Numeric constants
-	#
-	# NOTE: Special case to handle the MQ_64_BIT conditionals.
+        #
+        # Hex
+        #
+        if ( $value =~ /^0x/ ) {
+            $value =~ s/L$//;
+            $constant_hex{$key} = eval($value);
+        }
+
+        #
+        # Numeric constants
+        #
+        # NOTE: Special case to handle the MQ_64_BIT conditionals.
         # This works because the ONLY parameters that are
-	# affected by these conditionals are the _LENGTH parameters
-	# for some of the structures.
-	#
+        # affected by these conditionals are the _LENGTH parameters
+        # for some of the structures.
+        #
         # At this time, we assume you are not using the 64-bit client
         # on Solaris.  Patches to support this (preferably with
         # auto-detection in the Makefile) are welcome.
         #
-	elsif ( $value =~ /L$/ || $value =~ /^-?\d+$/) {
+        elsif ( $value =~ /L$/ || $value =~ /^-?\d+$/) {
 
-	    $value =~ s/L$//;
+            $value =~ s/L$//;
 
-	    if (not exists $constant_numeric{$key} || # First time
+            if (not exists $constant_numeric{$key} || # First time
                 (not defined $value && not defined $constant_numeric{$key}) &&
                 (defined $value && defined $constant_numeric{$key} && $constant_numeric{$key} eq $value) # No change
                ) {
-		$constant_numeric{$key} = $value;
-	    } else {
+                $constant_numeric{$key} = $value;
+            } else {
                 print STDERR "WARNING: Have two conflicting constant values for [$key], using first [$constant_numeric{$key}] not second [$value]\n";
             }
 
-	}
-	#
-	# Null strings -- very special
-	#
-	elsif ( $value =~ /^\"\\0/ ) {
-	    # Strip all of the double quotes, and give us just the \0's
-	    $value =~ s/\"//g;
-	    # Count the null characters (i.e. count everything, and
-	    # divide by 2, 'cause this is a string like "\0\0\0\0")
-	    $constant_null{$key} = length($value)/2;
-	}
-	#
-	# Non-null strings
-	#
-	elsif ( $value =~ /^\"/ ) {
-	    # Strip all of the double quotes, and give us just the contents
-	    # NOTE: This will handle line wrapped stuff (embedded "")
-	    $value =~ s/\"//g;
-	    # 5.1 encodes a bunch of characters in hex for some wierd reason...
-	    $value =~ s/\\x(\w{2})/chr(hex($1))/ge;
-	    $constant_string{$key} = $value;
-	}
-	#
-	# Single character string
-	#
-	elsif ( $value =~ /\'/ ) {
-	    $value =~ s/\'//g;
-	    $value =~ s/\\x(\w{2})/chr(hex($1))/ge;
-	    $constant_char{$key} = $value;
-	}
-	#
-	# Ignore the function macros in cmqbc.h
-	#
-	elsif ( $value =~ /^mq[A-Z]/ ) {
-	    next;
-	}
-	#
-	# Don't know how to parse....
-	#
-	else {
-	    warn "Unrecognized value: '$key' => '$value'\n";
-	}
+        }
+        #
+        # Null strings -- very special
+        #
+        elsif ( $value =~ /^\"\\0/ ) {
+            # Strip all of the double quotes, and give us just the \0's
+            $value =~ s/\"//g;
+            # Count the null characters (i.e. count everything, and
+            # divide by 2, 'cause this is a string like "\0\0\0\0")
+            $constant_null{$key} = length($value)/2;
+        }
+        #
+        # Non-null strings
+        #
+        elsif ( $value =~ /^\"/ ) {
+            # Strip all of the double quotes, and give us just the contents
+            # NOTE: This will handle line wrapped stuff (embedded "")
+            $value =~ s/\"//g;
+            # 5.1 encodes a bunch of characters in hex for some wierd reason...
+            $value =~ s/\\x(\w{2})/chr(hex($1))/ge;
+            $constant_string{$key} = $value;
+        }
+        #
+        # Character arrays - we can parse these, but they're not
+        # consumable by the C pre-processor without a structure assignment, so
+        # we skip them.
+        #
+        # Example: MQPSC_COMMAND_A                'C','o','m','m','a','n','d'
+        #
+        elsif ($key =~ /^MQ\w+_[A-Z]?A$/ &&
+               $value =~ /^('[^']',)+'[^']'$/) {
+            #print STDERR "XXX: Skipping character array '$key' -> $value\n";
+            next;
+        }
+        #
+        # Single character string
+        #
+        elsif ( $value =~ /\'/ ) {
+            $value =~ s/\'//g;
+            $value =~ s/\\x(\w{2})/chr(hex($1))/ge;
+            $constant_char{$key} = $value;
+        }
+        #
+        # Some #defines are expressed in terms of others (binary OR).
+        # Postpone them and handle them at the end of the file
+        #
+        elsif ($value =~ /^\s* (MQ\w+ \s* \| \s*)+ MQ\w+ \s*$/x) {
+            $value =~ s/^\s+//;
+            $postponed{$key} = $value;
+            next;
+        }
+        #
+        # Ignore the function macros in cmqbc.h
+        #
+        elsif ( $value =~ /^mq[A-Z]/ ) {
+            next;
+        }
+        #
+        # Don't know how to parse....
+        #
+        else {
+            warn "Unrecognized value: '$key' => '$value'\n";
+        }
 
-	# Debugging....
-	# s/\s*/\t/;
-	# print "$_\n";
+        # Debugging....
+        # s/\s*/\t/;
+        # print "$_\n";
 
     }
-
     close(HEADER);
 
-}
+    #
+    # Handle the postponed entries
+    #
+  POSTPONED:
+    while (my ($key, $value) = each %postponed) {
+        #print STDERR "XXX: key '$key' is composed of other constant: '$value'\n";
+        my $result = 0;
+        foreach my $constant (split /\s* \| \s*/, $value) {
+            my $num = $constant_numeric{$constant} ||
+              $constant_hex{$constant};
+            if (defined $num) {
+                #print STDERR "XXX2: OR constant $constant -> $num\n";
+                $result |= $num;
+            } else {
+                warn "Cannot add determine value for '$key', unknown constant '$constant'\n"; # not numeric/hex
+                next POSTPONED;
+            }
+        }
+        #print STDERR "XXX4: result is $key => $result\n";
+        $constant_numeric{$key} = $result;
+    }
+}                               #  End foreach: header file
 
 1;

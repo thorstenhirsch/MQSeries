@@ -1,14 +1,14 @@
 /*
  * Extensions for the PCF Command Set
  *
- * $Id: cmqcfce.h,v 27.1 2007/01/11 20:20:39 molinam Exp $
+ * $Id: cmqcfce.h,v 32.1 2008/07/21 19:58:16 balusuv Exp $
  *
  * (c) 1999-2007 Morgan Stanley Dean Witter and Co.
  * See ..../src/LICENSE for terms of distribution.
  *
  */
 
-#if !defined(MQCFCE_INCLUDED)
+#if !defined(MQCFCE_INCLUDED)    /* File not yet included? */
 #define MQCFCE_INCLUDED
 
 #if defined(__cplusplus)

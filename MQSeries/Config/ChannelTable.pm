@@ -1,7 +1,7 @@
 #
-# $Id: ChannelTable.pm,v 31.1 2007/09/24 15:41:50 biersma Exp $
+# $Id: ChannelTable.pm,v 32.2 2009/05/22 15:28:13 biersma Exp $
 #
-# (c) 2001-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2001-2008 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use vars qw(
 	    %StrucLength
 	   );
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 @MQCDFields =
   (
@@ -327,7 +327,17 @@ sub writeFile {
     my ($class, %args) = @_;
     my ($filename, $fh, $clntconn,$version) = 
       @args{qw(Filename FileHandle Clntconn Version)};
-    $version ||= $SystemDefClntconn{'Version'};
+
+    #
+    # We must make sure the version and length of the default channel
+    # matches that of the file.
+    #
+    if (defined $version) {
+	$SystemDefClntconn{'Version'} = $version;
+    } else {
+	$version = $SystemDefClntconn{'Version'};
+    }
+    $SystemDefClntconn{'StrucLength'} = $StrucLength{$version};
 
     #
     # Either Filename or FileHandle must be supplied, but not both
@@ -491,10 +501,14 @@ sub writeFile {
 	    }
 
 	} else {
-
+	    #
 	    # We've got the V6 data structure decoded, but we're not
 	    # entirely sure about V4.
-	    $mqcd .= "\0" x 20;
+	    #
+	    # IBM tells us we need 8 zeroes, then 0x06, then 11 zeroes
+	    $mqcd .= "\0" x 8;
+	    $mqcd .= "\06";
+	    $mqcd .= "\0" x 11;
 	}
 
 	my $mqcd_length = length($mqcd);

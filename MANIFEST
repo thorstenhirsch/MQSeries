@@ -92,6 +92,11 @@ MQSeries/QueueManager.pm
 MQSeries/Utils.pm
 Makefile.PL
 README
+README.windows
+SSL-cookbook/MQclient.pl
+SSL-cookbook/MQmanager-swolinux-sslclient.sh
+SSL-cookbook/mq-ca.pl
+SSL-cookbook/readme.txt
 examples/OO/request-reply-1/reply.pl
 examples/OO/request-reply-1/request.pl
 examples/OO/request-reply-2/reply.pl

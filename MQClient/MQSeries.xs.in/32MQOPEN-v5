@@ -1,12 +1,12 @@
 # -*-c-*-
 #
-# $Id: 32MQOPEN-v5,v 27.1 2007/01/11 20:19:53 molinam Exp $
+# $Id: 32MQOPEN-v5,v 32.1 2009/06/11 12:46:26 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
-MQHOBJ
+void
 MQOPEN(Hconn,ObjDesc,Options,CompCode,Reason)
 	MQHCONN		Hconn
 	MQOD		ObjDesc
@@ -22,7 +22,7 @@ MQOPEN(Hconn,ObjDesc,Options,CompCode,Reason)
 	AV	*ObjectRecs, *ObjectRecsArrayEntry;
 	AV	*ResponseRecArray;
 	HV	*ObjectRecsHashEntry, *ResponseRecHash;
-	PMQRR	pResponseRecPtr;
+	PMQRR	pResponseRecPtr = NULL;
 	PMQOR	pObjectRecPtr;
 
 	char	*String;

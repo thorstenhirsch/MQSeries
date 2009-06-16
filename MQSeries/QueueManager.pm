@@ -1,7 +1,7 @@
 #
-# $Id: QueueManager.pm,v 31.1 2007/09/24 15:41:54 biersma Exp $
+# $Id: QueueManager.pm,v 32.2 2009/06/16 12:27:38 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -30,46 +30,47 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = validate(@_, { 'QueueManager'         => 0,
-			      'Carp'                 => 0,
-			      'CompCode'             => 0,
-			      'Reason'               => 0,
-			      'GetConvert'           => 0,
-			      'PutConvert'           => 0,
-			      'RetryCount'           => 0,
-			      'RetrySleep'           => 0,
-			      'RetryReasons'         => 0,
-			      'ConnectTimeout'       => 0,
-			      'ConnectTimeoutSignal' => 0,
-			      'ClientConn'           => 0,
-			      'SSLConfig'            => 0,
-			      'AutoCommit'           => 0,
-			      'AutoConnect'          => 0,
-			    });
+                              'Carp'                 => 0,
+                              'CompCode'             => 0,
+                              'Reason'               => 0,
+                              'GetConvert'           => 0,
+                              'PutConvert'           => 0,
+                              'RetryCount'           => 0,
+                              'RetrySleep'           => 0,
+                              'RetryReasons'         => 0,
+                              'ConnectTimeout'       => 0,
+                              'ConnectTimeoutSignal' => 0,
+                              'ClientConn'           => 0,
+                              'SSLConfig'            => 0,
+                              'SecurityParms'        => 0,
+                              'AutoCommit'           => 0,
+                              'AutoConnect'          => 0,
+                            });
 
     my $self =
       {
 
-       Carp			=> \&carp,
-       RetryCount 		=> 0,
-       RetrySleep 		=> 60,
-       RetryReasons		=> {
-				    map { $_ => 1 }
-				    (
-				     MQSeries::MQRC_CONNECTION_BROKEN,
-				     MQSeries::MQRC_Q_MGR_NOT_AVAILABLE,
-				     MQSeries::MQRC_Q_MGR_QUIESCING,
-				     MQSeries::MQRC_Q_MGR_STOPPING,
-				    )
-				   },
-       ConnectTimeoutSignal	=> 'USR1',
-       ConnectTimeout		=> 0,
-       ConnectArgs		=> {},
+       Carp                     => \&carp,
+       RetryCount               => 0,
+       RetrySleep               => 60,
+       RetryReasons             => {
+                                    map { $_ => 1 }
+                                    (
+                                     MQSeries::MQRC_CONNECTION_BROKEN,
+                                     MQSeries::MQRC_Q_MGR_NOT_AVAILABLE,
+                                     MQSeries::MQRC_Q_MGR_QUIESCING,
+                                     MQSeries::MQRC_Q_MGR_STOPPING,
+                                    )
+                                   },
+       ConnectTimeoutSignal     => 'USR1',
+       ConnectTimeout           => 0,
+       ConnectArgs              => {},
        AutoCommit               => 0,
 
       };
@@ -79,12 +80,12 @@ sub new {
     # First thing -- override the Carp routine if given.
     #
     if ( $args{Carp} ) {
-	if ( ref $args{Carp} ne "CODE" ) {
-	    carp "Invalid argument: 'Carp' must be a CODE reference";
-	    return;
-	} else {
-	    $self->{Carp} = $args{Carp};
-	}
+        if ( ref $args{Carp} ne "CODE" ) {
+            carp "Invalid argument: 'Carp' must be a CODE reference";
+            return;
+        } else {
+            $self->{Carp} = $args{Carp};
+        }
     }
 
     #
@@ -94,27 +95,27 @@ sub new {
     # to allow this to be optional.
     #
     if ( $args{QueueManager} ) {
-	if ( ref $args{QueueManager} && $args{QueueManager}->isa("MQSeries::QueueManager") ) {
-	    $self->{QueueManager} = $args{QueueManager}->{QueueManager};
-	} else {
-	    $self->{QueueManager} = $args{QueueManager};
-	}
+        if ( ref $args{QueueManager} && $args{QueueManager}->isa("MQSeries::QueueManager") ) {
+            $self->{QueueManager} = $args{QueueManager}->{QueueManager};
+        } else {
+            $self->{QueueManager} = $args{QueueManager};
+        }
     } else {
-	$self->{QueueManager} = "";
+        $self->{QueueManager} = "";
     }
 
     #
     # Sanity check the data conversion CODE snippets.
     #
     foreach my $key ( qw( PutConvert GetConvert ) ) {
-	if ( $args{$key} ) {
-	    if ( ref $args{$key} ne "CODE" ) {
-		$self->{Carp}->("Invalid argument: '$key' must be a CODE reference");
-		return;
-	    } else {
-		$self->{$key} = $args{$key};
-	    }
-	}
+        if ( $args{$key} ) {
+            if ( ref $args{$key} ne "CODE" ) {
+                $self->{Carp}->("Invalid argument: '$key' must be a CODE reference");
+                return;
+            } else {
+                $self->{$key} = $args{$key};
+            }
+        }
     }
 
     #
@@ -123,10 +124,10 @@ sub new {
     # yada.
     #
     foreach my $connectarg ( qw( RetryCount RetrySleep RetryReasons
-				 ConnectTimeout ConnectTimeoutSignal
-                                 ClientConn SSLConfig) ) {
-	next unless exists $args{$connectarg};
-	$self->{ConnectArgs}->{$connectarg} = $args{$connectarg};
+                                 ConnectTimeout ConnectTimeoutSignal
+                                 ClientConn SSLConfig SecurityParms) ) {
+        next unless exists $args{$connectarg};
+        $self->{ConnectArgs}->{$connectarg} = $args{$connectarg};
     }
 
 
@@ -135,7 +136,7 @@ sub new {
     # of it.
     #
     if ( exists $args{AutoCommit} ) {
-	$self->{AutoCommit} = $args{AutoCommit};
+        $self->{AutoCommit} = $args{AutoCommit};
     }
 
     #
@@ -146,12 +147,12 @@ sub new {
     #
     unless (exists $args{'AutoConnect'} && $args{'AutoConnect'} == 0) {
         my $result = $self->Connect();
-	foreach my $code ( qw( CompCode Reason )) {
-	    if ( ref $args{$code} eq "SCALAR" ) {
-		${$args{$code}} = $self->{$code};
-   	    }
-	}
-	return unless $result;
+        foreach my $code ( qw( CompCode Reason )) {
+            if ( ref $args{$code} eq "SCALAR" ) {
+                ${$args{$code}} = $self->{$code};
+            }
+        }
+        return unless $result;
     }
 
     return $self;
@@ -161,8 +162,8 @@ sub new {
 sub Open {
     my $self = shift;
     my %args = validate(@_, { 'Options' => 0,
-			      'ObjDesc' => 0,
-			    });
+                              'ObjDesc' => 0,
+                            });
 
     $self->{"CompCode"} = MQSeries::MQCC_FAILED;
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
@@ -171,9 +172,9 @@ sub Open {
     # If the options are given, we assume you know what you're doing.
     #
     if ( exists $args{Options} ) {
-	$self->{Options} = $args{Options};
+        $self->{Options} = $args{Options};
     } else {
-	$self->{Options} = MQSeries::MQOO_INQUIRE |
+        $self->{Options} = MQSeries::MQOO_INQUIRE |
           MQSeries::MQOO_FAIL_IF_QUIESCING;
     }
 
@@ -181,38 +182,38 @@ sub Open {
     # Same for the ObjDesc
     #
     if ( exists $args{ObjDesc} ) {
-	if ( ref $args{ObjDesc} eq "HASH" ) {
-	    $self->{ObjDescPtr} = $args{ObjDesc};
-	} else {
-	    $self->{Carp}->("Invalid argument: 'ObjDesc' must be a HASH reference");
-	    return;
-	}
+        if ( ref $args{ObjDesc} eq "HASH" ) {
+            $self->{ObjDescPtr} = $args{ObjDesc};
+        } else {
+            $self->{Carp}->("Invalid argument: 'ObjDesc' must be a HASH reference");
+            return;
+        }
     } else {
-	$self->{ObjDescPtr} =
-	  {
-	   ObjectType		=> MQSeries::MQOT_Q_MGR,
-	  };
+        $self->{ObjDescPtr} =
+          {
+           ObjectType           => MQSeries::MQOT_Q_MGR,
+          };
     }
 
     #
     # Open the Queue
     #
     $self->{Hobj} = MQOPEN(
-			   $self->{Hconn},
-			   $self->{ObjDescPtr},
-			   $self->{Options},
-			   $self->{"CompCode"},
-			   $self->{"Reason"},
-			  );
+                           $self->{Hconn},
+                           $self->{ObjDescPtr},
+                           $self->{Options},
+                           $self->{"CompCode"},
+                           $self->{"Reason"},
+                          );
 
     if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	return 1;
+        return 1;
     } elsif ( $self->{"CompCode"} == MQSeries::MQCC_FAILED ) {
-	$self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"})/);
+        return;
     } else {
-	$self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
-	return;
+        $self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
+        return;
     }
 }
 
@@ -226,38 +227,38 @@ sub Close {
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     MQCLOSE(
-	    $self->{Hconn},
-	    $self->{Hobj},
-	    MQSeries::MQCO_NONE,
-	    $self->{"CompCode"},
-	    $self->{"Reason"},
-	   );
+            $self->{Hconn},
+            $self->{Hobj},
+            MQSeries::MQCO_NONE,
+            $self->{"CompCode"},
+            $self->{"Reason"},
+           );
     if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	delete $self->{Hobj};
-	return 1;
+        delete $self->{Hobj};
+        return 1;
     } elsif ( $self->{"Reason"} == MQSeries::MQRC_HCONN_ERROR ) {
-	delete $self->{Hobj};
-	return 1;
+        delete $self->{Hobj};
+        return 1;
     } else {
-	$self->{Carp}->("MQCLOSE of $self->{ObjDescPtr}->{ObjectName} on " .
-			qq/$self->{QueueManager} failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->("MQCLOSE of $self->{ObjDescPtr}->{ObjectName} on " .
+                        qq/$self->{QueueManager} failed (Reason = $self->{"Reason"})/);
+        return;
     }
 }
 
-	
+
 sub ObjDesc {
     my $self = shift;
 
     if ( $_[0] ) {
-	if ( exists $self->{ObjDescPtr}->{$_[0]} ) {
-	    return $self->{ObjDescPtr}->{$_[0]};
-	} else {
-	    $self->{Carp}->("No such ObjDescPtr field: $_[0]");
-	    return;
-	}
+        if ( exists $self->{ObjDescPtr}->{$_[0]} ) {
+            return $self->{ObjDescPtr}->{$_[0]};
+        } else {
+            $self->{Carp}->("No such ObjDescPtr field: $_[0]");
+            return;
+        }
     } else {
-	return $self->{ObjDescPtr};
+        return $self->{ObjDescPtr};
     }
 }
 
@@ -300,29 +301,29 @@ sub Inquire {
 
     foreach my $key ( @args ) {
 
-	unless ( exists $ForwardMap->{$key} ) {
-	    $self->{Carp}->("Unrecognized Queue attribute: '$key'");
-	    return;
-	}
+        unless ( exists $ForwardMap->{$key} ) {
+            $self->{Carp}->("Unrecognized Queue attribute: '$key'");
+            return;
+        }
 
-	push(@keys,$ForwardMap->{$key});
+        push(@keys,$ForwardMap->{$key});
 
     }
 
     my (@values) = MQINQ(
-			 $self->{Hconn},
-			 $self->{Hobj},
-			 $self->{"CompCode"},
-			 $self->{"Reason"},
-			 @keys,
-			);
+                         $self->{Hconn},
+                         $self->{Hobj},
+                         $self->{"CompCode"},
+                         $self->{"Reason"},
+                         @keys,
+                        );
 
     unless ( $self->{"CompCode"} == MQSeries::MQCC_OK &&
              $self->{"Reason"} == MQSeries::MQRC_NONE ) {
-	$self->{Carp}->("MQINQ call failed. " .
-			qq/CompCode => '$self->{"CompCode"}', / .
-			qq/Reason   => '$self->{"Reason"}'\n/);
-	return;
+        $self->{Carp}->("MQINQ call failed. " .
+                        qq/CompCode => '$self->{"CompCode"}', / .
+                        qq/Reason   => '$self->{"Reason"}'\n/);
+        return;
     }
 
     # In case the data parsing fails...
@@ -332,20 +333,20 @@ sub Inquire {
     my (%values) = ();
 
     for ( my $index = 0 ; $index <= $#keys ; $index++ ) {
-	
-	my ($key,$value) = ($keys[$index],$values[$index]);
 
-	my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
+        my ($key,$value) = ($keys[$index],$values[$index]);
 
-	if ( $ValueMap ) {
-	    unless ( exists $ValueMap->{$value} ) {
-		$self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
-		return;
-	    }
-	    $values{$newkey} = $ValueMap->{$value};
-	} else {
-	    $values{$newkey} = $value;
-	}
+        my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
+
+        if ( $ValueMap ) {
+            unless ( exists $ValueMap->{$value} ) {
+                $self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
+                return;
+            }
+            $values{$newkey} = $ValueMap->{$value};
+        } else {
+            $values{$newkey} = $value;
+        }
 
     }
 
@@ -379,28 +380,28 @@ sub Disconnect {
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     if ( $self->{_Pending} && $self->{AutoCommit} == 0 ) {
-	$self->Backout() || do {
-	    my $putcnt = $self->{_Pending}->{Put};
-	    my $getcnt = $self->{_Pending}->{Get};
-	    $self->{Carp}->("Unable to backout pending transaction before disconnect\n" .
-			    "Currently $putcnt puts and $getcnt gets pending\n" .
-			    "Reason => " . MQReasonToText($self->Reason()) . "\n");
-	    return;
-	};
+        $self->Backout() || do {
+            my $putcnt = $self->{_Pending}->{Put};
+            my $getcnt = $self->{_Pending}->{Get};
+            $self->{Carp}->("Unable to backout pending transaction before disconnect\n" .
+                            "Currently $putcnt puts and $getcnt gets pending\n" .
+                            "Reason => " . MQReasonToText($self->Reason()) . "\n");
+            return;
+        };
     }
 
     MQDISC(
-	   $self->{Hconn},
-	   $self->{"CompCode"},
-	   $self->{"Reason"},
-	  );
+           $self->{Hconn},
+           $self->{"CompCode"},
+           $self->{"Reason"},
+          );
     if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	delete $self->{Hconn};
-	return 1;
+        delete $self->{Hconn};
+        return 1;
 
     } else {
-	$self->{Carp}->(qq/MQDISC of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->(qq/MQDISC of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
+        return;
     }
 }
 
@@ -418,16 +419,16 @@ sub Backout {
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     MQBACK(
-	   $self->{Hconn},
-	   $self->{"CompCode"},
-	   $self->{"Reason"},
-	  );
+           $self->{Hconn},
+           $self->{"CompCode"},
+           $self->{"Reason"},
+          );
     if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	delete $self->{_Pending};
-	return 1;
+        delete $self->{_Pending};
+        return 1;
     } else {
-	$self->{Carp}->(qq/MQBACK of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->(qq/MQBACK of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
+        return;
     }
 }
 
@@ -438,16 +439,16 @@ sub Commit {
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     MQCMIT(
-	   $self->{Hconn},
-	   $self->{"CompCode"},
-	   $self->{"Reason"},
-	  );
+           $self->{Hconn},
+           $self->{"CompCode"},
+           $self->{"Reason"},
+          );
     if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	delete $self->{_Pending};
-	return 1;
+        delete $self->{_Pending};
+        return 1;
     } else {
-	$self->{Carp}->(qq/MQCMIT of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->(qq/MQCMIT of $self->{QueueManager} failed (Reason = $self->{"Reason"})/);
+        return;
     }
 }
 
@@ -465,56 +466,56 @@ sub Put1 {
     my $ObjDesc = {};
     my $PutMsgOpts =
       {
-       Options			=> MQSeries::MQPMO_FAIL_IF_QUIESCING,
+       Options                  => MQSeries::MQPMO_FAIL_IF_QUIESCING,
       };
 
     my $retrycount = 0;
     my $buffer = undef;
 
     unless ( ref $args{Message} and $args{Message}->isa("MQSeries::Message") ) {
-	$self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
-	return;
+        $self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
+        return;
     }
 
     $self->{"CompCode"} = MQSeries::MQCC_FAILED;
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     unless ( $args{"ObjDesc"} or $args{Queue} ) {
-	$self->{Carp}->("Invalid argument: either 'ObjDesc' or " .
-			"'Queue' must be specified");
-	return;
+        $self->{Carp}->("Invalid argument: either 'ObjDesc' or " .
+                        "'Queue' must be specified");
+        return;
     }
 
     if ( $args{"ObjDesc"} ) {
-	unless ( ref $args{"ObjDesc"} eq 'HASH' ) {
-	    $self->{Carp}->("Invalid ObjDesc argument; must be a HASH reference");
-	    return;
-	}
-	$ObjDesc = $args{"ObjDesc"};
+        unless ( ref $args{"ObjDesc"} eq 'HASH' ) {
+            $self->{Carp}->("Invalid ObjDesc argument; must be a HASH reference");
+            return;
+        }
+        $ObjDesc = $args{"ObjDesc"};
     } else {
-	if ( ref $args{Queue} eq "ARRAY" ) {
-	    $ObjDesc->{ObjectRecs} = $args{Queue};
-	} else {
-	    $ObjDesc->{ObjectName} = $args{Queue};
-	    $ObjDesc->{ObjectQMgrName} = $args{QueueManager};
-	}
+        if ( ref $args{Queue} eq "ARRAY" ) {
+            $ObjDesc->{ObjectRecs} = $args{Queue};
+        } else {
+            $ObjDesc->{ObjectName} = $args{Queue};
+            $ObjDesc->{ObjectQMgrName} = $args{QueueManager};
+        }
     }
 
     if ( $args{PutMsgOpts} ) {
-	unless ( ref $args{PutMsgOpts} eq 'HASH' ) {
-	    $self->{Carp}->("Invalid PutMsgOpts argument; must be a HASH reference");
-	    return;
-	}
-	$PutMsgOpts = $args{PutMsgOpts};
+        unless ( ref $args{PutMsgOpts} eq 'HASH' ) {
+            $self->{Carp}->("Invalid PutMsgOpts argument; must be a HASH reference");
+            return;
+        }
+        $PutMsgOpts = $args{PutMsgOpts};
     } else {
-	if ( $args{PutMsgRecs} ) {
-	    $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
-	}
-	if ( $args{Sync} ) {
-	    $PutMsgOpts->{Options} |= MQSeries::MQPMO_SYNCPOINT;
-	} else {
-	    $PutMsgOpts->{Options} |= MQSeries::MQPMO_NO_SYNCPOINT;
-	}
+        if ( $args{PutMsgRecs} ) {
+            $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
+        }
+        if ( $args{Sync} ) {
+            $PutMsgOpts->{Options} |= MQSeries::MQPMO_SYNCPOINT;
+        } else {
+            $PutMsgOpts->{Options} |= MQSeries::MQPMO_NO_SYNCPOINT;
+        }
     }
 
     #
@@ -523,58 +524,58 @@ sub Put1 {
     $self->{"PutConvertReason"} = 0;
 
     if ( $args{PutConvert} ) {
-	if ( ref $args{PutConvert} ne "CODE" ) {
-	    $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
-	    return;
-	} else {
-	    $buffer = $args{PutConvert}->($args{Message}->Data());
-	    unless ( defined $buffer ) {
-		$self->{"PutConvertReason"} = 1;
-		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
-		return;
-	    }
-	}
+        if ( ref $args{PutConvert} ne "CODE" ) {
+            $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
+            return;
+        } else {
+            $buffer = $args{PutConvert}->($args{Message}->Data());
+            unless ( defined $buffer ) {
+                $self->{"PutConvertReason"} = 1;
+                $self->{Carp}->("Data conversion hook (PutConvert) failed.");
+                return;
+            }
+        }
     } else {
-	if ( $args{Message}->can("PutConvert") ) {
-	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
-	    unless ( defined $buffer ) {
-		$self->{"PutConvertReason"} = 1;
-		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
-		return;
-	    }
-	} elsif ( ref $self->{PutConvert} eq "CODE" ) {
-	    $buffer = $self->{PutConvert}->($args{Message}->Data());
-	    unless ( defined $buffer ) {
-		$self->{"PutConvertReason"} = 1;
-		$self->{Carp}->("Data conversion hook (PutConvert) failed.");
-		return;
-	    }
-	} else {
-	    $buffer = $args{Message}->Data();
-	}
+        if ( $args{Message}->can("PutConvert") ) {
+            $buffer = $args{Message}->PutConvert($args{Message}->Data());
+            unless ( defined $buffer ) {
+                $self->{"PutConvertReason"} = 1;
+                $self->{Carp}->("Data conversion hook (PutConvert) failed.");
+                return;
+            }
+        } elsif ( ref $self->{PutConvert} eq "CODE" ) {
+            $buffer = $self->{PutConvert}->($args{Message}->Data());
+            unless ( defined $buffer ) {
+                $self->{"PutConvertReason"} = 1;
+                $self->{Carp}->("Data conversion hook (PutConvert) failed.");
+                return;
+            }
+        } else {
+            $buffer = $args{Message}->Data();
+        }
     }
 
     MQPUT1(
-	   $self->{Hconn},
-	   $ObjDesc,
-	   $args{Message}->MsgDesc(),
-	   $PutMsgOpts,
-	   $buffer,
-	   $self->{"CompCode"},
-	   $self->{"Reason"},
-	  );
+           $self->{Hconn},
+           $ObjDesc,
+           $args{Message}->MsgDesc(),
+           $PutMsgOpts,
+           $buffer,
+           $self->{"CompCode"},
+           $self->{"Reason"},
+          );
     if ( $self->{"CompCode"} == MQSeries::MQCC_FAILED ) {
 
-	$self->{Carp}->(qq/MQPUT1 failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->(qq/MQPUT1 failed (Reason = $self->{"Reason"})/);
+        return;
 
     } else {
 
-	if ( $PutMsgOpts->{Options} & MQSeries::MQPMO_SYNCPOINT ) {
-	    $self->{_Pending}->{Put}++;
-	}
-	
-	return 1;
+        if ( $PutMsgOpts->{Options} & MQSeries::MQPMO_SYNCPOINT ) {
+            $self->{_Pending}->{Put}++;
+        }
+
+        return 1;
 
     }
 }
@@ -583,16 +584,17 @@ sub Put1 {
 sub Connect {
     my $self = shift;
     my @combined_params = ( %{$self->{ConnectArgs}}, @_ );
-    my %args = validate(@combined_params, 
-			{ 'RetryCount'           => 0,
-			  'RetrySleep'           => 0,
-			  'RetryReasons'         => 0,
-			  'ConnectTimeout'       => 0,
-			  'ConnectTimeoutSignal' => 0,
-			  'ClientConn'           => 0,
-			  'SSLConfig'            => 0,
-			  'AutoConnect'          => 0,
-			});
+    my %args = validate(@combined_params,
+                        { 'RetryCount'           => 0,
+                          'RetrySleep'           => 0,
+                          'RetryReasons'         => 0,
+                          'ConnectTimeout'       => 0,
+                          'ConnectTimeoutSignal' => 0,
+                          'ClientConn'           => 0,
+                          'SSLConfig'            => 0,
+                          'SecurityParms'        => 0,
+                          'AutoConnect'          => 0,
+                        });
 
     return 1 if $self->{Hconn};
 
@@ -601,12 +603,12 @@ sub Connect {
     my $retrycount = 0;
 
     foreach my $key ( qw( RetryCount RetrySleep ConnectTimeout ) ) {
-	next unless exists $args{$key};
-	unless ( $args{$key} =~ /^\d+$/ ) {
-	    $self->{Carp}->("Invalid argument: '$key' must numeric");
-	    return;
-	}
-	$self->{$key} = $args{$key};
+        next unless exists $args{$key};
+        unless ( $args{$key} =~ /^\d+$/ ) {
+            $self->{Carp}->("Invalid argument: '$key' must numeric");
+            return;
+        }
+        $self->{$key} = $args{$key};
     }
 
     #
@@ -619,148 +621,148 @@ sub Connect {
     #
 
     if ( $self->{ConnectTimeout} && $^O =~ /win32/i ) {
-	$self->{Carp}->("MQCONN timeout functionality is not yet supported on Win32");
-	$self->{ConnectTimeout} = 0;
+        $self->{Carp}->("MQCONN timeout functionality is not yet supported on Win32");
+        $self->{ConnectTimeout} = 0;
     }
 
     if ( $self->{ConnectTimeout} && not defined $Config{d_fork} ) {
-	$self->{Carp}->("This platform does not support fork()\n" .
-			"MQCONN timeout functionality is disabled");
-	$self->{ConnectTimeout} = 0;
+        $self->{Carp}->("This platform does not support fork()\n" .
+                        "MQCONN timeout functionality is disabled");
+        $self->{ConnectTimeout} = 0;
     }
 
     if ( $self->{ConnectTimeout} && not defined $Config{sig_name} ) {
-	$self->{Carp}->("Signals are not available in this version of perl\n" .
-			"MQCONN timeout functionality is disabled");
-	$self->{ConnectTimeout} = 0;
+        $self->{Carp}->("Signals are not available in this version of perl\n" .
+                        "MQCONN timeout functionality is disabled");
+        $self->{ConnectTimeout} = 0;
     }
 
     if ( $self->{ConnectTimeout} ) {
 
-	$self->{ConnectTimeoutSignal} = $args{ConnectTimeoutSignal} if $args{ConnectTimeoutSignal};
+        $self->{ConnectTimeoutSignal} = $args{ConnectTimeoutSignal} if $args{ConnectTimeoutSignal};
 
-	my %signame = map { $_ => 1 } split(/\s+/,$Config{sig_name});
-	
-	unless ( $signame{$self->{ConnectTimeoutSignal}} ) {
-	    $self->{Carp}->("Signal name '$self->{ConnectTimeoutSignal}' is not supported on this platform\n" .
-			    "MQCONN timeout functionality is disabled");
-	    $self->{ConnectTimeout} = 0;
-	}
+        my %signame = map { $_ => 1 } split(/\s+/,$Config{sig_name});
+
+        unless ( $signame{$self->{ConnectTimeoutSignal}} ) {
+            $self->{Carp}->("Signal name '$self->{ConnectTimeoutSignal}' is not supported on this platform\n" .
+                            "MQCONN timeout functionality is disabled");
+            $self->{ConnectTimeout} = 0;
+        }
 
     }
 
     if ( $args{RetryReasons} ) {
 
-	unless (
-		ref $args{RetryReasons} eq "ARRAY" ||
-		ref $args{RetryReasons} eq "HASH"
-	       ) {
-	    $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASH reference");
-	    return;
-	}
+        unless (
+                ref $args{RetryReasons} eq "ARRAY" ||
+                ref $args{RetryReasons} eq "HASH"
+               ) {
+            $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASH reference");
+            return;
+        }
 
-	if ( ref $args{RetryReasons} eq 'HASH' ) {
-	    $self->{RetryReasons} = $args{RetryReasons};
-	} else {
-	    $self->{RetryReasons} = { map { $_ => 1 } @{$args{RetryReasons}} };
-	}
+        if ( ref $args{RetryReasons} eq 'HASH' ) {
+            $self->{RetryReasons} = $args{RetryReasons};
+        } else {
+            $self->{RetryReasons} = { map { $_ => 1 } @{$args{RetryReasons}} };
+        }
 
     }
 
     my $mqconnx_opts = {};
-    foreach my $opt (qw(ClientConn SSLConfig)) {
-	$mqconnx_opts->{$opt} = $args{$opt} if ($args{$opt});
+    foreach my $opt (qw(ClientConn SSLConfig SecurityParms)) {
+        $mqconnx_opts->{$opt} = $args{$opt} if ($args{$opt});
     }
   CONNECT:
     {
 
-	my $Hconn = "";
-	my $timedout = 0;
+        my $Hconn = "";
+        my $timedout = 0;
 
-	if ( $self->{ConnectTimeout} ) {
+        if ( $self->{ConnectTimeout} ) {
 
-	    my $alarm = "MQSeries::QueueManager MQCONN timeout";
-	    my $child = 0;
+            my $alarm = "MQSeries::QueueManager MQCONN timeout";
+            my $child = 0;
 
-	  FORK:
-	    {
+          FORK:
+            {
 
-		if ( $child = fork ) {
-		    #
-		    # We're in the parent.  Set the signal
-		    # handler, and call MQCONN inside an eval.  If
-		    # the child kills us, $@ will indicate this.
-		    #
-		    eval {
-			local $SIG{$self->{ConnectTimeoutSignal}} = sub { die $alarm };
-			$Hconn = MQCONNX($self->{ProxyQueueManager} ||
+                if ( $child = fork ) {
+                    #
+                    # We're in the parent.  Set the signal
+                    # handler, and call MQCONN inside an eval.  If
+                    # the child kills us, $@ will indicate this.
+                    #
+                    eval {
+                        local $SIG{$self->{ConnectTimeoutSignal}} = sub { die $alarm };
+                        $Hconn = MQCONNX($self->{ProxyQueueManager} ||
                                          $self->{QueueManager},
                                          $mqconnx_opts,
                                          $self->{"CompCode"},
                                          $self->{"Reason"},
                                         );
-		    };
-		    kill $self->{ConnectTimeoutSignal}, $child;
-		    waitpid($child,0);
-		    $timedout++ if $@ =~ /$alarm/;
-		} elsif ( defined $child ) {
-		    #
-		    # We're in the child.  Hand around and then
-		    # send a signal to the parent letting it know
-		    # the timeout period was reached.
-		    #
-		    local $SIG{$self->{ConnectTimeoutSignal}} = sub { exit 0; };
-		    my $ppid = getppid();
-		    sleep $self->{ConnectTimeout};
-		    kill $self->{ConnectTimeoutSignal}, $ppid;
-		    exit 0;
-		} else {
-		    # XXX do we even want retry logic here???  Hmm...
-		    $self->{Carp}->("Unable to fork: $!");
-		    return;
-		}
-	    }
-	} else {
+                    };
+                    kill $self->{ConnectTimeoutSignal}, $child;
+                    waitpid($child,0);
+                    $timedout++ if $@ =~ /$alarm/;
+                } elsif ( defined $child ) {
+                    #
+                    # We're in the child.  Hand around and then
+                    # send a signal to the parent letting it know
+                    # the timeout period was reached.
+                    #
+                    local $SIG{$self->{ConnectTimeoutSignal}} = sub { exit 0; };
+                    my $ppid = getppid();
+                    sleep $self->{ConnectTimeout};
+                    kill $self->{ConnectTimeoutSignal}, $ppid;
+                    exit 0;
+                } else {
+                    # XXX do we even want retry logic here???  Hmm...
+                    $self->{Carp}->("Unable to fork: $!");
+                    return;
+                }
+            }
+        } else {
             $Hconn = MQCONNX($self->{ProxyQueueManager} ||
                              $self->{QueueManager},
                              $mqconnx_opts,
                              $self->{"CompCode"},
                              $self->{"Reason"},
                             );
-	}
+        }
 
 
-	if ( $self->{"Reason"} == MQSeries::MQRC_NONE ||
+        if ( $self->{"Reason"} == MQSeries::MQRC_NONE ||
              $self->{"Reason"} == MQSeries::MQRC_ALREADY_CONNECTED ) {
-	    $self->{Hconn} = $Hconn;
-	    $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
-	    return 1;
-	}
+            $self->{Hconn} = $Hconn;
+            $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
+            return 1;
+        }
 
-	if ( $timedout ) {
-	    $self->{Carp}->("MQCONN failed (interrupted after $self->{ConnectTimeout} seconds)");
-	} else {
-	    $self->{Carp}->(qq{MQCONN failed (Reason = $self->{"Reason"}) (} .
+        if ( $timedout ) {
+            $self->{Carp}->("MQCONN failed (interrupted after $self->{ConnectTimeout} seconds)");
+        } else {
+            $self->{Carp}->(qq{MQCONN failed (Reason = $self->{"Reason"}) (} .
                             MQReasonToText($self->{"Reason"}) . ")");
-	}
+        }
 
-	if (
-	    $self->{RetryCount} &&
-	    ( exists $self->{RetryReasons}->{$self->{"Reason"}} || $timedout )
-	   ) {
+        if (
+            $self->{RetryCount} &&
+            ( exists $self->{RetryReasons}->{$self->{"Reason"}} || $timedout )
+           ) {
 
-	    if ( $retrycount < $self->{RetryCount} ) {
-		$retrycount++;
-		$self->{Carp}->("Retrying MQCONN call in $self->{RetrySleep} seconds...");
-		sleep $self->{RetrySleep};
-		redo CONNECT;
-	    } else {
-		$self->{Carp}->("Maximum retry attempts reached ($self->{RetryCount})");
-	    }
+            if ( $retrycount < $self->{RetryCount} ) {
+                $retrycount++;
+                $self->{Carp}->("Retrying MQCONN call in $self->{RetrySleep} seconds...");
+                sleep $self->{RetrySleep};
+                redo CONNECT;
+            } else {
+                $self->{Carp}->("Maximum retry attempts reached ($self->{RetryCount})");
+            }
 
-	}
+        }
 
-	return;
+        return;
 
     }
 }
@@ -790,14 +792,14 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
   #
   my $qmgr = MQSeries::QueueManager->new
     (
-     QueueManager	=> 'some.queue.manager',
-     AutoConnect	=> 0,
+     QueueManager       => 'some.queue.manager',
+     AutoConnect        => 0,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
   $qmgr->Connect() ||
     die("Unable to connect to queue manager\n" .
-	"CompCode => " . $qmgr->CompCode() . "\n" .
-	"Reason => " . $qmgr->Reason() .
+        "CompCode => " . $qmgr->CompCode() . "\n" .
+        "Reason => " . $qmgr->Reason() .
         " (", MQReasonToText($qmgr->Reason()) . ")\n");
 
   #
@@ -806,17 +808,17 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
   #
   my $qmgr = MQSeries::QueueManager->new
     (
-     QueueManager 	=> 'some.queue.manager',
-     AutoConnect	=> 0,
-     ConnectTimeout	=> 120,
-     RetryCount 	=> 60,
-     RetrySleep 	=> 10,
+     QueueManager       => 'some.queue.manager',
+     AutoConnect        => 0,
+     ConnectTimeout     => 120,
+     RetryCount         => 60,
+     RetrySleep         => 10,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
   $qmgr->Connect() ||
     die("Unable to connect to queue manager\n" .
-	"CompCode => " . $qmgr->CompCode() . "\n" .
-	"Reason => " . $qmgr->Reason() .
+        "CompCode => " . $qmgr->CompCode() . "\n" .
+        "Reason => " . $qmgr->Reason() .
         " (", MQReasonToText($qmgr->Reason()) . ")\n";
 
   #
@@ -857,21 +859,21 @@ advanced, but powerful, features.
 
 The constructor takes a hash as an argument, with the following keys:
 
-  Key            		Value
-  ===            		=====
-  QueueManager  		String
-  Carp           		CODE reference
-  AutoConnect			Boolean
-  AutoCommit			Boolean
-  ConnectTimeout		Numeric
-  ConnectTimeoutSignal		String
-  GetConvert     		CODE reference
-  PutConvert     		CODE reference
-  RetrySleep			Numeric
-  RetryCount			Numeric
-  RetryReasons			HASH Reference
-  CompCode       		Reference to Scalar Variable
-  Reason         		Reference to Scalar Variable
+  Key                           Value
+  ===                           =====
+  QueueManager                  String
+  Carp                          CODE reference
+  AutoConnect                   Boolean
+  AutoCommit                    Boolean
+  ConnectTimeout                Numeric
+  ConnectTimeoutSignal          String
+  GetConvert                    CODE reference
+  PutConvert                    CODE reference
+  RetrySleep                    Numeric
+  RetryCount                    Numeric
+  RetryReasons                  HASH Reference
+  CompCode                      Reference to Scalar Variable
+  Reason                        Reference to Scalar Variable
 
 =over 4
 
@@ -905,8 +907,8 @@ Then, one tells the object to use this routine:
 
   my $qmgr = MQSeries::QueueManager->new
     (
-     QueueManager 	=> 'some.queue.manager',
-     Carp 		=> \&MyLogger,
+     QueueManager       => 'some.queue.manager',
+     Carp               => \&MyLogger,
     ) || die("Unable to connect to queue manager.\n");
 
 The default, as one might guess, is Carp::carp();
@@ -958,11 +960,32 @@ variable. The example below shows how it can be used:
 
   my $qmgr = MQSeries::QueueManager->
     new(QueueManager => 'some.queue.manager',
-	SSLConfig    => { 'KeyRepository' => '/var/mqm/ssl/key' },
+        SSLConfig    => { 'KeyRepository' => '/var/mqm/ssl/key' },
        );
 
 The C<SSLConfig> option is usually combined with the C<ClientConn>
 parameter documented above.
+
+=item SecurityParms
+
+In MQ v6 and above, security parameters can be specified.  The example
+below shows how it can be used:
+
+  my $qmgr = MQSeries::QueueManager->
+    new(QueueManager  => 'some.queue.manager',
+        SecurityParms => { 'AuthenticationType' => MQSeries::MQZAT_INITIAL_CONTEXT,
+                           'CSPUserId'          => $userid,
+                           'CSPPassword'        => $passwd,
+                         },
+       );
+
+By default, no authentication takes place, and channel security exits
+can be used.
+
+The C<SecurityParms> parameter is a hash reference with members
+C<AuthenticationType>, C<CSPUserid> and C<CSPPassword>.  See the
+description of the C<MQCSP> parameter structure in the Application
+Programming Reference guide for details on the other fields.
 
 =item ConnectTimeout
 
@@ -998,9 +1021,9 @@ the signal, for example, to set the signal to SIGUSR2:
 
    my $qmgr = MQSeries::QueueManager->new
      (
-      QueueManager		=> 'FOO',
-      ConnectTimeout		=> 300,
-      ConnectTimeoutSignal	=> 'USR2',
+      QueueManager              => 'FOO',
+      ConnectTimeout            => 300,
+      ConnectTimeoutSignal      => 'USR2',
      ) || die;
 
 =item RetryCount
@@ -1049,9 +1072,9 @@ value to the constructor, for example:
 
   my $qmgr = MQSeries::QueueManager->new
     (
-     QueueManager		=> 'some.queue.manager',
-     CompCode			=> \$CompCode,
-     Reason			=> \$Reason,
+     QueueManager               => 'some.queue.manager',
+     CompCode                   => \$CompCode,
+     Reason                     => \$Reason,
     ) || die "Unable to open queue: CompCode => $CompCode, Reason => $Reason\n";
 
 But, this is ugly (authors opinion, but then, he gets to write the
@@ -1180,18 +1203,18 @@ queue and queue manager:
   $qmgr->Put1(
               Message => $message,
               Queue => [
-	                {
-			 ObjectName		=> 'QUEUE1',
-			 ObjectQMgrName		=> 'QM1',
-			},
-		        {
-			 ObjectName		=> 'QUEUE2',
-			 ObjectQMgrName		=> 'QM2',
-			},
-			{
-			 ObjectName		=> 'QUEUE3',
-			 ObjectQMgrName		=> 'QM3',
-			},
+                        {
+                         ObjectName             => 'QUEUE1',
+                         ObjectQMgrName         => 'QM1',
+                        },
+                        {
+                         ObjectName             => 'QUEUE2',
+                         ObjectQMgrName         => 'QM2',
+                        },
+                        {
+                         ObjectName             => 'QUEUE3',
+                         ObjectQMgrName         => 'QM3',
+                        },
                        ],
               )
 
@@ -1300,10 +1323,10 @@ arguments, and calls MQOPEN() on the Queue Manager, in order to enable
 the Inquire method.  The arguments are a has, with the following
 keys:
 
-  Key            		Value
-  ===            		=====
-  Options			MQOPEN 'Options' Values
-  ObjDesc			HASH reference (MQOD structure)
+  Key                           Value
+  ===                           =====
+  Options                       MQOPEN 'Options' Values
+  ObjDesc                       HASH reference (MQOD structure)
 
 The Options default to MQOO_INQUIRE|MQOO_FAIL_IS_QUIESCING, which is
 usually correct.  Note that you can not call MQSET() on a queue
@@ -1350,8 +1373,8 @@ Note that this list is all-inclusive, and that many of these are not
 supported on some of the MQSeries platforms.  Consult the IBM
 documentation for such details.
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     AlterationDate              MQCA_ALTERATION_DATE
     AlterationTime              MQCA_ALTERATION_TIME
     AuthorityEvent              MQIA_AUTHORITY_EVENT
@@ -1392,17 +1415,17 @@ in the following case, the values are mapped to more readable strings.
 
 =over 4
 
-=item Platform			(integer)
+=item Platform                  (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     MVS                         MQPL_MVS
     NSK                         MQPL_NSK
     OS2                         MQPL_OS2
     OS400                       MQPL_OS400
     UNIX                        MQPL_UNIX
-    Win16                     	MQPL_WINDOWS
-    Win32                  	MQPL_WINDOWS_NT
+    Win16                       MQPL_WINDOWS
+    Win32                       MQPL_WINDOWS_NT
 
 =back
 
@@ -1566,7 +1589,7 @@ The simplest way to create an MQSeries::QueueManager object is:
 
   my $qmgr = MQSeries::QueueManager->new
     (
-     QueueManager		=> 'some.queue.manager',
+     QueueManager               => 'some.queue.manager',
     ) || die;
 
 But in this case, the connection to the queue manager could fail, and
@@ -1577,8 +1600,8 @@ would do the following:
 
   my $qmgr = MQSeries::QueueManager->new
     (
-     QueueManager		=> 'some.queue.manager',
-     AutoConnect		=> 0,
+     QueueManager               => 'some.queue.manager',
+     AutoConnect                => 0,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
   # Call the Connect method explicitly

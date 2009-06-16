@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 31.1 2007/09/24 15:41:48 biersma Exp biersma $
+# $Id: Base.pm,v 32.3 2009/05/22 15:28:12 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,7 +21,7 @@ use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
 use vars qw($VERSION);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 sub new {
 
@@ -694,7 +694,7 @@ sub MQEncodeMQSC {
 
 	my $value = $parameters->{$parameter};
 
-#	print STDERR "$parameter: Key:$key: Type:$type: Value: $value\n";
+#     print STDERR "$parameter: Key:$key: Type:$type: Value: $value\n";
 
 	if ( $key ) {
 

@@ -1,7 +1,7 @@
 #
-# $Id: typemap.PL,v 27.1 2007/01/11 20:19:56 molinam Exp $
+# $Id: typemap.PL,v 32.1 2009/05/26 16:42:54 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 # Script to generate a typemap from the MQSeries header files
@@ -13,9 +13,9 @@
 #
 # The actual code used to convert a field can be found in:
 #
-#	&long_output, &long_input		for MQLONG types
-#	&string_output, &string_input		for MQCHARn types
-#	&byte_output, &byte_input		for MQBYTE types
+#       &long_output, &long_input               for MQLONG types
+#       &string_output, &string_input           for MQCHARn types
+#       &byte_output, &byte_input               for MQBYTE types
 #
 # Other types are not yet supported, and those that are not relevant
 # are skipped intentionally.  Warnings should be due to new
@@ -23,10 +23,10 @@
 #
 
 $input{'MQCHAR48'} = join('',
-			  '/*' . '=' x 75 . "*/\n",
-			  "T_MQCHAR48\n",
-			  "    strncpy(\$var, (char*)SvPV(\$arg, PL_na), 48)\n",
-			  );
+                          '/*' . '=' x 75 . "*/\n",
+                          "T_MQCHAR48\n",
+                          "    strncpy(\$var, (char*)SvPV(\$arg, PL_na), 48)\n",
+                          );
 
 require "../util/parse_config";
 require "../util/parse_headers";
@@ -40,68 +40,69 @@ open(STDOUT, "> typemap") || die "$0: error writing typemap: $!\n";
 while ( <> ) {
 
     if (/typedef\s+struct\s+tag(\w+)/) {
-	# entry into a new type
-	$type = $1;
-	print "#we're starting a $type\n" if $debug;
-	$input{$type} = &input_header($type);
+        # entry into a new type
+        $type = $1;
+        print "#we're starting a $type\n" if $debug;
+        $input{$type} = &input_header($type);
         $output{$type} = &output_header($type);
     }
     elsif (/\}\s+(MQ\w+);/) {
-	# exit of a type.  Probably should assert that $type2 eq $type
-	$type2 = $1;
-	print "#we're ending a $type ($type2)\n" if $debug;
-	$input{$type} .= &input_footer($type);
-	undef $type;
+        # exit of a type.  Probably should assert that $type2 eq $type
+        $type2 = $1;
+        print "#we're ending a $type ($type2)\n" if $debug;
+        $input{$type} .= &input_footer($type);
+        undef $type;
     }
     elsif ($type && /^\s*\}\s*;\s*$/) {
         # exit of a type in 5.3 headers
-	print "#we're ending a $type\n" if $debug;
-	$input{$type} .= &input_footer($type);
-	undef $type;
+        print "#we're ending a $type\n" if $debug;
+        $input{$type} .= &input_footer($type);
+        undef $type;
     }
     elsif ($type && ($_ =~ /\s+(MQ\w+)\s+(\w+);/)) {
-	# found a new field of type $fieldt and name $field:
-	$fieldt = $1;
-	$field = $2;
+        # found a new field of type $fieldt and name $field:
+        $fieldt = $1;
+        $field = $2;
 
-	next if $field eq "StrucId";
-	print "#Found a $field of type $fieldt\n" if $debug;
+        next if $field eq "StrucId";
+        print "#Found a $field of type $fieldt\n" if $debug;
 
-	#
-	# A list of known types we don't support.  Ignore them.
-	#
-	next if (grep { $fieldt eq $_ }
+        #
+        # A list of known types we don't support.  Ignore them.
+        #
+        next if (grep { $fieldt eq $_ }
                  qw(MQPTR MQMD1 MQHCONN MQPOINTER MQPID MQTID MQHCONFIG));
 
-	if ($fieldt eq 'MQLONG' ||
-	    $fieldt eq 'MQHOBJ') {
-	    $strlen = length($field);
+        if ($fieldt eq 'MQLONG' ||
+            $fieldt eq 'MQHOBJ' ||
+            $fieldt eq 'MQBOOL') {
+            $strlen = length($field);
 
-	    $input{$type} .= &long_input($field);
-	    $output{$type} .= &long_output($field);
+            $input{$type} .= &long_input($field);
+            $output{$type} .= &long_output($field);
 
-	}
-	elsif ($fieldt =~ /^MQCHAR(\d*)$/) {
-	    $size = $1;
+        }
+        elsif ($fieldt =~ /^MQCHAR(\d*)$/) {
+            $size = $1;
 
-	    if ($size == 0) {
-	   	$size = 1;
-	    }
-	    $output{$type} .= &string_output($field, $size);
-	    $input{$type} .= &string_input($field, $size);
-	}
-	elsif ($fieldt =~ /^MQBYTE(\d*)$/) {
-	    $size = $1;
+            if ($size == 0) {
+                $size = 1;
+            }
+            $output{$type} .= &string_output($field, $size);
+            $input{$type} .= &string_input($field, $size);
+        }
+        elsif ($fieldt =~ /^MQBYTE(\d*)$/) {
+            $size = $1;
 
-	    if ($size == 0) {
-	   	$size = 1;
-	    }
-	    $output{$type} .= &byte_output($field, $size);
-	    $input{$type} .= &byte_input($field, $size);
-	}
-	else {
-	    warn "$0: warning: type $type.$field ($fieldt) not supported\n";
-	}
+            if ($size == 0) {
+                $size = 1;
+            }
+            $output{$type} .= &byte_output($field, $size);
+            $input{$type} .= &byte_input($field, $size);
+        }
+        else {
+            warn "$0: warning: type $type.$field ($fieldt) not supported\n";
+        }
 
     }
 
@@ -109,75 +110,75 @@ while ( <> ) {
 
 
 print <<"EOF";
-MQBYTE		T_U_CHAR
-PMQBYTE		T_PV
-MQBYTE16	T_PV
-PMQBYTE16	T_PV
-MQBYTE24	T_PV
-PMQBYTE24	T_PV
-MQBYTE32	T_PV
-PMQBYTE32	T_PV
+MQBYTE          T_U_CHAR
+PMQBYTE         T_PV
+MQBYTE16        T_PV
+PMQBYTE16       T_PV
+MQBYTE24        T_PV
+PMQBYTE24       T_PV
+MQBYTE32        T_PV
+PMQBYTE32       T_PV
 # Character Datatypes
-MQCHAR		T_CHAR
-PMQCHAR		T_PV
-MQCHAR4		T_PV
-PMQCHAR4	T_PV
-MQCHAR8		T_PV
-PMQCHAR8	T_PV
-MQCHAR12	T_PV
-PMQCHAR12	T_PV
-MQCHAR28	T_PV
-PMQCHAR28	T_PV
-MQCHAR32	T_PV
-PMQCHAR32	T_PV
-MQCHAR48	T_MQCHAR48
-PMQCHAR48	T_PV
-MQCHAR64	T_PV
-PMQCHAR64	T_PV
-MQCHAR128	T_PV
-PMQCHAR128	T_PV
-MQCHAR256	T_PV
-PMQCHAR256	T_PV
+MQCHAR          T_CHAR
+PMQCHAR         T_PV
+MQCHAR4         T_PV
+PMQCHAR4        T_PV
+MQCHAR8         T_PV
+PMQCHAR8        T_PV
+MQCHAR12        T_PV
+PMQCHAR12       T_PV
+MQCHAR28        T_PV
+PMQCHAR28       T_PV
+MQCHAR32        T_PV
+PMQCHAR32       T_PV
+MQCHAR48        T_MQCHAR48
+PMQCHAR48       T_PV
+MQCHAR64        T_PV
+PMQCHAR64       T_PV
+MQCHAR128       T_PV
+PMQCHAR128      T_PV
+MQCHAR256       T_PV
+PMQCHAR256      T_PV
 # Other Datatypes
-MQLONG		T_IV
-PMQLONG		T_OPAQUEPTR
-MQULONG		T_UV
-MQHCONN		T_IV
-PMQHCONN	T_OPAQUEPTR
-MQHOBJ		T_IV
-PMQHOBJ		T_OPAQUEPTR
-MQPTR		T_PV
-PMQPTR		T_PV
-PMQVOID		T_PV
-PPMQVOID	T_PV
+MQLONG          T_IV
+PMQLONG         T_OPAQUEPTR
+MQULONG         T_UV
+MQHCONN         T_IV
+PMQHCONN        T_OPAQUEPTR
+MQHOBJ          T_IV
+PMQHOBJ         T_OPAQUEPTR
+MQPTR           T_PV
+PMQPTR          T_PV
+PMQVOID         T_PV
+PPMQVOID        T_PV
 
 # Structures
 MQAIR           T_MQAIR
-MQBO		T_MQBO
-MQCNO		T_MQCNO
-MQDH		T_MQDH
-MQDLH		T_MQDLH
-MQGMO		T_MQGMO
-MQIIH		T_MQIIH
-MQMD		T_MQMD
-MQMDE		T_MQMDE
-MQMD1		T_MQMD1
-MQOD		T_MQOD
-MQOR		T_MQOR
-MQPMO		T_MQPMO
-MQRFH		T_MQRFH
-MQRMH		T_MQRMH
-MQRR		T_MQRR
+MQBO            T_MQBO
+MQCNO           T_MQCNO
+MQDH            T_MQDH
+MQDLH           T_MQDLH
+MQGMO           T_MQGMO
+MQIIH           T_MQIIH
+MQMD            T_MQMD
+MQMDE           T_MQMDE
+MQMD1           T_MQMD1
+MQOD            T_MQOD
+MQOR            T_MQOR
+MQPMO           T_MQPMO
+MQRFH           T_MQRFH
+MQRMH           T_MQRMH
+MQRR            T_MQRR
 MQSCO           T_MQSCO
-MQTM		T_MQTM
-MQTMC2		T_MQTMC2
-MQXQH		T_MQXQH
+MQTM            T_MQTM
+MQTMC2          T_MQTMC2
+MQXQH           T_MQXQH
 
-MQCFH		T_MQCFH
-MQCFIL		T_MQCFIL
-MQCFIN		T_MQCFIN
-MQCFSL		T_MQCFSL
-MQCFST		T_MQCFST
+MQCFH           T_MQCFH
+MQCFIL          T_MQCFIL
+MQCFIN          T_MQCFIN
+MQCFSL          T_MQCFSL
+MQCFST          T_MQCFST
 
 # Input of the above types:
 INPUT
@@ -199,9 +200,9 @@ sub long_input {
     my($strlen) = length($field);
 
     return <<"EOF";
-	if (hv_exists((HV*)SvRV(\$arg),\\"$field\\",$strlen))
-	  \$var.$field = SvIV(*(hv_fetch((HV*)SvRV(\$arg),
-		\\"$field\\",$strlen,0)));
+        if (hv_exists((HV*)SvRV(\$arg),\\"$field\\",$strlen))
+          \$var.$field = SvIV(*(hv_fetch((HV*)SvRV(\$arg),
+                \\"$field\\",$strlen,0)));
 EOF
 }
 #==============================================================================
@@ -212,7 +213,7 @@ sub long_output {
     $hash = 0 unless $hash;
     return <<"EOF";
         hv_store((HV*)SvRV(\$arg),\\"$field\\",$strlen,
-		 (newSViv(\$var.$field)),$hash);
+                 (newSViv(\$var.$field)),$hash);
 EOF
 }
 #==============================================================================
@@ -223,12 +224,12 @@ sub string_output {
 
     $hash = 0 unless $hash;
     if ($fieldsize == 1) {
-	$isptr = "&";
+        $isptr = "&";
     }
 
     return <<"EOF";
-	hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
-		 (newSVpv($isptr\$var.$field, $fieldsize)),$hash);
+        hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
+                 (newSVpv($isptr\$var.$field, $fieldsize)),$hash);
 EOF
 }
 #==============================================================================
@@ -238,22 +239,22 @@ sub string_input {
     my($isptr);
 
     if ($fieldsize == 1) {
-	$isptr = "&";
+        $isptr = "&";
     }
 
     return <<"EOF";
         if (hv_exists((HV*)SvRV(\$arg), \\"$field\\", $fieldnamelen)) {
-	    SV        **scalar;
+            SV        **scalar;
             STRLEN      StringLength;
-	    const char *StringData;
+            const char *StringData;
 
             /* Need to deal with undersized data.  Only copy supplied bytes. */
-	    scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
+            scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
             StringData = SvPV(*scalar, StringLength);
-	    strncpy($isptr\$var.$field,
-		    StringData,
+            strncpy($isptr\$var.$field,
+                    StringData,
                     StringLength > $fieldsize ? $fieldsize : StringLength);
-	}
+        }
 
 
 EOF
@@ -266,14 +267,13 @@ sub input_header {
 /*===========================================================================*/
 T_$type
     {
-	/* input a $type */
-        STRLEN len = 0;
-	$type default_$type = { ${type}_DEFAULT };
+        /* input a $type */
+        $type default_$type = { ${type}_DEFAULT };
 
-	if (!SvROK(\$arg))
-	    croak(\\"Reference expected for parameter \$var\\");
-	/* copy in the default value of structure... */
-	memcpy((char *)&\$var, &default_$type, sizeof($type));
+        if (!SvROK(\$arg))
+            croak(\\"Reference expected for parameter \$var\\");
+        /* copy in the default value of structure... */
+        memcpy((char *)&\$var, &default_$type, sizeof($type));
 
 EOF
 }
@@ -299,7 +299,7 @@ sub byte_output {
     $hash = 0 unless $hash;
     return <<"EOF";
         hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
-		 (newSVpv((char *)\$var.$field,$fieldsize)),$hash);
+                 (newSVpv((char *)\$var.$field,$fieldsize)),$hash);
 EOF
 }
 #==============================================================================
@@ -309,16 +309,16 @@ sub byte_input {
 
     return <<"EOF";
         if (hv_exists((HV*)SvRV(\$arg), \\"$field\\", $fieldnamelen)) {
-	    SV        **scalar;
+            SV        **scalar;
             STRLEN      ByteLength;
-	    const char *ByteData;
+            const char *ByteData;
 
             /* Need to deal with undersized data.  Only copy supplied bytes. */
-	    scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
+            scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
             ByteData = SvPV(*scalar, ByteLength);
-	    memcpy(\$var.$field,
-		   ByteData,
+            memcpy(\$var.$field,
+                   ByteData,
                    ByteLength > $fieldsize ? $fieldsize : ByteLength);
-	}
+        }
 EOF
 }

@@ -210,6 +210,7 @@ package MQSeries::Command::PCF;
     ChannelDesc                 => [ 3502,                               4 ],
     ChannelDisposition		=> [ 1580,                 		3,			$RequestValues{ChannelDisposition} ],
     ChannelMonitoring		=> [ 122,                      		3,			$RequestValues{ChannelMonitoring} ],
+    ChannelStatistics		=> [ 129,                      		3,			$RequestValues{QMgrMonitoring} ],
     ChannelStatus		=> [ 1527,                   		3,			$RequestValues{ChannelStatus} ],
     ChannelName                 => [ 3501,                               4 ],
     ChannelTable                => [ 1526,                               3,                 $RequestValues{ChannelTable} ],

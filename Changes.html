@@ -10,6 +10,18 @@
 <UL>
 
 	<LI><A HREF="#Introduction">Introduction</A>
+	<LI><A HREF="#Changes_for_1_29">Changes for 1.29</A>
+	<UL>
+
+		<LI><A HREF="#Initial_support_for_MQ_v7">Initial support for MQ v7</A>
+		<LI><A HREF="#MQSeries_Command_fixes">MQSeries::Command fixes</A>
+		<LI><A HREF="#Support_SecurityParms_in_MQCONNX">Support SecurityParms in MQCONNX</A>
+		<LI><A HREF="#SSL_tutorial">SSL tutorial</A>
+		<LI><A HREF="#Minor_bugfixes">Minor bugfixes</A>
+		<LI><A HREF="#ChannelTable_fixes">ChannelTable fixes</A>
+		<LI><A HREF="#MQSeries_Command_fixes">MQSeries::Command fixes</A>
+	</UL>
+
 	<LI><A HREF="#Changes_for_1_28">Changes for 1.28</A>
 	<UL>
 
@@ -291,6 +303,101 @@
 </A></H1>
 This file documents the changes to each and every release of the MQSeries
 perl API, going back as far as the 1.02 release.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="Changes_for_1_29">Changes for 1.29
+
+</A></H1>
+The following fixes are included in the 1.29 release:
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Initial_support_for_MQ_v7">Initial support for MQ v7
+
+</A></H2>
+The module now compiles with MQ v7 and new constants are supported. Support
+for new and enhanced APIs is not yet in place. During configuration, some
+warnings will occur for unknown datatypes. This is expected and can be
+ignored.
+
+
+<P>
+
+Feedback on which MQ v7 features should be supported in the next module
+release is welcome.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_fixes">MQSeries::Command fixes
+
+</A></H2>
+Minor changes for queue-sharing groups and for the
+HeaderCompression/MessageCompression attributes.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Support_SecurityParms_in_MQCONNX">Support SecurityParms in MQCONNX
+
+</A></H2>
+Duke Nguyen contributed support for the SecurityParms data structure with
+the MQCONNX call
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="SSL_tutorial">SSL tutorial
+
+</A></H2>
+Morten Bjoernsvik contributed a cookbook on using SSL with the MQSeries
+client and server.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="Minor_bugfixes">Minor bugfixes
+
+</A></H2>
+Morten Bjoernsvik contributed a bugfix to the MQSeries::Queue module,
+avoiding a call to MQCLOSE if no queue manager connection exists.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="ChannelTable_fixes">ChannelTable fixes
+
+</A></H2>
+Recent V6 client releases are more picky in how they parse v4 channel table
+files (the format native to the MQ 5.0 client release). The
+MQSeries::Config::ChannelTable file has been updated to reflect this.
+
+
+<P>
+
+<P>
+<HR>
+<H2><A NAME="MQSeries_Command_fixes">MQSeries::Command fixes
+
+</A></H2>
+Add the missing ChannelStatistics attribute for Channel commands.
 
 
 <P>

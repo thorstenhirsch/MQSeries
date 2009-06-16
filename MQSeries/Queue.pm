@@ -1,7 +1,7 @@
 #
-# $Id: Queue.pm,v 31.1 2007/09/24 15:41:54 biersma Exp $
+# $Id: Queue.pm,v 32.2 2009/05/26 14:40:30 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -27,50 +27,50 @@ use MQSeries::Command::PCF;
 
 use vars qw($VERSION);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = validate(@_, { 'Carp'              => 0,
-			      'QueueManager'      => 0,
-			      'Queue'             => 0,
-			      'ObjDesc'           => 0,
-			      'DynamicQName'      => 0,
-			      'Options'           => 0,
-			      'Mode'              => 0,
-			      'CompCode'          => 0,
-			      'Reason'            => 0,
-			      'PutConvert'        => 0,
-			      'GetConvert'        => 0,
-			      'CloseOptions'      => 0,
-			      'RetrySleep'        => 0,
-			      'RetryCount'        => 0,
-			      'RetryReasons'      => 0,
-			      'AutoOpen'          => 0,
-			      'DisableAutoResize' => 0,
-			    }),
+                              'QueueManager'      => 0,
+                              'Queue'             => 0,
+                              'ObjDesc'           => 0,
+                              'DynamicQName'      => 0,
+                              'Options'           => 0,
+                              'Mode'              => 0,
+                              'CompCode'          => 0,
+                              'Reason'            => 0,
+                              'PutConvert'        => 0,
+                              'GetConvert'        => 0,
+                              'CloseOptions'      => 0,
+                              'RetrySleep'        => 0,
+                              'RetryCount'        => 0,
+                              'RetryReasons'      => 0,
+                              'AutoOpen'          => 0,
+                              'DisableAutoResize' => 0,
+                            }),
 
     my %ObjDesc = ();
 
     #
-    # Note -- because we have a ObjDesc method, we'd have to 
+    # Note -- because we have a ObjDesc method, we'd have to
     # quote the ObjDesc key everywhere, so...
     #
     my $self =
       {
-       Options		=> MQSeries::MQOO_FAIL_IF_QUIESCING,
-       ObjDescPtr 	=> \%ObjDesc,
-       Carp 		=> \&carp,
-       RetryCount	=> 0,
-       RetrySleep 	=> 60,
-       RetryReasons	=> {
-			    map { $_ => 1 }
-			    (
-			     MQSeries::MQRC_OBJECT_IN_USE,
-			    )
-			   },
-       OpenArgs		=> {},
+       Options          => MQSeries::MQOO_FAIL_IF_QUIESCING,
+       ObjDescPtr       => \%ObjDesc,
+       Carp             => \&carp,
+       RetryCount       => 0,
+       RetrySleep       => 60,
+       RetryReasons     => {
+                            map { $_ => 1 }
+                            (
+                             MQSeries::MQRC_OBJECT_IN_USE,
+                            )
+                           },
+       OpenArgs         => {},
       };
     bless ($self, $class);
 
@@ -78,12 +78,12 @@ sub new {
     # First thing -- override the Carp routine if given.
     #
     if ( $args{Carp} ) {
-	if ( ref $args{Carp} ne "CODE" ) {
-	    carp "Invalid argument: 'Carp' must be a CODE reference";
-	    return;
-	} else {
-	    $self->{Carp} = $args{Carp};
-	}
+        if ( ref $args{Carp} ne "CODE" ) {
+            carp "Invalid argument: 'Carp' must be a CODE reference";
+            return;
+        } else {
+            $self->{Carp} = $args{Carp};
+        }
     }
 
     #
@@ -93,51 +93,51 @@ sub new {
     # constructor will assume you want the "default" QM.
     #
     if ( ref $args{QueueManager} ) {
-	if ( $args{QueueManager}->isa("MQSeries::QueueManager") ) {
-	    $self->{QueueManager} = $args{QueueManager};
-	} else {
-	    $self->{Carp}->("Invalid argument: 'QueueManager' must be an MQSeries::QueueManager object");
-	    return;
-	}
+        if ( $args{QueueManager}->isa("MQSeries::QueueManager") ) {
+            $self->{QueueManager} = $args{QueueManager};
+        } else {
+            $self->{Carp}->("Invalid argument: 'QueueManager' must be an MQSeries::QueueManager object");
+            return;
+        }
     } else {
-	$self->{QueueManager} = MQSeries::QueueManager->new
-	  (
-	   QueueManager 		=> $args{QueueManager},
-	   Carp 			=> $self->{Carp},
-	  )	or return;
+        $self->{QueueManager} = MQSeries::QueueManager->new
+          (
+           QueueManager                 => $args{QueueManager},
+           Carp                         => $self->{Carp},
+          )     or return;
     }
 
     #
     # Sanity check the data conversion CODE snippets.
     #
     foreach my $key ( qw( PutConvert GetConvert ) ) {
-	if ( $args{$key} ) {
-	    if ( ref $args{$key} ne "CODE" ) {
-		$self->{Carp}->("Invalid argument: '$key' must be a CODE reference");
-		return;
-	    } else {
-		$self->{$key} = $args{$key};
-	    }
-	} elsif ( ref $self->{QueueManager}->{$key} eq "CODE" ) {
-	    # 'Inherit' them from the queue manager object
-	    $self->{$key} = $self->{QueueManager}->{$key};
-	}
+        if ( $args{$key} ) {
+            if ( ref $args{$key} ne "CODE" ) {
+                $self->{Carp}->("Invalid argument: '$key' must be a CODE reference");
+                return;
+            } else {
+                $self->{$key} = $args{$key};
+            }
+        } elsif ( ref $self->{QueueManager}->{$key} eq "CODE" ) {
+            # 'Inherit' them from the queue manager object
+            $self->{$key} = $self->{QueueManager}->{$key};
+        }
     }
 
     #
     # We require (minimally) a Queue name
     #
     if ( $args{Queue} ) {
-	$self->{Queue} = $args{Queue};
-	if ( ref $args{Queue} eq "ARRAY" ) {
-	    # Distribution list
-	    $self->{ObjDescPtr}->{ObjectRecs} = $args{Queue};
-	} else {
-	    $self->{ObjDescPtr}->{ObjectName} = $args{Queue};
-	}
+        $self->{Queue} = $args{Queue};
+        if ( ref $args{Queue} eq "ARRAY" ) {
+            # Distribution list
+            $self->{ObjDescPtr}->{ObjectRecs} = $args{Queue};
+        } else {
+            $self->{ObjDescPtr}->{ObjectName} = $args{Queue};
+        }
     } elsif ( not $args{ObjDesc} ) {
-	$self->{Carp}->("One of 'Queue' or 'ObjDesc' must be specified");
-	return;
+        $self->{Carp}->("One of 'Queue' or 'ObjDesc' must be specified");
+        return;
     }
 
     #
@@ -145,7 +145,7 @@ sub new {
     # specify the Dynamic Queue name
     #
     if ( $args{DynamicQName} ) {
-	$self->{ObjDescPtr}->{DynamicQName} = $args{DynamicQName};
+        $self->{ObjDescPtr}->{DynamicQName} = $args{DynamicQName};
     }
 
     #
@@ -153,9 +153,9 @@ sub new {
     # Close() method, which is called upon object destruction.
     #
     if ( $args{CloseOptions} ) {
-	$self->{CloseOptions} = $args{CloseOptions};
+        $self->{CloseOptions} = $args{CloseOptions};
     } else {
-	$self->{CloseOptions} = 0;
+        $self->{CloseOptions} = 0;
     }
 
     #
@@ -163,12 +163,12 @@ sub new {
     # override, and you have to know what you are doing.
     #
     if ( exists $args{ObjDesc} ) {
-	if ( ref $args{ObjDesc} eq "HASH" ) {
-	    $self->{ObjDescPtr} = $args{ObjDesc};
-	} else {
-	    $self->{Carp}->("Invalid argument: 'ObjDesc' must be a HASH reference");
-	    return;
-	}
+        if ( ref $args{ObjDesc} eq "HASH" ) {
+            $self->{ObjDescPtr} = $args{ObjDesc};
+        } else {
+            $self->{Carp}->("Invalid argument: 'ObjDesc' must be a HASH reference");
+            return;
+        }
     }
 
     #
@@ -179,22 +179,22 @@ sub new {
     #
     unless (exists $args{'AutoOpen'} && $args{'AutoOpen'} == 0) {
         if (
-	    ( exists $args{Options} and exists $args{Mode} )
-	    or
-	    ( not exists $args{Options} and not exists $args{Mode} )
-	   ) {
+            ( exists $args{Options} and exists $args{Mode} )
+            or
+            ( not exists $args{Options} and not exists $args{Mode} )
+           ) {
             $self->{Carp}->("Incompatible arguments: one and only one of 'Options' or 'Mode' must be given");
-	    return;
-	}
+            return;
+        }
     }
 
     #
     # Optionally disable the automatic message buffer resizing
     #
     if ( $args{DisableAutoResize} ) {
-	$self->{DisableAutoResize} = $args{DisableAutoResize};
+        $self->{DisableAutoResize} = $args{DisableAutoResize};
     }
-    
+
     #
     # All of these options can be passed to the Open() method, so we'll defer checking them until then.
     #
@@ -204,10 +204,10 @@ sub new {
     }
 
     unless (exists $args{'AutoOpen'} && $args{'AutoOpen'} == 0) {
-	my $result = $self->Open();
-	foreach my $code ( qw(CompCode Reason) ) {
+        my $result = $self->Open();
+        foreach my $code ( qw(CompCode Reason) ) {
             if ( ref $args{$code} eq "SCALAR" ) {
-		${ $args{$code} } = $self->{$code};
+                ${ $args{$code} } = $self->{$code};
             }
         }
         return unless $result;
@@ -257,26 +257,31 @@ sub Close {
     $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     if ( $args{Options} ) {
-	$self->{CloseOptions} = $args{Options};
+        $self->{CloseOptions} = $args{Options};
     }
 
+    #
+    # No need to call MQCLOSE if we're not connected to MQ
+    #
+    return if(! defined $self->{QueueManager}->{Hconn});
+
     MQCLOSE(
-	    $self->{QueueManager}->{Hconn},
-	    $self->{Hobj},
-	    $self->{CloseOptions},
-	    $self->{"CompCode"},
-	    $self->{"Reason"},
-	   );
+            $self->{QueueManager}->{Hconn},
+            $self->{Hobj},
+            $self->{CloseOptions},
+            $self->{"CompCode"},
+            $self->{"Reason"},
+           );
     if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	delete $self->{Hobj};
-	return 1;
+        delete $self->{Hobj};
+        return 1;
     } elsif ( $self->{"Reason"} == MQSeries::MQRC_HCONN_ERROR ) {
-	delete $self->{Hobj};
-	return 1;
+        delete $self->{Hobj};
+        return 1;
     } else {
-	$self->{Carp}->("MQCLOSE of $self->{ObjDescPtr}->{ObjectName} on " .
-			qq/$self->{QueueManager}->{QueueManager} failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->("MQCLOSE of $self->{ObjDescPtr}->{ObjectName} on " .
+                        qq/$self->{QueueManager}->{QueueManager} failed (Reason = $self->{"Reason"})/);
+        return;
     }
 }
 
@@ -296,37 +301,37 @@ sub Put {
 
     return unless $self->Open();
 
-    $self->{"CompCode"} 	= MQSeries::MQCC_FAILED;
-    $self->{"Reason"} 		= MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{"CompCode"}         = MQSeries::MQCC_FAILED;
+    $self->{"Reason"}           = MQSeries::MQRC_UNEXPECTED_ERROR;
 
     my $PutMsgOpts =
       {
-       Options			=> MQSeries::MQPMO_FAIL_IF_QUIESCING,
+       Options                  => MQSeries::MQPMO_FAIL_IF_QUIESCING,
       };
 
     my $buffer = "";
 
     unless ( $self->{PutEnable} ) {
-	$self->{Carp}->("Put() is disabled; Queue not opened for output");
-	return;
+        $self->{Carp}->("Put() is disabled; Queue not opened for output");
+        return;
     }
 
     unless ( ref $args{Message} and $args{Message}->isa("MQSeries::Message") )  {
-	$self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
-	return;
+        $self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
+        return;
     }
 
     if ( $args{PutMsgOpts} ) {
-	unless ( ref $args{PutMsgOpts} eq 'HASH' ) {
-	    $self->{Carp}->("Invalid PutMsgOpts argument; must be a HASH reference");
-	    return;
-	}
+        unless ( ref $args{PutMsgOpts} eq 'HASH' ) {
+            $self->{Carp}->("Invalid PutMsgOpts argument; must be a HASH reference");
+            return;
+        }
 
-	$PutMsgOpts = $args{PutMsgOpts};
+        $PutMsgOpts = $args{PutMsgOpts};
     } else {
-	if ( $args{PutMsgRecs} ) {
-	    $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
-	}
+        if ( $args{PutMsgRecs} ) {
+            $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
+        }
     }
 
     #
@@ -348,35 +353,35 @@ sub Put {
     $self->{"PutConvertReason"} = 0;
 
     if ( $args{PutConvert} ) {
-	if ( ref $args{PutConvert} ne "CODE" ) {
-	    $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
-	    return;
-	} else {
-	    $buffer = $args{PutConvert}->($args{Message}->Data());
-	    unless ( defined $buffer ) {
-		$self->{"PutConvertReason"} = 1;
-		$self->{Carp}->("Data conversion hook (PutConvert) failed");
-		return;
-	    }
-	}
+        if ( ref $args{PutConvert} ne "CODE" ) {
+            $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
+            return;
+        } else {
+            $buffer = $args{PutConvert}->($args{Message}->Data());
+            unless ( defined $buffer ) {
+                $self->{"PutConvertReason"} = 1;
+                $self->{Carp}->("Data conversion hook (PutConvert) failed");
+                return;
+            }
+        }
     } else {
-	if ( $args{Message}->can("PutConvert") ) {
- 	    $buffer = $args{Message}->PutConvert($args{Message}->Data());
-	    unless ( defined $buffer ) {
-		$self->{"PutConvertReason"} = 1;
-		$self->{Carp}->("Data conversion hook (PutConvert) failed");
-		return;
-	    }
-	} elsif ( ref $self->{PutConvert} eq "CODE" ) {
-	    $buffer = $self->{PutConvert}->($args{Message}->Data());
-	    unless ( defined $buffer ) {
-		$self->{"PutConvertReason"} = 1;
-		$self->{Carp}->("Data conversion hook (PutConvert) failed");
-		return;
-	    }
-	} else {
-	    $buffer = $args{Message}->Data();
-	}
+        if ( $args{Message}->can("PutConvert") ) {
+            $buffer = $args{Message}->PutConvert($args{Message}->Data());
+            unless ( defined $buffer ) {
+                $self->{"PutConvertReason"} = 1;
+                $self->{Carp}->("Data conversion hook (PutConvert) failed");
+                return;
+            }
+        } elsif ( ref $self->{PutConvert} eq "CODE" ) {
+            $buffer = $self->{PutConvert}->($args{Message}->Data());
+            unless ( defined $buffer ) {
+                $self->{"PutConvertReason"} = 1;
+                $self->{Carp}->("Data conversion hook (PutConvert) failed");
+                return;
+            }
+        } else {
+            $buffer = $args{Message}->Data();
+        }
     }
 
     #
@@ -399,21 +404,21 @@ sub Put {
     }
 
     if ( $self->{"CompCode"} == MQSeries::MQCC_FAILED ) {
-	$self->{Carp}->(qq/MQPUT failed (Reason = $self->{"Reason"})/);
-	return;
+        $self->{Carp}->(qq/MQPUT failed (Reason = $self->{"Reason"})/);
+        return;
     } else {
 
-	if ( $PutMsgOpts->{Options} & MQSeries::MQPMO_SYNCPOINT ) {
-	    $self->{QueueManager}->{_Pending}->{Put}++;
-	}
-	
-	if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	    return 1;
-	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
-	    # What do we do here?  These are 'partial' successes.
-	    return -1;
-	}
-	
+        if ( $PutMsgOpts->{Options} & MQSeries::MQPMO_SYNCPOINT ) {
+            $self->{QueueManager}->{_Pending}->{Put}++;
+        }
+
+        if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
+            return 1;
+        } elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
+            # What do we do here?  These are 'partial' successes.
+            return -1;
+        }
+
     }
 }
 
@@ -422,7 +427,7 @@ sub Put {
 # Get a message from a queue.   This returns with three-values logic:
 #   1: successfully read
 #   0: failure (see $queue->Reason())
-#  -1: no message available 
+#  -1: no message available
 #
 # Hash with named parameters:
 # - Message: MQSeries::Message object
@@ -436,13 +441,13 @@ sub Put {
 sub Get {
     my $self = shift;
     my %args = validate(@_, { 'Convert'           => 0,
-			      'DisableAutoResize' => 0,
-			      'GetConvert'        => 0,
-			      'GetMsgOpts'        => 0,
-			      'Message'           => 0,
-			      'Sync'              => 0,
-			      'Wait'              => 0,
-			    });
+                              'DisableAutoResize' => 0,
+                              'GetConvert'        => 0,
+                              'GetMsgOpts'        => 0,
+                              'Message'           => 0,
+                              'Sync'              => 0,
+                              'Wait'              => 0,
+                            });
 
     return unless $self->Open();
 
@@ -452,13 +457,13 @@ sub Get {
     my $GetMsgOpts = {};
 
     unless ( $self->{GetEnable} ) {
-	$self->{Carp}->("Get() is disabled; Queue not opened for input");
-	return;
+        $self->{Carp}->("Get() is disabled; Queue not opened for input");
+        return;
     }
 
     unless (ref $args{Message} and $args{Message}->isa("MQSeries::Message")) {
-	$self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
-	return;
+        $self->{Carp}->("Invalid argument: 'Message' must be an MQSeries::Message object");
+        return;
     }
 
     #
@@ -466,12 +471,12 @@ sub Get {
     # add in Wait/Convert/Sync later.
     #
     if ($args{GetMsgOpts}) {
-	unless (ref $args{GetMsgOpts} eq 'HASH') {
-	    $self->{Carp}->("Invalid GetMsgOpts argument; must be a HASH reference");
-	    return;
-	}
+        unless (ref $args{GetMsgOpts} eq 'HASH') {
+            $self->{Carp}->("Invalid GetMsgOpts argument; must be a HASH reference");
+            return;
+        }
 
-	$GetMsgOpts = $args{GetMsgOpts};
+        $GetMsgOpts = $args{GetMsgOpts};
     }
 
     my $options_flag = $GetMsgOpts->{Options}  ||
@@ -486,7 +491,7 @@ sub Get {
     } else {                    # Default = convert
         $options_flag |= MQSeries::MQGMO_CONVERT;
     }
-            
+
     if (defined $args{Sync}) {  # Compare against GetMsgOptions, if specified
         my @check;
         if ($args{Sync}) {
@@ -522,8 +527,8 @@ sub Get {
     $GetMsgOpts->{Options} = $options_flag;
 
     if ($args{GetConvert} && ref $args{GetConvert} ne "CODE") {
-	$self->{Carp}->("Invalid argument: 'GetConvert' must be a CODE reference");
-	return;
+        $self->{Carp}->("Invalid argument: 'GetConvert' must be a CODE reference");
+        return;
     }
 
     #
@@ -541,108 +546,108 @@ sub Get {
     # screw us up on a re-read.  And in the meantime, somebody else
     # may take that message away from us...
     #
-    my $retry_allowed = not($self->{DisableAutoResize} || 
+    my $retry_allowed = not($self->{DisableAutoResize} ||
                             $args{DisableAutoResize});
     my $retry_msgid = '';       # Msg id of message in retry
     my %orig_mqmd = %{ $args{Message}->MsgDesc() }; # Deep copy
 
     while (1) {
-	$self->{"GetConvertReason"} = 0;
+        $self->{"GetConvertReason"} = 0;
 
-	my $data = undef;
-	my $datalength = $args{Message}->BufferLength();
+        my $data = undef;
+        my $datalength = $args{Message}->BufferLength();
 
-	my $buffer = MQGET(
-			   $self->{QueueManager}->{Hconn},
-			   $self->{Hobj},
-			   $args{Message}->MsgDesc(),
-			   $GetMsgOpts,
-			   $datalength,
-			   $self->{"CompCode"},
-			   $self->{"Reason"},
-			  );
+        my $buffer = MQGET(
+                           $self->{QueueManager}->{Hconn},
+                           $self->{Hobj},
+                           $args{Message}->MsgDesc(),
+                           $GetMsgOpts,
+                           $datalength,
+                           $self->{"CompCode"},
+                           $self->{"Reason"},
+                          );
 
-	#
-	# We attempt the data conversion hook if we accepted a
-	# truncated message.  Note that it may very well fail, but
-	# we'll try anyway.
-	#
-	if ($self->{"CompCode"} == MQSeries::MQCC_OK ||
-	    (
-	     $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
-	     $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_ACCEPTED
-	    ) ||
-	    (
-	     $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
-	     $self->{"Reason"} == MQSeries::MQRC_FORMAT_ERROR &&
-	     $args{Message}->MsgDesc('Format') eq MQSeries::MQFMT_NONE
-	    )) {                # Successful read
+        #
+        # We attempt the data conversion hook if we accepted a
+        # truncated message.  Note that it may very well fail, but
+        # we'll try anyway.
+        #
+        if ($self->{"CompCode"} == MQSeries::MQCC_OK ||
+            (
+             $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
+             $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_ACCEPTED
+            ) ||
+            (
+             $self->{"CompCode"} == MQSeries::MQCC_WARNING &&
+             $self->{"Reason"} == MQSeries::MQRC_FORMAT_ERROR &&
+             $args{Message}->MsgDesc('Format') eq MQSeries::MQFMT_NONE
+            )) {                # Successful read
 
-	    if ($GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT ||
-		(
-		 $GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT &&
-		 $args{Message}->MsgDesc('Persistence')
-		)) {
-		$self->{QueueManager}->{_Pending}->{Get}++;
-	    }
+            if ($GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT ||
+                (
+                 $GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT &&
+                 $args{Message}->MsgDesc('Persistence')
+                )) {
+                $self->{QueueManager}->{_Pending}->{Get}++;
+            }
 
-	    if ( $args{GetConvert} ) {
-		$data = $args{GetConvert}->($buffer);
-		unless ( defined $data ) {
-		    $self->{"GetConvertReason"} = 1;
-		    $self->{Carp}->("Data conversion hook (GetConvert) failed");
-		    return;
-		}
-	    } else {
-		if ($args{Message}->can("GetConvert") ) {
-		    $data = $args{Message}->GetConvert($buffer);
-		    unless ( defined $data ) {
-			$self->{"GetConvertReason"} = 1;
-			$self->{Carp}->("Data conversion hook (GetConvert) failed");
-			return;
-		    }
-		} elsif ( ref $self->{GetConvert} eq "CODE" ) {
-		    $data = $self->{GetConvert}->($buffer);
-		    unless ( defined $data ) {
-			$self->{"GetConvertReason"} = 1;
-			$self->{Carp}->("Data conversion hook (GetConvert) failed");
-			return;
-		    }
-		} else {
-		    $data = $buffer;
-		}
-	    }
+            if ( $args{GetConvert} ) {
+                $data = $args{GetConvert}->($buffer);
+                unless ( defined $data ) {
+                    $self->{"GetConvertReason"} = 1;
+                    $self->{Carp}->("Data conversion hook (GetConvert) failed");
+                    return;
+                }
+            } else {
+                if ($args{Message}->can("GetConvert") ) {
+                    $data = $args{Message}->GetConvert($buffer);
+                    unless ( defined $data ) {
+                        $self->{"GetConvertReason"} = 1;
+                        $self->{Carp}->("Data conversion hook (GetConvert) failed");
+                        return;
+                    }
+                } elsif ( ref $self->{GetConvert} eq "CODE" ) {
+                    $data = $self->{GetConvert}->($buffer);
+                    unless ( defined $data ) {
+                        $self->{"GetConvertReason"} = 1;
+                        $self->{Carp}->("Data conversion hook (GetConvert) failed");
+                        return;
+                    }
+                } else {
+                    $data = $buffer;
+                }
+            }
 
-	    $args{Message}->Data($data);
+            $args{Message}->Data($data);
 
-	    return 1;
+            return 1;
 
-	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
+        } elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
 
-	    if ( $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_FAILED 
+            if ( $self->{"Reason"} == MQSeries::MQRC_TRUNCATED_MSG_FAILED
                  and $retry_allowed ) {
                 #
                 # FIXME: Maybe add some buffer poker-space
                 #
-		$args{Message}->BufferLength($datalength);
+                $args{Message}->BufferLength($datalength);
                 $retry_msgid = $args{Message}->MsgDesc('MsgId');
                 $args{Message}{'MsgDesc'} = { %orig_mqmd,
                                               'MsgId' => $retry_msgid,
                                             };
                 next;           # Retry
-	    } else {
+            } else {
                 #
                 # Make buffer available, even though it may be garbage.
                 # If the app chooses to ignore MQCC_WARNING, it may
                 # be of use to it.
                 #
                 $args{Message}->Data($buffer) if ($buffer);
-		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
-		return;
-	    }
+                $self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
+                return;
+            }
 
-	} else {
-	    if ( $self->{"Reason"} == MQSeries::MQRC_NO_MSG_AVAILABLE ) {
+        } else {
+            if ( $self->{"Reason"} == MQSeries::MQRC_NO_MSG_AVAILABLE ) {
                 #
                 # If we are in a retry, somebody else beat us to the
                 # message.  Retry for a fresh message...
@@ -653,12 +658,12 @@ sub Get {
                     next;
                 }
 
-		return -1;
-	    } else {
-		$self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
-		return;
-	    }
-	}
+                return -1;
+            } else {
+                $self->{Carp}->(qq/MQGET failed (Reason = $self->{"Reason"})/);
+                return;
+            }
+        }
     }                           # End while
 
     #
@@ -691,28 +696,28 @@ sub Inquire {
 
     foreach my $key ( @args ) {
 
-	unless ( exists $ForwardMap->{$key} ) {
-	    $self->{Carp}->("Unrecognized Queue attribute: '$key'");
-	    return;
-	}
+        unless ( exists $ForwardMap->{$key} ) {
+            $self->{Carp}->("Unrecognized Queue attribute: '$key'");
+            return;
+        }
 
-	push(@keys,$ForwardMap->{$key});
+        push(@keys,$ForwardMap->{$key});
 
     }
 
     my (@values) = MQINQ(
-			 $self->{QueueManager}->{Hconn},
-			 $self->{Hobj},
-			 $self->{"CompCode"},
-			 $self->{"Reason"},
-			 @keys,
-			);
+                         $self->{QueueManager}->{Hconn},
+                         $self->{Hobj},
+                         $self->{"CompCode"},
+                         $self->{"Reason"},
+                         @keys,
+                        );
 
     unless ( $self->{"CompCode"} == MQSeries::MQCC_OK && $self->{"Reason"} == MQSeries::MQRC_NONE ) {
-	$self->{Carp}->("MQINQ call failed. " .
-			qq(CompCode => '$self->{"CompCode"}', ) .
-			qq(Reason => '$self->{"Reason"}'\n));
-	return;
+        $self->{Carp}->("MQINQ call failed. " .
+                        qq(CompCode => '$self->{"CompCode"}', ) .
+                        qq(Reason => '$self->{"Reason"}'\n));
+        return;
     }
 
     # In case the data parsing fails...
@@ -722,20 +727,20 @@ sub Inquire {
     my (%values) = ();
 
     for ( my $index = 0 ; $index <= $#keys ; $index++ ) {
-	
-	my ($key,$value) = ($keys[$index],$values[$index]);
 
-	my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
+        my ($key,$value) = ($keys[$index],$values[$index]);
 
-	if ( $ValueMap ) {
-	    unless ( exists $ValueMap->{$value} ) {
-		$self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
-		return;
-	    }
-	    $values{$newkey} = $ValueMap->{$value};
-	} else {
-	    $values{$newkey} = $value;
-	}
+        my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
+
+        if ( $ValueMap ) {
+            unless ( exists $ValueMap->{$value} ) {
+                $self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
+                return;
+            }
+            $values{$newkey} = $ValueMap->{$value};
+        } else {
+            $values{$newkey} = $value;
+        }
 
     }
 
@@ -759,40 +764,40 @@ sub Set {
 
     foreach my $key ( keys %args ) {
 
-	my $value = $args{$key};
+        my $value = $args{$key};
 
-	unless ( exists $ForwardMap->{$key} ) {
-	    $self->{Carp}->("Unrecognized Queue attribute: '$key'");
-	    return;
-	}
+        unless ( exists $ForwardMap->{$key} ) {
+            $self->{Carp}->("Unrecognized Queue attribute: '$key'");
+            return;
+        }
 
-	my ($newkey,$ValueMap) = @{$ForwardMap->{$key}}[0,2];
+        my ($newkey,$ValueMap) = @{$ForwardMap->{$key}}[0,2];
 
-	if ( $ValueMap ) {
-	    unless ( exists $ValueMap->{$value} ) {
-		$self->{Carp}->("Unrecognized Queue attribute value '$value' for key '$key'\n");
-		return;
-	    }
-	    $keys{$newkey} = $ValueMap->{$value};
-	} else {
-	    $keys{$newkey} = $value;
-	}
+        if ( $ValueMap ) {
+            unless ( exists $ValueMap->{$value} ) {
+                $self->{Carp}->("Unrecognized Queue attribute value '$value' for key '$key'\n");
+                return;
+            }
+            $keys{$newkey} = $ValueMap->{$value};
+        } else {
+            $keys{$newkey} = $value;
+        }
 
     }
 
     MQSET(
-	  $self->{QueueManager}->{Hconn},
-	  $self->{Hobj},
-	  $self->{"CompCode"},
-	  $self->{"Reason"},
-	  %keys,
-	 );
+          $self->{QueueManager}->{Hconn},
+          $self->{Hobj},
+          $self->{"CompCode"},
+          $self->{"Reason"},
+          %keys,
+         );
 
     unless ( $self->{"CompCode"} == MQSeries::MQCC_OK && $self->{"Reason"} == MQSeries::MQRC_NONE ) {
-	$self->{Carp}->("MQSET call failed. " .
-			qq/CompCode => '$self->{"CompCode"}', / .
-			qq/Reason => '$self->{"Reason"}'\n/);
-	return;
+        $self->{Carp}->("MQSET call failed. " .
+                        qq/CompCode => '$self->{"CompCode"}', / .
+                        qq/Reason => '$self->{"Reason"}'\n/);
+        return;
     }
 
     return 1;
@@ -807,14 +812,14 @@ sub ObjDesc {
     my $self = shift;
 
     if ( $_[0] ) {
-	if ( exists $self->{ObjDescPtr}->{$_[0]} ) {
-	    return $self->{ObjDescPtr}->{$_[0]};
-	} else {
-	    $self->{Carp}->("No such ObjDescPtr field: $_[0]");
-	    return;
-	}
+        if ( exists $self->{ObjDescPtr}->{$_[0]} ) {
+            return $self->{ObjDescPtr}->{$_[0]};
+        } else {
+            $self->{Carp}->("No such ObjDescPtr field: $_[0]");
+            return;
+        }
     } else {
-	return $self->{ObjDescPtr};
+        return $self->{ObjDescPtr};
     }
 }
 
@@ -823,12 +828,12 @@ sub Open {
     my $self = shift;
     my @combined_params = ( %{$self->{OpenArgs}}, @_ );
     my %args = validate(@combined_params,
-			{ 'Mode'         => 0,
-			  'Options'      => 0,
-			  'RetryCount'   => 0,
-			  'RetrySleep'   => 0,
-			  'RetryReasons' => 0,
-			});
+                        { 'Mode'         => 0,
+                          'Options'      => 0,
+                          'RetryCount'   => 0,
+                          'RetrySleep'   => 0,
+                          'RetryReasons' => 0,
+                        });
 
     return 1 if $self->{Hobj};
 
@@ -838,113 +843,113 @@ sub Open {
     my $retrycount = 0;
 
     if ( exists $args{Options} and exists $args{Mode} ) {
-	$self->{Carp}->("Incompatible arguments: one and only one of 'Options' or 'Mode' must be given");
-	return;
+        $self->{Carp}->("Incompatible arguments: one and only one of 'Options' or 'Mode' must be given");
+        return;
     }
 
     #
     # If the options are given, we assume you know what you're doing.
     #
     if ( exists $args{Options} ) {
-	$self->{Options} = $args{Options};
-	# And, we'll let the MQI whine at you if you misuse it.
-	$self->{GetEnable} = 1;
-	$self->{PutEnable} = 1;
+        $self->{Options} = $args{Options};
+        # And, we'll let the MQI whine at you if you misuse it.
+        $self->{GetEnable} = 1;
+        $self->{PutEnable} = 1;
     }
 
     #
     # If the Mode is given, then we have a few defaults to choose from
     #
     if ( exists $args{Mode} ) {
-	if ( $args{Mode} eq 'input' ) {
-	    $self->{Options} |= MQSeries::MQOO_INPUT_AS_Q_DEF;
-	    $self->{GetEnable} = 1;
-	} elsif ( $args{Mode} eq 'input_exclusive' ) {
-	    $self->{Options} |= MQSeries::MQOO_INPUT_EXCLUSIVE;
-	    $self->{GetEnable} = 1;
-	} elsif ( $args{Mode} eq 'input_shared' ) {
-	    $self->{Options} |= MQSeries::MQOO_INPUT_SHARED;
-	    $self->{GetEnable} = 1;
-	} elsif ( $args{Mode} eq 'output' ) {
-	    $self->{Options} |= MQSeries::MQOO_OUTPUT;
-	    $self->{PutEnable} = 1;
-	} else {
-	    $self->{Carp}->("Invalid argument: 'Mode' value $args{Mode} not yet supported");
-	    return;
-	}
+        if ( $args{Mode} eq 'input' ) {
+            $self->{Options} |= MQSeries::MQOO_INPUT_AS_Q_DEF;
+            $self->{GetEnable} = 1;
+        } elsif ( $args{Mode} eq 'input_exclusive' ) {
+            $self->{Options} |= MQSeries::MQOO_INPUT_EXCLUSIVE;
+            $self->{GetEnable} = 1;
+        } elsif ( $args{Mode} eq 'input_shared' ) {
+            $self->{Options} |= MQSeries::MQOO_INPUT_SHARED;
+            $self->{GetEnable} = 1;
+        } elsif ( $args{Mode} eq 'output' ) {
+            $self->{Options} |= MQSeries::MQOO_OUTPUT;
+            $self->{PutEnable} = 1;
+        } else {
+            $self->{Carp}->("Invalid argument: 'Mode' value $args{Mode} not yet supported");
+            return;
+        }
     }
 
     #
     # The Retry options...
     #
     foreach my $key ( qw( RetryCount RetrySleep ) ) {
-	if ( exists $args{$key} ) {
-	    unless ( $args{$key} =~ /^\d+$/ ) {
-		$self->{Carp}->("Invalid Argument: '$key' must be numeric");
-		return;
-	    }
-	    $self->{$key} = $args{$key};
-	}
+        if ( exists $args{$key} ) {
+            unless ( $args{$key} =~ /^\d+$/ ) {
+                $self->{Carp}->("Invalid Argument: '$key' must be numeric");
+                return;
+            }
+            $self->{$key} = $args{$key};
+        }
     }
 
     if ( $args{RetryReasons} ) {
-	unless (
-		ref $args{RetryReasons} eq "ARRAY" ||
-		ref $args{RetryReasons} eq "HASH"
-	       ) {
-	    $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASh reference");
-	    return;
-	}
+        unless (
+                ref $args{RetryReasons} eq "ARRAY" ||
+                ref $args{RetryReasons} eq "HASH"
+               ) {
+            $self->{Carp}->("Invalid Argument: 'RetryReasons' must be an ARRAY or HASh reference");
+            return;
+        }
 
-	if ( ref $args{RetryReasons} eq 'HASH' ) {
-	    $self->{RetryReasons} = $args{RetryReasons};
-	} else {
-	    $self->{RetryReasons} = { map { $_ => 1 } @{$args{RetryReasons}} };
-	}
+        if ( ref $args{RetryReasons} eq 'HASH' ) {
+            $self->{RetryReasons} = $args{RetryReasons};
+        } else {
+            $self->{RetryReasons} = { map { $_ => 1 } @{$args{RetryReasons}} };
+        }
     }
 
   OPEN:
     {
-	#
-	# Open the Queue
-	#
-	my $Hobj = MQOPEN(
-			  $self->{QueueManager}->{Hconn},
-			  $self->{ObjDescPtr},
-			  $self->{Options},
-			  $self->{"CompCode"},
-			  $self->{"Reason"},
-			 );
+        #
+        # Open the Queue
+        #
+        my $Hobj = MQOPEN(
+                          $self->{QueueManager}->{Hconn},
+                          $self->{ObjDescPtr},
+                          $self->{Options},
+                          $self->{"CompCode"},
+                          $self->{"Reason"},
+                         );
 
-	if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
-	    $self->{Hobj} = $Hobj;
-	    return 1;
-	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
-	    # This is when Reason == MQRC_MULTIPLE_REASONS
-	    $self->{Hobj} = $Hobj;
-	    return -1;
-	} elsif ( $self->{"CompCode"} == MQSeries::MQCC_FAILED ) {
+        if ( $self->{"CompCode"} == MQSeries::MQCC_OK ) {
+            $self->{Hobj} = $Hobj;
+            return 1;
+        } elsif ( $self->{"CompCode"} == MQSeries::MQCC_WARNING ) {
+            # This is when Reason == MQRC_MULTIPLE_REASONS
+            $self->{Hobj} = $Hobj;
+            return -1;
+        } elsif ( $self->{"CompCode"} == MQSeries::MQCC_FAILED ) {
 
-	    if ( exists $self->{RetryReasons}->{$self->{"Reason"}} ) {
-		if ( $retrycount < $self->{RetryCount} ) {
-		    $retrycount++;
-		    $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), will sleep / .
-				    "$self->{RetrySleep} seconds and retry...");
-		    sleep $self->{RetrySleep};
-		    redo OPEN;
-		} else {
-		    $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), retry timed out/);
-		    return;
-		}
-	    } else {
-		$self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), not retrying./);
-		return;
-	    }
-	
-	} else {
-	    $self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
-	    return;
-	}
+            if ( exists $self->{RetryReasons}->{$self->{"Reason"}} ) {
+                if ( $retrycount < $self->{RetryCount} ) {
+                    $retrycount++;
+                    $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), will sleep / .
+                                    "$self->{RetrySleep} seconds and retry...");
+                    sleep $self->{RetrySleep};
+                    redo OPEN;
+                } else {
+                    $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), retry timed out/);
+                    return;
+                }
+            } else {
+                $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{"Reason"}), not retrying./);
+                return;
+            }
+
+        } else {
+            $self->{Carp}->(qq/MQOPEN failed, unrecognized CompCode: '$self->{"CompCode"}'/);
+            return;
+        }
     }
 }
 
@@ -966,12 +971,12 @@ MQSeries::Queue -- OO interface to the MQSeries Queue objects
   #
   # Open a queue for output, loop getting messages, updating some
   # database with the data.
-  # 
+  #
   my $queue = MQSeries::Queue->new
     (
-     QueueManager 	=> 'some.queue.manager',
-     Queue 		=> 'SOME.QUEUE',
-     Mode 		=> 'input_exclusive',
+     QueueManager       => 'some.queue.manager',
+     Queue              => 'SOME.QUEUE',
+     Mode               => 'input_exclusive',
     )
     or die("Unable to open queue.\n");
 
@@ -984,19 +989,19 @@ MQSeries::Queue -- OO interface to the MQSeries Queue objects
        Message => $getmessage,
        Sync => 1,
       ) or die("Unable to get message\n" .
-	       "CompCode = " . $queue->CompCode() . "\n" .
-	       "Reason = " . $queue->Reason() . "\n");
+               "CompCode = " . $queue->CompCode() . "\n" .
+               "Reason = " . $queue->Reason() . "\n");
 
     if ( UpdateSomeDatabase($getmessage->Data()) ) {
         $queue->QueueManager()->Commit()
-	  or die("Unable to commit changes to queue.\n" .
-		 "CompCode = " . $queue->CompCode() . "\n" .
-		 "Reason = " . $queue->Reason() . "\n");
+          or die("Unable to commit changes to queue.\n" .
+                 "CompCode = " . $queue->CompCode() . "\n" .
+                 "Reason = " . $queue->Reason() . "\n");
     } else {
         $queue->QueueManager()->Backout()
-	  or die("Unable to backout changes to queue.\n" .
-		 "CompCode = " . $queue->CompCode() . "\n" .
-		 "Reason = " . $queue->Reason() . "\n");
+          or die("Unable to backout changes to queue.\n" .
+                 "CompCode = " . $queue->CompCode() . "\n" .
+                 "Reason = " . $queue->Reason() . "\n");
     }
 
   }
@@ -1009,61 +1014,61 @@ MQSeries::Queue -- OO interface to the MQSeries Queue objects
   use Storable;
   my $queue = MQSeries::Queue->new
     (
-     QueueManager 	=> 'some.queue.manager',
-     Queue 		=> 'SOME.QUEUE',
-     Mode 		=> 'output',
-     PutConvert        	=> \&Storable::nfreeze,
-     GetConvert 	=> \&Storable::thaw,
+     QueueManager       => 'some.queue.manager',
+     Queue              => 'SOME.QUEUE',
+     Mode               => 'output',
+     PutConvert         => \&Storable::nfreeze,
+     GetConvert         => \&Storable::thaw,
     )
     or die("Unable to open queue.\n");
 
   my $putmessage = MQSeries::Message->new
     (
      Data => {
-	      a => [qw( b c d )],
-	      e => {
-		    f => "Huh?",
-		    g => "Wow!",
-		   },
-	      h => 42,
-	     },
+              a => [qw( b c d )],
+              e => {
+                    f => "Huh?",
+                    g => "Wow!",
+                   },
+              h => 42,
+             },
     );
 
   $queue->Put( Message => $putmessage )
     or die("Unable to put message onto queue.\n" .
-	   "CompCode = " . $queue->CompCode() . "\n" .
-	   "Reason = " . $queue->Reason() . "\n");
+           "CompCode = " . $queue->CompCode() . "\n" .
+           "Reason = " . $queue->Reason() . "\n");
 
   #
   # Alternate mechanism for specifying the conversion routines.
   #
   my $queue = MQSeries::Queue->new
     (
-     QueueManager 	=> 'some.queue.manager',
-     Queue 		=> 'SOME.QUEUE',
-     Mode 		=> 'output',
+     QueueManager       => 'some.queue.manager',
+     Queue              => 'SOME.QUEUE',
+     Mode               => 'output',
     )
     or die("Unable to open queue.\n");
 
   my $putmessage = MQSeries::Message->new
     (
      Data => {
-	      a => [qw( b c d )],
-	      e => {
-		    f => "Huh?",
-		    g => "Wow!",
-		   },
-	      h => 42,
-	     },
+              a => [qw( b c d )],
+              e => {
+                    f => "Huh?",
+                    g => "Wow!",
+                   },
+              h => 42,
+             },
     );
 
   $queue->Put(
-	      Message => $putmessage
-  	      PutConvert => \&Storable::freeze,
-	     )
+              Message => $putmessage
+              PutConvert => \&Storable::freeze,
+             )
     or die("Unable to put message onto queue.\n" .
-	   "CompCode = " . $queue->CompCode() . "\n" .
-	   "Reason = " . $queue->Reason() . "\n");
+           "CompCode = " . $queue->CompCode() . "\n" .
+           "Reason = " . $queue->Reason() . "\n");
 
 =head1 DESCRIPTION
 
@@ -1085,7 +1090,7 @@ sleep.  See below for how to tune this behavior.
 This is intended to allow developers to write MQSeries applications
 which recover from short term outages without intervention.  This
 behavior is critically important to the authors applications, but may
-not be right for yours.  
+not be right for yours.
 
 =head1 METHODS
 
@@ -1094,25 +1099,25 @@ not be right for yours.
 The arguments to the constructor are a hash, with the following
 key/value pairs (required keys are marked with a '*'):
 
-  Key                		Value
-  ===                		=====
-  QueueManager      		String, or MQSeries::QueueManager object
-  Queue*             		String, or ARRAY reference (distribution list)
-  Mode*              		String
-  Options*           		MQOPEN 'Options' values
-  CloseOptions	     		MQCLOSE 'Options' values
-  DynamicQName			String
-  DisableAutoResize  		Boolean
-  AutoOpen          		Boolean
-  ObjDesc            		HASH Reference
-  Carp               		CODE Reference
-  PutConvert         		CODE Reference
-  GetConvert         		CODE Reference
-  CompCode           		Reference to Scalar Variable
-  Reason             		Reference to Scalar Variable
-  RetrySleep			Numeric
-  RetryCount			Numeric
-  RetryReasons			HASH Reference
+  Key                           Value
+  ===                           =====
+  QueueManager                  String, or MQSeries::QueueManager object
+  Queue*                        String, or ARRAY reference (distribution list)
+  Mode*                         String
+  Options*                      MQOPEN 'Options' values
+  CloseOptions                  MQCLOSE 'Options' values
+  DynamicQName                  String
+  DisableAutoResize             Boolean
+  AutoOpen                      Boolean
+  ObjDesc                       HASH Reference
+  Carp                          CODE Reference
+  PutConvert                    CODE Reference
+  GetConvert                    CODE Reference
+  CompCode                      Reference to Scalar Variable
+  Reason                        Reference to Scalar Variable
+  RetrySleep                    Numeric
+  RetryCount                    Numeric
+  RetryReasons                  HASH Reference
 
 NOTE: Only B<one> or the 'Options' or 'Mode' keys can be specified.
 They are mutually exclusive.  If 'AutoOpen' is given, then both
@@ -1125,7 +1130,7 @@ the Open() method.
 
 The Queue Manager to connect to must be specified, unless you want to
 connect to the "default" queue manager, and your site supports such a
-configuration.  
+configuration.
 
 This can either be an MQSeries::QueueManager object, or the name of
 the Queue Manager.  Since the MQSeries::Queue object will internally
@@ -1153,8 +1158,8 @@ The list may be a simple array of strings:
 
   $queue = MQSeries::Queue->new
     (
-     QueueManager 	=> "FOO",
-     Queue 		=> [qw( QUEUE1 QUEUE2 QUEUE3 )],
+     QueueManager       => "FOO",
+     Queue              => [qw( QUEUE1 QUEUE2 QUEUE3 )],
     )
 
 or, it can be an array of arrays, each one specifying the queue and
@@ -1162,12 +1167,12 @@ queue manager name of the target queue:
 
   $queue = MQSeries::Queue->new
     (
-     QueueManager 	=> "FOO",
-     Queue 		=> [
-			    [qw( QUEUE1 QM1 )],
-			    [qw( QUEUE2 QM2 )],
-			    [qw( QUEUE3 QM3 )],
-			   ],
+     QueueManager       => "FOO",
+     Queue              => [
+                            [qw( QUEUE1 QM1 )],
+                            [qw( QUEUE2 QM2 )],
+                            [qw( QUEUE3 QM3 )],
+                           ],
     )
 
 or finally, it can be an array of hash references, each naming the
@@ -1175,20 +1180,20 @@ queue and queue manager:
 
   $queue = MQSeries::Queue->new
     (
-     QueueManager 	=> "FOO",
-     Queue 		=> 
+     QueueManager       => "FOO",
+     Queue              =>
      [
       {
-       ObjectName	=> 'QUEUE1',
-       ObjectQMgrName	=> 'QM1',
+       ObjectName       => 'QUEUE1',
+       ObjectQMgrName   => 'QM1',
       },
       {
-       ObjectName	=> 'QUEUE2',
-       ObjectQMgrName	=> 'QM2',
+       ObjectName       => 'QUEUE2',
+       ObjectQMgrName   => 'QM2',
       },
       {
-       ObjectName	=> 'QUEUE3',
-       ObjectQMgrName	=> 'QM3',
+       ObjectName       => 'QUEUE3',
+       ObjectQMgrName   => 'QM3',
       },
      ],
     )
@@ -1231,7 +1236,7 @@ destroy when you are finished with them.
 The value specified here will be passed directly to the MQCLOSE()
 call, so it should be specified as:
 
-	CloseOptions	=> MQCO_DELETE_PURGE,
+        CloseOptions    => MQCO_DELETE_PURGE,
 
 for example.
 
@@ -1295,9 +1300,9 @@ Then, one tells the object to use this routine:
 
   my $queue = MQSeries::Queue->new
     (
-     QueueManager 	=> 'some.queue.manager',
-     Queue 		=> 'SOME.QUEUE',
-     Carp 		=> \&MyLogger,
+     QueueManager       => 'some.queue.manager',
+     Queue              => 'SOME.QUEUE',
+     Carp               => \&MyLogger,
     ) or die("Unable to connect to queue manager.\n");
 
 The default, as one might guess, is Carp::carp();
@@ -1346,10 +1351,10 @@ value to the constructor, for example:
 
   my $queue = MQSeries::Queue->new
     (
-     QueueManager		=> 'some.queue.manager',
-     Queue			=> 'SOME,QUEUE',
-     CompCode			=> \$CompCode,
-     Reason			=> \$Reason,
+     QueueManager               => 'some.queue.manager',
+     Queue                      => 'SOME,QUEUE',
+     CompCode                   => \$CompCode,
+     Reason                     => \$Reason,
     ) || die "Unable to open queue: CompCode => $CompCode, Reason => $Reason\n";
 
 But, this is ugly (authors opinion, but then, he gets to write the
@@ -1391,13 +1396,13 @@ This method will accept the following arguments which can be passed to
 the constructor (new()), and it merely calls Open() to open the actual
 queue object.
 
-  Key                		Value
-  ===                		=====
-  Mode              		String
-  Options           		MQOPEN 'Options' values
-  RetrySleep			Numeric
-  RetryCount			Numeric
-  RetryReasons			HASH Reference
+  Key                           Value
+  ===                           =====
+  Mode                          String
+  Options                       MQOPEN 'Options' values
+  RetrySleep                    Numeric
+  RetryCount                    Numeric
+  RetryReasons                  HASH Reference
 
 This method is called automatically by the constructor, unless the
 C<AutoOpen> argument is given.
@@ -1461,7 +1466,7 @@ The default options specified by the OO API are
 
   MQGMO_FAIL_IF_QUIESCING
 
-See the MQPUT() documentation for the use of PutMsgOpts.  
+See the MQPUT() documentation for the use of PutMsgOpts.
 
 =item PutMsgRecs
 
@@ -1573,19 +1578,19 @@ The default options specified by the OO API are
   MQGMO_FAIL_IF_QUIESCING
   MQGMO_CONVERT
 
-See the MQGET() documentation for the use of GetMsgOpts.  
+See the MQGET() documentation for the use of GetMsgOpts.
 
 =item Wait
 
 This is a numeric or symbolic value, interpreted as follows.  A
 symbolic value is a number ending on 's' for seconds or 'm' for
-minutes, which will be converted to the appropriate numeric value. 
+minutes, which will be converted to the appropriate numeric value.
 If the value is greater than zero, then the MQGMO_WAIT option is used,
 and the value is set as the WaitInterval in the GetMsgOpts structure.
 
 Remember, if a numeric value is specified, it is interpreted by the
 API as a number of milliseconds, not seconds (the rest of the OO-API
-uses seconds).  Therefore, a symbolic value like "30s" or "2m" 
+uses seconds).  Therefore, a symbolic value like "30s" or "2m"
 is preferred.
 
 If the value is 0, then the MQGMO_NO_WAIT option is used.
@@ -1658,14 +1663,14 @@ For example, to query the MaxMsgLength and MaxQDepth of a queue:
 
 The argument to this method is a list of "selectors", or Queue
 attributes, to be queried.  The following table shows the complete set
-of possible keys, and their underlying C macro.  
+of possible keys, and their underlying C macro.
 
 Note that this list is all-inclusive, and that many of these are not
 supported on some of the MQSeries platforms.  Consult the IBM
 documentation for such details.
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     AlterationDate              MQCA_ALTERATION_DATE
     AlterationTime              MQCA_ALTERATION_TIME
     BackoutRequeueName          MQCA_BACKOUT_REQ_Q_NAME
@@ -1732,46 +1737,46 @@ cases, the values are mapped to more readable strings.
 
 =over 4
 
-=item DefBind  			(integer)  
+=item DefBind                   (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     OnOpen                      MQBND_BIND_ON_OPEN
     NotFixed                    MQBND_BIND_NOT_FIXED
 
-=item DefinitionType		(integer)
+=item DefinitionType            (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     Permanent                   MQQDT_PERMANENT_DYNAMIC
     Temporary                   MQQDT_TEMPORARY_DYNAMIC
 
-=item DefInputOpenOption    	(integer)  
+=item DefInputOpenOption        (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     Exclusive                   MQOO_INPUT_EXCLUSIVE
     Shared                      MQOO_INPUT_SHARED
 
-=item MsgDeliverySequence    	(integer)  
+=item MsgDeliverySequence       (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     FIFO                        MQMDS_FIFO
     Priority                    MQMDS_PRIORITY
 
-=item QServiceIntervalEvent    	(integer)  
+=item QServiceIntervalEvent     (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     High                        MQQSIE_HIGH
     None                        MQQSIE_NONE
     OK                          MQQSIE_OK
 
-=item QType    			(integer)  
+=item QType                     (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     Alias                       MQQT_ALIAS
     All                         MQQT_ALL
     Cluster                     MQQT_CLUSTER
@@ -1779,26 +1784,26 @@ cases, the values are mapped to more readable strings.
     Model                       MQQT_MODEL
     Remote                      MQQT_REMOTE
 
-=item Scope    			(integer)  
+=item Scope                     (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     Cell                        MQSCO_CELL
     QMgr                        MQSCO_Q_MGR
 
-=item TriggerType    		(integer)  
+=item TriggerType               (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     Depth                       MQTT_DEPTH
     Every                       MQTT_EVERY
     First                       MQTT_FIRST
     None                        MQTT_NONE
 
-=item Usage    			(integer)  
+=item Usage                     (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     Normal                      MQUS_NORMAL
     XMITQ                       MQUS_TRANSMISSION
 
@@ -1808,7 +1813,7 @@ cases, the values are mapped to more readable strings.
 
 This method is an interface to the MQSET() API call, and like
 Inquire(), it takes more convenient, human-readable strings in place
-of the C macros.  
+of the C macros.
 
 For example, to put inhibit a queue:
 
@@ -1819,8 +1824,8 @@ queue attributes to be set.  The MQSET() API supports setting a very
 limited subset of specific queue attributes.  The following table
 shows the complete set of possible keys, and their underlying C macros.
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     InhibitGet                  MQIA_INHIBIT_GET
     InhibitPut                  MQIA_INHIBIT_PUT
     DistLists                   MQIA_DIST_LISTS
@@ -1833,8 +1838,8 @@ shows the complete set of possible keys, and their underlying C macros.
 In addition, the data value for the "TriggerType" key can have one of
 the following values:
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     Depth                       MQTT_DEPTH
     Every                       MQTT_EVERY
     First                       MQTT_FIRST
@@ -1973,9 +1978,9 @@ The simplest way to create an MQSeries::Queue object is:
 
   my $queue = MQSeries::Queue->new
     (
-     QueueManager		=> 'some.queue.manager',
-     Queue			=> 'SOME.QUEUE',
-     Mode			=> 'input',
+     QueueManager               => 'some.queue.manager',
+     Queue                      => 'SOME.QUEUE',
+     Mode                       => 'input',
     ) || die;
 
 But in this case, either the connection to the queue manager or the
@@ -1988,8 +1993,8 @@ would do the following:
   # Explicitly create your own MQSeries::QueueManager object
   my $qmgr = MQSeries::QueueManager->new
     (
-     QueueManager		=> 'some.queue.manager',
-     AutoConnect		=> 0,
+     QueueManager               => 'some.queue.manager',
+     AutoConnect                => 0,
     ) || die "Unable to instantiate MQSeries::QueueManager object\n";
 
   # Call the Connect method explicitly
@@ -2001,10 +2006,10 @@ would do the following:
 
   my $queue = MQSeries::Queue->new
     (
-     QueueManager		=> $qmgr,
-     Queue			=> 'SOME.QUEUE',
-     Mode			=> 'input',
-     AutoOpen			=> 0,
+     QueueManager               => $qmgr,
+     Queue                      => 'SOME.QUEUE',
+     Mode                       => 'input',
+     AutoOpen                   => 0,
     ) || die "Unable to instantiate MQSeries::Queue object\n";
 
   # Call the Open method explicitly

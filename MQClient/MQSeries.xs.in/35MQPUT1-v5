@@ -1,8 +1,8 @@
 # -*-c-*-
 #
-# $Id: 35MQPUT1-v5,v 27.1 2007/01/11 20:19:54 molinam Exp $
+# $Id: 35MQPUT1-v5,v 32.1 2009/06/11 12:47:26 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -24,14 +24,13 @@ MQPUT1(Hconn,ObjDesc,MsgDesc,PutMsgOpts,Msg,CompCode,Reason)
 	AV	*PutMsgRecs, *ValidPutMsgRecFieldsArray;
 	AV	*ResponseRecArray;
 	HV	*ObjectRecsHashEntry, *ResponseRecHash;
-	HV	*PutMsgRecFields, *PutMsgRecHash;
-	HV	*ValidPutMsgRecFieldsHash, *ValidPutMsgRecFields;
+	HV	*PutMsgRecFields = NULL, *PutMsgRecHash;
+	HV	*ValidPutMsgRecFieldsHash;
 	HV	*ValidPutMsgRecFieldsSubHash;
-	HE	*PutMsgRecsIter;
-	PMQRR	pResponseRecPtr;
+	PMQRR	pResponseRecPtr = NULL;
 	PMQOR	pObjectRecPtr;
 
-	char	*Key, *pPutMsgRecPtr, *String;
+	char	*Key, *pPutMsgRecPtr = NULL, *String;
 	STRLEN	KeyLength, StringLength;
 	int	index, subindex, FieldSize;
 	int	PutMsgRecSize = 0;

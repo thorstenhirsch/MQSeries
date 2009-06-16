@@ -1,5 +1,5 @@
 #
-# $Id: Event.pm,v 31.1 2007/09/24 15:41:53 biersma Exp $
+# $Id: Event.pm,v 32.1 2009/05/22 15:28:14 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -20,7 +20,7 @@ require "MQSeries/Message/Event.pl";
 
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 @ISA = qw(MQSeries::Message);
 
 sub PutConvert {

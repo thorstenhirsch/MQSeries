@@ -1,7 +1,7 @@
 /* -*-c-*-
- $Id: 21core,v 27.1 2007/01/11 20:19:51 molinam Exp $
+ $Id: 21core,v 32.1 2009/06/11 12:45:10 biersma Exp $
 
- (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+ (c) 1999-2009 Morgan Stanley & Co. Incorporated
  See ..../src/LICENSE for terms of distribution.
  */
 
@@ -9,7 +9,7 @@ MODULE = __APITYPE__::MQSeries		PACKAGE = __APITYPE__::MQSeries
 
 PROTOTYPES: DISABLE
 
-MQULONG
+void
 constant_hex(name)
 	char *		name
 
@@ -30,7 +30,7 @@ constant_hex(name)
 
 	}
 
-MQLONG
+void
 constant_numeric(name)
 	char *		name
 
@@ -51,7 +51,7 @@ constant_numeric(name)
 
 	}
 
-char *
+void
 constant_string(name)
 	char *		name
 
@@ -71,7 +71,7 @@ constant_string(name)
 
 	}
 
-char *
+void
 constant_char(name)
 	char *		name
 

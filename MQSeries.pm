@@ -1,5 +1,5 @@
 #
-# $Id: MQSeries.pm,v 31.2 2007/10/08 17:56:25 biersma Exp $
+# $Id: MQSeries.pm,v 32.1 2009/05/22 15:28:11 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -24,7 +24,7 @@ use MQSeries::Config::Machine;
 
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 BEGIN {
     my $server;

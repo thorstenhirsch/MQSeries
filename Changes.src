@@ -3,6 +3,50 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.29
+
+The following fixes are included in the 1.29 release:
+
+=head2 Initial support for MQ v7
+
+The module now compiles with MQ v7 and new constants are supported.
+Support for new and enhanced APIs is not yet in place.  During
+configuration, some warnings will occur for unknown datatypes.  This
+is expected and can be ignored.
+
+Feedback on which MQ v7 features should be supported in the next
+module release is welcome.
+
+=head2 MQSeries::Command fixes
+
+Minor changes for queue-sharing groups and for the
+HeaderCompression/MessageCompression attributes.
+
+=head2 Support SecurityParms in MQCONNX
+
+Duke Nguyen contributed support for the SecurityParms data structure
+with the MQCONNX call
+
+=head2 SSL tutorial
+
+Morten Bjoernsvik contributed a cookbook on using SSL with the
+MQSeries client and server.
+
+=head2 Minor bugfixes
+
+Morten Bjoernsvik contributed a bugfix to the MQSeries::Queue module,
+avoiding a call to MQCLOSE if no queue manager connection exists.
+
+=head2 ChannelTable fixes
+
+Recent V6 client releases are more picky in how they parse v4 channel
+table files (the format native to the MQ 5.0 client release).  The
+MQSeries::Config::ChannelTable file has been updated to reflect this.
+
+=head2 MQSeries::Command fixes
+
+Add the missing ChannelStatistics attribute for Channel commands.
+
 =head1 Changes for 1.28
 
 The following fixes are included in the 1.28 release:
@@ -1797,7 +1841,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 31.1 2007/10/08 17:55:22 biersma Exp $
+# $Id: Changes.src,v 32.1 2009/06/11 12:42:08 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.

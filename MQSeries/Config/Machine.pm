@@ -4,7 +4,7 @@
 # (c) 2000-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Machine.pm,v 31.1 2007/09/24 15:41:50 biersma Exp $
+# $Id: Machine.pm,v 32.1 2009/05/22 15:28:13 biersma Exp $
 #
 
 package MQSeries::Config::Machine;
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($VERSION);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 #
 # Constructor: Read and parse the /var/mqm/mqs.ini file.

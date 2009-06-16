@@ -1,5 +1,5 @@
 #
-# $Id: dlq.t,v 31.1 2007/09/24 15:41:47 biersma Exp $
+# $Id: dlq.t,v 32.1 2009/05/22 15:28:10 biersma Exp $
 #
 # (c) 1999-2007 Morgan Stanley Dean Witter and Co.
 # See ..../src/LICENSE for terms of distribution.
@@ -21,8 +21,8 @@ BEGIN {
 }
 
 END { print "not ok 1\n" unless $loaded; }
-use MQSeries 1.28;
-use MQSeries::Message::DeadLetter 1.28 qw( MQDecodeDeadLetter MQEncodeDeadLetter );
+use MQSeries 1.29;
+use MQSeries::Message::DeadLetter 1.29 qw( MQDecodeDeadLetter MQEncodeDeadLetter );
 $loaded = 1;
 print "ok 1\n";
 

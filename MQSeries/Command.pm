@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 31.2 2007/10/08 18:00:13 biersma Exp $
+# $Id: Command.pm,v 32.4 2009/06/11 12:40:02 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -24,41 +24,41 @@ use Params::Validate qw(validate);
 
 use vars qw($VERSION);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = validate(@_, { 'QueueManager'      => 0,
-			      'Type'              => 0,
-			      'CommandVersion'	  => 0,
-			      'Carp'              => 0,
-			      'DynamicQName'      => 0,
-			      'Expiry'            => 0,
-			      'Wait'              => 0,
-			      'ModelQName'        => 0,
-			      'StrictMapping'     => 0,
-			      'CommandQueue'      => 0,
-			      'CommandQueueName'  => 0,
-			      'RealQueueManager'  => 0,
-			      'ProxyQueueManager' => 0,
-			      'ReplyToQMgr'       => 0,
-			      'ReplyToQ'          => 0,
-			    });
+                              'Type'              => 0,
+                              'CommandVersion'    => 0,
+                              'Carp'              => 0,
+                              'DynamicQName'      => 0,
+                              'Expiry'            => 0,
+                              'Wait'              => 0,
+                              'ModelQName'        => 0,
+                              'StrictMapping'     => 0,
+                              'CommandQueue'      => 0,
+                              'CommandQueueName'  => 0,
+                              'RealQueueManager'  => 0,
+                              'ProxyQueueManager' => 0,
+                              'ReplyToQMgr'       => 0,
+                              'ReplyToQ'          => 0,
+                            });
 
     my $self =
       {
-       Reason			=> 0,
-       CompCode			=> 0,
-       CommandVersion		=> 1,
-       Wait 			=> 60000, # 60 second wait for replies...
-       #Expiry			=> 600,	# 60 second expiry on requests
+       Reason                   => 0,
+       CompCode                 => 0,
+       CommandVersion           => 1,
+       Wait                     => 60000, # 60 second wait for replies...
+       #Expiry                  => 600, # 60 second expiry on requests
        Expiry                   => 999999999,
-       Carp			=> \&carp,
-       Type			=> 'PCF',
-       ModelQName		=> 'SYSTEM.DEFAULT.MODEL.QUEUE',
-       DynamicQName		=> 'PERL.COMMAND.*',
-       StrictMapping		=> 0,
+       Carp                     => \&carp,
+       Type                     => 'PCF',
+       ModelQName               => 'SYSTEM.DEFAULT.MODEL.QUEUE',
+       DynamicQName             => 'PERL.COMMAND.*',
+       StrictMapping            => 0,
        Stats                    => {},
        DefaultMsgDesc           => {},
       };                        # Blessed later - see below
@@ -80,19 +80,19 @@ sub new {
     # subclass).
     #
     if (defined $args{Type}) {
-	unless ($args{Type} eq 'PCF' or $args{Type} eq 'MQSC') {
-	    $self->Carp("Invalid argument: 'Type' must be one of: PCF MQSC");
-	    return;
-	}
-	$self->{Type} = $args{Type};
+        unless ($args{Type} eq 'PCF' or $args{Type} eq 'MQSC') {
+            $self->Carp("Invalid argument: 'Type' must be one of: PCF MQSC");
+            return;
+        }
+        $self->{Type} = $args{Type};
     }
     if ($class =~ /::(PCF|MQSC)$/) {
-	if ($self->{Type} ne $1) {
-	    $self->Carp("Invalid argument: 'Type' $self->{Type} does not match $class");
-	    return;
-	}
+        if ($self->{Type} ne $1) {
+            $self->Carp("Invalid argument: 'Type' $self->{Type} does not match $class");
+            return;
+        }
     } else {
-	$class .= "::" . $self->{Type};
+        $class .= "::" . $self->{Type};
         eval { "use $class" } || do {
             $self->Carp("Could not load sub-class '$class': $@");
             return;
@@ -138,21 +138,21 @@ sub new {
         #       name may specify the target queue manager name for
         #       display purposes.
         #
-	$self->{CommandQueueName} = $args{CommandQueueName};
+        $self->{CommandQueueName} = $args{CommandQueueName};
         if (defined $args{'RealQueueManager'}) {
             $self->{'RealQueueManager'} = $args{'RealQueueManager'};
         }
     } else {
-	#
-	# Some reasonable defaults.  If we're proxying to a MQSC queue
-	# manager, then this is (in the author's case anyway) probably
-	# an MVS queue manager with no direct client access.
-	#
-	if ($self->{Type} eq 'MQSC') {
-	    $self->{CommandQueueName} = "SYSTEM.COMMAND.INPUT";
-	} else {
-	    $self->{CommandQueueName} = "SYSTEM.ADMIN.COMMAND.QUEUE";
-	}
+        #
+        # Some reasonable defaults.  If we're proxying to a MQSC queue
+        # manager, then this is (in the author's case anyway) probably
+        # an MVS queue manager with no direct client access.
+        #
+        if ($self->{Type} eq 'MQSC') {
+            $self->{CommandQueueName} = "SYSTEM.COMMAND.INPUT";
+        } else {
+            $self->{CommandQueueName} = "SYSTEM.ADMIN.COMMAND.QUEUE";
+        }
     }
 
     #
@@ -171,53 +171,53 @@ sub new {
             $self->{ReplyToQMgr}  = $args{ProxyQueueManager};
         }
     } elsif (exists $args{ProxyQueueManager}) {
-	if (ref $args{QueueManager} || $args{QueueManager} eq "") {
-	    $self->Carp("QueueManager must be a non-empty string when ProxyQueueManager is specified");
-	    return;
-	}
+        if (ref $args{QueueManager} || $args{QueueManager} eq "") {
+            $self->Carp("QueueManager must be a non-empty string when ProxyQueueManager is specified");
+            return;
+        }
 
-	$self->{ProxyQueueManager} = $args{ProxyQueueManager};
-	$self->{RealQueueManager}  = $args{QueueManager};
-	$self->{ReplyToQMgr} 	   = $args{ProxyQueueManager};
+        $self->{ProxyQueueManager} = $args{ProxyQueueManager};
+        $self->{RealQueueManager}  = $args{QueueManager};
+        $self->{ReplyToQMgr}       = $args{ProxyQueueManager};
 
         #
         # This assumes that a default command queue name, such as
         # SYSTEM.COMMAND.INPUT, will have a remote queue on the proxy
         # called SYSTEM.COMMAND.INPUT.<TargetQueueManager>.
         #
-	unless (exists $args{CommandQueueName}) {
-	    $self->{CommandQueueName} .= ".$args{QueueManager}";
-	}
+        unless (exists $args{CommandQueueName}) {
+            $self->{CommandQueueName} .= ".$args{QueueManager}";
+        }
 
-	if (ref $args{ProxyQueueManager}) {
-	    if ( $args{ProxyQueueManager}->isa("MQSeries::QueueManager") ) {
-		$self->{QueueManager} = $args{ProxyQueueManager};
-	    } else {
-		$self->Carp("Invalid argument: 'ProxyQueueManager' " .
+        if (ref $args{ProxyQueueManager}) {
+            if ( $args{ProxyQueueManager}->isa("MQSeries::QueueManager") ) {
+                $self->{QueueManager} = $args{ProxyQueueManager};
+            } else {
+                $self->Carp("Invalid argument: 'ProxyQueueManager' " .
                             "must be an MQSeries::QueueManager object");
-		return;
-	    }
-	} else {
-	    $self->{QueueManager} = MQSeries::QueueManager::->
+                return;
+            }
+        } else {
+            $self->{QueueManager} = MQSeries::QueueManager::->
               new(QueueManager => $args{ProxyQueueManager},
-                  Carp	       => $self->{Carp},
+                  Carp         => $self->{Carp},
                  ) or return;
-	}
+        }
     } else {                    # No proxy specified: connect directly
-	if (ref $args{QueueManager}) {
-	    if ($args{QueueManager}->isa("MQSeries::QueueManager")) {
-		$self->{QueueManager} = $args{QueueManager};
-	    } else {
-		$self->Carp("Invalid argument: 'QueueManager' " .
+        if (ref $args{QueueManager}) {
+            if ($args{QueueManager}->isa("MQSeries::QueueManager")) {
+                $self->{QueueManager} = $args{QueueManager};
+            } else {
+                $self->Carp("Invalid argument: 'QueueManager' " .
                             "must be an MQSeries::QueueManager object");
-		return;
-	    }
-	} else {
-	    $self->{QueueManager} = MQSeries::QueueManager::->
+                return;
+            }
+        } else {
+            $self->{QueueManager} = MQSeries::QueueManager::->
               new(QueueManager => $args{QueueManager},
-                  Carp	       => $self->{Carp},
+                  Carp         => $self->{Carp},
                  ) or return;
-	}
+        }
     }
 
     #
@@ -225,7 +225,7 @@ sub new {
     # through a 'ConvertUnit' step to support '60s', '2m' strings.
     #
     foreach my $parameter (qw(Expiry Wait)) {
-	if (defined $args{$parameter}) {
+        if (defined $args{$parameter}) {
             $self->{$parameter} = ConvertUnit($parameter, $args{$parameter});
         }
     }
@@ -236,11 +236,11 @@ sub new {
     #
     $self->{CommandQueue} ||= MQSeries::Queue::->
       new(QueueManager  => $self->{QueueManager},
-          Queue 	=> $self->{CommandQueueName},
-          Mode 		=> 'output',
-          Carp 		=> $self->{Carp},
-          Reason	=> \$self->{"Reason"},
-          CompCode	=> \$self->{"CompCode"},
+          Queue         => $self->{CommandQueueName},
+          Mode          => 'output',
+          Carp          => $self->{Carp},
+          Reason        => \$self->{"Reason"},
+          CompCode      => \$self->{"CompCode"},
          ) || do {
              $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{CommandQueueName}");
              return;
@@ -250,36 +250,36 @@ sub new {
     # Open the ReplyToQ
     #
     if ($args{ReplyToQ}) {
-	if (ref $args{ReplyToQ}) {
-	    if ($args{ReplyToQ}->isa("MQSeries::Queue")) {
-		$self->{ReplyToQ} = $args{ReplyToQ};
-	    } else {
-		$self->Carp("Invalid argument: 'ReplyToQ' " .
+        if (ref $args{ReplyToQ}) {
+            if ($args{ReplyToQ}->isa("MQSeries::Queue")) {
+                $self->{ReplyToQ} = $args{ReplyToQ};
+            } else {
+                $self->Carp("Invalid argument: 'ReplyToQ' " .
                             "must be an MQSeries::Queue object");
-		return;
-	    }
-	} else {
-	    $self->{ReplyToQ} = MQSeries::Queue::->
+                return;
+            }
+        } else {
+            $self->{ReplyToQ} = MQSeries::Queue::->
               new(QueueManager  => $self->{QueueManager},
-                  Queue 	=> $args{ReplyToQ},
-                  Mode		=> 'input',
-                  Carp 		=> $self->{Carp},
-                  Reason	=> \$self->{"Reason"},
-                  CompCode	=> \$self->{"CompCode"},
+                  Queue         => $args{ReplyToQ},
+                  Mode          => 'input',
+                  Carp          => $self->{Carp},
+                  Reason        => \$self->{"Reason"},
+                  CompCode      => \$self->{"CompCode"},
                  ) || do {
                      $self->Carp("Unable to instantiate MQSeries::Queue object for $args{ReplyToQ}");
                      return;
                  };
-	}
+        }
     } else {
-	$self->{ReplyToQ} = MQSeries::Queue::->
+        $self->{ReplyToQ} = MQSeries::Queue::->
           new(QueueManager => $self->{QueueManager},
-              Queue 	   => $self->{ModelQName},
+              Queue        => $self->{ModelQName},
               DynamicQName => $self->{DynamicQName},
-              Mode	   => 'input',
-              Carp 	   => $self->{Carp},
-              Reason	   => \$self->{"Reason"},
-              CompCode	   => \$self->{"CompCode"},
+              Mode         => 'input',
+              Carp         => $self->{Carp},
+              Reason       => \$self->{"Reason"},
+              CompCode     => \$self->{"CompCode"},
              ) || do {
                  $self->Carp("Unable to instantiate MQSeries::Queue object for $self->{ModelQName}");
                  return;
@@ -301,8 +301,8 @@ sub DataParameters {
     my @parameters;
 
     foreach my $response ( @{$self->{Response}} ) {
-	next if $response->Header('CompCode') == MQSeries::MQCC_FAILED;
-	push(@parameters,$response->Parameters());
+        next if $response->Header('CompCode') == MQSeries::MQCC_FAILED;
+        push(@parameters,$response->Parameters());
     }
 
     return @parameters;
@@ -319,8 +319,8 @@ sub ErrorParameters {
     my @parameters;
 
     foreach my $response ( @{$self->{Response}} ) {
-	next if $response->Header('CompCode') != MQSeries::MQCC_FAILED;
-	push(@parameters,$response->Parameters());
+        next if $response->Header('CompCode') != MQSeries::MQCC_FAILED;
+        push(@parameters,$response->Parameters());
     }
 
     return @parameters;
@@ -416,29 +416,29 @@ sub CreateObject {
                 $self->{QueueManager}->{QueueManager}
                );
 
-    my $Need 			= 1;
+    my $Need                    = 1;
 
-    my $Inquire			= "";
-    my $Create			= "";
-    my $Delete			= "";
-    my $Change			= "";
+    my $Inquire                 = "";
+    my $Create                  = "";
+    my $Delete                  = "";
+    my $Change                  = "";
 
-    my $method			= "";
+    my $method                  = "";
 
-    my $Key			= "";
-    my $Type			= "";
+    my $Key                     = "";
+    my $Type                    = "";
 
-    my @KeyNames		= qw(ChannelName NamelistName ProcessName
+    my @KeyNames                = qw(ChannelName NamelistName ProcessName
                                      QName StorageClassName AuthInfoName
                                      CFStructName CFStrucName ListenerName ServiceName);
-    my $KeyCount		= 0;
+    my $KeyCount                = 0;
 
     #
     # Verify that we have only been given exactly *one* of the primary
     # keys that let us determine the object type.
     #
     foreach my $KeyName ( @KeyNames ) {
-	$KeyCount++ if exists $Attrs->{$KeyName};
+        $KeyCount++ if exists $Attrs->{$KeyName};
     }
 
     #
@@ -447,87 +447,87 @@ sub CreateObject {
     $KeyCount-- if exists $Attrs->{QName} && exists $Attrs->{ProcessName};
 
     if ( $KeyCount != 1  ) {
-	$self->Carp("CreateObject: Unable to determine object type.\n" .
-			(
-			 $KeyCount == 0
-			 ? "One of the following must be specified:\n"
-			 : ( "More than one of the following was specified:\n" .
-			     "(Exception: ProcessName and QName can both be present, since\n" .
-			     "the former is an attribute of the latter.\n" .
-			     "We assume ObjectType == Queue in this case)\n" )
-			) .
-			"\t" . join("\n\t",@KeyNames) . "\n");
-	return;
+        $self->Carp("CreateObject: Unable to determine object type.\n" .
+                        (
+                         $KeyCount == 0
+                         ? "One of the following must be specified:\n"
+                         : ( "More than one of the following was specified:\n" .
+                             "(Exception: ProcessName and QName can both be present, since\n" .
+                             "the former is an attribute of the latter.\n" .
+                             "We assume ObjectType == Queue in this case)\n" )
+                        ) .
+                        "\t" . join("\n\t",@KeyNames) . "\n");
+        return;
     }
 
     if ( $Attrs->{ChannelName} ) {
-	$Inquire		= "InquireChannel";
-	$Create			= "CreateChannel";
-	$Change			= "ChangeChannel";
-	$Key			= "ChannelName";
-	$Type			= "$Attrs->{ChannelType} Channel";
+        $Inquire                = "InquireChannel";
+        $Create                 = "CreateChannel";
+        $Change                 = "ChangeChannel";
+        $Key                    = "ChannelName";
+        $Type                   = "$Attrs->{ChannelType} Channel";
     } elsif ( $Attrs->{NamelistName} ) {
-	$Inquire		= "InquireNamelist";
-	$Create			= "CreateNamelist";
-	$Change			= "ChangeNamelist";
-	$Key			= "NamelistName";
-	$Type			= "Namelist";
+        $Inquire                = "InquireNamelist";
+        $Create                 = "CreateNamelist";
+        $Change                 = "ChangeNamelist";
+        $Key                    = "NamelistName";
+        $Type                   = "Namelist";
     } elsif ( $Attrs->{QName} ) {
-	$Inquire		= "InquireQueue";
-	$Create			= "CreateQueue";
-	$Change			= "ChangeQueue";
-	$Delete			= "DeleteQueue";
-	$Key			= "QName";
+        $Inquire                = "InquireQueue";
+        $Create                 = "CreateQueue";
+        $Change                 = "ChangeQueue";
+        $Delete                 = "DeleteQueue";
+        $Key                    = "QName";
 
-	if ( $Attrs->{QType} eq 'Remote' && $Attrs->{RemoteQName} eq '' ) {
-	    $Type		= "QMgr Alias";
-	} elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {
-	    $Type		= "Transmission Queue";
-	} else {
-	    $Type		= "$Attrs->{QType} Queue";
-	}
+        if ( $Attrs->{QType} eq 'Remote' && $Attrs->{RemoteQName} eq '' ) {
+            $Type               = "QMgr Alias";
+        } elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {
+            $Type               = "Transmission Queue";
+        } else {
+            $Type               = "$Attrs->{QType} Queue";
+        }
     } elsif ( $Attrs->{ProcessName} ) {
-	$Inquire		= "InquireProcess";
-	$Create			= "CreateProcess";
-	$Change			= "ChangeProcess";
-	$Key			= "ProcessName";
-	$Type			= "Process";
+        $Inquire                = "InquireProcess";
+        $Create                 = "CreateProcess";
+        $Change                 = "ChangeProcess";
+        $Key                    = "ProcessName";
+        $Type                   = "Process";
     } elsif ( $Attrs->{StorageClassName} ) {
-	$Inquire		= "InquireStorageClass";
-	$Create			= "CreateStorageClass";
-	$Change			= "ChangeStorageClass";
-	$Key			= "StorageClassName";
-	$Type			= "StorageClass";
+        $Inquire                = "InquireStorageClass";
+        $Create                 = "CreateStorageClass";
+        $Change                 = "ChangeStorageClass";
+        $Key                    = "StorageClassName";
+        $Type                   = "StorageClass";
     } elsif ( $Attrs->{AuthInfoName} ) {
-	$Inquire		= "InquireAuthInfo";
-	$Create			= "CreateAuthInfo";
-	$Change			= "ChangeAuthInfo";
-	$Key			= "AuthInfoName";
-	$Type			= "AuthInfo";
-    } elsif ( $Attrs->{CFStructName} ) {		# Kept for backward compatibility
-	$Inquire		= "InquireCFStruct";
-	$Create			= "CreateCFStruct";
-	$Change			= "ChangeCFStruct";
-	$Key			= "CFStructName";
-	$Type			= "CFStruct";
+        $Inquire                = "InquireAuthInfo";
+        $Create                 = "CreateAuthInfo";
+        $Change                 = "ChangeAuthInfo";
+        $Key                    = "AuthInfoName";
+        $Type                   = "AuthInfo";
+    } elsif ( $Attrs->{CFStructName} ) {                # Kept for backward compatibility
+        $Inquire                = "InquireCFStruct";
+        $Create                 = "CreateCFStruct";
+        $Change                 = "ChangeCFStruct";
+        $Key                    = "CFStructName";
+        $Type                   = "CFStruct";
     } elsif ( $Attrs->{CFStrucName} ) {
-	$Inquire		= "InquireCFStruc";
-	$Create			= "CreateCFStruc";
-	$Change			= "ChangeCFStruc";
-	$Key			= "CFStrucName";
-	$Type			= "CFStruc";
+        $Inquire                = "InquireCFStruc";
+        $Create                 = "CreateCFStruc";
+        $Change                 = "ChangeCFStruc";
+        $Key                    = "CFStrucName";
+        $Type                   = "CFStruc";
     } elsif ( $Attrs->{ServiceName} ) {
-	$Inquire		= "InquireService";
-	$Create			= "CreateService";
-	$Change			= "ChangeService";
-	$Key			= "ServiceName";
-	$Type			= "Service";
+        $Inquire                = "InquireService";
+        $Create                 = "CreateService";
+        $Change                 = "ChangeService";
+        $Key                    = "ServiceName";
+        $Type                   = "Service";
     } elsif ( $Attrs->{ListenerName} ) {
-	$Inquire		= "InquireChannelListener";
-	$Create			= "CreateChannelListener";
-	$Change			= "ChangeChannelListener";
-	$Key			= "ListenerName";
-	$Type			= "Listener";
+        $Inquire                = "InquireChannelListener";
+        $Create                 = "CreateChannelListener";
+        $Change                 = "ChangeChannelListener";
+        $Key                    = "ListenerName";
+        $Type                   = "Listener";
     }
 
     #
@@ -542,63 +542,63 @@ sub CreateObject {
     if ( $self->Reason() &&
          $self->Reason() != MQSeries::MQRC_UNKNOWN_OBJECT_NAME &&
          $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND) {
-	$self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
-	return;
+        $self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
+        return;
     }
 
     my $Changes;
     if ( ref $Object eq 'HASH' ) {
-	$method = $Change;
+        $method = $Change;
 
-	#
-	# If an object has been created with QSGDisposition
-	# 'Group', then a normal 'Inquire' command returns QSPDisp
-	# 'Copy' - which, if the queue manager is up, represents the
-	# object unless it is just being changed on another queue
-	# manager.
-	#
-	# We'll amend that to read QSGDisp 'Group', as that is what
-	# we need to compare against.
-	#
-	if (defined $Object->{'QSGDisposition'} &&
-	    $Object->{'QSGDisposition'} eq 'Copy') {
-	    $Object->{'QSGDisposition'} = 'Group';
-	}
+        #
+        # If an object has been created with QSGDisposition
+        # 'Group', then a normal 'Inquire' command returns QSPDisp
+        # 'Copy' - which, if the queue manager is up, represents the
+        # object unless it is just being changed on another queue
+        # manager.
+        #
+        # We'll amend that to read QSGDisp 'Group', as that is what
+        # we need to compare against.
+        #
+        if (defined $Object->{'QSGDisposition'} &&
+            $Object->{'QSGDisposition'} eq 'Copy') {
+            $Object->{'QSGDisposition'} = 'Group';
+        }
 
-	#
-	# If it exists, let's assume we don't need to create it.  If
-	# any of the attributes are wrong, we'll then say we "Need"
-	# it.
-	#
+        #
+        # If it exists, let's assume we don't need to create it.  If
+        # any of the attributes are wrong, we'll then say we "Need"
+        # it.
+        #
         $Changes = $Callback->($Attrs, $Object, \&_CompareOneAttribute);
-	$Need = scalar(keys %$Changes);
+        $Need = scalar(keys %$Changes);
 
         unless ($Quiet) {
             foreach my $Attr (sort keys %$Changes) {
-		print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n");
+                print("Incorrect attribute '$Attr' for $Type '$QMgr/$Attrs->{$Key}'\n");
 
-		if (ref $Attrs->{$Attr} eq "ARRAY") {
-		    print "Should be:\n\t" . join("\n\t",map { qq{'$_'} } @{$Changes->{$Attr}}) . "\n";
-		} else {
-		    print "Should be: '$Changes->{$Attr}'\n";
-		}
-		
-		if (ref $Object->{$Attr} eq "ARRAY") {
-		    print "Currently is:\n\t" . join("\n\t",map { qq{'$_'} } @{$Object->{$Attr}} ) . "\n";
-		} else {
-		    print "Currently is: '$Object->{$Attr}'\n";
-		}
-	    }
-	}
+                if (ref $Attrs->{$Attr} eq "ARRAY") {
+                    print "Should be:\n\t" . join("\n\t",map { qq{'$_'} } @{$Changes->{$Attr}}) . "\n";
+                } else {
+                    print "Should be: '$Changes->{$Attr}'\n";
+                }
+
+                if (ref $Object->{$Attr} eq "ARRAY") {
+                    print "Currently is:\n\t" . join("\n\t",map { qq{'$_'} } @{$Object->{$Attr}} ) . "\n";
+                } else {
+                    print "Currently is: '$Object->{$Attr}'\n";
+                }
+            }
+        }
     } else {
-	print "$Type '$QMgr/$Attrs->{$Key}' is missing\n" unless $Quiet;
-	$method = $Create;
+        print "$Type '$QMgr/$Attrs->{$Key}' is missing\n" unless $Quiet;
+        $method = $Create;
         $Changes = $Callback->($Attrs);
     }
 
     unless ($Need) {
-	print "$Type '$QMgr/$Attrs->{$Key}' is correctly configured\n" unless $Quiet;
-	return -1;              # -1: No changes
+        print "$Type '$QMgr/$Attrs->{$Key}' is correctly configured\n" unless $Quiet;
+        return -1;              # -1: No changes
     }
 
     return 1 if $Verify;        # 1: Things changed
@@ -630,57 +630,49 @@ sub CreateObject {
     #
     my $delete_first = 0;
     if ($Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType}) {
-	$delete_first = 1;
+        $delete_first = 1;
     } elsif ($Object) {
-	foreach my $fld (qw(QSGDisposition
-			    CFStructure)) {
-	    if (defined $Attrs->{$fld} && $Attrs->{$fld} ne $Object->{$fld}) {
-		$delete_first = 1;
-	    }
-	}
+        foreach my $fld (qw(QSGDisposition
+                            CFStructure)) {
+            if (defined $Attrs->{$fld} && $Attrs->{$fld} ne $Object->{$fld}) {
+                $delete_first = 1;
+            }
+        }
     }
     if ($delete_first) {
-	print "Deleting $Type $QMgr/$Attrs->{$Key}'\n"
-          unless $Quiet;
+            print "Deleting $Type $QMgr/$Attrs->{$Key}'\n"
+        unless $Quiet;
 
-	#
-	# If the existing queue is shared, then the delete command
-	# must be sent with CommandScope '*'.
-	#
-	my $need_cmdscope = 0;
-	my $qsgdisp_attr = $Object->{QSGDisposition};
-	if (defined $qsgdisp_attr &&
-	    $qsgdisp_attr =~ m!^(?:Copy|Shared)$!) {
-	    $need_cmdscope = 1;
-	    #print STDERR "XXX: deleting shared object, need CmdScope '*'\n";
-	}
+        #
+        # CommandScope break in certain combinations
+        # Since MQ uses the CommandScope underneath the covers,
+        # CommandScope is no longer used
+        #
 
-	$self->$Delete
-	  (
-	   $Key			=> $Attrs->{$Key},
-	   QType		=> $Object->{QType},
-	   (
-	    $Clear && $Key eq 'QName' && $Object->{QType} eq 'Local' ?
-	    ( Purge		=> 1 ) : (),
-	   ($need_cmdscope ?
-	    (CommandScope             => '*',
-	     QSGDisposition => $Object->{QSGDisposition})
-	    : ()
-	   ),
-	   )
-	  ) || do {
-	      $self->Carp("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
-			      $self->ReasonText() . "\n");
-	      return;
-	  };
+        $self->$Delete
+          (
+           $Key                 => $Attrs->{$Key},
+           QType                => $Object->{QType},
+           (
+            $Clear && $Key eq 'QName' && $Object->{QType} eq 'Local' ?
+            ( Purge             => 1 ) : (),
+            (defined $Object->{QSGDisposition} ?
+            (QSGDisposition => $Object->{QSGDisposition}) : ()),
+           )
+          ) || do {
+              $self->Carp("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
+                              $self->ReasonText() . "\n");
+              return;
+          };
 
-	$method = $Create;
+
+            $method = $Create;
         $Changes = $Callback->($Attrs);
-	$Object = undef;
+            $Object = undef;
     }
 
     unless ( $Quiet ) {
-	print( ($method eq $Change ? "Updating" : "Creating") . " $Type '$QMgr/$Attrs->{$Key}'\n");
+        print( ($method eq $Change ? "Updating" : "Creating") . " $Type '$QMgr/$Attrs->{$Key}'\n");
     }
 
     #
@@ -695,7 +687,7 @@ sub CreateObject {
     #
     if ( $Force && $Key eq 'QName' && $Changes->{'QType'} ne 'Model' &&
          $method eq $Change ) {
-	$Changes->{Force} = 1;
+        $Changes->{Force} = 1;
     }
 
     #
@@ -704,7 +696,7 @@ sub CreateObject {
     #
     my $disp_field = 'QSGDisposition';
     if (defined $Object->{$disp_field}) {
-	$Changes->{$disp_field} = $Object->{$disp_field};
+        $Changes->{$disp_field} = $Object->{$disp_field};
     }
 
     #
@@ -717,25 +709,25 @@ sub CreateObject {
     #
     my $Changes2;
     if ($method ne $Create &&
-	$Key eq 'QName' && defined $Changes->{'StorageClass'} &&
-	scalar(keys %$Changes) > 2) {
-	$Changes2->{'QType'} = $Changes->{'QType'};
-	$Changes2->{$disp_field} = $Changes->{$disp_field}
-	  if (defined $Changes->{$disp_field});
-	$Changes2->{'StorageClass'} = delete $Changes->{'StorageClass'};
+        $Key eq 'QName' && defined $Changes->{'StorageClass'} &&
+        scalar(keys %$Changes) > 2) {
+        $Changes2->{'QType'} = $Changes->{'QType'};
+        $Changes2->{$disp_field} = $Changes->{$disp_field}
+          if (defined $Changes->{$disp_field});
+        $Changes2->{'StorageClass'} = delete $Changes->{'StorageClass'};
     }
 
     foreach my $diffs ($Changes, $Changes2) {
-	next unless (defined $diffs); # $Changes2 is optional
-	$self->$method($Key => $Changes->{$Key},
-		       %$diffs,
-		      ) || do {
-	    $self->Carp("Unable to " .
-			( $method eq $Change ? "update" : "create" ) .
-			" $Type '$QMgr/$Changes->{$Key}'\n" .
-			$self->ReasonText() . "\n");
-	    return;
-	};
+        next unless (defined $diffs); # $Changes2 is optional
+        $self->$method($Key => $Changes->{$Key},
+                       %$diffs,
+                      ) || do {
+            $self->Carp("Unable to " .
+                        ( $method eq $Change ? "update" : "create" ) .
+                        " $Type '$QMgr/$Changes->{$Key}'\n" .
+                        $self->ReasonText() . "\n");
+            return;
+        };
     }
 
     return 1;                   # 1: Things changed
@@ -748,17 +740,17 @@ sub CreateObject {
 #
 sub _Command {
 
-    my $self 			= shift;
-    my $command			= shift;
-    my $parameters	 	= shift;
-    my $key 			= "";
+    my $self                    = shift;
+    my $command                 = shift;
+    my $parameters              = shift;
+    my $key                     = "";
 
     #
     # IMPORTANT: each and every case where we return *must* set a
     # reasonable value for the Reason and CompCode.
     #
-    $self->{"Reason"} 		= 0;
-    $self->{"CompCode"} 	= 0;
+    $self->{"Reason"}           = 0;
+    $self->{"CompCode"}         = 0;
 
     #
     # We set the ReasonText if we get a MQSC response message with an
@@ -772,44 +764,44 @@ sub _Command {
     #
     my %command2name =
       (
-       InquireNamelist		=> 'NamelistName',
-       InquireNamelistNames	=> 'NamelistName',
-       InquireProcess		=> 'ProcessName',
-       InquireProcessNames	=> 'ProcessName',
-       InquireQueue		=> 'QName',
-       InquireQueueNames	=> 'QName',
-       InquireQueueStatus	=> 'QName',
-       ResetQueueStatistics	=> 'QName',
-       InquireChannel		=> 'ChannelName',
-       InquireChannelNames	=> 'ChannelName',
-       InquireChannelStatus	=> 'ChannelName',
-       InquireStorageClass	=> 'StorageClassName',
-       InquireStorageClassNames	=> 'StorageClassName',
+       InquireNamelist          => 'NamelistName',
+       InquireNamelistNames     => 'NamelistName',
+       InquireProcess           => 'ProcessName',
+       InquireProcessNames      => 'ProcessName',
+       InquireQueue             => 'QName',
+       InquireQueueNames        => 'QName',
+       InquireQueueStatus       => 'QName',
+       ResetQueueStatistics     => 'QName',
+       InquireChannel           => 'ChannelName',
+       InquireChannelNames      => 'ChannelName',
+       InquireChannelStatus     => 'ChannelName',
+       InquireStorageClass      => 'StorageClassName',
+       InquireStorageClassNames => 'StorageClassName',
        InquireService           => 'ServiceName',
        InquireAuthInfo          => 'AuthInfoName',
-       InquireAuthInfoNames	=> 'AuthInfoName',
-       InquireCFStruc		=> 'CFStrucName',
-       InquireCFStrucNames	=> 'CFStrucName',
-       InquireCFStrucStatus	=> 'CFStrucName',
+       InquireAuthInfoNames     => 'AuthInfoName',
+       InquireCFStruc           => 'CFStrucName',
+       InquireCFStrucNames      => 'CFStrucName',
+       InquireCFStrucStatus     => 'CFStrucName',
        InquireCFStruct          => 'CFStructName',
        InquireCFStructNames     => 'CFStructName',
-       InquireThread		=> 'ThreadName',
+       InquireThread            => 'ThreadName',
        InquireChannelListener   => 'ListenerName',
-      );	
+      );
 
     if ( $command2name{$command} ) {
-	unless ( $parameters->{$command2name{$command}} ) {
-	    $parameters->{$command2name{$command}} = '*';
-	}
+        unless ( $parameters->{$command2name{$command}} ) {
+            $parameters->{$command2name{$command}} = '*';
+        }
     }
 
     #
     # Allow 'GenericConnectionId' of InquireConnection to default to '00'
     #
     if ( $command eq 'InquireConnection' ) {
-	unless ( $parameters->{'GenericConnectionId'} || $parameters->{'ConnectionId'} ) {
-	    $parameters->{'GenericConnectionId'} = '00';
-	}
+        unless ( $parameters->{'GenericConnectionId'} || $parameters->{'ConnectionId'} ) {
+            $parameters->{'GenericConnectionId'} = '00';
+        }
     }
 
     #
@@ -820,26 +812,26 @@ sub _Command {
     #
     my %command2all =
       (
-       InquireChannel			=> 'ChannelAttrs',
-       InquireChannelStatus		=> 'ChannelInstanceAttrs',
-       InquireClusterQueueManager	=> 'ClusterQMgrAttrs',
-       InquireConnection		=> 'ConnectionAttrs',
-       InquireNamelist			=> 'NamelistAttrs',
-       InquireProcess			=> 'ProcessAttrs',
-       InquireQueue			=> 'QAttrs',
-       InquireQueueManager		=> 'QMgrAttrs',
-       InquireQueueStatus		=> 'QStatusAttrs',
-       InquireStorageClass		=> 'StorageClassAttrs',
+       InquireChannel                   => 'ChannelAttrs',
+       InquireChannelStatus             => 'ChannelInstanceAttrs',
+       InquireClusterQueueManager       => 'ClusterQMgrAttrs',
+       InquireConnection                => 'ConnectionAttrs',
+       InquireNamelist                  => 'NamelistAttrs',
+       InquireProcess                   => 'ProcessAttrs',
+       InquireQueue                     => 'QAttrs',
+       InquireQueueManager              => 'QMgrAttrs',
+       InquireQueueStatus               => 'QStatusAttrs',
+       InquireStorageClass              => 'StorageClassAttrs',
        InquireAuthInfo                  => 'AuthInfoAttrs',
        InquireCFStruct                  => 'CFStructAttrs',
-       InquireCFStruc			=> 'CFStrucAttrs',
+       InquireCFStruc                   => 'CFStrucAttrs',
        InquireService                   => 'ServiceAttrs',
       );
 
     if ( $command2all{$command} ) {
-	unless ( $parameters->{$command2all{$command}} ) {
-	    $parameters->{$command2all{$command}} = ['All'];
-	}
+        unless ( $parameters->{$command2all{$command}} ) {
+            $parameters->{$command2all{$command}} = ['All'];
+        }
     }
 
     #
@@ -854,7 +846,7 @@ sub _Command {
       { %{ $self->{DefaultMsgDesc} },
         ReplyToQ    => $self->{ReplyToQ}->ObjDesc("ObjectName"),
         ReplyToQMgr => $self->{ReplyToQMgr},
-        Expiry	    => $self->{Expiry},
+        Expiry      => $self->{Expiry},
       };
     my $putmsg_options =
       { Options => MQSeries::MQPMO_FAIL_IF_QUIESCING,
@@ -878,12 +870,12 @@ sub _Command {
     }
 
     $self->{Request} = MQSeries::Command::Request::->
-      new(MsgDesc 	=> $req_msgdesc,
-          Type		=> $self->{Type},
-          Command 	=> $command,
-          Parameters 	=> $parameters,
-          Carp 		=> $self->{Carp},
-          StrictMapping	=> $self->{StrictMapping},
+      new(MsgDesc       => $req_msgdesc,
+          Type          => $self->{Type},
+          Command       => $command,
+          Parameters    => $parameters,
+          Carp          => $self->{Carp},
+          StrictMapping => $self->{StrictMapping},
           CommandVersion => $self->{CommandVersion},
          ) || do {
              $self->{"CompCode"} = MQSeries::MQCC_FAILED;
@@ -894,7 +886,7 @@ sub _Command {
     my $putresult = $self->{CommandQueue}->
       Put(Message    => $self->{Request},
           PutMsgOpts => $putmsg_options,
-	  Sync       => 0,
+          Sync       => 0,
          );
 
     #
@@ -910,9 +902,9 @@ sub _Command {
     }
 
     unless ($putresult) {
-	$self->{"CompCode"} = $self->{CommandQueue}->CompCode();
-	$self->{"Reason"} = $self->{CommandQueue}->Reason();
-	return;
+        $self->{"CompCode"} = $self->{CommandQueue}->CompCode();
+        $self->{"Reason"} = $self->{CommandQueue}->Reason();
+        return;
     }
 
     $self->{Response} = [];
@@ -921,22 +913,22 @@ sub _Command {
 
     my @response_buffers;
     while ( 1 ) {
-	my $response = MQSeries::Command::Response::->
-          new(MsgDesc 		=>
+        my $response = MQSeries::Command::Response::->
+          new(MsgDesc           =>
               {
                CorrelId         => $self->{Request}->MsgDesc("MsgId"),
               },
-              Type		=> $self->{Type},
-              Header		=> $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
-              StrictMapping	=> $self->{StrictMapping},
+              Type              => $self->{Type},
+              Header            => $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
+              StrictMapping     => $self->{StrictMapping},
              ) || do {
                  $self->{"CompCode"} = MQSeries::MQCC_FAILED;
                  $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
                  return;
              };
-	my $getresult = $self->{ReplyToQ}->
-          Get(Message	=> $response,
-              Wait	=> $self->{Wait},
+        my $getresult = $self->{ReplyToQ}->
+          Get(Message   => $response,
+              Wait      => $self->{Wait},
              );
         #
         # Stats again: keep track of no replies, total bytes, largest
@@ -950,24 +942,24 @@ sub _Command {
                   $get_size > $self->{'Stats'}->{'MaxResponse'});
         }
 
-	unless ($getresult) {
-	    $self->{"CompCode"} = $self->{ReplyToQ}->CompCode();
-	    $self->{"Reason"} = $self->{ReplyToQ}->Reason();
-	    $self->Carp("MQGET from ReplyQ failed.\n" .
+        unless ($getresult) {
+            $self->{"CompCode"} = $self->{ReplyToQ}->CompCode();
+            $self->{"Reason"} = $self->{ReplyToQ}->Reason();
+            $self->Carp("MQGET from ReplyQ failed.\n" .
                         "Reason => " . MQReasonToText($self->{"Reason"}) . "\n");
-	    return;
-	}
-	
-	#
-	# Keep going until there are no more messages.  This is
-	# essential for MQSC, but PCF tells us when the last response
-	# is in.
-	#
-	last if $self->{ReplyToQ}->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE;
-	
-	#print STDERR "XXX: Response buffer [$response->{'Buffer'}]\n"
-	#   if ($self->{Type} eq 'MQSC');
-	
+            return;
+        }
+
+        #
+        # Keep going until there are no more messages.  This is
+        # essential for MQSC, but PCF tells us when the last response
+        # is in.
+        #
+        last if $self->{ReplyToQ}->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE;
+
+        #print STDERR "XXX: Response buffer [$response->{'Buffer'}]\n"
+        #   if ($self->{Type} eq 'MQSC');
+
         #
         # Ugly hack:
         # - If this is MQSC
@@ -1000,12 +992,12 @@ sub _Command {
         # FIXME: We probably don't want to keep the response
         #        objects around.
         #
-	push(@{$self->{Response}}, $response);
+        push(@{$self->{Response}}, $response);
 
-	# Have to "reuse" the header.... blegh.
-	$MQSCHeader = $response->Header() if $self->{Type} eq 'MQSC';
+        # Have to "reuse" the header.... blegh.
+        $MQSCHeader = $response->Header() if $self->{Type} eq 'MQSC';
 
-	last if $self->_LastSeen();
+        last if $self->_LastSeen();
     }
 
     #
@@ -1014,12 +1006,12 @@ sub _Command {
     # If we didn't see the last message, then return the empty list.
     #
     unless ( $self->_LastSeen() ) {
-	$self->{"CompCode"} = MQSeries::MQCC_FAILED
+        $self->{"CompCode"} = MQSeries::MQCC_FAILED
           if $self->{"CompCode"} == MQSeries::MQCC_OK;
-	$self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR
+        $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR
           if $self->{"Reason"} == MQSeries::MQRC_NONE;
-	$self->Carp("Last response message never seen\n");
-	return;
+        $self->Carp("Last response message never seen\n");
+        return;
     }
 
     #
@@ -1031,27 +1023,27 @@ sub _Command {
     # Handle the InquireFooNames commands -- they're very easy.
     #
     if ( $command =~ /^Inquire(\w+?Names)$/ ) {
-	$key = $1;
-	$key = 'QNames' if $key eq 'QueueNames';
-	# beware -- the command may have worked, but there may be no
-	# names, in which case, $names will be undef.
-	my $names = $self->{Response}->[0]->Parameters($key);
-	if ( ref $names eq 'ARRAY' ) {
-	    return @$names;
-	} else {
-	    return;
-	}
+        $key = $1;
+        $key = 'QNames' if $key eq 'QueueNames';
+        # beware -- the command may have worked, but there may be no
+        # names, in which case, $names will be undef.
+        my $names = $self->{Response}->[0]->Parameters($key);
+        if ( ref $names eq 'ARRAY' ) {
+            return @$names;
+        } else {
+            return;
+        }
     }
     #
     # Next handle anything which returns a list of parameters
     #
     elsif ( $command =~ /^(Inquire|ResetQueue|Escape)/ ) {
-	my @parameters = $self->DataParameters();
-	if ( wantarray ) {
-	    return @parameters;
-	} else {
-	    return $parameters[0];
-	}
+        my @parameters = $self->DataParameters();
+        if ( wantarray ) {
+            return @parameters;
+        } else {
+            return $parameters[0];
+        }
     }
     #
     # Handle the "partial completion" reason codes returned by MQSC
@@ -1062,31 +1054,31 @@ sub _Command {
     # that sucks...
     #
     elsif ( $command =~ /^(Start|Stop)Channel$/ ) {
-	if (
-	    $self->{"CompCode"} ||
-	    ( $self->{"Reason"} != 0 && $self->{"Reason"} != 4 )
-	   ) {
-	    $self->Carp(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
-	    return;
-	} else {
-	    return 1;
-	}
+        if (
+            $self->{"CompCode"} ||
+            ( $self->{"Reason"} != 0 && $self->{"Reason"} != 4 )
+           ) {
+            $self->Carp(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
+            return;
+        } else {
+            return 1;
+        }
     }
     #
     # Finally the simple worked or failed commands
     #
     else {
-	if ($self->{"CompCode"} == 0 && $self->{"Reason"} == 4 &&
-	    $self->{"Buffers"}[-1] =~ /CSQN13[78]I .* command (?:accepted|generated)/) {
-	    #
-	    # Deal with CommandScope for QSGs.  If CompCode=0 and Reason=4,
-	    # and the last response is one of:
-	    # - 'CSQN137I ... command accepted',
-	    # - 'CSQN138I ... command generated',
-	    # this is not an error.
-	    #
-	    return 1;
-	} elsif ( $self->{"CompCode"} || $self->{"Reason"} ) {
+        if ($self->{"CompCode"} == 0 && $self->{"Reason"} == 4 &&
+            $self->{"Buffers"}[-1] =~ /CSQN13[78]I .* command (?:accepted|generated)/) {
+            #
+            # Deal with CommandScope for QSGs.  If CompCode=0 and Reason=4,
+            # and the last response is one of:
+            # - 'CSQN137I ... command accepted',
+            # - 'CSQN138I ... command generated',
+            # this is not an error.
+            #
+            return 1;
+        } elsif ( $self->{"CompCode"} || $self->{"Reason"} ) {
             #
             # Save the MQSC ReasonText.  Leave undef (for translation
             # of normal reason code ->text) in other cases.
@@ -1096,11 +1088,11 @@ sub _Command {
                 $self->{'Reason'} = 8; # Often corrupted, so sanitize
                 $self->{'ReasonText'} = "@{ $MQSCHeader->{'ReasonText'} }";
             }
-	    $self->Carp(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
-	    return;
-	} else {
-	    return 1;
-	}
+            $self->Carp(qq/Command '$command' failed (Reason = $self->{"Reason"})/);
+            return;
+        } else {
+            return 1;
+        }
     }
 }
 
@@ -1156,6 +1148,21 @@ sub _CompareOneAttribute {
     my ($name, $request, $found) = @_;
 
     my $diff = 0;
+
+    #
+    # The HeaderCompression and MessageCompression attributes can
+    # return an array padded with '-1' (not available) entries.  If
+    # so, we remove such entries (but we keep at least one).
+    #
+    if (($name eq 'HeaderCompression' || $name eq 'MessageCompression') &&
+        ref($found) eq 'ARRAY' && grep { $_ == -1 } @$found) {
+        $found = [ grep { $_ != -1 } @$found ];
+        if (@$found == 0) {     # No elements set
+            $found = -1;
+        } elsif (@$found == 1) {
+	    $found = $found->[0];  # Turn into scalar
+	}
+    }
 
     #
     # One special case -- we don't need this attribute is they are
@@ -1230,9 +1237,9 @@ sub Responses {
     $self->Carp("MQSeries::Command - Responses() being invoked");
 
     if ( ref $self->{"Response"} eq "ARRAY" ) {
-	return @{$self->{"Response"}};
+        return @{$self->{"Response"}};
     } else {
-	return;
+        return;
     }
 }
 
@@ -1299,19 +1306,19 @@ MQSeries::Command - OO interface to the Programmable Commands
   foreach my $qname ( @qnames ) {
 
       $attr = $command->InquireQueue
-	(
-	 QName		=> $qname,
-	 QAttrs		=> [qw(
-			       OpenInputCount
-			       OpenOutputCount
-			       CurrentQDepth
-			      )],
-	) or die "InquireQueue: " . MQReasonToText($command->Reason()) . "\n";
+        (
+         QName          => $qname,
+         QAttrs         => [qw(
+                               OpenInputCount
+                               OpenOutputCount
+                               CurrentQDepth
+                              )],
+        ) or die "InquireQueue: " . MQReasonToText($command->Reason()) . "\n";
 
       print "QName = $qname\n";
 
       foreach my $key ( sort keys %$attr ) {
-	  print "\t$key => $attr->{$key}\n";
+          print "\t$key => $attr->{$key}\n";
       }
 
   }
@@ -1321,24 +1328,24 @@ MQSeries::Command - OO interface to the Programmable Commands
   #
   $command->CreateObject
     (
-     Attrs		=>
+     Attrs              =>
      {
-      QName		=> 'FOO.BAR.REQUEST',
-      QType		=> 'Local',
-      MaxQDepth		=> '50000',
-      MaxMsgLength	=> '20000',
+      QName             => 'FOO.BAR.REQUEST',
+      QType             => 'Local',
+      MaxQDepth         => '50000',
+      MaxMsgLength      => '20000',
      }
     ) || die "CreateObject: " . MQReasonToText($command->Reason()) . "\n";
 
   $command->CreateObject
     (
-     Clear		=> 1,
-     Attrs		=>
+     Clear              => 1,
+     Attrs              =>
      {
-      QName		=> 'FOO.BAR.REPLY',
-      QType		=> 'Remote',
-      RemoteQName	=> 'FOO.BAR.REPLY',
-      RemoteQMgrName	=> 'SAT1',
+      QName             => 'FOO.BAR.REPLY',
+      QType             => 'Remote',
+      RemoteQName       => 'FOO.BAR.REPLY',
+      RemoteQMgrName    => 'SAT1',
      }
     ) || die "CreateObject: " . MQReasonToText($command->Reason()) . "\n";
 
@@ -1490,13 +1497,13 @@ key/value pairs:
   CommandQueue       MQSeries::Queue object
   CommandVersion     Numeric (1 or 3)
   DynamicQName       String
-  ModelQName	     String
+  ModelQName         String
   Type               String ("PCF" or "MQSC")
-  Expiry	     Numeric
+  Expiry             Numeric
   Wait               Numeric
   ReplyToQMgr        String
   Carp               CODE Reference
-  StrictMapping      Boolean	
+  StrictMapping      Boolean
 
 =over 4
 
@@ -1705,9 +1712,9 @@ For example, one might want everything to be logged via syslog:
 Then, one tells the object to use this routine:
 
   my $command = MQSeries::Command->new(
-				       QueueManager => 'some.queue.manager',
-				       Carp => \&MyLogger,
-				      )
+                                       QueueManager => 'some.queue.manager',
+                                       Carp => \&MyLogger,
+                                      )
       or die("Unable to connect to queue manager.\n");
 
 The default, as one might guess, is Carp::carp();
@@ -1812,11 +1819,11 @@ key/value pairs:
 
   Key                Value
   ===                =====
-  Attrs		     HASH reference
-  Verify	     Boolean
+  Attrs              HASH reference
+  Verify             Boolean
   Clear              Boolean
   Quiet              Boolean
-  Force	             Boolean
+  Force              Boolean
   Callback           CODE reference
 
 The key/value pairs in the Attrs argument are passed directly to the
@@ -2144,10 +2151,10 @@ The following keys have special value mappings:
 
 =over 4
 
-=item EscapeType 		(integer)
+=item EscapeType                (integer)
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     MQSC                        MQET_MQSC
 
 =back
