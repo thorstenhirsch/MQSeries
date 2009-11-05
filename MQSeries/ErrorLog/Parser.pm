@@ -2,10 +2,10 @@
 # MQSeries::ErrorLog::Parser.pm - Parse error-log files into error-log
 #                                 entry objects
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 32.1 2009/05/22 15:28:13 biersma Exp $
+# $Id: Parser.pm,v 33.2 2009/07/10 18:35:00 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -20,14 +20,10 @@ use MQSeries::ErrorLog::Entry;
 # Load a file with error-descriptions, available as
 # the variable 'error_table'.
 #
-use vars qw(
-	    $error_table
-	    $VERSION
-	   );
-
+our $error_table;
 require "MQSeries/ErrorLog/descriptions.pl";
 
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 #
 # Constructor
@@ -45,7 +41,7 @@ sub new {
     my $dfts = $args{'defaults'} || {};
     my $carp = $args{'Carp'} || \&carp;
 
-    my $this = { 'defaults' => $dfts, 
+    my $this = { 'defaults' => $dfts,
                  'Carp' => $carp,
                };
     return bless $this, $class;
@@ -80,7 +76,7 @@ sub parse_data {
         if ($@) {
             $this->{'Carp'}->("Parse error: $@\n");
         };
-              
+
     }
 
     return @entries;
@@ -97,7 +93,7 @@ my %warnings;
 # Parameters:
 # - MQSeries::ErrorLog::Parser object
 # - Chunk of ErrorLog data
-# Returns: 
+# Returns:
 # - MQSeries::ErrorLog::Entry object
 #
 sub parse_one_chunk {
@@ -116,7 +112,7 @@ sub parse_one_chunk {
     # Apparently, MQSeries doesn't always do proper atomic writes
     # of entire error-log entries.  Try and look for the most
     # common errors and don't try and parse the chunk if there are
-    # obvious errors. 
+    # obvious errors.
     #
     if ($chunk =~ m!^\d\d/\d\d/\d\d\s+\d\d/\d\d/\d\d\s+\d\d:\d\d:\d\d\s!s ||
         $chunk =~ m!\nACTION:?\n.*\nACTION:?\n!s ||
@@ -127,7 +123,7 @@ sub parse_one_chunk {
         $this->{'invalid'}++;
         return;
     }
- 
+
     #
     # Break the chunk into:
     # - timestamp
@@ -152,20 +148,20 @@ sub parse_one_chunk {
     #                1 2      3      4           5      6      7         8
     if ($chunk =~ m!^((\d\d)/(\d\d)/(\d{2,4})\s+(\d\d):(\d\d):(\d\d))\s+([AaPp][Mm]|)([\w\-\(\)\.\s]*)(?=\n|AMQ)!g) {
         $data->{'timestamp'} = $1;
-	my $hour = $5;
-	if ($8 ne '') {
-	   my $am_pm = $8;
-	   if ($am_pm =~ m!AM!i && $hour eq "12") { 
-	      $hour = 0;
-	   } elsif ($am_pm =~ m!PM!i && $hour ne "12") {
-	      $hour += 12;
-	   }
-	}
+        my $hour = $5;
+        if ($8 ne '') {
+           my $am_pm = $8;
+           if ($am_pm =~ m!AM!i && $hour eq "12") {
+              $hour = 0;
+           } elsif ($am_pm =~ m!PM!i && $hour ne "12") {
+              $hour += 12;
+           }
+        }
         $data->{'ctime'} = timelocal($7, $6, $hour, $3, $2-1, $4);
     } else {
         confess "Cannot parse timestamp in [$chunk]";
     }
-    
+
     # Handle error code and summary
     if ($chunk =~ m!\G\s*(AMQ\d+):\s+(.*?)\s*\n\s*\n(?=EXPLANATION:?\s+)!gs) {
         $data->{'error_code'} = $1;
@@ -174,7 +170,7 @@ sub parse_one_chunk {
     } else {
         confess "Cannot parse summary in [$chunk]";
     }
-    
+
     #
     # Get explanation
     # NOTE: Depending on the MQSeries release, the
@@ -186,7 +182,7 @@ sub parse_one_chunk {
     } else {
         confess "Cannot parse explanation in [$chunk]";
     }
-    
+
     #
     # Get action
     # NOTE: Depending on the MQSeries release, the
@@ -200,13 +196,13 @@ sub parse_one_chunk {
           substr($chunk, pos($chunk), 50) . "]";
     }
 
-    # 
+    #
     # Every description in the error-table is basically
     # a string with a regexp, plus a list of field-names
     # for the first, second, etc parenthesis-group in the regexp.
     #
     my $desc = $error_table->{ $data->{'error_code'} };
-    
+
     if ($desc) {
         $chunk =~ s!\s+! !g; # Normalize to undo line-wrapping
         my $match = 0;
@@ -214,7 +210,7 @@ sub parse_one_chunk {
         #
         # Thanks to Michael Fowler <michael@shoebox.net> for a comment
         # that the regular expression should be evualated in an array
-        # context.  Earlier code was using a for-loop and symbolic 
+        # context.  Earlier code was using a for-loop and symbolic
         # references for $1, $2, $3, ...
         #
         if (my @entries = ($chunk =~ m!$desc->[0]!)) {
@@ -251,9 +247,9 @@ sub parse_one_chunk {
             }
         }
     }
-    
+
     my $entry = MQSeries::ErrorLog::Entry->new(%$data);
-    
+
     #
     # Issue a warning if the event code is not known (no detailed view) -
     # using the event class' own methods
@@ -264,14 +260,14 @@ sub parse_one_chunk {
                               $entry->display_raw() . "\n");
         }
     }
-    
+
     return $entry;
 }
 
 
 1;                              # End on a positive note
 
-        
+
 __END__
 
 =head1 NAME
@@ -283,9 +279,9 @@ MQSeries::ErrorLog::Parser -- Parse a portion of an MQSeries error log and retur
   use MQSeries::ErrorLog::Parser;
 
   my $qmgr = 'foo';   # Queue Manager we are processing
-  my $parser = 
-    new MQSeries::ErrorLog::Parser('defaults' => { 'QMgr' => $qmgr });
-  open (ERRORS, "/var/mqm/qmgrs/$qmgr/errors/AMQERR01.LOG");
+  my $parser = MQSeries::ErrorLog::Parser->
+    new('defaults' => { 'QMgr' => $qmgr });
+  open (ERRORS, '<', "/var/mqm/qmgrs/$qmgr/errors/AMQERR01.LOG");
   local $/;
   my @entries = $parser->parse_data(<ERRORS>);
   close ERRORS;

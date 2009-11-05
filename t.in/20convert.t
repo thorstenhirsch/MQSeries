@@ -1,7 +1,7 @@
 #
-# $Id: 20convert.t,v 32.1 2009/05/22 15:28:15 biersma Exp $
+# $Id: 20convert.t,v 33.2 2009/07/10 17:06:06 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -20,7 +20,7 @@ BEGIN {
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.29;
+use __APITYPE__::MQSeries 1.30;
 $loaded = 1;
 print "ok 1\n";
 

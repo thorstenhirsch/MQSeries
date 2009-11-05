@@ -1,8 +1,8 @@
-#!/ms/dist/perl5/bin/perl5.005
+#!/usr/bin/perl5
 #
-# $Id: mqchl2ini,v 27.1 2007/01/11 20:20:38 molinam Exp $
+# $Id: mqchl2ini,v 33.1 2009/07/10 18:36:12 biersma Exp $
 #
-# (c) 2001-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2001-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,15 +10,10 @@ use strict;
 use English;
 use Getopt::Long;
 
-#use lib "/ms/dev/perl5/MQSeries/1.14-5.005/install/exec/lib/perl5";
-use lib "/ms/dev/perl5/MQSeries/1.21/src";
 use MQSeries::Config::ChannelTable;
 
-use vars qw(
-	    %Args
-	   );
-
-GetOptions( \%Args, qw( debug ) ) || usage();
+our %Args;
+GetOptions( \%Args, qw( debug! ) ) || usage();
 
 my ($InputFile,$OutputFile) = @ARGV;
 
@@ -35,8 +30,8 @@ writeOutput($OutputFile,@channels);
 
 exit 0;
 
-sub writeOutput {
 
+sub writeOutput {
     my ($file,@channels) = @_;
 
     my $date = scalar(localtime);
@@ -67,14 +62,14 @@ EndOfHeader
 
     $data .= join("\n", @stanza);
 
-    open(FILE,">$file") || die "Unable to write to $file: $ERRNO\n";
+    open(FILE, '>', $file) || die "Unable to write to $file: $ERRNO\n";
     print FILE $data;
     close(FILE) || die "Unable to close $file: $ERRNO\n";
 
 }
 
-sub writeStanza {
 
+sub writeStanza {
     my ($channel,$default) = @_;
 
     my $stanza = "$channel->{ChannelName}:\n";
@@ -134,8 +129,8 @@ sub writeStanza {
     }
 
     return $stanza;
-
 }
+
 
 sub usage {
     die <<"EndOfUsage";

@@ -1,8 +1,8 @@
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 28.1 2007/02/08 19:38:38 biersma Exp $
+# $Id: Makefile.PL,v 33.3 2009/11/05 20:12:27 anbrown Exp $
 #
 use English;
 use ExtUtils::MakeMaker;
@@ -70,10 +70,12 @@ foreach my $dest ( sort keys %files ) {
 WriteMakefile(
 	      NAME	   => 'MQSeries',
 	      VERSION_FROM => 'MQSeries.pm', # finds $VERSION
-              AUTHOR      => 'Michelle Beloff <Michelle.Molina@MorganStanley.com>, Hildo Biersma <Hildo.Biersma@MorganStanley.com>',
+              AUTHOR      => 'MQ Engineering Group <mqseries@cpan.org>',
               ABSTRACT	  => "Interface to IBM's MQSeries Product",
-	      PREREQ_PM   => { 'Params::Validate' => '0.77.1',
+	      PREREQ_PM   => { 'Convert::EBCDIC'  => '0.06',
+			       'Params::Validate' => '0.89',
 			       'Test::Simple'     => '0.62',
+			       'Test::Pod'        => '1.20',
 			     },
 	     );
 

@@ -1,9 +1,9 @@
 # MQSeries::FDC::Entry.pm - One entry from an FDC log.
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 32.1 2009/05/22 15:28:13 biersma Exp $
+# $Id: Entry.pm,v 33.2 2009/07/10 18:35:18 biersma Exp $
 #
 
 package MQSeries::FDC::Entry;
@@ -15,9 +15,7 @@ use overload ('""'  => 'as_string',
               'cmp' => 'compare',
               '<=>' => 'compare');
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 #
 # Constructor
@@ -32,7 +30,7 @@ $VERSION = '1.29';
 sub new {
     my ($class, %args) = @_;
 
-    confess "Illegal arguments" 
+    confess "Illegal arguments"
       unless (keys %args == 2 &&
               defined $args{'fields'} && defined $args{'body'});
 
@@ -54,7 +52,7 @@ sub new {
         $this->{'fields'}{'userid'} = $2;
     }
 
-    # 
+    #
     # The event code will be made available from the
     # first bit of the 'Probe Description' field
     #
@@ -87,7 +85,7 @@ sub get_header {
 }
 
 
-# 
+#
 # Access method for the body (long details from the FDC entry)
 #
 # Parameters:
@@ -102,7 +100,7 @@ sub get_body {
 }
 
 
-# 
+#
 # Display parsed FDC entry
 #
 # Parameters:
@@ -115,7 +113,7 @@ sub as_string {
 
   my $retval = "FDC Entry at [" . $this->get_header('Date/Time') . "] with fields:\n";
   #print "All fields: [", join(',', sort keys %{ $this->{'fields'} }), "]\n";
-  foreach my $field ('Host Name', 'QueueManager', 
+  foreach my $field ('Host Name', 'QueueManager',
                      'Process', 'userid',
                      'Program Name', 'Major Errorcode',
                      'event_code') {
@@ -144,14 +142,14 @@ sub compare {
     #
     # Compare the most important fields
     #
-    foreach my $field ('Host Name', 'QueueManager', 
-                       'userid', 'Program Name', 
+    foreach my $field ('Host Name', 'QueueManager',
+                       'userid', 'Program Name',
                        'Major Errorcode', 'event_code') {
-        my $cmp = (($a->get_header($field) || 'unknown') cmp 
+        my $cmp = (($a->get_header($field) || 'unknown') cmp
                    ($b->get_header($field) || 'unknown'));
         return $cmp if ($cmp);
     }
-    
+
     #
     # If we get here, consider the entries equal
     #
@@ -160,7 +158,7 @@ sub compare {
 
 
 1;                              # End on a positive note
-        
+
 
 __END__
 

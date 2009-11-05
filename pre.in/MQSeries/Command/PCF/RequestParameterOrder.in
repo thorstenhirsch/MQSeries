@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: RequestParameterOrder.in,v 27.2 2007/01/11 20:20:39 molinam Exp $
+# $Id: RequestParameterOrder.in,v 33.1 2009/07/08 19:15:21 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,9 +19,9 @@ package MQSeries::Command::PCF;
   (
    DeleteQueue			=> [ qw(QType Purge) ],
 
-   InquireQueueStatus           => [ qw(StatusType OpenType QStatusAttrs) ],
-   InquireClusterQueueManager   => [ qw(Channel ClusterName ClusterQMgrAtrrs) ],
-   InquireConnection                   => [ qw(ConnectionId GenericConnectionId) ],
+   InquireQueueStatus		=> [ qw(StatusType OpenType QStatusAttrs) ],
+   InquireClusterQueueManager	=> [ qw(Channel ClusterName ClusterQMgrAtrrs) ],
+   InquireConnection		=> [ qw(ConnectionId GenericConnectionId) ],
   );
 
 1;

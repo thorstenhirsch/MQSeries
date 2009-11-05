@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -46,24 +46,31 @@ package MQSeries::Command::PCF;
     QName			=> 1,
    },
 
-   CopyAuthInfo                 =>
+   ClearTopicString		=>
    {
-    AuthInfoType                => 3,
-    FromAuthInfoName            => 1,
-    ToAuthInfoName              => 2,
+    TopicString			=> 1,
+    ClearType			=> 2,
+    #Scope			=> 3,
    },
 
-   CopyCFStruc                  =>
+   CopyAuthInfo			=>
+   {
+    AuthInfoType		=> 3,
+    FromAuthInfoName		=> 1,
+    ToAuthInfoName		=> 2,
+   },
+
+   CopyCFStruc			=>
    {
     FromCFStrucName		=> 1,
     ToCFStrucName		=> 2,
    },
 
-   CopyChannel                  =>
+   CopyChannel			=>
    {
-    ChannelType                 => 3,
-    FromChannelName             => 1,
-    ToChannelName               => 2,
+    ChannelType			=> 3,
+    FromChannelName		=> 1,
+    ToChannelName		=> 2,
    },
 
    CopyChannelListener		=>
@@ -72,23 +79,23 @@ package MQSeries::Command::PCF;
     ToListenerName		=> 2,
    },
 
-   CopyNamelist                 =>
+   CopyNamelist			=>
    {
-    FromNamelistName            => 1,
-    ToNamelistName              => 2,
+    FromNamelistName		=> 1,
+    ToNamelistName		=> 2,
    },
 
-   CopyProcess                  =>
+   CopyProcess			=>
    {
-    FromProcessName             => 1,
-    ToProcessName               => 2,
+    FromProcessName		=> 1,
+    ToProcessName		=> 2,
    },
 
-   CopyQueue                    =>
+   CopyQueue			=>
    {
-    FromQName                   => 1,
-    QType                       => 3,
-    ToQName                     => 2,
+    FromQName			=> 1,
+    QType			=> 3,
+    ToQName			=> 2,
    },
 
    CopyService			=>
@@ -103,11 +110,24 @@ package MQSeries::Command::PCF;
     ToStorageClassName		=> 2,
    },
 
-   CreateAuthInfo               =>
+   CopyTopic			=>
    {
-    AuthInfoName                => 1,
-    AuthInfoConnName            => 3,
-    AuthInfoType                => 2,
+    FromTopicName		=> 1,
+    TopicString			=> 3,
+    ToTopicName			=> 2,
+   },
+
+   CreateAuthInfo		=>
+   {
+    AuthInfoName		=> 1,
+    AuthInfoConnName		=> 3,
+    AuthInfoType		=> 2,
+   },
+
+   CreateTopic			=>
+   {
+    TopicName			=> 1,
+    TopicString			=> 2,
    },
 
    DeleteAuthorityRecord	=>
@@ -134,9 +154,9 @@ package MQSeries::Command::PCF;
     AuthServiceAttrs		=> 1,
    },
 
-   InquireClusterQueueManager   =>
+   InquireClusterQueueManager	=>
    {
-    ClusterQMgrName             => 1,
+    ClusterQMgrName		=> 1,
    },
 
 #   InquireConnection		=>
@@ -177,10 +197,10 @@ package MQSeries::Command::PCF;
     ObjectType			=> 2,
    },
 
-   SuspendQueueManagerCluster   =>
+   SuspendQueueManagerCluster	=>
    {
-    ClusterName                 => 1,
-    ClusterNamelist             => 1,
+    ClusterName			=> 1,
+    ClusterNamelist		=> 1,
    },
 
    #
@@ -201,7 +221,7 @@ $RequestParameterRequired{InquireAuthInfo} =
   $RequestParameterRequired{ChangeAuthInfo} =
   $RequestParameterRequired{DeleteAuthInfo} =
   {
-   AuthInfoName         => 1,
+   AuthInfoName		=> 1,
   };
 
 $RequestParameterRequired{InquireCFStruc} =
@@ -217,7 +237,7 @@ $RequestParameterRequired{InquireCFStruc} =
 
 #
 # NOTE: CFStruct is for backwards compatibility with pre-1.24 MQSC
-#       New code should use CFStruc (no final 't')
+#	New code should use CFStruc (no final 't')
 #
 $RequestParameterRequired{InquireCFStruct} =
   $RequestParameterRequired{InquireCFStructNames} =
@@ -230,15 +250,15 @@ $RequestParameterRequired{InquireCFStruct} =
 $RequestParameterRequired{CreateChannelListener} =
   $RequestParameterRequired{ChangeChannelListener} =
   {
-   ListenerName                => 1,
-   TransportType               => 2,
+   ListenerName		       => 1,
+   TransportType	       => 2,
   };
 
 $RequestParameterRequired{DeleteChannelListener} =
   $RequestParameterRequired{InquireChannelListener} =
   $RequestParameterRequired{InquireChannelListenerStatus} =
   {
-   ListenerName                => 1,
+   ListenerName		       => 1,
   };
 
 $RequestParameterRequired{InquireNamelist} =
@@ -246,7 +266,7 @@ $RequestParameterRequired{InquireNamelist} =
   $RequestParameterRequired{ChangeNamelist} =
   $RequestParameterRequired{DeleteNamelist} =
   {
-   NamelistName         => 1,
+   NamelistName		=> 1,
   };
 
 $RequestParameterRequired{InquireProcess} =
@@ -254,7 +274,7 @@ $RequestParameterRequired{InquireProcess} =
   $RequestParameterRequired{ChangeProcess} =
   $RequestParameterRequired{DeleteProcess} =
   {
-   ProcessName          => 1,
+   ProcessName		=> 1,
   };
 
 $RequestParameterRequired{CreateQueue} =
@@ -310,5 +330,31 @@ $RequestParameterRequired{InquireStorageClass} =
    StorageClassName	=> 1,
   };
 
+#
+# Subscriptions can be keyed off SubName or SubID.  We'll use the name
+# for now, but that may change.	 MQSeries::Command doesn't support
+# alternate required options.
+#
+$RequestParameterRequired{InquireSubscription} =
+  $RequestParameterRequired{InquireSubscriptionStatus} =
+  $RequestParameterRequired{CreateSubscription} =
+  $RequestParameterRequired{ChangeSubscription} =
+  $RequestParameterRequired{DeleteSubscription} =
+  {
+   SubName		=> 1,
+  };
+
+$RequestParameterRequired{InquireTopic} =
+  $RequestParameterRequired{InquireTopicNames} =
+  $RequestParameterRequired{ChangeTopic} =
+  $RequestParameterRequired{DeleteTopic} =
+  {
+   TopicName		=> 1,
+  };
+
+$RequestParameterRequired{InquireTopicStatus} =
+  {
+   TopicString		=> 1,
+  };
 
 1;

@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2004 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -44,6 +44,17 @@ package MQSeries::Command::PCF;
    {
     Exclusive			=> 4,
     Shared			=> 2,
+   },
+
+   #
+   # Pub/Sub Message Delivery
+   #
+   MsgDelivery =>
+   {
+    All				=> 1,
+    AllAvailable		=> 3,
+    AllDurable			=> 2,
+    AsParent			=> 0,
    },
 
    MsgDeliverySequence =>
@@ -160,17 +171,17 @@ package MQSeries::Command::PCF;
 
    ApplType =>
    {
+    CHINIT			=> 30,
     CICS			=> 1,
-    CHINIT                      => 30,
     DOS				=> 5,
     IMS				=> 3,
     MVS				=> 2,
-    NSK                         => 13,
+    NSK				=> 13,
     OS2				=> 4,
     OS400			=> 8,
-    QMGR                        => 7,
+    QMGR			=> 7,
     UNIX			=> 6,
-    USER                        => 25,
+    USER			=> 25,
     VMS				=> 12,
     Win16			=> 9,
     Win32			=> 11,
@@ -211,7 +222,7 @@ package MQSeries::Command::PCF;
 
    ObjectType =>
    {
-    AuthInfo                    => 7,
+    AuthInfo			=> 7,
     Listener			=> 11,
     Namelist			=> 2,
     Process			=> 3,
@@ -242,14 +253,14 @@ package MQSeries::Command::PCF;
    #
    AuthInfoType =>
    {
-    CRLLDAP                     => 1,
+    CRLLDAP			=> 1,
    },
 
    QStatusInputType =>
    {
-    Exclusive                   => 2,
-    No                          => 0,
-    Shared                      => 1,
+    Exclusive			=> 2,
+    No				=> 0,
+    Shared			=> 1,
    },
 
    QStatusType =>
@@ -260,8 +271,8 @@ package MQSeries::Command::PCF;
 
    SSLClientAuth =>
    {
-    Optional                    => 1,
-    Required                    => 0,
+    Optional			=> 1,
+    Required			=> 0,
    },
 
    #
@@ -305,6 +316,15 @@ package MQSeries::Command::PCF;
     SetIdentityContext		=> 16,
    },
 
+    AsynchronousState          =>
+   {
+    Active			=> 6,
+    Inactive			=> 7,
+    Suspended			=> 4,
+    SuspendedTemporary		=> 5,
+    None   			=> 0,
+   },
+
    ChannelDisposition =>
    {
     All				=> -1,
@@ -330,7 +350,7 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    None                        => -1,
+    None			=> -1,
     Off				=> 0,
    },
 
@@ -339,7 +359,7 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    None                        => -1,
+    None			=> -1,
     Off				=> 0,
    },
 
@@ -348,7 +368,7 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    QMgr                        => -3,
+    QMgr			=> -3,
     Off				=> 0,
    },
 
@@ -357,7 +377,7 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    QMgr                        => -3,
+    QMgr			=> -3,
     Off				=> 0,
    },
 
@@ -392,12 +412,21 @@ package MQSeries::Command::PCF;
     NoDisplay			=> 3,
    },
 
+   #
+   # Channel Connection Affinity (MQ v7)
+   #
+   ConnectionAffinity =>
+   {
+    None			=> 0,
+    Preferred			=> 1,
+   },
+
    ClusterSenderMonitoringDefault =>
    {
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    QMgr                        => -3,
+    QMgr			=> -3,
     Off				=> 0,
    },
 
@@ -406,8 +435,46 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    QMgr                        => -3,
+    QMgr			=> -3,
     Off				=> 0,
+   },
+
+   #
+   # Default Put Response Type (MQ v7)
+   #
+   DefPutResponse =>
+   {
+    Async			=> 2,
+    Sync			=> 1,
+   },
+
+   #
+   # Default Read Ahead (MQ v7)
+   #
+   DefReadAhead =>
+   {
+    Disabled			=> 2,
+    No				=> 0,
+    Yes				=> 1,
+   },
+
+   #
+   # Destination Class for Subscriptions in MQ v7
+   #
+   DestinationClass =>
+   {
+    Managed			=> 1,
+    Provided			=> 2,
+   },
+
+   #
+   # Durable Pub/Sub Subscriptions for MQ v7
+   #
+   DurableSubscriptions =>
+   {
+    AsParent			=> 0,
+    Durable			=> 1,
+    NonDurable			=> 2,
    },
 
    #
@@ -443,6 +510,26 @@ package MQSeries::Command::PCF;
     None			=> 0,
    },
 
+   #
+   # Pub/Sub Topics on MQ v7
+   #
+   InhibitPublications =>
+   {
+    Allowed			=> 2,
+    AsParent			=> 0,
+    Inhibited			=> 1,
+   },
+
+   #
+   # Pub/Sub Topics on MQ v7
+   #
+   InhibitSubscriptions =>
+   {
+    Allowed			=> 2,
+    AsParent			=> 0,
+    Inhibited			=> 1,
+   },
+
    IPAddressVersion =>
    {
     IPv4			=> 0,
@@ -456,33 +543,140 @@ package MQSeries::Command::PCF;
 
    ListenerStartMode =>
    {
-    Manual                      => 2,
-    QMgr                        => 0,
-    QMgrStart                   => 1,
+    Manual			=> 2,
+    QMgr			=> 0,
+    QMgrStart			=> 1,
    },
 
    ListenerStatus =>
    {
-    Running                     => 2,
-    Starting                    => 1,
-    Stopping                    => 3,
+    Running			=> 2,
+    Starting			=> 1,
+    Stopping			=> 3,
    },
 
    ListenerTransportType =>
    {
-    TCP                         => 2,
-    LU62                        => 1,
-    NetBIOS                     => 3,
-    SPX                         => 4,
+    TCP				=> 2,
+    LU62			=> 1,
+    NetBIOS			=> 3,
+    SPX				=> 4,
    },
 
    MessageCompression =>
    {
     Any				=> 268435455,
     None			=> 0,
-    Rle				=> 1,
+    RLE				=> 1,
     ZlibFast			=> 2,
     ZlibHigh			=> 4,
+   },
+
+   #
+   # Property Control (MQ v7)
+   #
+   PropertyControl =>
+   {
+    All				=> 2,
+    Compatibility		=> 0,
+    ForceRFH2			=> 3,
+    None			=> 1,
+   },
+
+   #
+   # Proxy Subscriptions (Topic for MQ v7)
+   #
+   ProxySubscriptions =>
+   {
+    FirstUse			=> 2,
+    Force			=> 1,
+   },
+
+   #
+   # PublishPriority for
+   #
+   PublishPriority =>
+   {
+    AsPublished			=> -3,
+    AsQDef			=> -1,
+    0				=> 0,
+    1				=> 1,
+    2				=> 2,
+    3				=> 3,
+    4				=> 4,
+    5				=> 5,
+    6				=> 6,
+    7				=> 7,
+    8				=> 8,
+    9				=> 9,
+   },
+
+   #
+   # Pub/Sub properties for Subscription on MQ v7
+   #
+   PubSubProperties =>
+   {
+    Compat			=> 1,
+    None			=> 0,
+    RFH2			=> 2,
+   },
+
+   #
+   # Pub/Sub scope for Topic on MQ v7
+   #
+   PubSubScope =>
+   {
+    All				=> 0,
+    AsParent			=> 1,
+    QMgr			=> 4,
+   },
+
+   #
+   # Pub/Sub mode
+   #
+   PubSubMode =>
+   {
+    Compat			=> 1,
+    Disabled			=> 0,
+    Enabled			=> 2,
+   },
+
+   #
+   # Pub/Sub undelivered input messages
+   #
+   PubSubNPInputMsg =>
+   {
+    Discard			=> 2,
+    Keep			=> 3,
+   },
+
+   #
+   # Pub/Sub undelivered response messages
+   #
+   PubSubNPResponse =>
+   {
+    Discard			=> 2,
+    Keep			=> 3,
+    Normal			=> 0,
+    Safe			=> 1,
+   },
+
+   #
+   # Pub/Sub syncpoint
+   #
+   PubSubSyncPoint =>
+   {
+    IfPersistent		=> 1,
+    Yes				=> 0,
+   },
+
+   #
+   # Subscription request Only
+   #
+   RequestOnly =>
+   {
+    All				=> 2,
+    OnRequest			=> 1,
    },
 
    QMgrChlMonitoring =>
@@ -490,7 +684,7 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    None                        => -1,
+    None			=> -1,
     Off				=> 0,
    },
 
@@ -508,7 +702,7 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    None                        => -1,
+    None			=> -1,
     Off				=> 0,
    },
 
@@ -517,31 +711,31 @@ package MQSeries::Command::PCF;
     High			=> 65,
     Low				=> 17,
     Medium			=> 33,
-    QMgr                        => -3,
+    QMgr			=> -3,
     Off				=> 0,
    },
 
    QMgrQueueStatistics =>
    {
-    Off                         => 0,
-    On                          => 1,
-    None                        => -1,
+    Off				=> 0,
+    On				=> 1,
+    None			=> -1,
    },
 
    QueueStatistics =>
    {
-    Off                         => 0,
-    On                          => 1,
-    QMgr                        => -3,
+    Off				=> 0,
+    On				=> 1,
+    QMgr			=> -3,
    },
 
    MonitoringDft =>
    {
-    Off                         => 0,
-    QMgr                        => -3,
-    Low                         => 17,
-    Medium                      => 33,
-    High                        => 65,
+    Off				=> 0,
+    QMgr			=> -3,
+    Low				=> 17,
+    Medium			=> 33,
+    High			=> 65,
    },
 
    NamelistType =>
@@ -552,7 +746,7 @@ package MQSeries::Command::PCF;
     Queue			=> 1,
    },
 
-   SharedQQmgrName =>
+   SharedQQMgrName =>
    {
     Ignore			=> 1,
     Use				=> 0,
@@ -594,16 +788,16 @@ package MQSeries::Command::PCF;
 
    QueueAccounting =>
    {
-    On                         => 1,
-    Off                        => 0,
-    QMgr                       => -3,
+    On			       => 1,
+    Off			       => 0,
+    QMgr		       => -3,
    },
 
    QMgrAccounting =>		# QMgr-level QueueAccounting
    {
-    None                       => -1,
-    On                         => 1,
-    Off                        => 0,
+    None		       => -1,
+    On			       => 1,
+    Off			       => 0,
    },
 
    QSharingGroupDisposition =>
@@ -631,9 +825,15 @@ package MQSeries::Command::PCF;
 
    ActivityRecording =>
    {
-    Disabled                    => 0,
-    Msg                         => 2,
-    Queue                       => 1,
+    Disabled			=> 0,
+    Msg				=> 2,
+    Queue			=> 1,
+   },
+
+   SecurityCase =>
+   {
+    Mixed			=> 1,
+    Upper			=> 0,
    },
 
    SecuritySwitch =>
@@ -681,17 +881,46 @@ package MQSeries::Command::PCF;
     Server			=> 1,
    },
 
+   #
+   # Pub/Sub scope for Subscription on MQ v7
+   #
+   SubscriptionScope =>
+   {
+    All				=> 2,
+    QMgr			=> 1,
+   },
+
+   SubscriptionType =>
+   {
+    Admin			=> 2,
+    API				=> 1,
+    Proxy			=> 3,
+   },
+
    TCPStackType =>
    {
-    Multiple                    => 1,
-    Single                      => 0,
+    Multiple			=> 1,
+    Single			=> 0,
+   },
+
+   TopicDefPersistence =>
+   {
+    AsParent			=> -1,
+    NonPersistent		=> 0,
+    Persistent			=> 1,
+   },
+
+   TopicType =>
+   {
+    Cluster			=> 1,
+    Local			=> 0,
    },
 
    TraceRouteRecording =>
    {
-    Disabled                    => 0,
-    Msg                         => 2,
-    Queue                       => 1,
+    Disabled			=> 0,
+    Msg				=> 2,
+    Queue			=> 1,
    },
 
    #
@@ -727,12 +956,21 @@ package MQSeries::Command::PCF;
    },
 
    #
+   # For Topic on MQ v7
+   #
+   WildcardOperation =>
+   {
+    Block			=> 1,
+    Passthru			=> 2,
+   },
+
+   #
    # For CFStruc on V6
    CFStatusType =>
    {
-    CFStatusSummary             => 1136,
-    CFStatusConnect             => 1137,
-    CFStatusBackup              => 1138,
+    CFStatusSummary		=> 1136,
+    CFStatusConnect		=> 1137,
+    CFStatusBackup		=> 1138,
    },
 
    CFStrucStatus =>
@@ -756,43 +994,43 @@ package MQSeries::Command::PCF;
    #
    ConnInfoType =>
    {
-    Conn                        => 1111,
-    Handle                      => 1112,
-    All                         => 1113
+    Conn			=> 1111,
+    Handle			=> 1112,
+    All				=> 1113
     },
 
    HandleObjectType =>
    {
-    Queue                      => 1,
-    Process                    => 3,
-    Namelist                   => 2,
-    QMgr                       => 5,
-    Channel                    => 6,
-    AuthInfo                   => 7,
+    Queue		       => 1,
+    Process		       => 3,
+    Namelist		       => 2,
+    QMgr		       => 5,
+    Channel		       => 6,
+    AuthInfo		       => 7,
     },
 
    HandleQSGDisposition =>
    {
-    Copy                      => 1,
-    QMgr                      => 0,
-    Shared                    => 2,
+    Copy		      => 1,
+    QMgr		      => 0,
+    Shared		      => 2,
    },
 
    ConnApplType =>
    {
-    QMgr                      => 7,
-    ChannelInitiator          => 30,
-    User                      => 25,
-    Batch                     => 32,
-    RRSBatch                  => 33,
-    CICS                      => 1,
-    IMS                       => 3,
+    QMgr		      => 7,
+    ChannelInitiator	      => 30,
+    User		      => 25,
+    Batch		      => 32,
+    RRSBatch		      => 33,
+    CICS		      => 1,
+    IMS			      => 3,
    },
 
    HandleState =>
    {
-    Active     	               => 1,
-    Inactive   	               => 0,
+    Active		       => 1,
+    Inactive		       => 0,
     },
 
    UOWState =>
@@ -857,6 +1095,24 @@ package MQSeries::Command::PCF;
     Dynamic			=> 1,
    },
 
+   #
+   # Variable Userid for Subscriptions in MQ v7
+   #
+   VariableUser =>
+   {
+    Any				=> 2,
+    Fixed			=> 1,
+   },
+
+   #
+   # Wildcard Schema for Subscriptions in MQ v7
+   #
+   WildcardSchema =>
+   {
+    Character			=> 1,
+    Topic			=> 2,
+   },
+
    WLMIntervalUnits =>
    {
     Seconds			=> 1,
@@ -870,7 +1126,7 @@ package MQSeries::Command::PCF;
    {
     Principal			=> 1000,
     Group			=> 1001,
-    AFS			        => 1002,
+    AFS				=> 1002,
    },
 
   );

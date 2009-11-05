@@ -1,21 +1,16 @@
 #
-# $Id: PCF.pm,v 32.1 2009/05/22 15:28:12 biersma Exp $
+# $Id: PCF.pm,v 33.2 2009/07/10 18:28:28 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Command::PCF;
 
 use strict;
-use vars qw(
-	    $VERSION
-	    @ISA
-	   );
 
-@ISA = qw(MQSeries::Command);
-
-$VERSION = '1.29';
+our @ISA = qw(MQSeries::Command);
+our $VERSION = '1.30';
 
 use MQSeries qw(:functions);
 
@@ -49,7 +44,7 @@ MQSeries::Command::PCF->_ReverseMap
 
 #
 # Check the Responses to see if we've seen the last one yet.  For PCF,
-# this is a peice of cake.  For real fun, see the MQSC code.
+# this is a piece of cake.  For real fun, see the MQSC code.
 #
 sub _LastSeen {
     my $self = shift;
@@ -73,42 +68,42 @@ sub _ProcessResponses {
 
     foreach my $response ( @{$self->{Response}} ) {
 
-	#
-	# Let the object-wide compcode and reason be the first
-	# non-zero result found in all of the messages.  This is
-	# *usually* good enough, but the data will be available via
-	# Response() is you want to parse the full header for each
-	# message.
-	#
-	if (
-	    $self->{"CompCode"} == MQSeries::MQCC_OK && 
+        #
+        # Let the object-wide compcode and reason be the first
+        # non-zero result found in all of the messages.  This is
+        # *usually* good enough, but the data will be available via
+        # Response() is you want to parse the full header for each
+        # message.
+        #
+        if (
+            $self->{"CompCode"} == MQSeries::MQCC_OK &&
             $self->{"Reason"} == MQSeries::MQRC_NONE &&
-	    (
-	     $response->Header("CompCode") != MQSeries::MQCC_OK ||
-	     $response->Header("Reason") != MQSeries::MQRC_NONE
-	    )
-	   ) {
-	    $self->{"CompCode"} = $response->Header("CompCode");
-	    $self->{"Reason"} = $response->Header("Reason");
-	}
+            (
+             $response->Header("CompCode") != MQSeries::MQCC_OK ||
+             $response->Header("Reason") != MQSeries::MQRC_NONE
+            )
+           ) {
+            $self->{"CompCode"} = $response->Header("CompCode");
+            $self->{"Reason"} = $response->Header("Reason");
+        }
 
-	#
-	# Yet another special case....
-	#
-	# So, what's going on here?  MQRCCF_CHL_STATUS_NOT_FOUND is
-	# not really an error, per se.  It just means that there is no
-	# available status information for that channel (i.e. its not
-	# active).  So, we fake it...  We make the command appear to
-	# have succeeded, and the feed back the status "NotFound".
-	#
-	if (
-	    $command eq 'InquireChannelStatus'  &&
-	    $self->{"Reason"} == MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND
-	   ) {
-	    $response->{Parameters}->{ChannelStatus} = 'NotFound';
-	    $response->{Header}->{CompCode} = MQSeries::MQCC_OK;
-	    $response->{Header}->{Reason} = MQSeries::MQRC_NONE;
-	}
+        #
+        # Yet another special case....
+        #
+        # So, what's going on here?  MQRCCF_CHL_STATUS_NOT_FOUND is
+        # not really an error, per se.  It just means that there is no
+        # available status information for that channel (i.e. its not
+        # active).  So, we fake it...  We make the command appear to
+        # have succeeded, and the feed back the status "NotFound".
+        #
+        if (
+            $command eq 'InquireChannelStatus'  &&
+            $self->{"Reason"} == MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND
+           ) {
+            $response->{Parameters}->{ChannelStatus} = 'NotFound';
+            $response->{Header}->{CompCode} = MQSeries::MQCC_OK;
+            $response->{Header}->{Reason} = MQSeries::MQRC_NONE;
+        }
 
     }
 
@@ -124,41 +119,41 @@ sub _ReverseMap {
     my $ReverseKeyMap = shift;
 
     foreach my $command ( keys %$ForwardKeyMap ) {
-	#print "COMMAND: $command\n";
+        #print "COMMAND: $command\n";
 
-	my $ForwardCommandMap = $ForwardKeyMap->{$command};
+        my $ForwardCommandMap = $ForwardKeyMap->{$command};
 
 
-	my $ForwardParameterMap = $ForwardCommandMap->[1];
+        my $ForwardParameterMap = $ForwardCommandMap->[1];
 
-	my $ReverseParameterMap = {};
+        my $ReverseParameterMap = {};
 
-	foreach my $parameter ( keys %$ForwardParameterMap ) {
-	    
-	    my $ForwardValueMap = $ForwardParameterMap->{$parameter}->[2];
+        foreach my $parameter ( keys %$ForwardParameterMap ) {
 
-	    if ( ref $ForwardValueMap eq 'HASH' ) {
+            my $ForwardValueMap = $ForwardParameterMap->{$parameter}->[2];
 
-		my $ReverseValueMap = {};
+            if ( ref $ForwardValueMap eq 'HASH' ) {
 
-		foreach my $value ( keys %$ForwardValueMap ) {
-		    $ReverseValueMap->{ $ForwardValueMap->{$value} } = $value;
-		}
-		
+                my $ReverseValueMap = {};
 
-		$ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
-		  [ $parameter, $ReverseValueMap ];
+                foreach my $value ( keys %$ForwardValueMap ) {
+                    $ReverseValueMap->{ $ForwardValueMap->{$value} } = $value;
+                }
 
-	    } else {
 
-		$ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
-		  [ $parameter ];
+                $ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
+                  [ $parameter, $ReverseValueMap ];
 
-	    }
+            } else {
 
-	}
+                $ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
+                  [ $parameter ];
 
-	$ReverseKeyMap->{$ForwardCommandMap->[0]} = [ $command, $ReverseParameterMap ];
+            }
+
+        }
+
+        $ReverseKeyMap->{$ForwardCommandMap->[0]} = [ $command, $ReverseParameterMap ];
 
     }
 

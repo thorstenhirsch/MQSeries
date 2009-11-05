@@ -1,10 +1,10 @@
 #
 # MQSeries::ErrorLog::Entry.pm - One entry from the ErrorLog
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 32.1 2009/05/22 15:28:13 biersma Exp $
+# $Id: Entry.pm,v 33.2 2009/07/10 18:34:54 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Entry;
@@ -16,9 +16,7 @@ use overload ('""'  => 'as_string',
               'cmp' => 'compare',
               '<=>' => 'compare');
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 #
 # ErrorLog::Entry constructor
@@ -145,7 +143,7 @@ sub as_string {
 
   return "Error [$this->{'error_code'}] [$this->{'summary'}] at [" .
     localtime($this->{'ctime'}) . "]\n" .
-    join("", map { "\t$_: $this->{'fields'}{$_}\n" 
+    join("", map { "\t$_: $this->{'fields'}{$_}\n"
                  } sort keys %{$this->{'fields'}});
 
 }
@@ -174,7 +172,7 @@ sub display_raw {
 #
 # Comparison routine - most useful for duplicate filters.
 # This compares ErrorLog entries based on their message code
-# and the contents of any fields; it does not look at the 
+# and the contents of any fields; it does not look at the
 # timestamp.
 #
 # Parameters:
@@ -204,7 +202,7 @@ sub compare {
     foreach my $fld (keys %{ $a->{'fields'} }) {
         return 1 unless (defined $a->{'fields'}{$fld});
     }
-    
+
     #
     # If we get here, consider the entries equal
     #
@@ -214,7 +212,7 @@ sub compare {
 
 1;                              # End on a positive note
 
-        
+
 __END__
 
 =head1 NAME

@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::Machine.pm - Machine configuration from mqs.ini
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 200-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Machine.pm,v 32.1 2009/05/22 15:28:13 biersma Exp $
+# $Id: Machine.pm,v 33.2 2009/07/10 18:35:45 biersma Exp $
 #
 
 package MQSeries::Config::Machine;
@@ -12,9 +12,7 @@ package MQSeries::Config::Machine;
 use strict;
 use Carp;
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 #
 # Constructor: Read and parse the /var/mqm/mqs.ini file.
@@ -22,7 +20,7 @@ $VERSION = '1.29';
 # Parameters:
 # - Class name
 # - Optional file name
-# Returns: 
+# Returns:
 # - New MQSeries::Config::Machine object
 #
 sub new {
@@ -44,7 +42,7 @@ sub new {
 # - MQSeries::Config::QMgr object
 # Returns:
 # - Array of stanza names
-# 
+#
 sub stanzas {
     my ($this) = @_;
 
@@ -62,7 +60,7 @@ sub stanzas {
 #
 # Get information for a particular stanza. Will re-parse the file
 # if the timestamp has changed.
-# 
+#
 # Parameters:
 # - MQSeries::Config::Machine object
 # - Stanza name
@@ -109,7 +107,7 @@ sub localqmgrs {
 
 #
 # PRIVATE support method: Parse the file
-# 
+#
 # Parameters:
 # - MQSeries::Config::Machine object
 # Returns:
@@ -119,34 +117,34 @@ sub _parse {
 
     my $filename = $this->{'filename'};
 
-    open (MQSINI, $filename) ||
+    open (MQSINI, '<', $filename) ||
       confess "Cannot open file [$filename]: $!";
     my $data = {};
     my $stanza;
     my $stanza_data;
     while (<MQSINI>) {
         next if (/^\#/ || /^\s*$/); # Skip comments, blank lines
-	
+
         #
         # A stanza line introduces the beginning of a new section
         # and looks like 'QueueManager:'
         #
-	if ( /^(\w+):/ ) {
-	    $stanza = $1;
+        if ( /^(\w+):/ ) {
+            $stanza = $1;
             $stanza_data = {};
             $data->{$stanza} = [] unless (defined $data->{$stanza});
             push @{ $data->{$stanza} }, $stanza_data;
             next;
-	}
+        }
 
         #
         # A data line belongs to a stanza and looks like 'Prefix=/var/mqm'
-        # 
-	if (/^\s*(\S+)=(\S+)/) {
-	    my ($key, $value) = ($1, $2);
+        #
+        if (/^\s*(\S+)=(\S+)/) {
+            my ($key, $value) = ($1, $2);
             confess "Have data line before first stanza in [$filename]: $_"
               unless (defined $stanza);
-            
+
             if (defined $stanza_data->{$key}) {
                 carp "Duplicate key [$key] in stanza [$stanza] of [$filename]";
             }
@@ -178,7 +176,7 @@ MQSeries::Config::Machine -- Interface to read the machine configuration file
 
   use MQSeries::Config::Machine;
 
-  my $conf = new MQSeries::Config::Machine;
+  my $conf = MQSeries::Config::Machine->new();
 
   print "All configuration sections: ", join(', ', $conf->stanzas()), "\n";
 
@@ -234,7 +232,7 @@ whatever other fields the configuration file will contain.
 
 A convenience function written on top of C<lookup>.  This function
 returns a hash-reference mapping local queue manager names to
-configuration settings. 
+configuration settings.
 
 =head1 FILES
 

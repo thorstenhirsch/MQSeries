@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::QMgr.pm - Queue manager configuration from qm.ini
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: QMgr.pm,v 32.1 2009/05/22 15:28:13 biersma Exp $
+# $Id: QMgr.pm,v 33.2 2009/07/10 18:35:51 biersma Exp $
 #
 
 package MQSeries::Config::QMgr;
@@ -14,9 +14,7 @@ use Carp;
 
 use MQSeries::Config::Machine;
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 #
 # Constructor: Read and parse the /var/mqm/qmgrs/XYYZY/qm.ini file.
@@ -118,31 +116,31 @@ sub _parse {
     my $filename = $this->{'basename'} . '/qmgrs/' .
       $local->{ $this->{'qmgr'} }->{'Directory'} . '/qm.ini';
 
-    open (QMINI, $filename) ||
+    open (QMINI, '<', $filename) ||
       confess "Cannot open file [$filename]: $!";
     my $data = {};
     my $stanza;
     my $stanza_data;
     while (<QMINI>) {
         next if (/^\#/ || /^\s*$/); # Skip comments, blank lines
-	
+
         #
         # A stanza line introduces the beginning of a new section
         # and looks like 'QueueManager:'
         #
-	if ( /^(\w+):/ ) {
-	    $stanza = $1;
+        if ( /^(\w+):/ ) {
+            $stanza = $1;
             $stanza_data = {};
             $data->{$stanza} = [] unless (defined $data->{$stanza});
             push @{ $data->{$stanza} }, $stanza_data;
             next;
-	}
+        }
 
         #
         # A data line belongs to a stanza and looks like 'Prefix=/var/mqm'
         #
-	if (/^\s*(\S+)=(\S+)/) {
-	    my ($key, $value) = ($1, $2);
+        if (/^\s*(\S+)=(\S+)/) {
+            my ($key, $value) = ($1, $2);
             confess "Have data line before first stanza in [$filename]: $_"
               unless (defined $stanza);
 
@@ -178,7 +176,7 @@ MQSeries::Config::QMgr -- Interface to read the queue manager configuration file
 
   use MQSeries::Config::QMgr;
 
-  my $conf = new MQSeries::Config::QMgr('your.queue.manager');
+  my $conf = MQSeries::Config::QMgr->new('your.queue.manager');
 
   print "All configuration sections: ", join(', ', $conf->stanzas()), "\n";
 
@@ -189,7 +187,6 @@ MQSeries::Config::QMgr -- Interface to read the queue manager configuration file
           print "\t$param: $tuning->{$param}\n";
       }
   }
-
 
 =head1 DESCRIPTION
 

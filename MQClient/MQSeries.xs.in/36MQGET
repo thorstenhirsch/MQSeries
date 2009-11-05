@@ -1,64 +1,60 @@
 # -*-c-*-
 #
-# $Id: 36MQGET,v 27.1 2007/01/11 20:19:54 molinam Exp $
+# $Id: 36MQGET,v 33.1 2009/07/02 21:09:12 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 SV *
 MQGET(Hconn,Hobj,MsgDesc,GetMsgOpts,Length,CompCode,Reason)
-	MQHCONN	Hconn
-	MQHOBJ	Hobj
-	MQMD	MsgDesc
-	MQGMO	GetMsgOpts
-	MQLONG  Length
-	MQLONG	CompCode
-	MQLONG	Reason
+        MQHCONN Hconn
+        MQHOBJ  Hobj
+        MQMD    MsgDesc
+        MQGMO   GetMsgOpts
+        MQLONG  Length
+        MQLONG  CompCode = NO_INIT
+        MQLONG  Reason = NO_INIT
 
-	CODE:
-	{
-	PMQCHAR pBuffer = NULL; /* guess at the beginning size */
-	MQLONG  bufLen  = Length;
-	MQLONG  dataLen = 0;
+    PREINIT:
+        PMQCHAR pBuffer = NULL; /* guess at the beginning size */
+        MQLONG  bufLen  = Length;
+        MQLONG  dataLen = 0;
+    CODE:
+        CompCode = MQCC_FAILED;
+        Reason = MQRC_UNEXPECTED_ERROR;
+        sv_setiv(ST(5),(IV)CompCode);
+        sv_setiv(ST(6),(IV)Reason);
 
-	CompCode = MQCC_FAILED;
-	Reason = MQRC_UNEXPECTED_ERROR;
-	sv_setiv(ST(5),(IV)CompCode);
-	sv_setiv(ST(6),(IV)Reason);
-	
-	if ( (pBuffer = (PMQCHAR)malloc(bufLen)) == NULL ) {
-	  warn("Unable to allocate memory in MQGET!\n");
-	  XSRETURN_EMPTY;
-	}
+        if ( (pBuffer = (PMQCHAR)malloc(bufLen)) == NULL ) {
+            warn("Unable to allocate memory in MQGET!\n");
+            XSRETURN_EMPTY;
+        }
 
-	/*
-	 * We set the MQMD and MQGMO version to 2, so users of
-	 * segmentation or grouping won't have to do this manually.
-	 */
-	if (MsgDesc.Version < MQMD_VERSION_2) {
-	  MsgDesc.Version = MQMD_VERSION_2;
-	}
-	if (GetMsgOpts.Version < MQGMO_VERSION_2) {
-	  GetMsgOpts.Version = MQGMO_VERSION_2;
-	}
+        /*
+         * We set the MQMD and MQGMO version to 2, so users of
+         * segmentation or grouping won't have to do this manually.
+         */
+        if (MsgDesc.Version < MQMD_VERSION_2) {
+            MsgDesc.Version = MQMD_VERSION_2;
+        }
+        if (GetMsgOpts.Version < MQGMO_VERSION_2) {
+            GetMsgOpts.Version = MQGMO_VERSION_2;
+        }
 
-	MQGET(Hconn,Hobj,&MsgDesc,&GetMsgOpts,bufLen,pBuffer,&dataLen,&CompCode,&Reason);
-	Length = dataLen;
-	if (CompCode != MQCC_FAILED) {
-	  RETVAL = newSVpvn(pBuffer,(dataLen < bufLen ? dataLen : bufLen));
-	}
-	else
-	  RETVAL = newSV(0);
+        MQGET(Hconn,Hobj,&MsgDesc,&GetMsgOpts,bufLen,pBuffer,&dataLen,&CompCode,&Reason);
+        Length = dataLen;
+        if (CompCode != MQCC_FAILED) {
+            RETVAL = newSVpvn(pBuffer,(dataLen < bufLen ? dataLen : bufLen));
+        } else
+            RETVAL = newSV(0);
 
-	if (pBuffer)
-	  free(pBuffer);
-	}
-	OUTPUT:
-	RETVAL
-	MsgDesc
-	GetMsgOpts
-	Length
-	CompCode
-	Reason
+        free(pBuffer);
+    OUTPUT:
+        RETVAL
+        MsgDesc
+        GetMsgOpts
+        Length
+        CompCode
+        Reason
 

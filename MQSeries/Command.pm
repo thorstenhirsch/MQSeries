@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 32.4 2009/06/11 12:40:02 biersma Exp $
+# $Id: Command.pm,v 33.7 2009/07/31 18:26:39 biersma Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -7,7 +7,7 @@
 
 package MQSeries::Command;
 
-use 5.006;
+use 5.008;
 
 use strict;
 use Carp;
@@ -22,9 +22,7 @@ use MQSeries::Command::Response;
 use MQSeries::Utils qw(ConvertUnit);
 use Params::Validate qw(validate);
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 sub new {
     my $proto = shift;
@@ -212,7 +210,7 @@ sub new {
                             "must be an MQSeries::QueueManager object");
                 return;
             }
-        } else {
+        } else {                # Name is deprecated
             $self->{QueueManager} = MQSeries::QueueManager::->
               new(QueueManager => $args{QueueManager},
                   Carp         => $self->{Carp},
@@ -373,7 +371,7 @@ sub DESTROY { 1 }
 # will blow up.
 #
 sub AUTOLOAD {
-    use vars qw($AUTOLOAD);
+    our $AUTOLOAD;
     my ($self) = shift @_;
     my $name = $AUTOLOAD;
     $name =~ s/.*://;
@@ -430,7 +428,9 @@ sub CreateObject {
 
     my @KeyNames                = qw(ChannelName NamelistName ProcessName
                                      QName StorageClassName AuthInfoName
-                                     CFStructName CFStrucName ListenerName ServiceName);
+                                     CFStructName CFStrucName
+                                     ListenerName ServiceName
+                                     SubName TopicName);
     my $KeyCount                = 0;
 
     #
@@ -528,6 +528,18 @@ sub CreateObject {
         $Change                 = "ChangeChannelListener";
         $Key                    = "ListenerName";
         $Type                   = "Listener";
+    } elsif ( $Attrs->{SubName} ) {
+        $Inquire                = "InquireSubscription";
+        $Create                 = "CreateSubscription";
+        $Change                 = "ChangeSubscription";
+        $Key                    = "SubName";
+        $Type                   = "Subscription";
+    } elsif ( $Attrs->{TopicName} ) {
+        $Inquire                = "InquireTopic";
+        $Create                 = "CreateTopic";
+        $Change                 = "ChangeTopic";
+        $Key                    = "TopicName";
+        $Type                   = "Topic";
     }
 
     #
@@ -541,8 +553,11 @@ sub CreateObject {
     #
     if ( $self->Reason() &&
          $self->Reason() != MQSeries::MQRC_UNKNOWN_OBJECT_NAME &&
-         $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND) {
-        $self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}'\n");
+         $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND &&
+         $self->Reason() != MQSeries::MQRC_NO_SUBSCRIPTION
+       ) {
+        my $rc = $self->Reason();
+        $self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}' (Reason=$rc)\n");
         return;
     }
 
@@ -640,15 +655,14 @@ sub CreateObject {
         }
     }
     if ($delete_first) {
-            print "Deleting $Type $QMgr/$Attrs->{$Key}'\n"
-        unless $Quiet;
+        print "Deleting $Object->{QType} $QMgr/$Attrs->{$Key}'\n"
+          unless $Quiet;
 
         #
         # CommandScope break in certain combinations
         # Since MQ uses the CommandScope underneath the covers,
         # CommandScope is no longer used
         #
-
         $self->$Delete
           (
            $Key                 => $Attrs->{$Key},
@@ -660,15 +674,13 @@ sub CreateObject {
             (QSGDisposition => $Object->{QSGDisposition}) : ()),
            )
           ) || do {
-              $self->Carp("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" .
-                              $self->ReasonText() . "\n");
+              $self->Carp("Unable to delete $Object->{QType} Queue '$QMgr/$Attrs->{$Key}'\n" . $self->ReasonText() . "\n");
               return;
           };
 
-
-            $method = $Create;
+        $method = $Create;
         $Changes = $Callback->($Attrs);
-            $Object = undef;
+        $Object = undef;
     }
 
     unless ( $Quiet ) {
@@ -739,7 +751,6 @@ sub CreateObject {
 # and MQSC command formats.
 #
 sub _Command {
-
     my $self                    = shift;
     my $command                 = shift;
     my $parameters              = shift;
@@ -764,34 +775,46 @@ sub _Command {
     #
     my %command2name =
       (
-       InquireNamelist          => 'NamelistName',
-       InquireNamelistNames     => 'NamelistName',
-       InquireProcess           => 'ProcessName',
-       InquireProcessNames      => 'ProcessName',
-       InquireQueue             => 'QName',
-       InquireQueueNames        => 'QName',
-       InquireQueueStatus       => 'QName',
-       ResetQueueStatistics     => 'QName',
-       InquireChannel           => 'ChannelName',
-       InquireChannelNames      => 'ChannelName',
-       InquireChannelStatus     => 'ChannelName',
-       InquireStorageClass      => 'StorageClassName',
-       InquireStorageClassNames => 'StorageClassName',
-       InquireService           => 'ServiceName',
-       InquireAuthInfo          => 'AuthInfoName',
-       InquireAuthInfoNames     => 'AuthInfoName',
-       InquireCFStruc           => 'CFStrucName',
-       InquireCFStrucNames      => 'CFStrucName',
-       InquireCFStrucStatus     => 'CFStrucName',
-       InquireCFStruct          => 'CFStructName',
-       InquireCFStructNames     => 'CFStructName',
-       InquireThread            => 'ThreadName',
-       InquireChannelListener   => 'ListenerName',
+       InquireNamelist           => 'NamelistName',
+       InquireNamelistNames      => 'NamelistName',
+       InquireProcess            => 'ProcessName',
+       InquireProcessNames       => 'ProcessName',
+       InquireQueue              => 'QName',
+       InquireQueueNames         => 'QName',
+       InquireQueueStatus        => 'QName',
+       ResetQueueStatistics      => 'QName',
+       InquireChannel            => 'ChannelName',
+       InquireChannelNames       => 'ChannelName',
+       InquireChannelStatus      => 'ChannelName',
+       InquireStorageClass       => 'StorageClassName',
+       InquireStorageClassNames  => 'StorageClassName',
+       InquireService            => 'ServiceName',
+       InquireAuthInfo           => 'AuthInfoName',
+       InquireAuthInfoNames      => 'AuthInfoName',
+       InquireCFStruc            => 'CFStrucName',
+       InquireCFStrucNames       => 'CFStrucName',
+       InquireCFStrucStatus      => 'CFStrucName',
+       InquireCFStruct           => 'CFStructName',
+       InquireCFStructNames      => 'CFStructName',
+       InquireThread             => 'ThreadName',
+       InquireChannelListener    => 'ListenerName',
+       InquireSubscription       => 'SubName',
+       InquireSubscriptionStatus => 'SubName',
+       InquireTopic              => 'TopicName',
+       InquireTopicNames         => 'TopicName',
+       InquireTopicStatus        => 'TopicString',
       );
 
     if ( $command2name{$command} ) {
-        unless ( $parameters->{$command2name{$command}} ) {
+        unless ($parameters->{$command2name{$command}} ) {
             $parameters->{$command2name{$command}} = '*';
+
+            #
+            # For InquireTopicStatus, use '#', not '*'
+            #
+            if ($command eq 'InquireTopicStatus') {
+                $parameters->{$command2name{$command}} = '#';
+            }
         }
     }
 
@@ -826,6 +849,10 @@ sub _Command {
        InquireCFStruct                  => 'CFStructAttrs',
        InquireCFStruc                   => 'CFStrucAttrs',
        InquireService                   => 'ServiceAttrs',
+       InquireSubscription              => 'SubscriptionAttrs',
+       InquireSubscriptionStatus        => 'SubscriptionStatusAttrs',
+       InquireTopic                     => 'TopicAttrs',
+       InquireTopicStatus               => 'TopicStatusAttrs',
       );
 
     if ( $command2all{$command} ) {
@@ -846,6 +873,7 @@ sub _Command {
       { %{ $self->{DefaultMsgDesc} },
         ReplyToQ    => $self->{ReplyToQ}->ObjDesc("ObjectName"),
         ReplyToQMgr => $self->{ReplyToQMgr},
+        #ReplyToQMgr => (defined $self->{ReplyToQMgr} ? $self->{ReplyToQMgr} : ''),
         Expiry      => $self->{Expiry},
       };
     my $putmsg_options =
@@ -870,12 +898,12 @@ sub _Command {
     }
 
     $self->{Request} = MQSeries::Command::Request::->
-      new(MsgDesc       => $req_msgdesc,
-          Type          => $self->{Type},
-          Command       => $command,
-          Parameters    => $parameters,
-          Carp          => $self->{Carp},
-          StrictMapping => $self->{StrictMapping},
+      new(MsgDesc        => $req_msgdesc,
+          Type           => $self->{Type},
+          Command        => $command,
+          Parameters     => $parameters,
+          Carp           => $self->{Carp},
+          StrictMapping  => $self->{StrictMapping},
           CommandVersion => $self->{CommandVersion},
          ) || do {
              $self->{"CompCode"} = MQSeries::MQCC_FAILED;
@@ -986,7 +1014,6 @@ sub _Command {
             $MQSCHeader = { Command => $command };
             next;
         }
-
 
         #
         # FIXME: We probably don't want to keep the response
@@ -1160,8 +1187,8 @@ sub _CompareOneAttribute {
         if (@$found == 0) {     # No elements set
             $found = -1;
         } elsif (@$found == 1) {
-	    $found = $found->[0];  # Turn into scalar
-	}
+            $found = $found->[0];  # Turn into scalar
+        }
     }
 
     #
@@ -1294,17 +1321,27 @@ MQSeries::Command - OO interface to the Programmable Commands
   #
   # Simplest usage
   #
-  my $command = MQSeries::Command->new
-    (
-     QueueManager => 'some.queue.manager',
-    )
+  my $qmgr_obj = MQSeries::QueueManager->
+    new(QueueManager => 'some.queue.manager');
+  my $command = MQSeries::Command->new(QueueManager => $qmgr_obj);
     or die("Unable to instantiate command object\n");
 
+  #
+  # To use MQ v6 features (PCF for z/OS, Filter commands,
+  # InquireConnection)
+  #
+  my $command = MQSeries::Command->new(QueueManager   => $qmgr_obj,
+                                       CommandVersion => 3);
+    or die("Unable to instantiate command object\n");
+
+  #
+  # Inquire XXX Names returns object names,
+  # all other Inquire XX commands return hash references
+  #
   @qnames = $command->InquireQueueNames()
     or die "Unable to list queue names\n";
 
   foreach my $qname ( @qnames ) {
-
       $attr = $command->InquireQueue
         (
          QName          => $qname,
@@ -1320,8 +1357,17 @@ MQSeries::Command - OO interface to the Programmable Commands
       foreach my $key ( sort keys %$attr ) {
           print "\t$key => $attr->{$key}\n";
       }
-
   }
+
+  #
+  # Filter commands (requires MQ v6 and CommandVersion 3)
+  # Like other Inquire XXX commands (excpet Inquire XXX Names),
+  # this returns a list of hash references, not obejct names.
+  #
+  my @full_queues = $command->
+    InquireQueueStatus('FilterCommand' => "CurrentQDepth > 10000");
+  my @ip_conns = $command->
+    InquireConnection('FilterCommand' => "ConnectionName like '144.44.*'");
 
   #
   # High-level wrapper method: CreateObject
@@ -1402,11 +1448,12 @@ In this example, the string used for this key is:
   QMgrAttrs
 
 The values depend on the structure type of the parameter.  If the
-structure is a string (MQCFST) or an integer (MQCFIN) then the value
-of the key is simply a scalar string or integer in perl.  If it either
-a string list (MQCFSL) or an integer list (MQCFIL), then the value of
-the key is an array reference (see the InquireQueueManager example in
-the SYNOPSIS) of scalar strings or integers.
+structure is a string (MQCFST), byte string (MQBACF) or an integer
+(MQCFIN) then the value of the key is simply a scalar string or
+integer in perl.  If it either a string list (MQCFSL) or an integer
+list (MQCFIL), then the value of the key is an array reference (see
+the InquireQueueManager example in the SYNOPSIS) of scalar strings or
+integers.
 
 =head2 RETURN VALUES
 
@@ -1444,7 +1491,11 @@ producing data responses:
   Inquire Queue Status
   Inquire Service
   Inquire Service Status
+  Inquire Subscription
+  Inquire Subscription Status
   Inquire System
+  Inquire Topic
+  Inquire Topic Status
   Reset Queue Statistics
 
 plus the following equivalents for MQSC
@@ -1467,15 +1518,16 @@ Note that in an array context, the entire list is returned, but in a
 scalar context, only the first item in the list is returned.
 
 Some of these commands, however, have a simplified return value.  All
-seven of:
+of the below:
 
   Inquire AuthInfo Names
-  Inquire CFStruc Names
+  Inquire CFStruct Names
   Inquire Channel Names
   Inquire Namelist Names
   Inquire Process Names
   Inquire Queue Names
   Inquire StorageClass Names
+  Inquire Topic Names
 
 simply return an array of strings, containing the names which matched
 the query criteria.
@@ -1509,12 +1561,19 @@ key/value pairs:
 
 =item QueueManager
 
-The name of the QueueManager (or alternatively, a previously
-instantiated MQSeries::QueueManager object) to which commands are to
-be sent.
+This argument specifies the queue manager to which commands are to be
+sent.
 
-This can be omitted, in which case the "default queue manager" is
-therefore assumed.
+If the 'ProxyQueueManager' argument is specified, this should be the
+name of the target queue manager.
+
+If the 'ProxyQueueManager' argument is not specified, this can either
+be an C<MQSeries::QueueManager> object, or the name of the Queue
+Manager.  Specifying the queue manager name is deprecated and may
+stop working in a future release.
+
+The 'QueueManager' argument can be omitted, in which case the "default
+queue manager" is assumed.
 
 =item ProxyQueueManager
 
@@ -1639,13 +1698,14 @@ to the C<MsgDesc> method:
 =item CommandVersion
 
 This argument is introduced mainly to support the new PCF commands in
-WMQ6 and to use PCF with QueueManagers on OS/390. It indicates the
-required PCF Command Version (MQCFH_CURRENT_VERSION) and Type. This is
-an optional argument and Version "1" is used as default. If a value
-'3' or higher is specified, then the Command Type "MQCFT_COMMAND_XR"
-will be used and also the version is set to
-"MQCFH_CURRENT_VERSION". Any value less then 3 will be ignored and the
-defaults are used (MQCFT_COMMAND and default version).
+MQ v6 (such as FilterCommand filter options) and to use PCF with
+QueueManagers on OS/390. It indicates the required PCF Command Version
+(MQCFH_CURRENT_VERSION) and Type. This is an optional argument and
+Version "1" is used as default. If a value '3' or higher is specified,
+then the Command Type "MQCFT_COMMAND_XR" will be used and also the
+version is set to "MQCFH_CURRENT_VERSION". Any value less then 3 will
+be ignored and the defaults are used (MQCFT_COMMAND and default
+version).
 
 =item Type
 
@@ -1735,6 +1795,8 @@ data into the API. but that will only occur after the data has been
 encoded and sent to the command server.  This feature will allow you
 to detect this error before the data is ever sent.
 
+=back
+
 =head2 CompCode
 
 This method will return the MQI CompCode for the most recent MQI call
@@ -1764,12 +1826,6 @@ Normally, the data of interest is returned from the method in
 question, but the individual responses are available via this method.
 This returns a list of MQSeries::Command::Response objects, one for
 each individual message recieved.
-
-NOTE: In previous releases, this method was named "Response", but due
-to a namespace conflict between the class
-"MQSeries::Command::Response", and the method
-"MQSeries::Command->Response", and the headaches this causes, it has
-been renamed.
 
 =head2 DataParameters
 
@@ -2030,13 +2086,13 @@ Please refer to the IBM documentation for the names and values of keys.
   Stop Channel Initiator
   Stop Channel Listener
 
-=head2 CFStruct Commands
+=head2 CFStruc Commands
 
-  Change CFStruct
-  Create CFStruct
-  Delete CFStruct
-  Inquire CFStruct
-  Inquire CFStruct Names
+  Change CFStruc
+  Create CFStruc
+  Delete CFStruc
+  Inquire CFStruc
+  Inquire CFStruc Names
 
 =head2 Cluster Commands
 
@@ -2133,6 +2189,15 @@ C<StatusType> specified.
   Inquire StorageClass
   Inquire StorageClass Names
 
+=head2 Subscription Commands
+
+  Change Subscription
+  Copy Subscription
+  Create Subscription
+  Delete Subscription
+  Inquire Subscription
+  Inquire Subscription Status
+
 =head2 System Commands
 
   Inquire Group
@@ -2141,6 +2206,17 @@ C<StatusType> specified.
   Inquire Usage
   Set Log
   Set System
+
+=head2 Topic Commands
+
+  Change Topic
+  Clear Topic String
+  Copy Topic
+  Create Topic
+  Delete Topic
+  Inquire Topic
+  Inquire Topic Names
+  Inquire Topic Status
 
 =head2 Escape Command
 
@@ -2192,9 +2268,83 @@ macro values back into the same strings described above for
 simplifying the input Parameters.
 
 However, there are a few keys in the responses which are not supported
-as keys in the inquiry.  In general, the return values are left unmolested.
+as keys in the inquiry.  In general, the return values are left
+unmolested.
 
-=back
+=head1 FILTERS
+
+For PCF requests to MQ v6 and above, filter commands can be used to
+have the queue manager filter out only objects of interest.  For
+example, you can inquire for queues with a certain maximum message
+length, for connections from specific IP addresses, or for queue
+status with a minimum queue depth.
+
+Filters require that the command object is created with CommandVersion
+3, i.e.
+
+  $command = MQSeries::Command::->
+    new('QueueManager'   => 'SOME.QUEUE.MANAGER',
+        'Type'           => 'PCF',
+        'CommandVersion' => MQSeries::MQCFH_VERSION_3);
+
+Following that, most Inquire commands accept an optional FilterCommand
+parameter that specifies an attribute to filter on, a comparison
+operator, and a value.  (See the IBM documentation for which Inquire
+commands support filters.)
+
+The filter can be specified in pseudo-SQL syntax, e.g. :
+
+  @queues = $command->
+    InquireQueue('FilterCommand' => "QName like 'SYSTEM.PE*'");
+  @queues = $command->
+    InquireQueue('FilterCommand' => "MaxQDepth > 10000");
+
+Alternatively, if the value used contains quotes, or if the filter is
+constructed dynamically, the filter can be specified as a hash
+reference:
+
+  @queues = $command->
+    InquireQueue('FilterCommand' => { Parameter => 'MaxQDepth',
+                                      Operator  => '>',
+                                      Value     => 100_000,
+                                    });
+
+The supported filter parameters (field names) are almost any field
+returned by the Inquire command (see the IBM documentation for
+details).  The supported value can be an integer, string, string
+wildcard (a value ending on a '*'), or (for enumerated types) the
+constant name as returned by the Inquire command.  For example, for an
+enumerated type, to query for alias queues that have a rmote queue as
+their base type:
+
+  @queues = $command->
+    InquireQueue('FilterCommand' => "BaseType == Remote");
+
+The operators supported depend on the parameter type.  All types
+support equal (==) and unequal (<>, !=); numeric types also support
+the numeric comparators (<, >, <=, >=); string types support 'like'
+and 'not like' with a wildcard value ending on '*'; integer list types
+support 'contains' and 'excludes'; and string list types support
+'contains', 'excludes', 'contains_gen' and 'excludes_gen', where the
+latter to values perform a wildcard comparison.  The examples below
+illustrate supported usage.
+
+  BaseType == Local
+  BaseType <> Local
+  BytesSent > 10000
+  CurrentQDepth > 10000
+  Msgs <= 100
+  ConnectionName like '144.14.*'
+  BaseQName not like 'SYSTEM.*'
+  HeaderCompression contains 'gzip'
+  HeaderCompression excludes 'gzip'
+
+Note that the filter is not evaluated as a perl expression.  The
+MQSeries::Command class parses the expression into a parameter,
+operator and value; then converts the value to the appropriate type (a
+value lookup for enumerated types, a conversion to integer for
+numbers, and conversion to string for strings).  In other words, the
+expected amount of DWIM is in place.
 
 =head1 SEE ALSO
 
@@ -2219,7 +2369,7 @@ For WebSphere MQ 5.3, this is:
     Chapter 4. Definitions of the Programmable Command Formats
     Chapter 5. Structures used for commands and responses
 
-For WebSphere MQ 6.0, this is:
+For WebSphere MQ 6.0 and 7.0, this is:
 
   Same as 5.3 except the Chapter numbers. In 6.0 doc they are Chapter 3 and 4.
 

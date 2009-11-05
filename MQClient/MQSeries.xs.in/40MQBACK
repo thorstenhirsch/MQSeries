@@ -1,20 +1,20 @@
 # -*-c-*-
 #
-# $Id: 40MQBACK,v 27.1 2007/01/11 20:19:55 molinam Exp $
+# $Id: 40MQBACK,v 33.1 2009/07/02 21:08:06 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 void
 MQBACK(Hconn,CompCode,Reason)
 	MQHCONN	Hconn
-	MQLONG	CompCode
-	MQLONG	Reason
+	MQLONG	CompCode = NO_INIT
+	MQLONG	Reason = NO_INIT
 
-	CODE:
+    CODE:
 	MQBACK(Hconn,&CompCode,&Reason);
-	OUTPUT:
+    OUTPUT:
 	Hconn
 	CompCode
 	Reason

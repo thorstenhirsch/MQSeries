@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: DeadLetter.xs,v 27.1 2007/01/11 20:19:56 molinam Exp $";
+static char rcsid[] = "$Id: DeadLetter.xs,v 33.1 2009/07/10 18:30:12 biersma Exp $";
 
 /*
-  (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+  (c) 1999-2009 Morgan Stanley & Co. Incorporated
   See ..../src/LICENSE for terms of distribution.
  */
 
@@ -72,60 +72,55 @@ MQDecodeDeadLetter(pBuffer,BufferLength)
 	PMQCHAR pBuffer;
 	MQLONG  BufferLength;
 
-	PPCODE:
-	{
-	  
-	  PMQCHAR pTemp = pBuffer;
-
-	  HV *HeaderHV;
-	  SV *DataSV;
-	  MQDLH Header;
-
-	  if ( BufferLength < sizeof(MQDLH) ) {
+    PREINIT:
+        PMQCHAR  pTemp;
+        HV      *HeaderHV;
+	SV      *DataSV;
+	MQDLH    Header;
+    PPCODE:
+        pTemp = pBuffer;
+        if ( BufferLength < sizeof(MQDLH) ) {
 	    warn("MQDecodeDeadLetter: BufferLength is smaller than the MQDLH.\n");
 	    XSRETURN_EMPTY;
-	  }
-
-	  Header = *(MQDLH *)pTemp;
-	  pTemp += sizeof(MQDLH);
+	}
+        
+        Header = *(MQDLH *)pTemp;
+        pTemp += sizeof(MQDLH);
 	  
-	  HeaderHV = newHV();
+	HeaderHV = newHV();
 	  
-	  hv_store(HeaderHV,"StrucId",7,(newSVpv(Header.StrucId,4)),0);
-	  hv_store(HeaderHV,"Version",7,(newSViv(Header.Version)),0);
-	  hv_store(HeaderHV,"Reason",6,(newSViv(Header.Reason)),0);
-	  hv_store(HeaderHV,"DestQName",9,(newSVpv(Header.DestQName,MQ_Q_NAME_LENGTH)),0);
-	  hv_store(HeaderHV,"DestQMgrName",12,(newSVpv(Header.DestQMgrName,MQ_Q_MGR_NAME_LENGTH)),0);
-	  hv_store(HeaderHV,"Encoding",8,(newSViv(Header.Encoding)),0);
-	  hv_store(HeaderHV,"CodedCharSetId",14,(newSViv(Header.CodedCharSetId)),0);
-	  hv_store(HeaderHV,"Format",6,(newSVpv(Header.Format,8)),0);
-	  hv_store(HeaderHV,"PutApplType",11,(newSViv(Header.PutApplType)),0);
-	  hv_store(HeaderHV,"PutApplName",11,(newSVpv(Header.PutApplName,MQ_PUT_APPL_NAME_LENGTH)),0);
-	  hv_store(HeaderHV,"PutDate",7,(newSVpv(Header.PutDate,MQ_PUT_DATE_LENGTH)),0);
-	  hv_store(HeaderHV,"PutTime",7,(newSVpv(Header.PutTime,MQ_PUT_TIME_LENGTH)),0);
+	hv_store(HeaderHV,"StrucId",7,(newSVpv(Header.StrucId,4)),0);
+	hv_store(HeaderHV,"Version",7,(newSViv(Header.Version)),0);
+	hv_store(HeaderHV,"Reason",6,(newSViv(Header.Reason)),0);
+	hv_store(HeaderHV,"DestQName",9,(newSVpv(Header.DestQName,MQ_Q_NAME_LENGTH)),0);
+	hv_store(HeaderHV,"DestQMgrName",12,(newSVpv(Header.DestQMgrName,MQ_Q_MGR_NAME_LENGTH)),0);
+	hv_store(HeaderHV,"Encoding",8,(newSViv(Header.Encoding)),0);
+	hv_store(HeaderHV,"CodedCharSetId",14,(newSViv(Header.CodedCharSetId)),0);
+	hv_store(HeaderHV,"Format",6,(newSVpv(Header.Format,8)),0);
+	hv_store(HeaderHV,"PutApplType",11,(newSViv(Header.PutApplType)),0);
+	hv_store(HeaderHV,"PutApplName",11,(newSVpv(Header.PutApplName,MQ_PUT_APPL_NAME_LENGTH)),0);
+	hv_store(HeaderHV,"PutDate",7,(newSVpv(Header.PutDate,MQ_PUT_DATE_LENGTH)),0);
+	hv_store(HeaderHV,"PutTime",7,(newSVpv(Header.PutTime,MQ_PUT_TIME_LENGTH)),0);
 
-	  XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
+	XPUSHs(sv_2mortal(newRV_noinc((SV*)HeaderHV)));
 
-	  if ( BufferLength == sizeof(MQDLH) )
+	if ( BufferLength == sizeof(MQDLH) )
 	    DataSV = newSVpv("",0);
-	  else 
+	else 
 	    DataSV = newSVpvn(pTemp,BufferLength - sizeof(MQDLH));
 	  
-	  XPUSHs(sv_2mortal(DataSV));
+	XPUSHs(sv_2mortal(DataSV));
 
-	}
 
 void
 MQEncodeDeadLetter(Header,pData,DataLength)
      	MQDLH   Header;
 	PMQCHAR pData;
 	MQLONG	DataLength;
-	
-	PPCODE:
-	{
-	  SV *Result;
-	  Result = newSVpv((char *)&Header,sizeof(MQDLH));
-	  sv_catpvn(Result,(char *)pData,DataLength);
-	  XPUSHs(sv_2mortal(Result));
-	}
 
+    PREINIT:	
+	SV *Result;
+    PPCODE:
+	Result = newSVpv((char *)&Header,sizeof(MQDLH));
+	sv_catpvn(Result,(char *)pData,DataLength);
+	XPUSHs(sv_2mortal(Result));

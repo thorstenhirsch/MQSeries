@@ -1,12 +1,12 @@
 #
-# MQSeries::ErrorLog::Tail.pm - Watch the error-log file in a directory 
+# MQSeries::ErrorLog::Tail.pm - Watch the error-log file in a directory
 #                               and return parsed ErrorLog::Entry objects
 #                               for any new content added.
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 32.1 2009/05/22 15:28:13 biersma Exp $
+# $Id: Tail.pm,v 33.2 2009/07/10 18:35:05 biersma Exp $
 #
 
 package MQSeries::ErrorLog::Tail;
@@ -17,11 +17,9 @@ use IO::File;
 
 use MQSeries::ErrorLog::Parser;
 
-use vars qw($VERSION);
+our $VERSION = '1.30';
 
-$VERSION = '1.29';
-
-# 
+#
 # Constructor
 #
 # Parameters:
@@ -91,7 +89,7 @@ sub process {
         if ($this->{'file'}{'inode'} != $inode ||
             $this->{'file'}{'size'} != $size) {
             #print "Detect ErrLog change, size now at [$size]\n";
-            # 
+            #
             # Inode or file-size change:
             # - Seek back to the end of the old fh (to re-set eof flag)
             # - Process new data (if any, which may fail for inode change)
@@ -142,7 +140,7 @@ sub process {
 
 1;                              # End on a positive note
 
-        
+
 __END__
 
 =head1 NAME
@@ -171,12 +169,12 @@ MQSeries::ErrorLog::Tail -- Watch MQSeries error-log files
 =head1 DESCRIPTION
 
 The MQSeries::ErrorLog::Tail class provides a mechanism to watch
-the MQSeries errorlog (AMQERR01.LOG), which is generally written 
+the MQSeries errorlog (AMQERR01.LOG), which is generally written
 to whenever an MQSeries error occurs, or when certain events happen.
 
 Every time the process() method is invoked, it will return a
 (possibly empty) array of MQSeries::ErrorLog::Entry objects,
-which can in turn be analyzed and shipped off to syslog or other 
+which can in turn be analyzed and shipped off to syslog or other
 monitoring tools.
 
 The MQSeries::ErrorLog::Tail class will notice file roll-overs
@@ -189,7 +187,7 @@ new file.
 
 =head2 new
 
-Create a new MQSeries::ErrorLog::Tail object. The argument is the 
+Create a new MQSeries::ErrorLog::Tail object. The argument is the
 directory to watch (/var/mqm/errors for a typical installation's
 system-wide global error log, /var/mqm/qmgrs/XYZ/errors for a
 typical installation's queue-manager specific error log).
@@ -202,7 +200,7 @@ objects that were read.
 
 =head1 SEE ALSO
 
-MQSeries(3), MQSeries::ErrorLog::Parser(3), MQSeries::ErrorLog::Entry(3), 
+MQSeries(3), MQSeries::ErrorLog::Parser(3), MQSeries::ErrorLog::Entry(3),
 MQSeries::FDC::Tail(3)
 
 =cut

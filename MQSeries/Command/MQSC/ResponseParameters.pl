@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 30.1 2007/09/13 14:29:35 balusuv Exp $
+# $Id: ResponseParameters.pl,v 33.1 2009/07/10 17:04:43 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

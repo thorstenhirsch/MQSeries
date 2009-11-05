@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 31MQCONNX-v5,v 32.1 2009/06/11 12:45:54 biersma Exp $
+# $Id: 31MQCONNX-v5,v 33.1 2009/07/02 21:10:03 biersma Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -12,20 +12,21 @@ MQHCONN
 MQCONNX(Name,ConnectOpts,CompCode,Reason)
         MQCHAR48 Name
         MQCNO    ConnectOpts
-        MQLONG   CompCode
-        MQLONG   Reason
+        MQLONG   CompCode = NO_INIT
+        MQLONG   Reason = NO_INIT
 
-        CODE:
-        {
+    PREINIT:
 #ifdef MQCNO_VERSION_2
         MQCD ClientConnOpts  = { MQCD_CLIENT_CONN_DEFAULT };
+#endif
 #ifdef MQCNO_VERSION_4
         MQSCO SSLConfigOpts  = { MQSCO_DEFAULT };
 #endif
 #ifdef MQCNO_VERSION_5
         MQCSP SecurityParms = { MQCSP_DEFAULT };
 #endif
-
+    CODE:
+#ifdef MQCNO_VERSION_2
         /*
            If the ClientConn hash entry is present in the ConnectOpts,
            we need to build an MQCD data structure manually
@@ -332,12 +333,11 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
         }
 #endif /* MQCNO_VERSION_5 */
         MQCONNX(Name,&ConnectOpts,&RETVAL,&CompCode,&Reason);
-        }
-        OUTPUT:
+    OUTPUT:
         ConnectOpts
         RETVAL
         CompCode
         Reason
 
-#endif
+#endif /* MQCNO_NONE */
 

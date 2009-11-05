@@ -1,39 +1,37 @@
 #
-# $Id: Message.pm,v 32.1 2009/05/22 15:28:14 biersma Exp $
+# $Id: Message.pm,v 33.3 2009/07/10 17:49:20 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Message;
 
-use 5.006;
+use 5.008;
 
 use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Properties;
 use MQSeries::Utils qw(ConvertUnit);
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 sub new {
-
     my $proto = shift;
     my $class = ref($proto) || $proto;
-    my %args = @_;
+    my %args = @_;              # Do not validate; sub-classes may call without removing their custom parameters
 
     my %MsgDesc = ();
 
     my $self =
       {
        # This needs to be a hard reference.  See MQSeries::Queue::Put()
-       MsgDesc 		=> \%MsgDesc,
+       MsgDesc          => \%MsgDesc,
        # XXX - performance impact on default buffer size?
-       BufferLength 	=> 32767,
-       Carp 		=> \&carp,
+       BufferLength     => 32767,
+       Carp             => \&carp,
       };
 
     bless ($self, $class);
@@ -42,18 +40,18 @@ sub new {
     # First thing -- override the Carp routine if given.
     #
     if ( $args{Carp} ) {
-	if ( ref $args{Carp} ne "CODE" ) {
-	    carp "Invalid argument: 'Carp' must be a CODE reference\n";
-	    return;
-	} else {
-	    $self->{Carp} = $args{Carp};
-	}
+        if ( ref $args{Carp} ne "CODE" ) {
+            carp "Invalid argument: 'Carp' must be a CODE reference\n";
+            return;
+        } else {
+            $self->{Carp} = $args{Carp};
+        }
     }
 
     if ( exists $args{MsgDesc} ) {
-	if ( ref $args{MsgDesc} ne "HASH" ) {
-	    $self->{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
-	    return;
+        if ( ref $args{MsgDesc} ne "HASH" ) {
+            $self->{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
+            return;
         }
 
         %MsgDesc = %{$args{MsgDesc}};
@@ -67,44 +65,57 @@ sub new {
     }
 
     #
+    # The properties are optional, but if specified must be
+    # an MQSeries::Properties object
+    #
+    if (defined $args{Properties}) {
+        if (ref $args{Properties} &&
+            $args{Properties}->isa("MQSeries::Properties")) {
+            $self->{Properties} = $args{Properties};
+        } else {
+            $self->{Carp}->("Invalid argument: 'Properties' must be an MQSeries::Properties object.\n");
+            return;
+        }
+    }
+
+    #
     # I don't want this key to exist unless it was passed in as an
     # argument
     #
     if ( exists $args{Data} && defined $args{Data} ) {
-	$self->Data($args{Data});
+        $self->Data($args{Data});
     }
 
     #
     # Sanity check other args
     #
     if ( exists $args{BufferLength} && defined $args{BufferLength} ) {
-	return unless defined $self->BufferLength($args{BufferLength});
+        return unless defined $self->BufferLength($args{BufferLength});
     }
 
     return $self;
-
 }
+
 
 #
 # Unlike *most* of these methods (here, and in most other code), this
 # returns a hard reference to the entire hash
 #
 sub MsgDesc {
-
     my $self = shift;
 
     if ( $_[0] ) {
-	if ( exists $self->{MsgDesc}->{$_[0]} ) {
-	    return $self->{MsgDesc}->{$_[0]};
-	} else {
-	    $self->{Carp}->("No such MsgDesc field: $_[0]\n");
-	    return;
-	}
+        if ( exists $self->{MsgDesc}->{$_[0]} ) {
+            return $self->{MsgDesc}->{$_[0]};
+        } else {
+            $self->{Carp}->("No such MsgDesc field: $_[0]\n");
+            return;
+        }
     } else {
-	return $self->{MsgDesc};
+        return $self->{MsgDesc};
     }
-
 }
+
 
 #
 # Set the data value, if given.  With no args, it just returns the
@@ -113,40 +124,59 @@ sub MsgDesc {
 sub Data {
     my $self = shift;
     if ( defined $_[0] ) {
-	$self->{Data} = $_[0];
+        $self->{Data} = $_[0];
     }
     return $self->{Data};
 }
 
+
 sub Buffer {
     my $self = shift;
     if ( defined $_[0] ) {
-	$self->{Buffer} = $_[0];
+        $self->{Buffer} = $_[0];
     }
     return $self->{Buffer};
 }
 
-sub BufferLength {
 
+sub BufferLength {
     my $self = shift;
 
     if ( scalar @_ > 0 ) {
+        my $BufferLength = $_[0];
 
-	my $BufferLength = $_[0];
-
-	if (
-	    $BufferLength >= 0 and
-	    $BufferLength == int($BufferLength)
-	   ) {
-	    $self->{BufferLength} = $BufferLength;
-	} else {
-	    $self->{Carp}->("Invalid argument: 'BufferLength' must be a positive integer.\n");
-	    return undef;
-	}
+        if (
+            $BufferLength >= 0 and
+            $BufferLength == int($BufferLength)
+           ) {
+            $self->{BufferLength} = $BufferLength;
+        } else {
+            $self->{Carp}->("Invalid argument: 'BufferLength' must be a positive integer.\n");
+            return undef;
+        }
     }
 
     return $self->{BufferLength};
 }
+
+
+#
+# Get/Set the Properties object associated with the message, if any.
+#
+sub Properties {
+    my ($self, $props) = @_;
+
+    if (defined $props) {
+        if (ref $props && $props->isa("MQSeries::Properties")) {
+            $self->{Properties} = $props;
+        } else {
+            $self->{Carp}->("Invalid argument: must be an MQSeries::Properties object.\n");
+            return;
+        }
+    }
+    return $self->{Properties};
+}
+
 
 1;
 
@@ -158,7 +188,7 @@ MQSeries::Message -- OO interface to MQSeries messages
 
 =head1 SYNOPSIS
 
-  use MQSeries;
+  use MQSeries qw(:functions);
   use MQSeries::Message;
 
   #
@@ -169,13 +199,13 @@ MQSeries::Message -- OO interface to MQSeries messages
   #
   # Create a message for putting strings, which requires the
   # MQMD.Format field to be specified.  This is essential for
-  # character codeset conversion. 
+  # character codeset conversion.
   #
   my $putmsg = MQSeries::Message->new
     (
-     MsgDesc 		=>
+     MsgDesc            =>
      {
-      Format		=> MQFMT_STRING,
+      Format            => MQSeries::MQFMT_STRING,
      },
     );
 
@@ -189,10 +219,10 @@ MQSeries::Message -- OO interface to MQSeries messages
 
   my $reply = MQSeries::Message->new
     (
-     MsgDesc 		=>
+     MsgDesc            =>
      {
-      Format		=> MQFMT_STRING,
-      CorrelId 		=> $request->MsgDesc("MsgId"),
+      Format            => MQSeries::MQFMT_STRING,
+      CorrelId          => $request->MsgDesc("MsgId"),
      },
     );
 
@@ -204,9 +234,9 @@ The MQSeries::Message object is an OO mechanism for creating MQSeries
 messages, and putting and getting them onto MQSeries queues,
 with an interface which is much simpler than the full MQI.
 
-This module is used together with MQSeries::QueueManager and
-MQSeries::Queue.  These objects provide a subset of the MQI, with a
-simpler interface.
+This module is used together with MQSeries::QueueManager,
+MQSeries::Queue and MQSeries::Properties.  These objects provide a
+subset of the MQI, with a simpler interface.
 
 =head1 METHODS
 
@@ -292,7 +322,7 @@ Then, one tells the object to use this routine:
 
 The default, as one might guess, is Carp::carp();
 
-=back 
+=back
 
 =head2 Data
 
@@ -325,6 +355,25 @@ argument is given, then the entire MsgDesc hash is returned.  If a
 single argument is given, then this is interpreted as a specific key,
 and the value of that key in the MsgDesc hash is returned.
 
+=head2 Properties
+
+Return the message properties for the message.  This method is only
+supported if the module has been compiled with the MQ v7 libraries and
+the connected queue manager is running MQ v7.
+
+Whenever a message is retrieved using MQGET, a message handle is
+specified for the message properties, and stored with the Message
+object.
+
+For example, to retrieve a hash reference with the message properties
+matching 'perl.MQSeries.%' after a successful MQGET on MQ v7, do:
+
+  my $rc = $queue->Get(Message => $msg, ...);
+  my $props = $msg->Poperties()->GetProperties(Name => 'perl.MQSeries.%');
+
+See the documentation of the MQSeries::Properties class for the
+available methods.
+
 =head1 ERROR HANDLING
 
 Most methods return a true or false value indicating success of
@@ -350,6 +399,7 @@ MQSeries::QueueManager documentation.
 =head1 SEE ALSO
 
 MQSeries(3), MQSeries::QueueManager(3), MQSeries::Queue(3),
-MQSeries::Message::Storable(3), MQSeries::Message::Event(3)
+MQSeries::Properties(3), MQSeries::Message::Storable(3),
+MQSeries::Message::Event(3)
 
 =cut

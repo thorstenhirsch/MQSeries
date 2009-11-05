@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 28.1 2007/02/08 19:42:22 biersma Exp $
+# $Id: Makefile.PL,v 33.1 2009/07/10 17:04:41 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

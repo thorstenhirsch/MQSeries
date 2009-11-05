@@ -1,7 +1,7 @@
 #
-# $Id: MQSeries.pm,v 32.1 2009/05/22 15:28:11 biersma Exp $
+# $Id: MQSeries.pm,v 33.2 2009/07/10 17:41:32 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # This is intended to be a wrapper routine to include either the
@@ -11,20 +11,19 @@
 
 package MQSeries;
 
-use 5.006;
+use 5.008;
 
 use strict;
 use Carp;
-use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS);
 
 require Exporter;
 require DynaLoader;
 
 use MQSeries::Config::Machine;
 
-@ISA = qw(Exporter DynaLoader);
-
-$VERSION = '1.29';
+our @ISA = qw(Exporter DynaLoader);
+our $VERSION = '1.30';
+our (@EXPORT, %EXPORT_TAGS);
 
 BEGIN {
     my $server;
@@ -42,17 +41,17 @@ BEGIN {
             $Registry->Delimiter('/');
 
             my $CurrentVersion = "LMachine/SOFTWARE/IBM/MQSeries/CurrentVersion/";
-	    $server = 0;
-	    my @sdir = ( $Registry->{"$CurrentVersion/FilePath"}, 
-			 $Registry->{"$CurrentVersion/WorkPath"}, 
-			 "C:/Mqm");
-	    foreach my $try (@sdir) {
-		my $systemdir = $try . q{/qmgrs/@SYSTEM};
-		if (-d $systemdir) {
-		    $server = 1;
-		    last;
-		}
-	    }
+            $server = 0;
+            my @sdir = ( $Registry->{"$CurrentVersion/FilePath"},
+                         $Registry->{"$CurrentVersion/WorkPath"},
+                         "C:/Mqm");
+            foreach my $try (@sdir) {
+                my $systemdir = $try . q{/qmgrs/@SYSTEM};
+                if (-d $systemdir) {
+                    $server = 1;
+                    last;
+                }
+            }
         } else {                # Unix: check systemdir and mqs.ini
             eval {
                 my $mqMachine = MQSeries::Config::Machine->new();
@@ -74,17 +73,17 @@ BEGIN {
     }
 
     if ($server) {
-	require "MQServer/MQSeries.pm";
-	import MQServer::MQSeries;
-	*EXPORT = *MQServer::MQSeries::EXPORT;
-	*EXPORT_TAGS = *MQServer::MQSeries::EXPORT_TAGS;
-	$MQSeries::Mode = "Server";
+        require "MQServer/MQSeries.pm";
+        import MQServer::MQSeries;
+        *EXPORT = *MQServer::MQSeries::EXPORT;
+        *EXPORT_TAGS = *MQServer::MQSeries::EXPORT_TAGS;
+        $MQSeries::Mode = "Server";
     } else {
-	require "MQClient/MQSeries.pm";
-	import MQClient::MQSeries;
-	*EXPORT = *MQClient::MQSeries::EXPORT;
-	*EXPORT_TAGS = *MQClient::MQSeries::EXPORT_TAGS;
-	$MQSeries::Mode = "Client";
+        require "MQClient/MQSeries.pm";
+        import MQClient::MQSeries;
+        *EXPORT = *MQClient::MQSeries::EXPORT;
+        *EXPORT_TAGS = *MQClient::MQSeries::EXPORT_TAGS;
+        $MQSeries::Mode = "Client";
     }
 }
 
@@ -330,12 +329,12 @@ independently; and example of them used in combination is shown below:
 
   $coption = { 'ChannelName'    => 'Some.Channel.Name',
                'TransportType'  => 'TCP',
-   	       'ConnectionName' => 'hostname(port)',
+               'ConnectionName' => 'hostname(port)',
              };
   $ssl_option = { 'KeyRepository' => '/var/mqm/ssl/key' };
   $Hconn = MQCONNX($qmgr_name, { 'ClientConn' => $coption,
-	                         'SSLConfig'  => $ssl_option,
-			       }, $cc, $re);
+                                 'SSLConfig'  => $ssl_option,
+                               }, $cc, $re);
 
 See the application programming reference for details on the
 additional fields available in the C<ClientConn> data structure.
@@ -357,8 +356,8 @@ from the argument list and returns the value.
 The $ObjDesc parameter should be a hash reference, for example:
 
   $ObjDesc = {
-              ObjectName 	=> 'SOME.MODEL.QUEUE',
-              DynamicQName 	=> 'FOOBAR*',
+              ObjectName        => 'SOME.MODEL.QUEUE',
+              DynamicQName      => 'FOOBAR*',
              };
 
 The $Options parameter should be a set of ORed options, for example:
@@ -374,14 +373,14 @@ RecsPresent, ObjectRecPtr, etc.
 The first method is to specify an array of plain queue names:
 
   $ObjDesc = {
-              ObjectRecs	=> [qw( QUEUE1 QUEUE2 QUEUE3 )],
+              ObjectRecs        => [qw( QUEUE1 QUEUE2 QUEUE3 )],
              };
 
 The second method is to specify an array or array references, each
 giving the QName and QMgrName:
 
   $ObjDesc = {
-              ObjectRecs	=> [
+              ObjectRecs        => [
                                     [qw( QUEUE1 QM1 )],
                                     [qw( QUEUE2 QM2 )],
                                     [qw( QUEUE3 QM3 )],
@@ -392,18 +391,18 @@ Finally, an array of hash references can be specified, each giving the
 QName and QMgrName via specific keys:
 
   $ObjDesc = {
-              ObjectRecs	=> [
+              ObjectRecs        => [
                                     {
-                                     ObjectName		=> 'QUEUE1',
-                                     ObjectQMgrName	=> 'QM1',
+                                     ObjectName         => 'QUEUE1',
+                                     ObjectQMgrName     => 'QM1',
                                     },
                                     {
-                                     ObjectName		=> 'QUEUE2',
-                                     ObjectQMgrName	=> 'QM2',
+                                     ObjectName         => 'QUEUE2',
+                                     ObjectQMgrName     => 'QM2',
                                     },
                                     {
-                                     ObjectName		=> 'QUEUE3',
-                                     ObjectQMgrName	=> 'QM3',
+                                     ObjectName         => 'QUEUE3',
+                                     ObjectQMgrName     => 'QM3',
                                     },
                                    ],
              };
@@ -519,15 +518,15 @@ the messages in a distribution list of three queues.
   $PutMsgOpts = {
                  PutMsgRecs => [
                                 {
-                                 MsgId		=> MQPMO_NEW_MSG_ID,
+                                 MsgId          => MQPMO_NEW_MSG_ID,
                                  CorrelId       => $SomeCorrelId,
                                 },
                                 {
-                                 MsgId		=> MQPMO_NEW_MSG_ID,
+                                 MsgId          => MQPMO_NEW_MSG_ID,
                                  CorrelId       => $SomeCorrelId,
                                 },
                                 {
-                                 MsgId		=> MQPMO_NEW_MSG_ID,
+                                 MsgId          => MQPMO_NEW_MSG_ID,
                                  CorrelId       => $SomeCorrelId,
                                 },
                                ],
@@ -569,17 +568,109 @@ length of the array, and a similar pair of values for the attribute
 values themselves.  The perl convention is to list the selectors and
 attributes in pairs, rather than by passing in an array reference.
 
-=head2 MQParseEvent (deprecated in 1.06)
+=head2 MQCRTMH
 
-This routine has been deprecated, and is no longer supported.  The
-next release will remove it from the documentation altogether.  
+  $Hmsg = MQCRTMH($Hconn,$CrtMsgHOpts,$CompCode,$Reason);
 
-Equivalent functionality is available via the MQDecodePCF subroutine,
-which is optionally exported from the MQSeries::Message::PCF module.  
+This call is only available if the module has been compiled with MQ
+v7.  It creates a message handle, which can be used to get/set message
+properties.
 
-The author highly recommends using the OO abstraction via
-MQSeries::Message::Event, and interface which is supported and will
-remain part of this API permanently.
+The $CrtMsgHOpts parameter is a MQCMHO data structure, which for MQ v7
+only contains an 'Options' field.
+
+  $CrtMsgHOpts = { Options => ( MQSeries::MQCMHO_VALIDATE ) };
+
+The default (listed above) is generally sufficient.
+
+=head2 MQDLTMH
+
+  MQDLTMH($Hconn,$Hmsg,$DltMsgHOpts,$CompCode,$Reason)
+
+This call is only available if the module has been compiled with MQ
+v7.  It deletes a message handle previously created with MQCRTMH.
+
+The $DltMsgHOpts parameter is a MQDMHO data structure, which for MQ v7
+only contains an 'Options' field, with no options defined.  For MQ v7,
+just specify an empty hash reference.
+
+=head2 MQDLTMP
+
+  MQDLTMP($Hconn,$Hmsg,$DltPropOpts,$Name,$CompCode,$Reason)
+
+This call is only available if the module has been compiled with MQ
+v7.  it deletes a message property.
+
+The $DltPropOpts parameter is a MQDMPO parameter, which only contains
+an 'Options' field.
+
+  $DltPropOpts = { Options => ( MQSeries::MQDMPO_DEL_FIRST ) };
+
+The default (listed above) is generally sufficient.
+
+The $Name parameter is a fully qualified property name.
+
+=head2 MQINQMP
+
+  $PropertyValue = MQINQMP($Hconn,$Hmsg,$InqPropOpts,$Name,$PropDesc,$Type,$Length,$CompCode,$Reason)
+
+This call is only available if the module has been compiled with MQ
+v7.  It retrieves a message property.  The return value is the value
+of the property retrieved.
+
+The $InqPropOpts parameter is an MQIMPO data structure.
+
+The $Name parameter is a property name, which may contain a wildcard.
+
+The $PropDesc parameter is an MQPD data structure.
+
+The $Type parameter determines the return type if the option
+MQSeries::MQIMPO_CONVERT_TYPE is specified as part of the $InqPropOpts
+parameter.  In either case, it is also an output parameter that
+specifies the returned type of the proeprty,
+e.g. MQSeries::MQTYPE_STRING.
+
+The $Length parameter is the maximum length of the property value to
+return.  It is also an output parameter that specifies the length of
+the returned value.
+
+=head2 MQSETMP
+
+  MQSETMP($Hconn,$Hmsg,$SetPropOpts,$Name,$PropDesc,$Type,$Value,$CompCode,$Reason)
+
+This call is only available if the module has been compiled with MQ
+v7.  It sets or updates a message property.
+
+The $SetPropOpts parameter is a MQHMSG data structur, which for MQ v7
+only contains an 'Options' field.
+
+  $SetPropOpts = { Options => ( MQSeries::MQSMPO_SET_FIRST ) };
+
+The default (listed above) is generally sufficient.
+
+The $Name parameter is the property name.
+
+The $PropDesc parameter is an MQPD data structure.
+
+The $Type parameter specifies the data type of the property,
+e.g. MQSeries::MQTYPE_STRING or MQSeries::MQTYPE_FLOAT64.
+
+The $Value parameter is the actual proeprty value.  It may be C<undef>
+for string and byte string properties.
+
+=head2 MQSTAT
+
+  MQSTAT($Hconn,$StatType,$Stat,$CompCode,$Reason)
+
+This call is only available if the module has been compiled with MQ
+v7.  It returns queue manager asynchronous put status information.
+
+The $StatType parameter must always be
+MQSeries::MQSTAT_TYPE_ASYNC_ERROR.
+
+The $Stat parameter is a MQSTS data structure must be specified as a
+hash reference.  On output, it includes the MQSTS fields documented in
+the Application Programming Reference for MQ v7.
 
 =head2 MQReasonToStrings
 

@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::RFH2 - RFH2 Message
 #
-# (c) 2004-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2004-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: RFH2.pm,v 32.1 2009/05/22 15:28:14 biersma Exp $
+# $Id: RFH2.pm,v 33.2 2009/07/10 18:22:48 biersma Exp $
 #
 
 package MQSeries::Message::RFH2;
@@ -13,10 +13,9 @@ use strict;
 use Carp;
 
 use MQSeries::Message;
-use vars qw(@ISA $VERSION);
 
-$VERSION = '1.29';
-@ISA = qw(MQSeries::Message);
+our $VERSION = '1.30';
+our @ISA = qw(MQSeries::Message);
 
 #
 # This describes the RFH2 structure.  We do this in perl to avoid XS
@@ -24,15 +23,15 @@ $VERSION = '1.29';
 #
 my @RFH_Struct =
   (
-   #   	Name			Method		Length  Default
-   [ qw(StrucId                 String		4	RFH	) ],
+   #    Name                    Method          Length  Default
+   [ qw(StrucId                 String          4       RFH     ) ],
    [ qw(Version                 Number          4       2       ) ],
    [ qw(StrucLength             Number          4       36      ) ],
    [ qw(Encoding                Number          4),     MQSeries::MQENC_NATIVE ],
-   [ qw(CodedCharSetId          Number          4       -2	) ],
-   [ qw(Format                  String          8		) ],
+   [ qw(CodedCharSetId          Number          4       -2      ) ],
+   [ qw(Format                  String          8               ) ],
    [ qw(Flags                   Number          4       0       ) ],
-   [ qw(NameValueCCSID		Number		4	1208	) ],
+   [ qw(NameValueCCSID          Number          4       1208    ) ],
 );
 
 
@@ -207,7 +206,7 @@ sub _writeByte {
     my $class = shift;
     my ($string,$length) = @_;
     if ( length($string) < $length ) {
-	$string .= "\0" x ( $length - length($string) );
+        $string .= "\0" x ( $length - length($string) );
     }
     return $string;
 }
@@ -225,21 +224,21 @@ sub _setEndianess {
     my ($big_endian) = @_;
 
     if (@_ == 1) {
-	return if (defined $packShort);
-	#
-	# Implicit invocation - base on guess work
-	#
-	$big_endian = pack('N', 1) eq pack('L', 1);
-	#print STDERR "Implicitly set format to " . ($big_endian ? "big" : "little") . " endian\n";
+        return if (defined $packShort);
+        #
+        # Implicit invocation - base on guess work
+        #
+        $big_endian = pack('N', 1) eq pack('L', 1);
+        #print STDERR "Implicitly set format to " . ($big_endian ? "big" : "little") . " endian\n";
     }
 
     if ($big_endian) {
-	$packShort = "n";
-	$packNumber= "N";
+        $packShort = "n";
+        $packNumber= "N";
     } else {
-	$packShort = "v";
-	$packNumber= "V";
-    }	
+        $packShort = "v";
+        $packNumber= "V";
+    }
 }
 
 1;
@@ -272,8 +271,9 @@ MQSeries::Message::RFH2 -- Class to send/receive RFH2 messages
   #
   # Get RFH2 data
   #
+  my $qmgr_obj = MQSeries::QueueManager->new(QueueManager => 'TEST.QM');
   my $queue = MQSeries::Queue->
-    new(QueueManager => 'TEST.QM',
+    new(QueueManager => $qmgr_obj,
         Queue        => 'RFH2.DATA.QUEUE',
         Mode         => 'input');
   my $msg = MQSeries::Message::RFH2->new();
@@ -290,6 +290,12 @@ how well it works is welcome.
 
 An RFH2 message contains an RFH2 header, followed by a data string
 with structured name-value data, in XML format.
+
+NOTE: In MQ v7, you may receive what appear to be messages in RFH2
+format, when you're really getting a message with message properties.
+If you're upgrading MQ v7, make sure you rebuild the module to get MQ
+v7 support; and make sure to set the queue PropertyControl attribute
+properly.
 
 =head1 METHODS
 

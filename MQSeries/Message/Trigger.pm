@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::Trigger - Trigger Message
 #
-# (c) 2003-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2003-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Trigger.pm,v 32.1 2009/05/22 15:28:15 biersma Exp $
+# $Id: Trigger.pm,v 33.2 2009/07/10 18:24:11 biersma Exp $
 #
 
 package MQSeries::Message::Trigger;
@@ -13,10 +13,9 @@ use strict;
 use Carp;
 
 use MQSeries::Message;
-use vars qw(@ISA $VERSION);
 
-$VERSION = '1.29';
-@ISA = qw(MQSeries::Message);
+our $VERSION = '1.30';
+our @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Command/PCF/ResponseValues.pl"; # For ApplType
 my %ApplType =
@@ -42,8 +41,8 @@ sub GetConvert {
     my $type = $this->_readByte($buffer, 0, 4);
     my $little_endian = ord($this->_readByte($buffer, 4, 1));
     my $version = ($little_endian ?
-		   $this->_readLENumber($buffer, 4, 4) :
-		   $this->_readBENumber($buffer, 4, 4));
+                   $this->_readLENumber($buffer, 4, 4) :
+                   $this->_readBENumber($buffer, 4, 4));
     confess "Invalid type [$type] (not MQTM_STRUC_ID_ARRAY)"
       unless ($type eq 'TM  ');
     confess "Unexpected version [$version] (not MQTM_VERSION_1)"
@@ -70,8 +69,8 @@ sub GetConvert {
     #
     {
         my $appl_type = ($little_endian ?
-			 $this->_readLENumber($buffer, $offset, 4) :
-			 $this->_readBENumber($buffer, $offset, 4));
+                         $this->_readLENumber($buffer, $offset, 4) :
+                         $this->_readBENumber($buffer, $offset, 4));
         $retval->{ApplType} = $ApplType{$appl_type} ||
           "<unknown ApplType value $appl_type>";
         $offset += 4;
@@ -147,8 +146,9 @@ MQSeries::Message::Trigger -- Class to decode trigger messages
   #
   # Get a message from an initiation queue
   #
+  my $qmgr_obj = MQSeries::QueueManager->new(QueueManager => 'TEST.QM');
   my $queue = MQSeries::Queue->
-    new(QueueManager => 'TEST.QM',
+    new(QueueManager => $qmgr_obj,
         Queue        => 'APPGROUP.APPNAME.INITQ',
         Mode         => 'input');
   my $msg = MQSeries::Message::Trigger->new();

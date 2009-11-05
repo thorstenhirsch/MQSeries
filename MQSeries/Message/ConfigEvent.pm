@@ -1,11 +1,11 @@
 #
 # MQSeries::Message::ConfigEvent - Config Event Message
 #
-# (c) 2002-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2002-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: ConfigEvent.pm,v 32.1 2009/05/22 15:28:14 biersma Exp $
-# 
+# $Id: ConfigEvent.pm,v 33.2 2009/07/10 18:25:21 biersma Exp $
+#
 
 package MQSeries::Message::ConfigEvent;
 
@@ -15,10 +15,9 @@ use Convert::EBCDIC;
 
 use MQSeries qw(:functions);
 use MQSeries::Message;
-use vars qw(@ISA $VERSION);
 
-$VERSION = '1.29';
-@ISA = qw(MQSeries::Message);
+our $VERSION = '1.30';
+our @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Message/ConfigEvent.pl";
 require "MQSeries/Command/PCF/ResponseParameters.pl";
@@ -135,37 +134,37 @@ sub GetConvert {
             } else {
                 # Value is okay
             }
-        } elsif ($type == 5 ) { # MQSeries::MQCFT_INTEGER_LIST) 
-	    my $count = $this->_readNumber($buffer, $offset+12, 4);
-	    confess "Invalid [$label] entry (list with length zero) at offset [$offset]" unless ($count);
-	    my $data = [];
-	    my $loff = 16;
-	    foreach my $entry (1..$count) {
-		my $lvalue = $this->_readNumber($buffer, $offset+$loff, 4);
-		$loff += 4;
-		my $enum = $MQSeries::Message::ConfigEvent::ResponseEnums{$label};
-		my $renum = $MQSeries::Command::PCF::ResponseValues{$label};
-		if (defined $enum) {
-		    if (defined $enum->{$lvalue}) {
-			$lvalue = $enum->{$lvalue};
-		    } else {
-			$lvalue .= " - <unknown $label>";
-		    }
-		} elsif (defined $renum) {
-		    #print STDERR "Have reverse enum [$label]\n";
-		    foreach my $key (keys %$renum) {
-			my $rval = $renum->{$key};
-			next unless ($lvalue == $rval);
-			$lvalue = $key;
-			last;
-		    }
-		} else {
-		    # Value is okay
-		}
-		push @$data, $lvalue;
-	    }
-	    $value = $data;
-	     
+        } elsif ($type == 5 ) { # MQSeries::MQCFT_INTEGER_LIST)
+            my $count = $this->_readNumber($buffer, $offset+12, 4);
+            confess "Invalid [$label] entry (list with length zero) at offset [$offset]" unless ($count);
+            my $data = [];
+            my $loff = 16;
+            foreach my $entry (1..$count) {
+                my $lvalue = $this->_readNumber($buffer, $offset+$loff, 4);
+                $loff += 4;
+                my $enum = $MQSeries::Message::ConfigEvent::ResponseEnums{$label};
+                my $renum = $MQSeries::Command::PCF::ResponseValues{$label};
+                if (defined $enum) {
+                    if (defined $enum->{$lvalue}) {
+                        $lvalue = $enum->{$lvalue};
+                    } else {
+                        $lvalue .= " - <unknown $label>";
+                    }
+                } elsif (defined $renum) {
+                    #print STDERR "Have reverse enum [$label]\n";
+                    foreach my $key (keys %$renum) {
+                        my $rval = $renum->{$key};
+                        next unless ($lvalue == $rval);
+                        $lvalue = $key;
+                        last;
+                    }
+                } else {
+                    # Value is okay
+                }
+                push @$data, $lvalue;
+            }
+            $value = $data;
+
         } else {
             confess "Unexpected chunk type [$type] for id [$id] [$label] at offset [$offset]";
         }
@@ -173,7 +172,7 @@ sub GetConvert {
         unless (defined $label) {
             print STDERR "Unexpected chunk id [$id] with value [$value] at offset [$offset] for object type [$retval->{ObjectType}]\n";
             next;               # See continue block
-        } 
+        }
 
         #print STDERR "Have [$label] value [$value]\n";
         $retval->{$label} = $value;
@@ -225,8 +224,9 @@ MQSeries::Message::ConfigEvent -- Class to decode mainframe WMQ Config Event mes
   #
   # Get a message from a CONFIG.EVENT queue
   #
+  my $qmgr_obj = MQSeries::QueueManager->new(QueueManager => 'TEST.QM');
   my $queue = MQSeries::Queue->
-    new(QueueManager => 'TEST.QM',
+    new(QueueManager => $qmgr_obj,
         Queue        => 'SYSTEM.ADMIN.CONFIG.EVENT',
         Mode         => 'input');
   my $msg = MQSeries::Message::ConfigEvent->new();

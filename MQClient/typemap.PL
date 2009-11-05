@@ -1,7 +1,7 @@
 #
-# $Id: typemap.PL,v 32.1 2009/05/26 16:42:54 biersma Exp $
+# $Id: typemap.PL,v 33.1 2009/07/10 17:46:08 biersma Exp $
 #
-# (c) 1999-2009 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Script to generate a typemap from the MQSeries header files
@@ -16,6 +16,7 @@
 #       &long_output, &long_input               for MQLONG types
 #       &string_output, &string_input           for MQCHARn types
 #       &byte_output, &byte_input               for MQBYTE types
+#       &charv_output, &charv_input             for MQCHARV types
 #
 # Other types are not yet supported, and those that are not relevant
 # are skipped intentionally.  Warnings should be due to new
@@ -33,33 +34,47 @@ require "../util/parse_headers";
 
 @ARGV = @headers;
 
-$debug = $ENV{DEBUG_TYPEMAP_PL};
+my $debug = $ENV{DEBUG_TYPEMAP_PL};
 
-open(STDOUT, "> typemap") || die "$0: error writing typemap: $!\n";
+open(STDOUT, '>', "typemap") || die "$0: error writing typemap: $!\n";
 
+my $skipping = 0;
 while ( <> ) {
 
     if (/typedef\s+struct\s+tag(\w+)/) {
         # entry into a new type
         $type = $1;
+
+	#
+	# We skip some types not used for MQI calls, or ahndled
+	# manually instead of typemaps
+	#
+	if (grep { $type eq $_ } 
+	    qw(MQCFIN MQCFIN64 MQIMPO MQWDR MQWDR2 MQXEPO)) {
+	    $skipping = 1;
+	    next;
+	}
+	$skipping = 0;
+
         print "#we're starting a $type\n" if $debug;
         $input{$type} = &input_header($type);
         $output{$type} = &output_header($type);
-    }
-    elsif (/\}\s+(MQ\w+);/) {
+	next;
+    } 
+    next if ($skipping);
+
+    if (/\}\s+(MQ\w+);/) {
         # exit of a type.  Probably should assert that $type2 eq $type
         $type2 = $1;
         print "#we're ending a $type ($type2)\n" if $debug;
         $input{$type} .= &input_footer($type);
         undef $type;
-    }
-    elsif ($type && /^\s*\}\s*;\s*$/) {
+    } elsif ($type && /^\s*\}\s*;\s*$/) {
         # exit of a type in 5.3 headers
         print "#we're ending a $type\n" if $debug;
         $input{$type} .= &input_footer($type);
         undef $type;
-    }
-    elsif ($type && ($_ =~ /\s+(MQ\w+)\s+(\w+);/)) {
+    } elsif ($type && ($_ =~ /\s+(MQ\w+)\s+(\w+);/)) {
         # found a new field of type $fieldt and name $field:
         $fieldt = $1;
         $field = $2;
@@ -71,18 +86,19 @@ while ( <> ) {
         # A list of known types we don't support.  Ignore them.
         #
         next if (grep { $fieldt eq $_ }
-                 qw(MQPTR MQMD1 MQHCONN MQPOINTER MQPID MQTID MQHCONFIG));
+                 qw(MQPTR MQMD1 MQHCONN MQPOINTER MQPID MQTID MQHCONFIG
+		    MQAXP MQCFH MQXEPO));
 
         if ($fieldt eq 'MQLONG' ||
             $fieldt eq 'MQHOBJ' ||
+            $fieldt eq 'MQHMSG' ||
             $fieldt eq 'MQBOOL') {
             $strlen = length($field);
 
             $input{$type} .= &long_input($field);
             $output{$type} .= &long_output($field);
 
-        }
-        elsif ($fieldt =~ /^MQCHAR(\d*)$/) {
+        } elsif ($fieldt =~ /^MQCHAR(\d*)$/) {
             $size = $1;
 
             if ($size == 0) {
@@ -90,8 +106,7 @@ while ( <> ) {
             }
             $output{$type} .= &string_output($field, $size);
             $input{$type} .= &string_input($field, $size);
-        }
-        elsif ($fieldt =~ /^MQBYTE(\d*)$/) {
+        } elsif ($fieldt =~ /^MQBYTE(\d*)$/) {
             $size = $1;
 
             if ($size == 0) {
@@ -99,8 +114,10 @@ while ( <> ) {
             }
             $output{$type} .= &byte_output($field, $size);
             $input{$type} .= &byte_input($field, $size);
-        }
-        else {
+	} elsif ($fieldt eq 'MQCHARV') {
+            $input{$type} .= &charv_input($field);
+            #$output{$type} .= &charv_output($field);
+        } else {
             warn "$0: warning: type $type.$field ($fieldt) not supported\n";
         }
 
@@ -147,6 +164,8 @@ MQHCONN         T_IV
 PMQHCONN        T_OPAQUEPTR
 MQHOBJ          T_IV
 PMQHOBJ         T_OPAQUEPTR
+MQHMSG          T_IV
+PMQHMSG         T_OPAQUEPTR
 MQPTR           T_PV
 PMQPTR          T_PV
 PMQVOID         T_PV
@@ -154,22 +173,31 @@ PPMQVOID        T_PV
 
 # Structures
 MQAIR           T_MQAIR
+MQBMHO          T_MQBMHO
 MQBO            T_MQBO
+MQCHARV         T_MQCHARV
+MQCMHO          T_MQCMHO
 MQCNO           T_MQCNO
 MQDH            T_MQDH
 MQDLH           T_MQDLH
+MQDMHO          T_MQDMHO
+MQDMPO          T_MQDMPO
 MQGMO           T_MQGMO
 MQIIH           T_MQIIH
 MQMD            T_MQMD
 MQMDE           T_MQMDE
 MQMD1           T_MQMD1
+MQMHBO          T_MQMHBO
 MQOD            T_MQOD
 MQOR            T_MQOR
+MQPD            T_MQPD
 MQPMO           T_MQPMO
 MQRFH           T_MQRFH
 MQRMH           T_MQRMH
 MQRR            T_MQRR
 MQSCO           T_MQSCO
+MQSMPO          T_MQSMPO
+MQSTS           T_MQSTS
 MQTM            T_MQTM
 MQTMC2          T_MQTMC2
 MQXQH           T_MQXQH
@@ -218,19 +246,32 @@ EOF
 }
 #==============================================================================
 sub string_output {
-    my($field, $fieldsize, $hash) = @_;
-    my($fieldnamelen) = length($field);
-    my($isptr);
+    my ($field, $fieldsize, $hash) = @_;
+    my $fieldnamelen = length($field);
+    my $isptr = '';
 
     $hash = 0 unless $hash;
     if ($fieldsize == 1) {
         $isptr = "&";
-    }
-
-    return <<"EOF";
+	return <<"EOF";
         hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
                  (newSVpv($isptr\$var.$field, $fieldsize)),$hash);
 EOF
+	;
+    }
+
+    #
+    # Strings over 1 character: trim zeroes (i.e. only return actual
+    # size used, which could be the empty string)
+    #
+    return <<"EOF";
+        {
+            STRLEN len = strnlen($isptr\$var.$field, $fieldsize);
+            hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
+                     (newSVpv($isptr\$var.$field, len)),$hash);
+        }
+EOF
+    ;
 }
 #==============================================================================
 sub string_input {
@@ -250,10 +291,12 @@ sub string_input {
 
             /* Need to deal with undersized data.  Only copy supplied bytes. */
             scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
-            StringData = SvPV(*scalar, StringLength);
-            strncpy($isptr\$var.$field,
-                    StringData,
-                    StringLength > $fieldsize ? $fieldsize : StringLength);
+            if (SvOK(*scalar)) { /* Defined */
+                StringData = SvPV(*scalar, StringLength);
+                strncpy($isptr\$var.$field,
+                        StringData,
+                        StringLength > $fieldsize ? $fieldsize : StringLength);
+            }
         }
 
 
@@ -319,6 +362,61 @@ sub byte_input {
             memcpy(\$var.$field,
                    ByteData,
                    ByteLength > $fieldsize ? $fieldsize : ByteLength);
+        }
+EOF
+}
+#==============================================================================
+sub charv_output {
+    my ($field) = @_;
+    my $fieldnamelen = length($field);
+
+    #
+    # NOTE: this function assumes that the return value uses a buffer
+    #       on the stack (or a static) in the XS code, not a
+    #       dynamically allocated value.  See the MQINQMP XS code for
+    #       an example.
+    #
+    return <<"EOF";
+        {
+            char    *ptr;
+            STRLEN  len;
+
+            if (\$var.$field.VSPtr) {
+                ptr = \$var.$field.VSPtr;
+            } else {
+                ptr = (char *)&\$var.$field;
+                ptr += \$var.$field.VSOffset;
+            }
+            if (\$var.$field.VSLength == MQVS_NULL_TERMINATED) {
+                len = strlen(ptr);
+            } else {
+                len = \$var.$field.VSLength;
+            }
+            hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
+                     (newSVpv(ptr,len)),0);
+        }
+EOF
+}
+#==============================================================================
+sub charv_input {
+    my ($field) = @_;
+    my $fieldnamelen = length($field);
+
+    return <<"EOF";
+        if (hv_exists((HV*)SvRV(\$arg), \\"$field\\", $fieldnamelen)) {
+            SV     **scalar;
+	    char    *val;
+            STRLEN   len;
+
+            scalar = hv_fetch((HV *)SvRV(\$arg), \\"$field\\", $fieldnamelen, 0);
+	    val = SvPV(*scalar, len);
+	    if (len) {
+	        \$var.$field.VSPtr = val;
+		\$var.$field.VSLength = len;
+		\$var.$field.VSOffset = 0;
+		\$var.$field.VSBufSize  = 0;
+		\$var.$field.VSCCSID = MQCCSI_APPL; /* Maybe UTF-8 */
+	    }
         }
 EOF
 }

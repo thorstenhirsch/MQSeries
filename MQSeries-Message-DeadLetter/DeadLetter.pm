@@ -1,7 +1,7 @@
 #
-# $Id: DeadLetter.pm,v 32.1 2009/05/22 15:28:10 biersma Exp $
+# $Id: DeadLetter.pm,v 33.2 2009/07/10 18:29:38 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,25 +16,20 @@ use Exporter;
 use MQSeries qw(:functions);
 use MQSeries::Message;
 
-use vars qw( $VERSION @ISA @EXPORT_OK );
-
-$VERSION = '1.29';
-
-@ISA = qw( MQSeries::Message Exporter DynaLoader );
-
-@EXPORT_OK = qw( MQDecodeDeadLetter MQEncodeDeadLetter );
+our $VERSION = '1.30';
+our @ISA = qw( MQSeries::Message Exporter DynaLoader );
+our @EXPORT_OK = qw(MQDecodeDeadLetter MQEncodeDeadLetter);
 
 bootstrap MQSeries::Message::DeadLetter;
 
 sub new {
-
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
 
     my %MsgDesc =
       (
-       Format	=> MQSeries::MQFMT_DEAD_LETTER_HEADER,
+       Format   => MQSeries::MQFMT_DEAD_LETTER_HEADER,
       );
 
     #
@@ -46,22 +41,22 @@ sub new {
     # classes...
     #
     if ( $args{Carp} ) {
-	if ( ref $args{Carp} ne "CODE" ) {
-	    carp "Invalid argument: 'Carp' must be a CODE reference\n";
-	    return;
-	}
+        if ( ref $args{Carp} ne "CODE" ) {
+            carp "Invalid argument: 'Carp' must be a CODE reference\n";
+            return;
+        }
     } else {
-	$args{Carp} = \&carp;
+        $args{Carp} = \&carp;
     }
 
     if ( exists $args{MsgDesc} ) {
-	unless ( ref $args{MsgDesc} eq "HASH" ) {
-	    $args{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
-	    return;
-	}	
-	foreach my $key ( keys %{$args{MsgDesc}} ) {
-	    $MsgDesc{$key} = $args{MsgDesc}->{$key};
-	}
+        unless ( ref $args{MsgDesc} eq "HASH" ) {
+            $args{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
+            return;
+        }
+        foreach my $key ( keys %{$args{MsgDesc}} ) {
+            $MsgDesc{$key} = $args{MsgDesc}->{$key};
+        }
     }
 
     $args{MsgDesc} = {%MsgDesc};
@@ -69,59 +64,55 @@ sub new {
     my $self = MQSeries::Message->new(%args) || return;
 
     if ( $args{Header} ) {
-	$self->{Header} = $args{Header};
+        $self->{Header} = $args{Header};
     } else {
-	$self->{Header} = {};
+        $self->{Header} = {};
     }
 
     bless ($self, $class);
 
     return $self;
-
 }
 
-sub Header {
 
+sub Header {
     my $self = shift;
 
     if ( $_[0] ) {
-	exists $self->{Header}->{$_[0]} ? return $self->{Header}->{$_[0]} : return;
+        exists $self->{Header}->{$_[0]} ? return $self->{Header}->{$_[0]} : return;
     } else {
-	return $self->{Header};
+        return $self->{Header};
     }
-
 }
 
-sub GetConvert {
 
+sub GetConvert {
     my $self = shift;
     ($self->{Buffer}) = @_;
     my $data = "";
 
     unless ( ($self->{"Header"},$data) =
-	     MQDecodeDeadLetter($self->{Buffer},length($self->{Buffer})) ) {
-	$self->{Carp}->("Unable to decode MQSeries Dead Letter Message\n");
-	return undef;
+             MQDecodeDeadLetter($self->{Buffer},length($self->{Buffer})) ) {
+        $self->{Carp}->("Unable to decode MQSeries Dead Letter Message\n");
+        return undef;
     }
 
     return $data;
-
 }
 
-sub PutConvert {
 
+sub PutConvert {
     my $self = shift;
     my ($data) = @_;
 
     my $buffer = MQEncodeDeadLetter($self->{"Header"},$data,length($data));
 
     if ( $buffer ) {
-	return $buffer;
+        return $buffer;
     } else {
-	$self->{Carp}->("Unable to encode MQSeries Dead Letter Message\n");
-	return undef;
+        $self->{Carp}->("Unable to encode MQSeries Dead Letter Message\n");
+        return undef;
     }
-
 }
 
 1;
@@ -153,9 +144,9 @@ latters methods are availables as well as the following:
 The constructor takes all of the same key/value pairs as the
 MQSeries::Message constructor, as well as the following additional keys:
 
-  Key			Value
-  ===			=====
-  Header		HASH reference
+  Key                   Value
+  ===                   =====
+  Header                HASH reference
 
 NOTE: The MsgDesc->Format string defaults to MQFMT_DEAD_LETTER_HEADER
 automatically, and should not be specified.  If it is overridden, and

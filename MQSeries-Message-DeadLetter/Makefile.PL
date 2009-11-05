@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 28.1 2007/02/08 19:41:39 biersma Exp $
+# $Id: Makefile.PL,v 33.2 2009/07/10 18:30:34 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -11,23 +11,13 @@ require "../util/parse_config";
 require "../util/parse_headers";
 require "../util/fake_mm";
 
-if ( $::has_mqmd2 ) {
-
-    WriteMakefile(
-		  NAME	   	=> 'MQSeries::Message::DeadLetter',
-		  VERSION_FROM 	=> 'DeadLetter.pm',
-		  INC		=> qq{-I"$include"},
-		  (
-		   $Config{archname} =~ /-object\b/i ?
-		   (
-		    CAPI	=> 'TRUE',
-		   ) : ()
-		  )
-		 );
-
-} else {
-    warn("Your MQSeries installation doesn't support the MQMD version 2 structure\n" .
-	 "Disabling the MQSeries::Message::DeadLetter module\n");
-    myWriteEmptyMakefile();
-}
-
+WriteMakefile(NAME	   	=> 'MQSeries::Message::DeadLetter',
+	      VERSION_FROM 	=> 'DeadLetter.pm',
+	      INC		=> qq{-I"$include"},
+	      (
+	       $Config{archname} =~ /-object\b/i ?
+	       (
+		CAPI	=> 'TRUE',
+	       ) : ()
+	      )
+	     );

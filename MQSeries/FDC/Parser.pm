@@ -2,10 +2,10 @@
 # MQSeries::FDC::Parser.pm - Break an FDC log into chunks, then
 #                            create FDC::Entry objects from those chunks.
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 32.1 2009/05/22 15:28:14 biersma Exp $
+# $Id: Parser.pm,v 33.2 2009/07/10 18:35:23 biersma Exp $
 #
 
 package MQSeries::FDC::Parser;
@@ -15,9 +15,7 @@ use Carp;
 
 use MQSeries::FDC::Entry;
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 #
 # Constructor
@@ -87,7 +85,7 @@ sub parse_data {
 # Parameters:
 # - MQSeries::FDC::Parser object
 # - Chunk of FDC data
-# Returns: 
+# Returns:
 # - MQSeries::FDC::Entry object
 #   - undef if incomplete
 #   - confess'es if invalid
@@ -96,7 +94,7 @@ sub parse_one_chunk {
     my ($this, $data) = @_;
 
     #
-    # To be valid, the data must start with 
+    # To be valid, the data must start with
     # a line of '+-----....----+'
     #
     if ($data !~ m!^\+--+\+\s*\n!) {
@@ -104,7 +102,7 @@ sub parse_one_chunk {
     }
 
     #
-    # We assume the data is complete if we have 
+    # We assume the data is complete if we have
     # the start line, the '===' line, some data, and another
     # line with dashes.  If the data is incomplete, we return undef.
     #
@@ -113,11 +111,11 @@ sub parse_one_chunk {
         return;
     }
 
-    # 
+    #
     # The chunk of data contains a header with (logical)
     # key/value pairs, where the value may span multiple lines;
     # and a completely arbitrary body.
-    # 
+    #
     if ($data !~ m!======\s*\|(.*)\+-+\+\s+(.*)$!s) {
         confess "Cannot parse chunk [$data]";
     }
@@ -136,14 +134,14 @@ sub parse_one_chunk {
         confess "Could not parse remainder [" . substr($header, pos($header)) .
           "]";
     }
-    
+
     return MQSeries::FDC::Entry->new('fields' => $fields, 'body' => $body);
 }
 
 
 1;                              # End on a positive note
 
-        
+
 __END__
 
 =head1 NAME
@@ -154,8 +152,8 @@ MQSeries::FDC::Parser -- Parse a portion of an MQSeries FDC file and return pars
 
   use MQSeries::FDC::Parser;
 
-  my $parser = new MQSeries::FDC::Parser("AMQ09151.0.FDC");
-  open (FDC, "/var/mqm/errors/AMQ09151.0.FDC");
+  my $parser = MQSeries::FDC::Parser->new("AMQ09151.0.FDC");
+  open (FDC, '<', "/var/mqm/errors/AMQ09151.0.FDC");
   local $/;
   my @entries = $parser->parse_data(<FDC>);
   close FDC;

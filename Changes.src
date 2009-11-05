@@ -3,6 +3,51 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.30
+
+The following changes are included in the 1.30 release:
+
+=head2 Support for properties (MQ v7)
+
+The low-level API and the MQSeries::XXX classes have been extended
+with support for properties.  There is a new MQSeries::Properties
+class and the existing MQSeries::Queue and MQSeries::Message
+classes have been extended with new methods.
+
+=head2 Support for asynchronous put status information (MQ v7)
+
+The low-level API and the MQSeries::QueueManager class have been
+extended with support for asynchronous put status information.  In the
+low-level API, the function is MQSTAT; in the MQSeries::QueueManager
+class, the method is StatusInfo.
+
+=head2 MQSeries::Command enhancements for MQ v7
+
+The MQSeries::Command class now supports the new MQ v7 attributes for
+PCF commands on distributed platforms, i.e. it supports querying and
+modifying the new queue manager, queue and channel attributes
+introduced with MQ v7.  Support for Topic and Subscription objects has
+been added to MQSeries::Command.
+
+=head2 MQSeries::Command enhancements to support filter commands
+
+The MQSeries::Command class now supports filter commands for MQ v6 and
+above.  This allows Inquire commands to include a filter that is
+evaluated by the queue manager and reduces the result set to items
+matching the filter (query).
+
+=head2 XS code cleanup
+
+Significant cleanups in the low-level XS code should make it possible
+to run with warnings enabled without getting large numbers of "use of
+uninitialized value" messages at run-time.
+
+=head2 Updated examples
+
+The example scripts have been updated; most notably, a new set of
+request/reply scripts demonstrates handling syncpoint, poison
+messages, and dynamic queues.
+
 =head1 Changes for 1.29
 
 The following fixes are included in the 1.29 release:
@@ -1841,9 +1886,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 32.1 2009/06/11 12:42:08 biersma Exp $
+# $Id: Changes.src,v 33.3 2009/07/31 18:26:14 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

@@ -1,8 +1,8 @@
-#!/ms/dist/perl5/bin/perl5.005
+#!/usr/bin/perl5
 #
-# $Id: mqini2chl,v 27.1 2007/01/11 20:20:38 molinam Exp $
+# $Id: mqini2chl,v 33.1 2009/07/10 18:36:23 biersma Exp $
 #
-# (c) 2001-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2001-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,20 +10,11 @@ use strict;
 use English;
 use Getopt::Long;
 
-#use lib "/ms/dev/perl5/MQSeries/1.14-5.005/install/exec/lib/perl5";
-use lib "/ms/dev/perl5/MQSeries/1.21/src";
 use MQSeries::Config::ChannelTable;
 
-use vars qw(
-	    %Args
-	   );
+our %Args = (version => 7);
 
-%Args =
-  (
-   version		=> 7,
-  );
-
-GetOptions( \%Args, qw( version=i debug ) ) || usage();
+GetOptions( \%Args, qw(version=i debug!) ) || usage();
 
 my ($InputFile,$OutputFile) = @ARGV;
 
@@ -35,51 +26,51 @@ print "Writing channel table $OutputFile\n";
 
 MQSeries::Config::ChannelTable->writeFile
   (
-   Filename		=> $OutputFile,
-   Version		=> $Args{version},
-   Clntconn		=> \@channels,
+   Filename             => $OutputFile,
+   Version              => $Args{version},
+   Clntconn             => \@channels,
   );
 
 exit 0;
 
-sub parseInput {
 
+sub parseInput {
     my ($file) = @_;
 
     my @data = ();
     my $stanza;
 
-    open(FILE,$file) || die "Unable to open $file: $!\n";
+    open(FILE, '<', $file) || die "Unable to open $file: $!\n";
 
     while ( <FILE> ) {
 
         next if (/^\#/ || /^\s*$/); # Skip comments, blank lines
-	
-	if ( /^(\S+):/ ) {
-	    push(@data,$stanza) if defined $stanza;
-	    $stanza = { ChannelName => $1 };
+
+        if ( /^(\S+):/ ) {
+            push(@data,$stanza) if defined $stanza;
+            $stanza = { ChannelName => $1 };
             next;
-	}
+        }
 
         #
         # A data line belongs to a stanza and looks like 'Prefix=/var/mqm'
         #
-	if ( /^\s*(\S+)=(.*)/ ) {
-	    my ($key, $value) = ($1, $2);
-	    die "Have data line before first stanza in [$file]: $_"
+        if ( /^\s*(\S+)=(.*)/ ) {
+            my ($key, $value) = ($1, $2);
+            die "Have data line before first stanza in [$file]: $_"
               unless (defined $stanza);
 
-	    next if $key eq 'ChannelName';
+            next if $key eq 'ChannelName';
 
             if ( defined $stanza->{$key} ) {
                 if ( ref $stanza->{$key} eq 'ARRAY' ) {
-		    push( @{$stanza->{$key}}, $value );
-		} else {
-		    $stanza->{$key} = [ $stanza->{$key}, $value ];
-		}
+                    push( @{$stanza->{$key}}, $value );
+                } else {
+                    $stanza->{$key} = [ $stanza->{$key}, $value ];
+                }
             } else {
-		$stanza->{$key} = $value;
-	    }
+                $stanza->{$key} = $value;
+            }
 
         }
 
@@ -90,8 +81,8 @@ sub parseInput {
     close(FILE);
 
     return @data;
-
 }
+
 
 sub usage {
     die <<"EndOfUsage";
@@ -203,25 +194,25 @@ This is best understood by looking at the following example:
 
 The keys which are supported are:
 
-  Key			Value (Max Length of strings)
-  ===			=====
-  TransportType		String (see below)
-  ChannelDesc		String (64)
-  QMgrName		String (48)
-  ModeName		String (8)
-  TpName		String (64)
-  SecurityExit		String (128)
-  MsgExit		String (128)
-  SendExit		String (128)
-  ReceiveExit		String (128)
-  MaxMsgLength		Number
-  SecurityUserData	String (32)
-  MsgUserData		String (32)
-  SendUserData		String (32)
-  ReceiveUserData	String (32)
-  UserIdentifier	String (12)
-  Password		String (12)
-  ConnectionName	String (264)
+  Key                   Value (Max Length of strings)
+  ===                   =====
+  TransportType         String (see below)
+  ChannelDesc           String (64)
+  QMgrName              String (48)
+  ModeName              String (8)
+  TpName                String (64)
+  SecurityExit          String (128)
+  MsgExit               String (128)
+  SendExit              String (128)
+  ReceiveExit           String (128)
+  MaxMsgLength          Number
+  SecurityUserData      String (32)
+  MsgUserData           String (32)
+  SendUserData          String (32)
+  ReceiveUserData       String (32)
+  UserIdentifier        String (12)
+  Password              String (12)
+  ConnectionName        String (264)
 
 Note that the ChannelName is implicit, since that is the master key
 for each stanza.  The Version is not specified, since one can

@@ -1,7 +1,7 @@
 #
-# $Id: ChannelTable.pm,v 32.2 2009/05/22 15:28:13 biersma Exp $
+# $Id: ChannelTable.pm,v 33.2 2009/07/10 18:35:41 biersma Exp $
 #
-# (c) 2001-2008 Morgan Stanley Dean Witter and Co.
+# (c) 2001-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,94 +10,87 @@ package MQSeries::Config::ChannelTable;
 use strict;
 use Carp;
 
-use vars qw(
-	    $VERSION
-	    @MQCDFields
-	    %Outgoing
-	    %Incoming
-	    %SystemDefClntconn
-	    %StrucLength
-	   );
+our $VERSION = '1.30';
 
-$VERSION = '1.29';
+our (@MQCDFields, %Outgoing, %Incoming, %SystemDefClntconn, %StrucLength);
 
 @MQCDFields =
   (
-   #   	Name			Method		Length	Version	Need
-   [qw(	ChannelName		String		20	3	1	)],
-   [qw(	Version			Number		4	3	1	)],
-   [qw(	ChannelType		Number		4	3	1	)],
-   [qw(	TransportType		Number		4	3	1	)],
-   [qw(	ChannelDesc		String		64	3	1	)],
-   [qw(	QMgrName		String		48	3	1	)],
-   [qw(	XmitQName		String		48	3	0	)],
-   [qw(	ShortConnectionName	String		20	3	0	)],
-   [qw(	MCAName			String		20	3	0	)],
-   [qw(	ModeName		String		8	3	1	)],
-   [qw(	TpName			String		64	3	1	)],
-   [qw(	BatchSize		Number		4	3	0	)],
-   [qw(	DiscInterval		Number		4	3	0	)],
-   [qw(	ShortRetryCount		Number		4	3	0	)],
-   [qw(	ShortRetryInterval	Number		4	3	0	)],
-   [qw(	LongRetryCount		Number		4	3	0	)],
-   [qw(	LongRetryInterval	Number		4	3	0	)],
-   [qw(	SecurityExit		String		128	3	1	)],
-   [qw(	MsgExit			String		128	3	1	)],
-   [qw(	SendExit		String		128	3	1	)],
-   [qw(	ReceiveExit		String		128	3	1	)],
-   [qw(	SeqNumberWrap		Number		4	3	0	)],
-   [qw(	MaxMsgLength		Number		4	3	1	)],
-   [qw(	PutAuthority		Number		4	3	0	)],
-   [qw(	DataConversion		Number		4	3	0	)],
-   [qw(	SecurityUserData	String		32	3	1	)],
-   [qw(	MsgUserData		String		32	3	1	)],
-   [qw(	SendUserData		String		32	3	1	)],
-   [qw(	ReceiveUserData		String		32	3	1	)],
-   [qw(	UserIdentifier		String		12	3	1	)],
-   [qw(	Password		String		12	3	1	)],
-   [qw(	MCAUserIdentifier	String		12	3	0	)],
-   [qw(	MCAType			Number		4	3	0	)],
-   [qw(	ConnectionName		String		264	3	1	)],
-   [qw(	RemoteUserIdentifier	String		12	3	0	)],
-   [qw(	RemotePassword		String		12	3	0	)],
-   [qw(	MsgRetryExit		String		128	3	0	)],
-   [qw(	MsgRetryUserData	String		32	3	0	)],
-   [qw(	MsgRetryCount		Number		4	3	0	)],
-   [qw(	MsgRetryInterval	Number		4	3	0	)],
+   #    Name                    Method          Length  Version Need
+   [qw( ChannelName             String          20      3       1       )],
+   [qw( Version                 Number          4       3       1       )],
+   [qw( ChannelType             Number          4       3       1       )],
+   [qw( TransportType           Number          4       3       1       )],
+   [qw( ChannelDesc             String          64      3       1       )],
+   [qw( QMgrName                String          48      3       1       )],
+   [qw( XmitQName               String          48      3       0       )],
+   [qw( ShortConnectionName     String          20      3       0       )],
+   [qw( MCAName                 String          20      3       0       )],
+   [qw( ModeName                String          8       3       1       )],
+   [qw( TpName                  String          64      3       1       )],
+   [qw( BatchSize               Number          4       3       0       )],
+   [qw( DiscInterval            Number          4       3       0       )],
+   [qw( ShortRetryCount         Number          4       3       0       )],
+   [qw( ShortRetryInterval      Number          4       3       0       )],
+   [qw( LongRetryCount          Number          4       3       0       )],
+   [qw( LongRetryInterval       Number          4       3       0       )],
+   [qw( SecurityExit            String          128     3       1       )],
+   [qw( MsgExit                 String          128     3       1       )],
+   [qw( SendExit                String          128     3       1       )],
+   [qw( ReceiveExit             String          128     3       1       )],
+   [qw( SeqNumberWrap           Number          4       3       0       )],
+   [qw( MaxMsgLength            Number          4       3       1       )],
+   [qw( PutAuthority            Number          4       3       0       )],
+   [qw( DataConversion          Number          4       3       0       )],
+   [qw( SecurityUserData        String          32      3       1       )],
+   [qw( MsgUserData             String          32      3       1       )],
+   [qw( SendUserData            String          32      3       1       )],
+   [qw( ReceiveUserData         String          32      3       1       )],
+   [qw( UserIdentifier          String          12      3       1       )],
+   [qw( Password                String          12      3       1       )],
+   [qw( MCAUserIdentifier       String          12      3       0       )],
+   [qw( MCAType                 Number          4       3       0       )],
+   [qw( ConnectionName          String          264     3       1       )],
+   [qw( RemoteUserIdentifier    String          12      3       0       )],
+   [qw( RemotePassword          String          12      3       0       )],
+   [qw( MsgRetryExit            String          128     3       0       )],
+   [qw( MsgRetryUserData        String          32      3       0       )],
+   [qw( MsgRetryCount           Number          4       3       0       )],
+   [qw( MsgRetryInterval        Number          4       3       0       )],
 
-   [qw(	HeartbeatInterval	Number		4	4	1	)],
-   [qw(	BatchInterval		Number		4	4	0	)],
-   [qw(	NonPersistentMsgSpeed	Number		4	4	0	)],
-   [qw(	StrucLength		Number		4	4	0	)],
-   [qw(	ExitNameLength		Number		4	4	0	)],
-   [qw(	ExitDataLength		Number		4	4	0	)],
-   [qw(	MsgExitsDefined		Number		4	4	0	)],
-   [qw(	SendExitsDefined	Number		4	4	0	)],
-   [qw(	ReceiveExitsDefined	Number		4	4	0	)],
-   [qw(	MsgExitPtr		Number		4	4	0	)],
-   [qw(	MsgUserDataPtr		Number		4	4	0	)],
-   [qw(	SendExitPtr		Number		4	4	0	)],
-   [qw(	SendUserDataPtr		Number		4	4	0	)],
-   [qw(	ReceiveExitPtr		Number		4	4	0	)],
-   [qw(	ReceiveUserDataPtr	Number		4	4	0	)],
+   [qw( HeartbeatInterval       Number          4       4       1       )],
+   [qw( BatchInterval           Number          4       4       0       )],
+   [qw( NonPersistentMsgSpeed   Number          4       4       0       )],
+   [qw( StrucLength             Number          4       4       0       )],
+   [qw( ExitNameLength          Number          4       4       0       )],
+   [qw( ExitDataLength          Number          4       4       0       )],
+   [qw( MsgExitsDefined         Number          4       4       0       )],
+   [qw( SendExitsDefined        Number          4       4       0       )],
+   [qw( ReceiveExitsDefined     Number          4       4       0       )],
+   [qw( MsgExitPtr              Number          4       4       0       )],
+   [qw( MsgUserDataPtr          Number          4       4       0       )],
+   [qw( SendExitPtr             Number          4       4       0       )],
+   [qw( SendUserDataPtr         Number          4       4       0       )],
+   [qw( ReceiveExitPtr          Number          4       4       0       )],
+   [qw( ReceiveUserDataPtr      Number          4       4       0       )],
 
-   [qw(	ClusterPtr		Number		4	6	0	)],
-   [qw(	ClustersDefined		Number		4	6	0	)],
-   [qw(	NetworkPriority		Number		4	6	0	)],
-   [qw(	LongMCAUserIdLength	Number		4	6	0	)],
-   [qw(	LongRemoteUserIdLength	Number		4	6	0	)],
-   [qw(	LongMCAUserIdPtr	Number		4	6	0	)],
-   [qw(	LongRemoteUserIdPtr	Number		4	6	0	)],
-   [qw(	MCASecurityId		Byte		40	6	0	)],
-   [qw(	RemoteSecurityId	Byte		40	6	0	)],
+   [qw( ClusterPtr              Number          4       6       0       )],
+   [qw( ClustersDefined         Number          4       6       0       )],
+   [qw( NetworkPriority         Number          4       6       0       )],
+   [qw( LongMCAUserIdLength     Number          4       6       0       )],
+   [qw( LongRemoteUserIdLength  Number          4       6       0       )],
+   [qw( LongMCAUserIdPtr        Number          4       6       0       )],
+   [qw( LongRemoteUserIdPtr     Number          4       6       0       )],
+   [qw( MCASecurityId           Byte            40      6       0       )],
+   [qw( RemoteSecurityId        Byte            40      6       0       )],
 
-   [qw(	SSLCipherSpec		String		32	7	1	)],
-   [qw(	SSLPeerNamePtr		Number		4	7	0	)],
-   [qw(	SSLPeerNameLength	Number		4	7	0	)],
-   [qw(	SSLClientAuth		Number		4	7	1	)],
-   [qw(	KeepAliveInterval	Number		4	7	1	)],
-   [qw(	LocalAddress		String		48	7	1	)],
-   [qw(	BatchHeartbeat		Number		4	7	0	)],
+   [qw( SSLCipherSpec           String          32      7       1       )],
+   [qw( SSLPeerNamePtr          Number          4       7       0       )],
+   [qw( SSLPeerNameLength       Number          4       7       0       )],
+   [qw( SSLClientAuth           Number          4       7       1       )],
+   [qw( KeepAliveInterval       Number          4       7       1       )],
+   [qw( LocalAddress            String          48      7       1       )],
+   [qw( BatchHeartbeat          Number          4       7       0       )],
   );
 
 #
@@ -135,17 +128,17 @@ $VERSION = '1.29';
 
    TransportType =>
    {
-    1                        	=> 'LU62',
-    2                         	=> 'TCP',
-    3                     	=> 'NetBIOS',
-    4                         	=> 'SPX',
-    5                      	=> 'DECnet',
-    6                         	=> 'UDP',
+    1                           => 'LU62',
+    2                           => 'TCP',
+    3                           => 'NetBIOS',
+    4                           => 'SPX',
+    5                           => 'DECnet',
+    6                           => 'UDP',
    },
 
    ChannelType =>
    {
-    6                    	=> 'Clntconn',
+    6                           => 'Clntconn',
    },
 
   );
@@ -157,25 +150,25 @@ $VERSION = '1.29';
 #
 %SystemDefClntconn =
   (
-   Version			=> 6,
-   ChannelName			=> 'SYSTEM.DEF.CLNTCONN',
-   ChannelType			=> 'Clntconn',
-   TransportType		=> 'TCP',
-   MaxMsgLength			=> 4194304,
-   MCAType			=> 1,
-   HeartbeatInterval		=> 300,
-   StrucLength			=> 1648,
-   ExitNameLength		=> 128,
-   ExitDataLength		=> 32,
-   SSLClientAuth		=> 0,
-   KeepAliveInterval		=> 'AUTO',
+   Version                      => 6,
+   ChannelName                  => 'SYSTEM.DEF.CLNTCONN',
+   ChannelType                  => 'Clntconn',
+   TransportType                => 'TCP',
+   MaxMsgLength                 => 4194304,
+   MCAType                      => 1,
+   HeartbeatInterval            => 300,
+   StrucLength                  => 1648,
+   ExitNameLength               => 128,
+   ExitDataLength               => 32,
+   SSLClientAuth                => 0,
+   KeepAliveInterval            => 'AUTO',
   );
 
 %StrucLength =
   (
-   4				=> 1540,
-   6				=> 1648,
-   7				=> 1748,
+   4                            => 1540,
+   6                            => 1648,
+   7                            => 1748,
   );
 
 
@@ -184,12 +177,12 @@ sub readFile {
     my ($filename) = @args{qw(Filename)};
 
     if ( $args{Debug} ) {
-	print "\nInside readFile method\n";
+        print "\nInside readFile method\n";
     }
 
     my $offset = 0;
 
-    open(FILE,$filename) ||
+    open(FILE, '<', $filename) ||
       confess "Unable to open $filename: $!\n";
     binmode(FILE);              # Required for Windows NT
     local $/ = undef;
@@ -205,7 +198,7 @@ sub readFile {
     #
     $class->readString($data,$offset,4) eq "AMQR" ||
       confess("Invalid channel table file: $filename\n" .
-	      "Missing magic prefix 'AMQR'\n");
+              "Missing magic prefix 'AMQR'\n");
 
     $offset += 4;
 
@@ -220,102 +213,102 @@ sub readFile {
 
     while ( $offset && ( $deflength = $class->readNumber($data,$offset,4) ) ) {
 
-	$channelcount++;
+        $channelcount++;
 
-	# Yank the entire channel definition
-	my $chandef = substr($data,$offset,$deflength);
+        # Yank the entire channel definition
+        my $chandef = substr($data,$offset,$deflength);
 
-	if ( $args{Debug} ) {
-	    print "\nChannelCount = $channelcount\n";
-	    print "Absolute address of this record = $offset\n";
-	}
+        if ( $args{Debug} ) {
+            print "\nChannelCount = $channelcount\n";
+            print "Absolute address of this record = $offset\n";
+        }
 
-	my $mqcd_length 	= $class->readNumber($chandef,4,4);
-	my $unknown 		= $class->readNumber($chandef,8,4);
-	my $next 		= $class->readNumber($chandef,12,4);
-	my $previous 		= $class->readNumber($chandef,16,4);
+        my $mqcd_length         = $class->readNumber($chandef,4,4);
+        my $unknown             = $class->readNumber($chandef,8,4);
+        my $next                = $class->readNumber($chandef,12,4);
+        my $previous            = $class->readNumber($chandef,16,4);
 
-	#
-	# We go through all entries in the file skipping the one
-	# that has a zero MQCD Length.
-	#
-	$offset += $deflength;
+        #
+        # We go through all entries in the file skipping the one
+        # that has a zero MQCD Length.
+        #
+        $offset += $deflength;
 
-	if ( $args{Debug} ) {
-	    print "Definition length = $deflength\n";
-	    print "MQCD length = $mqcd_length\n";
-	    print "Unknown 3rd field = $unknown\n";
-	    print "Abs offset to next definition = $next\n";
-	    print "Abs offset to prev definition = $previous\n";
-	}
+        if ( $args{Debug} ) {
+            print "Definition length = $deflength\n";
+            print "MQCD length = $mqcd_length\n";
+            print "Unknown 3rd field = $unknown\n";
+            print "Abs offset to next definition = $next\n";
+            print "Abs offset to prev definition = $previous\n";
+        }
 
-	# If the MQCD Length is 0, then skip this entry
-	next if $mqcd_length == 0;
+        # If the MQCD Length is 0, then skip this entry
+        next if $mqcd_length == 0;
 
-	# Get the entire MQCD
-	my $mqcd = substr($chandef,20,$mqcd_length);
-	my $mqcd_offset = 0;
+        # Get the entire MQCD
+        my $mqcd = substr($chandef,20,$mqcd_length);
+        my $mqcd_offset = 0;
 
-	my $clntconn = {};
+        my $clntconn = {};
 
-	foreach my $field ( @MQCDFields ) {
+        foreach my $field ( @MQCDFields ) {
 
-	    my ($key,$method,$length,$version,$need) = @$field;
+            my ($key,$method,$length,$version,$need) = @$field;
 
-	    $method = "read$method";
+            $method = "read$method";
 
-	    if ( ( not exists $clntconn->{Version} ) || ( $clntconn->{Version} >= $version ) ) {
-		if ( $need ) {
-		    if ( ref $Incoming{$key} eq 'HASH' ) {
-			my $value = $class->$method($mqcd,$mqcd_offset,$length);
-			if ( exists $Incoming{$key}->{$value} ) {
-			    $clntconn->{$key} = $Incoming{$key}->{$value};
-			} else {
-			    carp "Unable to translate $key value '$value'\n";
-			    $clntconn->{$key} = $value;
-			}
-		    } else {
-			$clntconn->{$key} = $class->$method($mqcd,$mqcd_offset,$length);
-		    }
-		}
-		$mqcd_offset += $length;
-	    }
+            if ( ( not exists $clntconn->{Version} ) || ( $clntconn->{Version} >= $version ) ) {
+                if ( $need ) {
+                    if ( ref $Incoming{$key} eq 'HASH' ) {
+                        my $value = $class->$method($mqcd,$mqcd_offset,$length);
+                        if ( exists $Incoming{$key}->{$value} ) {
+                            $clntconn->{$key} = $Incoming{$key}->{$value};
+                        } else {
+                            carp "Unable to translate $key value '$value'\n";
+                            $clntconn->{$key} = $value;
+                        }
+                    } else {
+                        $clntconn->{$key} = $class->$method($mqcd,$mqcd_offset,$length);
+                    }
+                }
+                $mqcd_offset += $length;
+            }
 
-	}
+        }
 
-	if ( $clntconn->{Version} >= 6 ) {
+        if ( $clntconn->{Version} >= 6 ) {
 
-	    my $mqcd_struct_length = $class->readNumber($mqcd,1492,4);	# MQCD StrucLength
-	    my $exit_strings_length = $class->readNumber($mqcd,$mqcd_struct_length+8,4);	# Undocumented
-	    $mqcd_offset = $mqcd_struct_length;
-	    $mqcd_offset += 68;
-	    $mqcd_offset += 64;	# More 64 unknown spaces
+            my $mqcd_struct_length = $class->readNumber($mqcd,1492,4);  # MQCD StrucLength
+            my $exit_strings_length = $class->readNumber($mqcd,$mqcd_struct_length+8,4);        # Undocumented
+            $mqcd_offset = $mqcd_struct_length;
+            $mqcd_offset += 68;
+            $mqcd_offset += 64; # More 64 unknown spaces
 
-	    my @keys = qw(MsgExit MsgUserData SendExit SendUserData ReceiveExit ReceiveUserData);
-	    my @fields = split("\x01",substr($mqcd,$mqcd_offset,$exit_strings_length));
-	    $mqcd_offset += $exit_strings_length;
+            my @keys = qw(MsgExit MsgUserData SendExit SendUserData ReceiveExit ReceiveUserData);
+            my @fields = split("\x01",substr($mqcd,$mqcd_offset,$exit_strings_length));
+            $mqcd_offset += $exit_strings_length;
 
-	    for ( my $index = 0 ; $index < 6 ; $index++ ) {
-		next unless defined $fields[$index];
-		$clntconn->{$keys[$index]} = [split("\x02",$fields[$index])];
-	    }
+            for ( my $index = 0 ; $index < 6 ; $index++ ) {
+                next unless defined $fields[$index];
+                $clntconn->{$keys[$index]} = [split("\x02",$fields[$index])];
+            }
 
-	    if ( $clntconn->{Version} >= 7 ) {
-		#
-		# KeepAliveInterval: 0xffffffff = 'AUTO'
-		#
-		if ($clntconn->{KeepAliveInterval} == 0xffffffff) {
-		    $clntconn->{KeepAliveInterval} = $SystemDefClntconn{KeepAliveInterval};
-		}
+            if ( $clntconn->{Version} >= 7 ) {
+                #
+                # KeepAliveInterval: 0xffffffff = 'AUTO'
+                #
+                if ($clntconn->{KeepAliveInterval} == 0xffffffff) {
+                    $clntconn->{KeepAliveInterval} = $SystemDefClntconn{KeepAliveInterval};
+                }
 
-		my $SSLPeerNameLength = $class->readNumber($mqcd, 1684, 4);
-		$clntconn->{SSLPeerName} = $class->readString($mqcd, $mqcd_offset, $SSLPeerNameLength);
-		$mqcd_offset += $SSLPeerNameLength;
-	    }
+                my $SSLPeerNameLength = $class->readNumber($mqcd, 1684, 4);
+                $clntconn->{SSLPeerName} = $class->readString($mqcd, $mqcd_offset, $SSLPeerNameLength);
+                $mqcd_offset += $SSLPeerNameLength;
+            }
 
-	}
+        }
 
-	push(@clntconn,$clntconn);
+        push(@clntconn,$clntconn);
 
     }
 
@@ -325,7 +318,7 @@ sub readFile {
 
 sub writeFile {
     my ($class, %args) = @_;
-    my ($filename, $fh, $clntconn,$version) = 
+    my ($filename, $fh, $clntconn,$version) =
       @args{qw(Filename FileHandle Clntconn Version)};
 
     #
@@ -333,9 +326,9 @@ sub writeFile {
     # matches that of the file.
     #
     if (defined $version) {
-	$SystemDefClntconn{'Version'} = $version;
+        $SystemDefClntconn{'Version'} = $version;
     } else {
-	$version = $SystemDefClntconn{'Version'};
+        $version = $SystemDefClntconn{'Version'};
     }
     $SystemDefClntconn{'StrucLength'} = $StrucLength{$version};
 
@@ -350,7 +343,7 @@ sub writeFile {
     my $offset = length($data);
 
     if ( $args{Debug} ) {
-	print "\nInside writeFile method\n";
+        print "\nInside writeFile method\n";
     }
 
     $version == 3 || $version == 4 || $version == 6 || $version == 7 ||
@@ -363,21 +356,21 @@ sub writeFile {
     my @channel = ();
 
     foreach my $channel ( @$clntconn ) {
-	next unless $channel->{ChannelName} =~ /^SYSTEM\.DEF\.CLNTCONN\s*$/;
-	$default = { %SystemDefClntconn, %$channel };
-	$default->{Version} = $version;
-	$default->{StrucLength} = $StrucLength{$version};
-	last;
+        next unless $channel->{ChannelName} =~ /^SYSTEM\.DEF\.CLNTCONN\s*$/;
+        $default = { %SystemDefClntconn, %$channel };
+        $default->{Version} = $version;
+        $default->{StrucLength} = $StrucLength{$version};
+        last;
     }
 
     push(@channel,$default);
 
     foreach my $channel ( @$clntconn ) {
-	next if $channel->{ChannelName} =~ /^SYSTEM\.DEF\.CLNTCONN\s*$/;
-	my $newchannel = { %$default, %$channel };
-	$newchannel->{Version} = $version;
-	$newchannel->{StrucLength} = $StrucLength{$version};
-	push @channel, $newchannel;
+        next if $channel->{ChannelName} =~ /^SYSTEM\.DEF\.CLNTCONN\s*$/;
+        my $newchannel = { %$default, %$channel };
+        $newchannel->{Version} = $version;
+        $newchannel->{StrucLength} = $StrucLength{$version};
+        push @channel, $newchannel;
     }
 
     #
@@ -387,16 +380,16 @@ sub writeFile {
     @channel = sort { $b->{ChannelName} cmp $a->{ChannelName} } @channel;
 
     {
-	my $supportedkeys = { map { $_->[0] => 1 } @MQCDFields };
-	my $invalid = 0;
-	foreach my $channel ( @channel ) {
-	    foreach my $key ( keys %$channel ) {
-		next if exists $supportedkeys->{$key};
-		$invalid++;
-		carp "Invalid Clntconn key '$key', (ChannelName = $channel->{ChannelName})\n";
-	    }
-	}
-	confess "Invalid keys in Clntconn list\n" if $invalid;
+        my $supportedkeys = { map { $_->[0] => 1 } @MQCDFields };
+        my $invalid = 0;
+        foreach my $channel ( @channel ) {
+            foreach my $key ( keys %$channel ) {
+                next if exists $supportedkeys->{$key};
+                $invalid++;
+                carp "Invalid Clntconn key '$key', (ChannelName = $channel->{ChannelName})\n";
+            }
+        }
+        confess "Invalid keys in Clntconn list\n" if $invalid;
     }
 
     #
@@ -414,112 +407,112 @@ sub writeFile {
 
     for ( my $index = 0 ; $index <= $#channel ; $index++ ) {
 
-	my $channel = $channel[$index];
-	$channel->{ShortConnectionName} ||=
-	  substr($channel->{ConnectionName},0,20);
+        my $channel = $channel[$index];
+        $channel->{ShortConnectionName} ||=
+          substr($channel->{ConnectionName},0,20);
 
-	my $mqcd = "";
+        my $mqcd = "";
 
-	$channel->{SSLPeerNameLength} = length($channel->{SSLPeerName})
-	  if defined $channel->{SSLPeerName};
+        $channel->{SSLPeerNameLength} = length($channel->{SSLPeerName})
+          if defined $channel->{SSLPeerName};
 
-	#
-	# KeepAliveInterval: 'AUTO' = 0xffffffff
-	#
-	if (defined $channel->{KeepAliveInterval} &&
-	    lc($channel->{KeepAliveInterval}) eq lc($SystemDefClntconn{KeepAliveInterval})) {
-	    $channel->{KeepAliveInterval} = 0xffffffff;
-	}
+        #
+        # KeepAliveInterval: 'AUTO' = 0xffffffff
+        #
+        if (defined $channel->{KeepAliveInterval} &&
+            lc($channel->{KeepAliveInterval}) eq lc($SystemDefClntconn{KeepAliveInterval})) {
+            $channel->{KeepAliveInterval} = 0xffffffff;
+        }
 
-	#
-	# First, create a serialized MQCD out of the $channel HASH
-	#
-	foreach my $field ( @MQCDFields ) {
+        #
+        # First, create a serialized MQCD out of the $channel HASH
+        #
+        foreach my $field ( @MQCDFields ) {
 
-	    my ($key,$method,$length,$fieldvers) = @$field;
+            my ($key,$method,$length,$fieldvers) = @$field;
 
-	    $method = "write$method";
+            $method = "write$method";
 
-	    next if $fieldvers > $version;
+            next if $fieldvers > $version;
 
-	    #
-	    # XXX -- the exit keys need special case handling, since
-	    # in V6 files, they aren't used.
-	    #
-	    if ( $key =~ /^(Msg|Send|Receive)(Exit|User)(Data)?$/ ) {
-		if ( $version >= 6 ) {
-		    $mqcd .= "\0" x $length;
-		} else {
-		    $mqcd .= $class->$method($channel->{$key},$length);
-		}
-	    } else {
-		if ( ref $Outgoing{$key} eq 'HASH' ) {
-		    if ( exists $Outgoing{$key}->{$channel->{$key}} ) {
-			$mqcd .= $class->$method($Outgoing{$key}->{$channel->{$key}},$length);
-		    } else {
-			carp "Unable to translate $key value '$channel->{$key}'\n";
-			$mqcd .= $class->$method($channel->{$key},$length);
-		    }
-		} else {
-		    $mqcd .= $class->$method($channel->{$key},$length);
-		}
-	    }
+            #
+            # XXX -- the exit keys need special case handling, since
+            # in V6 files, they aren't used.
+            #
+            if ( $key =~ /^(Msg|Send|Receive)(Exit|User)(Data)?$/ ) {
+                if ( $version >= 6 ) {
+                    $mqcd .= "\0" x $length;
+                } else {
+                    $mqcd .= $class->$method($channel->{$key},$length);
+                }
+            } else {
+                if ( ref $Outgoing{$key} eq 'HASH' ) {
+                    if ( exists $Outgoing{$key}->{$channel->{$key}} ) {
+                        $mqcd .= $class->$method($Outgoing{$key}->{$channel->{$key}},$length);
+                    } else {
+                        carp "Unable to translate $key value '$channel->{$key}'\n";
+                        $mqcd .= $class->$method($channel->{$key},$length);
+                    }
+                } else {
+                    $mqcd .= $class->$method($channel->{$key},$length);
+                }
+            }
 
-	}
+        }
 
-	if ( $version >= 6 ) {
+        if ( $version >= 6 ) {
 
-	    my $exitstring = "";
+            my $exitstring = "";
 
-	    foreach my $key ( qw(MsgExit 	MsgUserData
-				 SendExit 	SendUserData
-				 ReceiveExit 	ReceiveUserData) ) {
+            foreach my $key ( qw(MsgExit        MsgUserData
+                                 SendExit       SendUserData
+                                 ReceiveExit    ReceiveUserData) ) {
 
-		if ( $channel->{$key} ) {
-		    my @names = ( ref $channel->{$key} eq "ARRAY" ?
-				  @{$channel->{$key}} :
-				  $channel->{$key} );
-		    $exitstring .= join("\x02", @names);
+                if ( $channel->{$key} ) {
+                    my @names = ( ref $channel->{$key} eq "ARRAY" ?
+                                  @{$channel->{$key}} :
+                                  $channel->{$key} );
+                    $exitstring .= join("\x02", @names);
                 }
 
-		$exitstring .= "\x01";
+                $exitstring .= "\x01";
 
-	    }
+            }
 
-	    # I have no idea what these bytes are, but they are always null
-	    $mqcd .= "\0" x 8;
-	    $mqcd .= $class->writeNumber(length($exitstring));
-	    # something else we have no clue about....  welcome to reverse engineering
-	    $mqcd .= "\0" x 52;
-	    $mqcd .= $class->writeNumber(time);
-	    $mqcd .= " " x 64;	# More 64 unknown spaces
-	    $mqcd .= $exitstring;
+            # I have no idea what these bytes are, but they are always null
+            $mqcd .= "\0" x 8;
+            $mqcd .= $class->writeNumber(length($exitstring));
+            # something else we have no clue about....  welcome to reverse engineering
+            $mqcd .= "\0" x 52;
+            $mqcd .= $class->writeNumber(time);
+            $mqcd .= " " x 64;  # More 64 unknown spaces
+            $mqcd .= $exitstring;
 
-	    if ( $version >= 7 ) {
-		$mqcd .= $class->writeString($channel->{SSLPeerName},
-					     $channel->{SSLPeerNameLength});
-	    }
+            if ( $version >= 7 ) {
+                $mqcd .= $class->writeString($channel->{SSLPeerName},
+                                             $channel->{SSLPeerNameLength});
+            }
 
-	} else {
-	    #
-	    # We've got the V6 data structure decoded, but we're not
-	    # entirely sure about V4.
-	    #
-	    # IBM tells us we need 8 zeroes, then 0x06, then 11 zeroes
-	    $mqcd .= "\0" x 8;
-	    $mqcd .= "\06";
-	    $mqcd .= "\0" x 11;
-	}
+        } else {
+            #
+            # We've got the V6 data structure decoded, but we're not
+            # entirely sure about V4.
+            #
+            # IBM tells us we need 8 zeroes, then 0x06, then 11 zeroes
+            $mqcd .= "\0" x 8;
+            $mqcd .= "\06";
+            $mqcd .= "\0" x 11;
+        }
 
-	my $mqcd_length = length($mqcd);
+        my $mqcd_length = length($mqcd);
 
-	push(@mqcd,
-	     {
-	      MQCD		=> $mqcd,
-	      Offset		=> $offset,
-	     });
+        push(@mqcd,
+             {
+              MQCD              => $mqcd,
+              Offset            => $offset,
+             });
 
-	$offset += $mqcd_length + 20;
+        $offset += $mqcd_length + 20;
 
     }
 
@@ -528,44 +521,44 @@ sub writeFile {
     # next and previous pointers.
     #
     for ( my $index = 0 ; $index <= $#mqcd ; $index++ ) {
-	my $next = 0;
-	my $prev = 0;
+        my $next = 0;
+        my $prev = 0;
 
-	#
-	# Two special cases and one noral one:
+        #
+        # Two special cases and one noral one:
         # - First entry (NULL prev pointer)
         # - Last entry (NULL next pointer)
         # - Any other entry (two pointers)
-	#
-	$prev = $mqcd[$index-1]->{Offset} if $index > 0;
-	$next = $mqcd[$index+1]->{Offset} if $index < $#mqcd;
+        #
+        $prev = $mqcd[$index-1]->{Offset} if $index > 0;
+        $next = $mqcd[$index+1]->{Offset} if $index < $#mqcd;
 
-	my $mqcd_length = length($mqcd[$index]->{MQCD});
+        my $mqcd_length = length($mqcd[$index]->{MQCD});
 
-	if ( $args{Debug} ) {
-	    print "Channel entry $index out of " . ($#mqcd+1) . " entries\n";
-	    print "MQCD Length = $mqcd_length\n";
-	}
+        if ( $args{Debug} ) {
+            print "Channel entry $index out of " . ($#mqcd+1) . " entries\n";
+            print "MQCD Length = $mqcd_length\n";
+        }
 
-	#
-	# Now, put the header with the previous and next pointers in
-	# front of it, and then add it to the final $data
-	#
-	my $entry = $class->writeNumber( $mqcd_length + 20 );
-	$entry .= $class->writeNumber($mqcd_length);
-	$entry .= "\0" x 4;
+        #
+        # Now, put the header with the previous and next pointers in
+        # front of it, and then add it to the final $data
+        #
+        my $entry = $class->writeNumber( $mqcd_length + 20 );
+        $entry .= $class->writeNumber($mqcd_length);
+        $entry .= "\0" x 4;
 
-	$entry .= $class->writeNumber( $next );
-	$entry .= $class->writeNumber( $prev );
+        $entry .= $class->writeNumber( $next );
+        $entry .= $class->writeNumber( $prev );
 
-	if ( $args{Debug} ) {
-	    print "Offset to next definition = $next\n";
-	    print "Offset to prev definition = $prev\n";
-	}
+        if ( $args{Debug} ) {
+            print "Offset to next definition = $next\n";
+            print "Offset to prev definition = $prev\n";
+        }
 
-	$entry .= $mqcd[$index]->{MQCD};
+        $entry .= $mqcd[$index]->{MQCD};
 
-	$data .= $entry;
+        $data .= $entry;
 
     }
 
@@ -578,11 +571,11 @@ sub writeFile {
     if (defined $fh) {
         print $fh $data;
     } else {
-        open(FILE, ">$filename") || 
+        open(FILE, '>', $filename) ||
           confess "Unable to write to $filename: $!\n";
         binmode(FILE);          # Required for Windows NT
         print FILE $data;
-        close(FILE) || 
+        close(FILE) ||
           confess "Unable to close $filename: $!\n";
     }
 
@@ -629,7 +622,7 @@ sub writeByte {
     my $class = shift;
     my ($string,$length) = @_;
     if ( length($string) < $length ) {
-	$string .= "\0" x ( $length - length($string) );
+        $string .= "\0" x ( $length - length($string) );
     }
     return $string;
 }
@@ -652,9 +645,9 @@ MQSeries::Config::ChannelTable -- class for reading and writing channel table fi
   my @clntconn = ();
   eval {
       @clntconn = MQSeries::Config::ChannelTable->readFile
-	(
-	 Filename		=> "/var/mqm/AMQCLCHL.TAB",
-	);
+        (
+         Filename               => "/var/mqm/AMQCLCHL.TAB",
+        );
   };
   if ( $@ ) {
       # Exception handling goes here...
@@ -665,11 +658,11 @@ MQSeries::Config::ChannelTable -- class for reading and writing channel table fi
   #
   eval {
       MQSeries::Config::ChannelTable->writeFile
-	(
-	 Filename		=> "/some/new/path",
-	 Clntconn		=> [ @clntconn ],
-	 Version		=> 4,
-	);
+        (
+         Filename               => "/some/new/path",
+         Clntconn               => [ @clntconn ],
+         Version                => 4,
+        );
   };
   if ( $@ ) {
       # Exception handling goes here...
@@ -718,10 +711,10 @@ to trap those exceptions via eval(), as shown in the SYNOPSIS.
 This method takes a HASH of key/value pairs as an argument, with the
 following keys:
 
-  Key		Value
-  ===		=====
-  Filename	String (pathname to channel table file)
-  Debug		Number
+  Key           Value
+  ===           =====
+  Filename      String (pathname to channel table file)
+  Debug         Number
 
 The return value is a list of HASHes, each of which represents a
 single CLNTCONN entry in the file.  See below for the CLNTCONN
@@ -747,12 +740,12 @@ of interest to noone other than the author.  See the code if you care.
 This method takes a HASH of key/value pairs as an argument, with the
 following keys:
 
-  Key		Value
-  ===		=====
-  Filename	String (pathname to channel table file)
-  Clntconn	ARRAY of HASHes (see below)	
-  Version	Number (4 or 6)
-  Debug		Number
+  Key           Value
+  ===           =====
+  Filename      String (pathname to channel table file)
+  Clntconn      ARRAY of HASHes (see below)
+  Version       Number (4 or 6)
+  Debug         Number
 
 The return value will be true if the file could be written
 successfully, and if not, a fatal exception is raised.
@@ -832,28 +825,28 @@ both interfaces.
 
 The valid key/value pairs for this HASH are:
 
-  Key			Value (Max Length of strings)
-  ===			=====
-  ChannelName		String (20)
-  Version		Numeric
-  ChannelType		"Clntconn"
-  TransportType		String (see below)
-  ChannelDesc		String (64)
-  QMgrName		String (48)
-  ModeName		String (8)
-  TpName		String (64)
-  SecurityExit		String (128)
-  MsgExit		String (128)
-  SendExit		String (128)
-  ReceiveExit		String (128)
-  MaxMsgLength		Number
-  SecurityUserData	String (32)
-  MsgUserData		String (32)
-  SendUserData		String (32)
-  ReceiveUserData	String (32)
-  UserIdentifier	String (12)
-  Password		String (12)
-  ConnectionName	String (264)
+  Key                   Value (Max Length of strings)
+  ===                   =====
+  ChannelName           String (20)
+  Version               Numeric
+  ChannelType           "Clntconn"
+  TransportType         String (see below)
+  ChannelDesc           String (64)
+  QMgrName              String (48)
+  ModeName              String (8)
+  TpName                String (64)
+  SecurityExit          String (128)
+  MsgExit               String (128)
+  SendExit              String (128)
+  ReceiveExit           String (128)
+  MaxMsgLength          Number
+  SecurityUserData      String (32)
+  MsgUserData           String (32)
+  SendUserData          String (32)
+  ReceiveUserData       String (32)
+  UserIdentifier        String (12)
+  Password              String (12)
+  ConnectionName        String (264)
 
 The specific use of each of these fields is documented in the IBM
 "MQSeries Programmable System Management" documentation, and the other
@@ -887,8 +880,8 @@ writeFile).
 Rather than specify the specific binary value of the TransportType via
 a macro, the following keys can be given as strings:
 
-    Key				Macro
-    ===				=====
+    Key                         Macro
+    ===                         =====
     DECnet                      MQXPT_DECNET
     LU62                        MQXPT_LU62
     NetBIOS                     MQXPT_NETBIOS
@@ -984,39 +977,39 @@ added channels comes from SYSTEM.DEF.CLNTCONN of course.
 
 Syntax chart:
 
-  Offset	Type		Value		Description
-  ======	====		=====		===========
+  Offset        Type            Value           Description
+  ======        ====            =====           ===========
 
   File:
 
-  0		MQCHAR4		"AMQR"		Magic identifier
-  4		ChannelDefList			Channel definition list
+  0             MQCHAR4         "AMQR"          Magic identifier
+  4             ChannelDefList                  Channel definition list
 
   ChannelDefList:
-  [ChannelDef ...] 		0		0 terminates list of channel definitions
+  [ChannelDef ...]              0               0 terminates list of channel definitions
                                                 as the first field of ChannelDef is length
                                                 of the ChannelDef
 
   ChannelDef:
-  0		MQLONG		length		length of complete channel definition
-  4		MQLONG		length		length of serialized MQCD
-						(0 if channel definition has been deleted)
-  8		MQLONG		0		(appears to be unused)
-  12		MQLONG		offset		forward link to next channel definition
+  0             MQLONG          length          length of complete channel definition
+  4             MQLONG          length          length of serialized MQCD
+                                                (0 if channel definition has been deleted)
+  8             MQLONG          0               (appears to be unused)
+  12            MQLONG          offset          forward link to next channel definition
                                                 (0 if last channel definition in doubly-linked list)
-  16		MQLONG		offset		backward link to previous channel definition
+  16            MQLONG          offset          backward link to previous channel definition
                                                 (0 if first channel definition in doubly-linked list)
-  20		SerializedMQCD			MQCD with some additional strings fields appended
+  20            SerializedMQCD                  MQCD with some additional strings fields appended
 
   SerializedMQCD:
-  0		MQCD				MQCD structure is defined in cmqxc.h
-  sizeof(MQCD)	MQLONG		0
-  +4		MQLONG		0
-  +8		MQLONG		length		length of MQCDExitStrings
-  +12		MQBYTE52	0
-  +64		MQLONG		timestamp	alteration date/time
-  +68		MQCHAR64	' ' x 64	unknown spaces
-  +132		MQCDExitStrings			exit names and data lists
+  0             MQCD                            MQCD structure is defined in cmqxc.h
+  sizeof(MQCD)  MQLONG          0
+  +4            MQLONG          0
+  +8            MQLONG          length          length of MQCDExitStrings
+  +12           MQBYTE52        0
+  +64           MQLONG          timestamp       alteration date/time
+  +68           MQCHAR64        ' ' x 64        unknown spaces
+  +132          MQCDExitStrings                 exit names and data lists
 
   MQCDExitStrings:
   [MsgExit 02]... 01

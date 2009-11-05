@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::IIH - IMS Bridge Message
 #
-# (c) 2002-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2002-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: IIH.pm,v 32.1 2009/05/22 15:28:14 biersma Exp $
+# $Id: IIH.pm,v 33.2 2009/07/10 18:26:18 biersma Exp $
 #
 
 package MQSeries::Message::IIH;
@@ -13,10 +13,9 @@ use strict;
 use Carp;
 
 use MQSeries::Message;
-use vars qw(@ISA $VERSION);
 
-$VERSION = '1.29';
-@ISA = qw(MQSeries::Message);
+our $VERSION = '1.30';
+our @ISA = qw(MQSeries::Message);
 
 #
 # This describes the IIH structure.  We do this in perl to avoid XS
@@ -24,8 +23,8 @@ $VERSION = '1.29';
 #
 my @IIH_Struct =
   (
-   #   	Name			Method		Length  Default
-   [ qw(StrucId                 String		4	IIH     ) ],
+   #    Name                    Method          Length  Default
+   [ qw(StrucId                 String          4       IIH     ) ],
    [ qw(Version                 Number          4       1       ) ],
    [ qw(StrucLength             Number          4       84      ) ],
    [ qw(Encoding                Number          4       0       ) ],
@@ -59,7 +58,7 @@ sub new {
 
     my %MsgDesc =
       (
-       Format	=> MQSeries::MQFMT_IMS,
+       Format   => MQSeries::MQFMT_IMS,
       );
 
     my $carp = $args{Carp} || \&carp;
@@ -74,13 +73,13 @@ sub new {
     #       has been supplied.
     #
     if (exists $args{MsgDesc}) {
-	unless (ref $args{MsgDesc} eq "HASH") {
-	    $carp->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
-	    return;
-	}
-	foreach my $key (keys %{ $args{MsgDesc} }) {
-	    $MsgDesc{$key} = $args{MsgDesc}->{$key};
-	}
+        unless (ref $args{MsgDesc} eq "HASH") {
+            $carp->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
+            return;
+        }
+        foreach my $key (keys %{ $args{MsgDesc} }) {
+            $MsgDesc{$key} = $args{MsgDesc}->{$key};
+        }
     }
 
     $args{MsgDesc} = \%MsgDesc;
@@ -143,7 +142,7 @@ sub GetConvert {
         my $datalen = $this->_readShort($buffer, $offset, 2);
         #print STDERR"XXX: Have data length [$datalen]\n";
 
-	push @$retval, substr($buffer, $offset + 4, $datalen - 4);
+        push @$retval, substr($buffer, $offset + 4, $datalen - 4);
         $offset += $datalen;
         #print STDERR "Have TR [$entry->{Transaction}] Body [$entry->{Body}]\n";
     }
@@ -191,12 +190,12 @@ sub PutConvert {
         substr($buffer, $offset, 2) = $this->_writeShort($datalen);
         substr($buffer, $offset+2, 2) = $this->_writeShort(0);
 
-	#
-	# There should only be 1 space between IMS Tran code and the Data
-	#
+        #
+        # There should only be 1 space between IMS Tran code and the Data
+        #
         my $tranIDLength = length($entry->{Transaction})+1;
         substr($buffer, $offset+4,$tranIDLength ) =
-	  $this->_writeString($entry->{Transaction}, $tranIDLength);
+          $this->_writeString($entry->{Transaction}, $tranIDLength);
         $buffer .= $entry->{Body};
         $offset += $datalen;
     }
@@ -265,7 +264,7 @@ sub _writeByte {
     my $class = shift;
     my ($string,$length) = @_;
     if ( length($string) < $length ) {
-	$string .= "\0" x ( $length - length($string) );
+        $string .= "\0" x ( $length - length($string) );
     }
     return $string;
 }
@@ -283,21 +282,21 @@ sub _setEndianess {
     my ($big_endian) = @_;
 
     if (@_ == 1) {
-	return if (defined $packShort);
-	#
-	# Implicit invocation - base on guess work
-	#
-	$big_endian = pack('N', 1) eq pack('L', 1);
-	#print STDERR "Implicitly set format to " . ($big_endian ? "big" : "little") . " endian\n";
+        return if (defined $packShort);
+        #
+        # Implicit invocation - base on guess work
+        #
+        $big_endian = pack('N', 1) eq pack('L', 1);
+        #print STDERR "Implicitly set format to " . ($big_endian ? "big" : "little") . " endian\n";
     }
 
     if ($big_endian) {
-	$packShort = "n";
-	$packNumber= "N";
+        $packShort = "n";
+        $packNumber= "N";
     } else {
-	$packShort = "v";
-	$packNumber= "V";
-    }	
+        $packShort = "v";
+        $packNumber= "V";
+    }
 }
 
 1;
@@ -329,8 +328,9 @@ MQSeries::Message::IIH -- Class to send/receive IMS Bridge Header (IIH) messages
   #
   # Get a message from an IMS queue
   #
+  my $qmgr_obj = MQSeries::QueueManager->new(QueueManager => 'TEST.QM');
   my $queue = MQSeries::Queue->
-    new(QueueManager => 'TEST.QM',
+    new(QueueManager => $qmgr_obj,
         Queue        => 'IMS.DATA.QUEUE',
         Mode         => 'input');
   my $msg = MQSeries::Message::IIH->new();

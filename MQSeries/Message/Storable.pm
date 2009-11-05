@@ -1,13 +1,13 @@
 #
-# $Id: Storable.pm,v 32.1 2009/05/22 15:28:15 biersma Exp $
+# $Id: Storable.pm,v 33.2 2009/07/10 18:23:09 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Message::Storable;
 
-use 5.006;
+use 5.008;
 
 use strict;
 use Carp;
@@ -16,25 +16,18 @@ use Storable qw(nfreeze thaw);
 
 use MQSeries::Message;
 
-use vars qw(@ISA $VERSION);
-
-$VERSION = '1.29';
-@ISA = qw(MQSeries::Message);
-
-#
-# NOTE: In 5.005 with -Dusethreads, $EVAL_ERROR is broken.
-#
+our $VERSION = '1.30';
+our @ISA = qw(MQSeries::Message);
 
 sub PutConvert {
     my $self = shift;
     my ($data) = @_;
     eval { $self->{Buffer} = nfreeze($data); };
     if ( $@ ) {
-	$self->{Carp}->("Invalid data: Storable::nfreeze failed.\n" . $@);
-	return undef;
-    }
-    else {
-	return $self->{Buffer};
+        $self->{Carp}->("Invalid data: Storable::nfreeze failed.\n" . $@);
+        return undef;
+    } else {
+        return $self->{Buffer};
     }
 
 }
@@ -45,11 +38,10 @@ sub GetConvert {
     my $data = "";
     eval { $data = thaw($self->{Buffer}); };
     if ( $@ ) {
-	$self->{Carp}->("Invalid buffer: Storable::thaw failed.\n" . $@);
-	return undef;
-    }
-    else {
-	return $data;
+        $self->{Carp}->("Invalid buffer: Storable::thaw failed.\n" . $@);
+        return undef;
+    } else {
+        return $data;
     }
 }
 
@@ -67,13 +59,13 @@ MQSeries::Message::Storable -- OO Class for sending and receiving perl reference
   my $message = MQSeries::Message::Storable->new
     (
      Data => {
-	      some => "big ugly",
-	      complicated =>
-	      {
-	       data => [0..5],
-	       structure => [6..10],
-	      },
-	     },
+              some => "big ugly",
+              complicated =>
+              {
+               data => [0..5],
+               structure => [6..10],
+              },
+             },
     );
 
 

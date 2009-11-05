@@ -1,21 +1,21 @@
 # -*-c-*- 
 #
-# $Id: 30MQCONN,v 27.1 2007/01/11 20:19:52 molinam Exp $
+# $Id: 30MQCONN,v 33.1 2009/07/02 21:12:01 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 MQHCONN
 MQCONN(Name,CompCode,Reason)
-	MQCHAR48	Name
-	MQLONG		CompCode
-	MQLONG		Reason
+        MQCHAR48 Name
+        MQLONG   CompCode = NO_INIT
+        MQLONG   Reason = NO_INIT
 
-	CODE:
-	MQCONN(Name,&RETVAL,&CompCode,&Reason);
-	OUTPUT:
-	RETVAL
-	CompCode
-	Reason
+    CODE:
+        MQCONN(Name,&RETVAL,&CompCode,&Reason);
+    OUTPUT:
+        RETVAL
+        CompCode
+        Reason
 

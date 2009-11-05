@@ -1,0 +1,23 @@
+# -*-c-*-
+#
+# $Id: 51MQDLTMH-v7,v 33.1 2009/07/02 20:58:17 biersma Exp $
+#
+# (c) 2009 Morgan Stanley & Co. Incorporated
+# See ..../src/LICENSE for terms of distribution.
+#
+
+void
+MQDLTMH(Hconn,Hmsg,DltMsgHOpts,CompCode,Reason)
+        MQHCONN Hconn
+        MQHMSG  Hmsg
+        MQDMHO  DltMsgHOpts
+        MQLONG  CompCode = NO_INIT
+        MQLONG  Reason = NO_INIT
+
+    CODE:
+        MQDLTMH(Hconn,&Hmsg,&DltMsgHOpts,&CompCode,&Reason);
+    OUTPUT:
+        Hmsg
+        CompCode
+        Reason
+

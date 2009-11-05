@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::Authority.pm - Parse Unix authority files
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Authority.pm,v 32.1 2009/05/22 15:28:12 biersma Exp $
+# $Id: Authority.pm,v 33.2 2009/07/10 18:35:36 biersma Exp $
 #
 
 package MQSeries::Config::Authority;
@@ -12,9 +12,7 @@ package MQSeries::Config::Authority;
 use strict;
 use Carp;
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 use MQSeries qw(:functions);
 use MQSeries::Config::Machine;  # For localqmgrs()
@@ -27,26 +25,26 @@ my %auth_bit_to_name =
    #
    # Admin Rights
    #
-   MQSeries::MQZAO_CREATE		    	=> 'crt',
-   MQSeries::MQZAO_DELETE		    	=> 'dlt',
-   MQSeries::MQZAO_DISPLAY		    	=> 'dsp',
-   MQSeries::MQZAO_CHANGE		    	=> 'chg',
-   MQSeries::MQZAO_CLEAR		    	=> 'clr',
-   
+   MQSeries::MQZAO_CREATE                       => 'crt',
+   MQSeries::MQZAO_DELETE                       => 'dlt',
+   MQSeries::MQZAO_DISPLAY                      => 'dsp',
+   MQSeries::MQZAO_CHANGE                       => 'chg',
+   MQSeries::MQZAO_CLEAR                        => 'clr',
+
    #
    # MQI Rights
    #
-   MQSeries::MQZAO_CONNECT		    	=> 'connect',
-   MQSeries::MQZAO_BROWSE		    	=> 'browse',
-   MQSeries::MQZAO_INPUT		    	=> 'get',
-   MQSeries::MQZAO_OUTPUT		    	=> 'put',
-   MQSeries::MQZAO_INQUIRE		    	=> 'inq',
-   MQSeries::MQZAO_SET			    	=> 'set',
-   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    	=> 'passid',
-   MQSeries::MQZAO_PASS_ALL_CONTEXT	    	=> 'passall',
-   MQSeries::MQZAO_SET_IDENTITY_CONTEXT		=> 'setid',
-   MQSeries::MQZAO_SET_ALL_CONTEXT	    	=> 'setall',
-   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY 	=> 'altusr',
+   MQSeries::MQZAO_CONNECT                      => 'connect',
+   MQSeries::MQZAO_BROWSE                       => 'browse',
+   MQSeries::MQZAO_INPUT                        => 'get',
+   MQSeries::MQZAO_OUTPUT                       => 'put',
+   MQSeries::MQZAO_INQUIRE                      => 'inq',
+   MQSeries::MQZAO_SET                          => 'set',
+   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT        => 'passid',
+   MQSeries::MQZAO_PASS_ALL_CONTEXT             => 'passall',
+   MQSeries::MQZAO_SET_IDENTITY_CONTEXT         => 'setid',
+   MQSeries::MQZAO_SET_ALL_CONTEXT              => 'setall',
+   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY     => 'altusr',
   );
 my %auth_name_to_bit = reverse %auth_bit_to_name;
 
@@ -58,39 +56,39 @@ my %auth_bit_to_pcf =
    #
    # Admin Rights
    #
-   MQSeries::MQZAO_CREATE		    	=> 'Create',
-   MQSeries::MQZAO_DELETE		    	=> 'Delete',
-   MQSeries::MQZAO_DISPLAY		    	=> 'Display',
-   MQSeries::MQZAO_CHANGE		    	=> 'Change',
-   MQSeries::MQZAO_CLEAR		    	=> 'Clear',
-   
+   MQSeries::MQZAO_CREATE                       => 'Create',
+   MQSeries::MQZAO_DELETE                       => 'Delete',
+   MQSeries::MQZAO_DISPLAY                      => 'Display',
+   MQSeries::MQZAO_CHANGE                       => 'Change',
+   MQSeries::MQZAO_CLEAR                        => 'Clear',
+
    #
    # MQI Rights
    #
-   MQSeries::MQZAO_CONNECT		    	=> 'Connect',
-   MQSeries::MQZAO_BROWSE		    	=> 'Browse',
-   MQSeries::MQZAO_INPUT		    	=> 'Input',
-   MQSeries::MQZAO_OUTPUT		    	=> 'Output',
-   MQSeries::MQZAO_INQUIRE		    	=> 'Inquire',
-   MQSeries::MQZAO_SET			    	=> 'Set',
-   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT    	=> 'PassId',
-   MQSeries::MQZAO_PASS_ALL_CONTEXT	    	=> 'PassAll',
-   MQSeries::MQZAO_SET_IDENTITY_CONTEXT		=> 'SetId',
-   MQSeries::MQZAO_SET_ALL_CONTEXT	    	=> 'SetAll',
-   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY 	=> 'AlternateUser',
+   MQSeries::MQZAO_CONNECT                      => 'Connect',
+   MQSeries::MQZAO_BROWSE                       => 'Browse',
+   MQSeries::MQZAO_INPUT                        => 'Input',
+   MQSeries::MQZAO_OUTPUT                       => 'Output',
+   MQSeries::MQZAO_INQUIRE                      => 'Inquire',
+   MQSeries::MQZAO_SET                          => 'Set',
+   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT        => 'PassId',
+   MQSeries::MQZAO_PASS_ALL_CONTEXT             => 'PassAll',
+   MQSeries::MQZAO_SET_IDENTITY_CONTEXT         => 'SetId',
+   MQSeries::MQZAO_SET_ALL_CONTEXT              => 'SetAll',
+   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY     => 'AlternateUser',
   );
 
 #
 # Configuration table to map summary names (all/alladm/allmqi)
 # into symbolic names.
 #
-my %auth_all_to_names = 
+my %auth_all_to_names =
   (
-   'all'    => [ qw(dlt dsp chg clr 
-                    connect browse get put inq set 
+   'all'    => [ qw(dlt dsp chg clr
+                    connect browse get put inq set
                     passid passall setid setall altusr) ],
    'alladm' => [ qw(dlt dsp chg clr) ],
-   'allmqi' => [ qw(connect browse get put inq set 
+   'allmqi' => [ qw(connect browse get put inq set
                     passid passall setid setall altusr) ],
   );
 
@@ -99,7 +97,7 @@ my %auth_all_to_names =
 #
 my %object_type_to_names =
   (
-   'queue'    => [ qw(browse chg clr crt dlt dsp put 
+   'queue'    => [ qw(browse chg clr crt dlt dsp put
                       inq get passall passid set setall setid) ],
    'process'  => [ qw(chg crt dlt dsp inq set) ],
    'qmgr'     => [ qw(altusr chg connect crt dlt dsp inq set setall setid) ],
@@ -109,7 +107,7 @@ my %object_type_to_names =
 #
 # Configuration table with the directory name for each object type
 #
-my %object_type_to_dir = 
+my %object_type_to_dir =
   ('queue'    => 'queues',
    'process'  => 'procdef',
    'qmgr'     => 'qmanager',
@@ -162,7 +160,7 @@ sub new {
         carp "Invalid 'Carp' parameter: '$carp'";
         return;
     }
-    confess "Missing 'QMgrName' parameter" 
+    confess "Missing 'QMgrName' parameter"
       unless (defined $params{'QMgrName'});
     confess "Missing or invalid 'ObjectType' parameter"
       unless (defined $params{'ObjectType'} &&
@@ -175,7 +173,7 @@ sub new {
         $carp->("Missing base directory '$params{'BaseDir'}'");
         return;
     }
-    
+
     $machine ||= MQSeries::Config::Machine->new("$params{'BaseDir'}/mqs.ini");
     my $local_qmgrs = $machine->localqmgrs();
     unless (defined $local_qmgrs->{ $params{'QMgrName'} }) {
@@ -201,9 +199,9 @@ sub new {
     # Get settings from @aclass, @class, object
     # Note that _parse_authfile will use caching for @aclass and @class
     #
-    $this->_parse_authfile("$this->{'QMgrDir'}/auth/\@aclass", 
+    $this->_parse_authfile("$this->{'QMgrDir'}/auth/\@aclass",
                            'aclass', undef);
-    $this->_parse_authfile("$this->{'QMgrDir'}/auth/$object_type_to_dir{ $this->{'ObjectType'} }/\@class", 
+    $this->_parse_authfile("$this->{'QMgrDir'}/auth/$object_type_to_dir{ $this->{'ObjectType'} }/\@class",
                            'class', undef);
     $this->_parse_authfile($auth_file, 'object', $this->{'ObjectType'});
 
@@ -211,11 +209,11 @@ sub new {
     # Merge the three authorities into one effective set
     #
     foreach my $type (keys %{ $this->{'entities'} }) {
-        while (my ($entity, $auth) = 
+        while (my ($entity, $auth) =
                each %{ $this->{'entities'}{$type} }) {
             $this->{'entities'}{'effective'}{$entity} = 0
               unless (defined $this->{'entities'}{'effective'}{$entity});
-            $this->{'entities'}{'effective'}{$entity} |= 
+            $this->{'entities'}{'effective'}{$entity} |=
               ($auth & $object_type_to_bits{ $this->{'ObjectType'} });
         }
     }
@@ -300,7 +298,7 @@ sub authorities {
 sub has_authority {
     confess "Invalid number of params" unless (@_ == 3);
     my ($this, $entity, $authority) = @_;
-    
+
     my $bits = $auth_name_to_bit{$authority} || $auth_all_to_bits{$authority};
     unless (defined $bits) {
         $this->{'Carp'}->("Invalid authority '$authority'");
@@ -335,7 +333,7 @@ sub authority_command {
     my $permission = $this->{'entities'}{'effective'}{$entity} || 0;
 
     #
-    # NOTE: 'crt' is not part of 'all', 'alladm' or 'allmqi', so needs 
+    # NOTE: 'crt' is not part of 'all', 'alladm' or 'allmqi', so needs
     #       special handling.
     #
     if ($permission == 0) {
@@ -389,7 +387,7 @@ sub authority_command {
 # - Key
 # - Object type/undef (will cache non-object specific)
 # Returns:
-# - Boolean 
+# - Boolean
 #
 my $cache;                      # File -> { mtime, inode, data }
 sub _parse_authfile {
@@ -416,8 +414,8 @@ sub _parse_authfile {
         }
     }
 
-    unless (open(AUTHFILE, $authfile)) {
-	carp "Unable to open $authfile: $!";
+    unless (open(AUTHFILE, '<', $authfile)) {
+        carp "Unable to open $authfile: $!";
         return 0;
     }
 
@@ -440,7 +438,7 @@ sub _parse_authfile {
         }
         my $entity = $1;
         #
-        # If an entity occurs multiple times in the same file 
+        # If an entity occurs multiple times in the same file
         # (which the IBM OAM never does, typically the result of manual
         #  editing), the permissions are effectively ORed.
         #
@@ -523,7 +521,7 @@ sub _compute_derived_tables {
     }
 
     #
-    # Compute auth_all_to_bits 
+    # Compute auth_all_to_bits
     #
     while (my ($type, $namelist) = each %auth_all_to_names) {
         $auth_all_to_bits{$type} = 0;
@@ -538,7 +536,7 @@ sub _compute_derived_tables {
     #
     # For all 'object type to XXX' tables, support the
     # object type names as used by setmqaut as well as the
-    # names used by PCF.  This allows the user to ask 
+    # names used by PCF.  This allows the user to ask
     # for 'QueueManager' objects as well as 'qmgr' objects.
     #
     my %type_aliases = ('QueueManager' => 'qmgr',
@@ -661,7 +659,7 @@ files directly.
 
 This method has one parameter, an entity name, and one optional
 parameter, the format ('setmqaut' or 'PCF').  It returns a
-list of all authority names for this entity.  
+list of all authority names for this entity.
 
 If the format parameter is 'setmquat' or is not specified, the
 authority names returned correspond to the values as specified in
@@ -669,7 +667,7 @@ C<setmqaut>, e.g. 'connect', 'inq', 'get', etc.  If a user has all
 authorities, the full list of names is returned, not 'all'.
 
 If the format parameter is 'PCF', the PCF macros as defined by the
-MQSeries::Command module are returned. 
+MQSeries::Command module are returned.
 
 =head2 has_authority
 

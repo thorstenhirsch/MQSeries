@@ -1,21 +1,16 @@
 #
-# $Id: MQSC.pm,v 32.1 2009/05/22 15:28:12 biersma Exp $
+# $Id: MQSC.pm,v 33.2 2009/07/10 18:27:59 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Command::MQSC;
 
 use strict;
-use vars qw(
-	    $VERSION
-	    @ISA
-	   );
 
-@ISA = qw(MQSeries::Command);
-
-$VERSION = '1.29';
+our @ISA = qw(MQSeries::Command);
+our $VERSION = '1.30';
 
 use MQSeries qw(:functions);
 
@@ -33,7 +28,6 @@ require "MQSeries/Command/MQSC/ResponseValues.pl";
 require "MQSeries/Command/MQSC/ResponseParameters.pl";
 require "MQSeries/Command/MQSC/Responses.pl";
 require "MQSeries/Command/MQSC/SpecialParameters.pl";
-#require "/ms/dev/perl5/MQSeries/1.27/src/distro/MQSeries/Command/MQSC/SpecialParameters.pl";
 
 #
 # This is a bit wierd....  well, all of the MQSC stuff is wierd....
@@ -47,7 +41,7 @@ require "MQSeries/Command/MQSC/SpecialParameters.pl";
 sub _LastSeen {
     my $self = shift;
 
-    return unless ($self->{Response}->[0] && 
+    return unless ($self->{Response}->[0] &&
                    $self->{Response}->[0]->Header('LastMsgSeqNumber') == scalar @{$self->{Response}});
 
     return 1;
@@ -72,63 +66,63 @@ sub _ProcessResponses {
     $self->{Buffers} = [];
 
     foreach my $response ( @{$self->{Response}} ) {
-	#
-	# XXX -- Special hack to collect raw text
-	#
-	push(@{$self->{Buffers}},$response->{Buffer});
+        #
+        # XXX -- Special hack to collect raw text
+        #
+        push(@{$self->{Buffers}},$response->{Buffer});
 
-	#
-	# Let the object-wide compcode and reason be the first
-	# non-zero result found in all of the messages.  This is
-	# *usually* good enough, but the data will be available via
-	# Response() if you want to parse the full header for each
-	# message.
-	#
-	if (
-	    $self->{"CompCode"} == MQSeries::MQCC_OK && 
+        #
+        # Let the object-wide compcode and reason be the first
+        # non-zero result found in all of the messages.  This is
+        # *usually* good enough, but the data will be available via
+        # Response() if you want to parse the full header for each
+        # message.
+        #
+        if (
+            $self->{"CompCode"} == MQSeries::MQCC_OK &&
             $self->{"Reason"} == MQSeries::MQRC_NONE &&
-	    (
-	     $response->Header("CompCode") != MQSeries::MQCC_OK ||
-	     $response->Header("Reason") != MQSeries::MQRC_NONE
-	    )
-	   ) {
-	    $self->{"CompCode"} = $response->Header("CompCode");
-	    $self->{"Reason"} = $response->Header("Reason");
-	}
+            (
+             $response->Header("CompCode") != MQSeries::MQCC_OK ||
+             $response->Header("Reason") != MQSeries::MQRC_NONE
+            )
+           ) {
+            $self->{"CompCode"} = $response->Header("CompCode");
+            $self->{"Reason"} = $response->Header("Reason");
+        }
 
-	if ( $command eq 'InquireChannelStatus' ) {
-	    if (
-		(
-		 $self->{"CompCode"} == 0 &&
-		 $self->{"Reason"} == 4
-		) ||
-		$response->ReasonText() =~ /no chstatus found/mi
-	       ) {
-		$response->{Parameters}->{ChannelStatus} = 'NotFound';
-		$self->{"Reason"} = MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND;
-	    }
-	}
+        if ( $command eq 'InquireChannelStatus' ) {
+            if (
+                (
+                 $self->{"CompCode"} == 0 &&
+                 $self->{"Reason"} == 4
+                ) ||
+                $response->ReasonText() =~ /no chstatus found/mi
+               ) {
+                $response->{Parameters}->{ChannelStatus} = 'NotFound';
+                $self->{"Reason"} = MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND;
+            }
+        }
 
-	#
-	# Ok, now it gets even more complicated (yes, that is
-	# always possible).
-	#
-	# Remember that we are trying very hard to have one
-	# interface, and one format for the results.  PCF has
-	# these InquireFooNames calls, that do *not* map
-	# cleanly to MQSC.  We need to collect the multiple
-	# messages into one, to keep the results in the same
-	# format
-	#
-	if ( $MQSeries::Command::MQSC::ResponseList{$command} ) {
-	    my ($oldkey,$newkey) = @{$MQSeries::Command::MQSC::ResponseList{$command}};
-	    push(@{$MQSCParameters->{$newkey}},$response->Parameters($oldkey))
-	      if $response->Parameters($oldkey);
-	    # Save the last response's MsgDesc.  See below...
-	    $MQSCMsgDesc = $response->MsgDesc();
-	} else {
-	    push(@responses, $response);
-	}
+        #
+        # Ok, now it gets even more complicated (yes, that is
+        # always possible).
+        #
+        # Remember that we are trying very hard to have one
+        # interface, and one format for the results.  PCF has
+        # these InquireFooNames calls, that do *not* map
+        # cleanly to MQSC.  We need to collect the multiple
+        # messages into one, to keep the results in the same
+        # format
+        #
+        if ( $MQSeries::Command::MQSC::ResponseList{$command} ) {
+            my ($oldkey,$newkey) = @{$MQSeries::Command::MQSC::ResponseList{$command}};
+            push(@{$MQSCParameters->{$newkey}},$response->Parameters($oldkey))
+              if $response->Parameters($oldkey);
+            # Save the last response's MsgDesc.  See below...
+            $MQSCMsgDesc = $response->MsgDesc();
+        } else {
+            push(@responses, $response);
+        }
     }                           # End foreach: response
 
     #
@@ -146,18 +140,18 @@ sub _ProcessResponses {
     # eg. QNames).
     #
     if ( $MQSeries::Command::MQSC::ResponseList{$command} ) {
-	my $response = MQSeries::Command::Response->new
-	  (
-	   MsgDesc		=> $MQSCMsgDesc,
-	   Header		=> $MQSCHeader,
-	   Parameters		=> $MQSCParameters,
-	   Type			=> $self->{Type},
-	  ) || do {
-	      $self->{"CompCode"} = MQSeries::MQCC_FAILED;
-	      $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
-	      return;
-	  };
-	push(@responses, $response);
+        my $response = MQSeries::Command::Response->new
+          (
+           MsgDesc              => $MQSCMsgDesc,
+           Header               => $MQSCHeader,
+           Parameters           => $MQSCParameters,
+           Type                 => $self->{Type},
+          ) || do {
+              $self->{"CompCode"} = MQSeries::MQCC_FAILED;
+              $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
+              return;
+          };
+        push(@responses, $response);
     }
 
     #
@@ -171,37 +165,37 @@ sub _ProcessResponses {
     # to get at data members.  We're somewhat incestuous here...
     #
     if ( @responses ) {
-	my $responsecount = 0;
-	foreach my $response ( @responses ) {
-	    if ( keys %{$response->{Parameters}} ) {
-		$response->{Header}->{MsgSeqNumber} = ++$responsecount;
-		$response->{Header}->{Control} = MQSeries::MQCFC_NOT_LAST;
-		$response->{Header}->{ParameterCount} = scalar keys %{$response->{Parameters}};
-		delete $response->{Header}->{LastMsgSeqNumber};
-		push(@{$self->{Response}},$response);
-	    }
-	}
-	#
-	# Yank back the last response, and set its control value
-	# to MQCFC_LAST
-	#
-	if ( scalar(@{$self->{Response}}) ) {
-	    my $response = pop(@{$self->{Response}});
-	    $response->{Header}->{Control} = MQSeries::MQCFC_LAST;
-	    push(@{$self->{Response}},$response);
-	}
-	#
-	# One last thing.  If we now have *no* responses, then
-	# pass back the first one.  This is possible if we get
-	# multiple responses, but none have parameters.
-	#
-	else {
-	    $responses[0]->{Header}->{MsgSeqNumber} = 1;
+        my $responsecount = 0;
+        foreach my $response ( @responses ) {
+            if ( keys %{$response->{Parameters}} ) {
+                $response->{Header}->{MsgSeqNumber} = ++$responsecount;
+                $response->{Header}->{Control} = MQSeries::MQCFC_NOT_LAST;
+                $response->{Header}->{ParameterCount} = scalar keys %{$response->{Parameters}};
+                delete $response->{Header}->{LastMsgSeqNumber};
+                push(@{$self->{Response}},$response);
+            }
+        }
+        #
+        # Yank back the last response, and set its control value
+        # to MQCFC_LAST
+        #
+        if ( scalar(@{$self->{Response}}) ) {
+            my $response = pop(@{$self->{Response}});
+            $response->{Header}->{Control} = MQSeries::MQCFC_LAST;
+            push(@{$self->{Response}},$response);
+        }
+        #
+        # One last thing.  If we now have *no* responses, then
+        # pass back the first one.  This is possible if we get
+        # multiple responses, but none have parameters.
+        #
+        else {
+            $responses[0]->{Header}->{MsgSeqNumber} = 1;
             $responses[0]->{Header}->{Control} = MQSeries::MQCFC_LAST;
-	    $responses[0]->{Header}->{ParameterCount} = 0;
-	    delete $responses[0]->{Header}->{LastMsgSeqNumber};
-	    push(@{$self->{Response}}, $responses[0]);
-	}
+            $responses[0]->{Header}->{ParameterCount} = 0;
+            delete $responses[0]->{Header}->{LastMsgSeqNumber};
+            push(@{$self->{Response}}, $responses[0]);
+        }
     }
 
     return 1;

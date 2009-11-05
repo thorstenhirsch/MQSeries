@@ -1,13 +1,13 @@
 #
-# $Id: Event.pm,v 32.1 2009/05/22 15:28:14 biersma Exp $
+# $Id: Event.pm,v 33.2 2009/07/10 18:25:44 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Message::Event;
 
-use 5.006;
+use 5.008;
 
 use strict;
 use Carp;
@@ -18,16 +18,15 @@ use MQSeries::Message::PCF qw(MQDecodePCF);
 
 require "MQSeries/Message/Event.pl";
 
-use vars qw(@ISA $VERSION);
-
-$VERSION = '1.29';
-@ISA = qw(MQSeries::Message);
+our $VERSION = '1.30';
+our @ISA = qw(MQSeries::Message);
 
 sub PutConvert {
     my $self = shift;
     $self->{Carp}->("MQPUTing an MQEvent object is not supported\n");
     return undef;
 }
+
 
 sub GetConvert {
     my $self = shift;
@@ -37,13 +36,13 @@ sub GetConvert {
     my ($header,$parameters);
 
     unless ( ($header,$parameters) = MQDecodePCF($self->{Buffer}) ) {
-	$self->{Carp}->("Unable to parse PCF contents from message\n");
-	return undef;
+        $self->{Carp}->("Unable to parse PCF contents from message\n");
+        return undef;
     }
 
     unless ( ($self->{EventHeader},$self->{EventData}) = $self->_TranslatePCF($header,$parameters) ) {
-	$self->{Carp}->("Unable to parse MQSeries Event from message\n");
-	return undef;
+        $self->{Carp}->("Unable to parse MQSeries Event from message\n");
+        return undef;
     }
 
     #
@@ -55,8 +54,8 @@ sub GetConvert {
 
 }
 
-sub _TranslatePCF {
 
+sub _TranslatePCF {
     my $self = shift;
     my ($origheader,$origparams) = @_;
 
@@ -65,90 +64,82 @@ sub _TranslatePCF {
 
     my $ResponseParameters = \%MQSeries::Message::Event::ResponseParameters;
 
-    if ( 
-	$header->{Type} != MQSeries::MQCFT_EVENT ||
-	(
-	 $header->{Command} != MQSeries::MQCMD_Q_MGR_EVENT &&
-	 $header->{Command} != MQSeries::MQCMD_PERFM_EVENT &&
-	 $header->{Command} != MQSeries::MQCMD_CHANNEL_EVENT
-	)
+    if (
+        $header->{Type} != MQSeries::MQCFT_EVENT ||
+        (
+         $header->{Command} != MQSeries::MQCMD_Q_MGR_EVENT &&
+         $header->{Command} != MQSeries::MQCMD_PERFM_EVENT &&
+         $header->{Command} != MQSeries::MQCMD_CHANNEL_EVENT
+        )
        ) {
-	$self->{Carp}->("Not an MQSeries performance event\n");
-	return;
+        $self->{Carp}->("Not an MQSeries performance event\n");
+        return;
     }
 
     foreach my $origparam ( @$origparams ) {
 
-	my ($key,$value);
+        my ($key,$value);
 
-	if ( $ResponseParameters->{$origparam->{Parameter}} ) {
-	    $key = $ResponseParameters->{$origparam->{Parameter}};
-	}
-	else {
-	    $self->{Carp}->("No such parameter '$origparam->{Parameter}' " . 
-			    "defined in %MQSeries::Message::Event::ResponseParameters\n");
-	    $key = $origparam->{Parameter};
-	}
+        if ( $ResponseParameters->{$origparam->{Parameter}} ) {
+            $key = $ResponseParameters->{$origparam->{Parameter}};
+        }
+        else {
+            $self->{Carp}->("No such parameter '$origparam->{Parameter}' " .
+                            "defined in %MQSeries::Message::Event::ResponseParameters\n");
+            $key = $origparam->{Parameter};
+        }
 
-	#
-	# NOTE: events don't use the MQCFT_STRING_LIST or
-	# MQCFT_INTEGER_LIST types.
-	#
-	
-	if ( $origparam->{Type} == MQSeries::MQCFT_STRING ) {
-	    ( $parameters->{$key} = $origparam->{String} ) =~ s/\s+$//;
-	}
+        #
+        # NOTE: events don't use the MQCFT_STRING_LIST or
+        # MQCFT_INTEGER_LIST types.
+        #
+        if ( $origparam->{Type} == MQSeries::MQCFT_STRING ) {
+            ( $parameters->{$key} = $origparam->{String} ) =~ s/\s+$//;
+        }
 
-	if ( $origparam->{Type} == MQSeries::MQCFT_INTEGER ) {
-	    $parameters->{$key} = $origparam->{Value};
-	}
+        if ( $origparam->{Type} == MQSeries::MQCFT_INTEGER ) {
+            $parameters->{$key} = $origparam->{Value};
+        }
 
     }
 
     return ($header,$parameters);
-
 }
 
-sub EventHeader {
 
+sub EventHeader {
     my $self = shift;
 
     $self->{EventHeader} = {} unless $self->{EventHeader};
 
     if ( $_[0] ) {
-	if ( exists $self->{EventHeader}->{$_[0]} ) {
-	    return $self->{EventHeader}->{$_[0]};
-	}
-	else {
-	    $self->{Carp}->("No such EventHeader field: $_[0]\n");
-	    return;
-	}
+        if ( exists $self->{EventHeader}->{$_[0]} ) {
+            return $self->{EventHeader}->{$_[0]};
+        } else {
+            $self->{Carp}->("No such EventHeader field: $_[0]\n");
+            return;
+        }
+    } else {
+        return $self->{EventHeader};
     }
-    else {
-	return $self->{EventHeader};
-    }
-
 }
 
-sub EventData {
 
+sub EventData {
     my $self = shift;
 
     $self->{EventData} = {} unless $self->{EventData};
 
     if ( $_[0] ) {
-	if ( exists $self->{EventData}->{$_[0]} ) {
-	    return $self->{EventData}->{$_[0]};
-	}
-	else {
-	    $self->{Carp}->("No such EventData field: $_[0]\n");
-	    return;
-	}
+        if ( exists $self->{EventData}->{$_[0]} ) {
+            return $self->{EventData}->{$_[0]};
+        } else {
+            $self->{Carp}->("No such EventData field: $_[0]\n");
+            return;
+        }
+    } else {
+        return $self->{EventData};
     }
-    else {
-	return $self->{EventData};
-    }
-
 }
 
 1;
@@ -229,8 +220,8 @@ instead.  In this case, "QMgrName".
 
 The macros are mapped to strings as follows:
 
-   Macro				Key
-   =====				===
+   Macro                                Key
+   =====                                ===
    MQCACF_APPL_NAME                     ApplName
    MQCACF_AUX_ERROR_DATA_STR_1          AuxErrorDataStr1
    MQCACF_AUX_ERROR_DATA_STR_2          AuxErrorDataStr2

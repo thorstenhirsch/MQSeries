@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 32.2 2009/05/22 18:09:39 biersma Exp $
+# $Id: parse_headers,v 33.3 2009/07/30 12:18:48 biersma Exp $
 #
-# (c) 1999-2009 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
@@ -14,7 +14,6 @@
 use English;
 use Config;
 
-my $include = '/opt/mqm/inc';
 opendir(INCLUDE,$include) ||
   die "Unable to opendir $include: $ERRNO\n";
 
@@ -55,7 +54,7 @@ foreach my $header ( @headers ) {
 
     #print "Searching $header\n";
 
-    open(HEADER,$header) or die "Unable to open $header: $ERRNO\n";
+    open(HEADER, '<', $header) or die "Unable to open $header: $ERRNO\n";
 
     #
     # To support the 64-bit macros, we support very simple conditionals,
@@ -75,7 +74,7 @@ foreach my $header ( @headers ) {
         s/^\s*//;
         chomp;
 
-        if (m@^#if !defined.*\s+/\* File not yet included\?\s+\*/@ ||
+        if (m@^#if !defined.*\s+/\*\s+File not yet included\?\s+\*/@ ||
             m@^#endif\s+/\* End of header file \*/@
            ) {
             #print "Skip include guard: $_\n";
@@ -186,19 +185,6 @@ foreach my $header ( @headers ) {
 
         $value =~ s/^\(//;
         $value =~ s/\)$//;
-
-        #
-        # Special case: Look for indication that this host has a
-        # version of MQSeries installed which support the MQRFH
-        # structure.    This is required to build RulesFormat.xs
-        #
-        if ( $key eq "MQRFH_STRUC_ID" ) {
-            $::has_mqrfh = 1;
-        }
-
-        if ( $key eq "MQMD_VERSION_2" ) {
-            $::has_mqmd2 = 1;
-        }
 
         #
         # Hex
@@ -326,5 +312,78 @@ foreach my $header ( @headers ) {
         $constant_numeric{$key} = $result;
     }
 }                               #  End foreach: header file
+
+#
+# There's a bunch of MQ v6 and v7 constants used in the perl source
+# code that will cause breakage when compiling against MQ v5 or MQ v6
+# - unless we define them here. See also MQClient/constants.c.PL,
+# where we use these constants to add a bunch of #define entries.
+#
+our %extra_hex = (
+                  MQIMPO_CONVERT_TYPE          => 0x0002,
+                  MQIMPO_INQ_FIRST             => 0x0000,
+                  MQIMPO_INQ_NEXT              => 0x0008,
+                  MQIMPO_INQ_PROP_UNDER_CURSOR => 0x0010,
+                  MQPMO_ASYNC_RESPONSE         => 0x010000,
+                  MQSTAT_TYPE_ASYNC_ERROR      => 0x0000,
+                  MQTYPE_AS_SET                => 0x0000,
+                  MQTYPE_BOOLEAN               => 0x0004,
+                  MQTYPE_BYTE_STRING           => 0x0008,
+                  MQTYPE_FLOAT32               => 0x0100,
+                  MQTYPE_FLOAT64               => 0x0200,
+                  MQTYPE_INT8                  => 0x0010,
+                  MQTYPE_INT16                 => 0x0020,
+                  MQTYPE_INT32                 => 0x0040,
+                  MQTYPE_NULL                  => 0x0002,
+                  MQTYPE_STRING                => 0x0400,
+                );
+our %extra_num = (
+                  MQCFH_VERSION_3             => 3,
+                  MQCFOP_CONTAINS             => 10,
+                  MQCFOP_CONTAINS_GEN         => 26,
+                  MQCFOP_EQUAL                => 2,
+                  MQCFOP_EXCLUDES             => 13,
+                  MQCFOP_EXCLUDES_GEN         => 29,
+                  MQCFOP_GREATER              => 4,
+                  MQCFOP_LESS                 => 1,
+                  MQCFOP_LIKE                 => 18,
+                  MQCFOP_NOT_EQUAL            => 5,
+                  MQCFOP_NOT_GREATER          => 3,
+                  MQCFOP_NOT_LESS             => 6,
+                  MQCFOP_NOT_LIKE             => 21,
+                  MQCFT_BYTE_STRING_FILTER    => 15,
+                  MQCFT_COMMAND_XR            => 16,
+                  MQCFT_INTEGER_FILTER        => 13,
+                  MQCFT_STRING_FILTER         => 14,
+                  MQGMO_VERSION_4             => 4,
+                  MQOD_VERSION_4              => 4,
+                  MQPMO_VERSION_3             => 3,
+                  MQRC_NO_SUBSCRIPTION        => 2428,
+                  MQRC_PROPERTY_NOT_AVAILABLE => 2471,
+                  MQRC_PROPERTY_VALUE_TOO_BIG => 2469,
+                 );
+foreach my $name (sort keys %extra_hex) {
+    my $value = $extra_hex{$name};
+    if (defined $constant_hex{$name}) {
+        if ($constant_hex{$name} != $value) {
+            die "Conflict for value '$name': header file '$constant_hex{$name}', hardcoded fallback '$value'";
+        }
+        delete $extra_hex{$name};
+    } else {
+        #print "Add hex constant '$name'\n";
+        $constant_hex{$name} = $value;
+    }
+}
+foreach my $name (sort keys %extra_num) {
+    my $value = $extra_num{$name};
+    if (defined $constant_numeric{$name}) {
+        if ($constant_numeric{$name} != $value) {
+            die "Conflict for value '$name': header file '$constant_numeric{$name}', hardcoded fallback '$value'";
+        }
+        delete $extra_num{$name};
+    } else {
+        $constant_numeric{$name} = $value;
+    }
+}
 
 1;

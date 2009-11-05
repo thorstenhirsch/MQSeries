@@ -1,8 +1,8 @@
-#!/ms/dist/perl5/bin/perl
+#!/usr/bin/perl
 #
-# $Id: write_manifest,v 27.1 2007/01/11 20:20:50 molinam Exp $
+# $Id: write_manifest,v 33.1 2009/07/09 12:00:11 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # This is not used to build the distribution, just to keep that pesky
@@ -11,40 +11,45 @@
 # To run this, from the top level source directory, ./util/write_manifest
 #
 
-%skip = map { $_ => 1 } 
-qw(
-   .options/rcsMajor
-   .msbaseline
-   .exclude
-  );
+use strict;
+
+my %skip = map { $_ => 1 } qw(
+                              .options/rcsMajor
+                              .msbaseline
+                              .exclude
+                             );
+my %files;
 
 warn "Searching source tree for files...\n";
-
-open(FIND,"find . -type f -print |") || 
+open(FIND, '-|', "find . -type f -print") ||
   die "Unable to fork find: $!\n";
-
 while ( <FIND> ) {
     chomp;
     s|^\./||;
     next if $skip{$_};
     next if /~$/;
-    push(@new,$_);
+    $files{$_} = 1;
 }
-
-close(FIND) || 
+close(FIND) ||
   die "Error running find: $!\n";
 
-warn "Writing new MANIFEST file...\n";
+#
+# Include generated files
+#
+foreach my $file (qw(MANIFEST Changes.html README.html)) {
+    $files{$file} = 1;
+}
 
-open(NEW,">MANIFEST.$$") || 
+warn "Writing new MANIFEST file...\n";
+open(NEW, '>', "MANIFEST.$$") ||
   die "Unable to open MANIFEST.$$: $!\n";
-foreach ( sort @new ) {
+foreach (sort keys %files) {
     print NEW "$_\n";
 }
-close(NEW) || 
+close(NEW) ||
   die "Unable to close MANIFEST.$$: $!\n";
 
-rename("MANIFEST.$$","MANIFEST") || 
+rename("MANIFEST.$$","MANIFEST") ||
   die "Unable to rename MANIFEST.$$ to MANIFEST: $!\n";
 
 exit 0;

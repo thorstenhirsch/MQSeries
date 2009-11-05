@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: descriptions.pl,v 30.1 2007/05/31 13:08:57 biersma Exp $
+# $Id: descriptions.pl,v 33.1 2009/07/10 18:35:10 biersma Exp $
 #
 
 #
@@ -16,7 +16,7 @@
 package MQSeries::ErrorLog::Parser;
 
 use strict;
-use vars qw($error_table);
+
 
 #
 # Define a set of helper-patterns
@@ -44,7 +44,7 @@ my $xa_operation_patt = 'xa_\w+';
 #
 # NOTE: Keep this table in alphabetical order for ease of maintenance
 #
-$error_table =
+our $error_table =
   {
 
    #

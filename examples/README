@@ -1,16 +1,6 @@
-#
-# $Id: README,v 27.1 2007/01/11 20:20:38 molinam Exp $ 
-#
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
-# See ..../src/LICENSE for terms of distribution.
-#
+This directory provides a number of example scripts.
 
-As you will quickly discover, this set of examples is a work in
-progress.
-
-I did not have time to get anything respectable together for the 1.06
-release, but I hope to eventually have perl versions of all of IBM
-sample code.
-
-The side by side comparison of the C vs. perl really shows how much
-easier the perl API is to use.  But then, I'm biased...
+Most notable are:
+- commands: a demonstration of the MQSeries::Command inquire functions
+- mq_clearq: a script to drain messages without administrative permissions
+- request-reply: sample request/reply programs

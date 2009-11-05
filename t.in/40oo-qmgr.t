@@ -1,157 +1,107 @@
 #
-# $Id: 40oo-qmgr.t,v 32.1 2009/05/22 15:28:16 biersma Exp $
+# $Id: 40oo-qmgr.t,v 33.3 2009/07/13 20:46:28 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
+use strict;
+use warnings;
+use Data::Dumper;
+use Test::More tests => 14;
+BEGIN {
+    our $VERSION = '1.30';
+    use_ok('__APITYPE__::MQSeries' => $VERSION);
+    use_ok('MQSeries::QueueManager' => $VERSION);
+}
+
+our %myconfig;
+our $systemdir;
 BEGIN {
     require "../util/parse_config";
 }
 
-BEGIN {
-    $| = 1;
+SKIP: {
     if ( "__APITYPE__" eq "MQServer" && ! -d $systemdir ) {
-	print "1..0\n";
-	exit 0;
-    } else {
-	print "1..9\n";
-    }
-}
-
-END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.29;
-use MQSeries::QueueManager 1.29;
-$loaded = 1;
-print "ok 1\n";
-
-#
-# These values will be replaced by those specified in the CONFIG file.
-#
-$QMgrName 	= $myconfig{"QUEUEMGR"};
-$QMgrName 	= $myconfig{"QUEUEMGR"}; # twice just for anti- -w luck
-
-#
-# First test the most basic instantiation.
-#
-# NOTE: This is in a block to allow for automatic destruction
-#
-{
-    my $qmgr = MQSeries::QueueManager->new( QueueManager => $QMgrName );
-    if ( ref $qmgr && $qmgr->isa("MQSeries::QueueManager") ) {
-	print "ok 2\n";
-    } else {
-	print "not ok 2\n";
-	exit 0;
-    }
-}
-
-#
-# Test the AutoConnect mechanism
-#
-{
-
-    my $qmgr = MQSeries::QueueManager->new
-      (
-       QueueManager 	=> $QMgrName,
-       AutoConnect	=> 0,
-      );
-    unless ( ref $qmgr && $qmgr->isa("MQSeries::QueueManager") ) {
-	print "not ok 3\n";
-	exit 0;
+        skip("Cannot test server API on client host", 12);
     }
 
-    unless ( $qmgr->Connect() ) {
-	print("MQSeries::QueueManager->Connect() failed.\n" .
-	      "CompCode => " . $qmgr->CompCode() . "\n" .
-	      "Reason   => " . $qmgr->Reason() . "\n");
-	print "not ok 3\n";
-	exit 0;
+    my $QMgrName = $myconfig{"QUEUEMGR"};
+
+    #
+    # First test the most basic instantiation.
+    #
+    # NOTE: This is in a block to allow for automatic destruction
+    #
+    {
+        my $qmgr = MQSeries::QueueManager->new(QueueManager => $QMgrName);
+        ok (ref $qmgr && $qmgr->isa("MQSeries::QueueManager"),
+            "MQSeries::QueueManager - constructor");
     }
 
-    print "ok 3\n";
+    #
+    # Test the AutoConnect mechanism
+    #
+    {
+        my $qmgr = MQSeries::QueueManager->new(QueueManager => $QMgrName,
+                                               AutoConnect  => 0);
+        ok (ref $qmgr && $qmgr->isa("MQSeries::QueueManager"),
+            "MQSeries::QueueManager - constructor - AutoConnect=0");
 
-    unless ( $qmgr->Disconnect() ) {
-	print("MQSeries::QueueManager->Connect() failed.\n" .
-	      "CompCode => " . $qmgr->CompCode() . "\n" .
-	      "Reason   => " . $qmgr->Reason() . "\n");
-	print "not ok 4\n";
-	exit 0;
+        my $rc = $qmgr->Connect();
+        unless ($rc) {
+            print("MQSeries::QueueManager->Connect() failed.\n" .
+                  "CompCode => " . $qmgr->CompCode() . "\n" .
+                  "Reason   => " . $qmgr->Reason() . "\n");
+        }
+        ok($rc, "MQSeries::QueueManager - Connect");
+
+        $rc = $qmgr->Disconnect();
+        unless ($rc) {
+            print("MQSeries::QueueManager->DisConnect() failed.\n" .
+                  "CompCode => " . $qmgr->CompCode() . "\n" .
+                  "Reason   => " . $qmgr->Reason() . "\n");
+        }
+        ok($rc, "MQSeries::QueueManager - Disconnect");
     }
 
-    print "ok 4\n";
+    #
+    # Test Open/Inquire/Close
+    #
+    {
+        my $qmgr = MQSeries::QueueManager->new(QueueManager => $QMgrName);
+        ok (ref $qmgr && $qmgr->isa("MQSeries::QueueManager"),
+            "MQSeries::QueueManager - constructor");
 
-}
+        my $rc = $qmgr->Open();
+        unless ($rc) {
+            print("MQSeries::QueueManager->Open() failed.\n" .
+                  "CompCode => " . $qmgr->CompCode() . "\n" .
+                  "Reason   => " . $qmgr->Reason() . "\n");
+        }
+        ok($rc, "MQSeries::QueueManager - Open");
 
-#
-# Test Open/Inquire/Close
-#
-{
+        my %qmgr_attr = $qmgr->Inquire(qw(Platform
+                                          CodedCharSetId
+                                          CommandLevel
+                                          DeadLetterQName));
+        is (scalar(keys %qmgr_attr), 4, "MQSeries::QueueManager - Inquire");
 
-    my $qmgr = MQSeries::QueueManager->new
-      (
-       QueueManager 	=> $QMgrName,
-      );
-    unless ( ref $qmgr && $qmgr->isa("MQSeries::QueueManager") ) {
-	print "not ok 5\n";
-	exit 0;
+        like($qmgr_attr{Platform}, qr/^\w+$/,
+             "MQSeries::QueueManager - Inquire - Platform");
+        like($qmgr_attr{CodedCharSetId}, qr/^\d+$/,
+             "MQSeries::QueueManager - Inquire - CodedCharSetId");
+        like($qmgr_attr{CommandLevel}, qr/^\d+$/,
+             "MQSeries::QueueManager - Inquire - CommandLevel");
+        like($qmgr_attr{DeadLetterQName}, qr/^[\w\.\s]+$/,
+             "MQSeries::QueueManager - Inquire - DeadLetterQName");
+
+        $rc = $qmgr->Close();
+        unless ($rc) {
+            print("MQSeries::QueueManager->Close() failed.\n" .
+                  "CompCode => " . $qmgr->CompCode() . "\n" .
+                  "Reason   => " . $qmgr->Reason() . "\n");
+        }
+        ok($rc, "MQSeries::QueueManager - Close");
     }
-
-    print "ok 5\n";
-
-    unless ( $qmgr->Open() ) {
-	print("MQSeries::QueueManager->Open() failed.\n" .
-	      "CompCode => " . $qmgr->CompCode() . "\n" .
-	      "Reason   => " . $qmgr->Reason() . "\n");
-	print "not ok 6\n";
-	exit 0;
-    }
-
-    print "ok 6\n";
-
-    my %qmgrattr = $qmgr->Inquire( qw(
-				      Platform
-				      CodedCharSetId
-				      DeadLetterQName
-				     ) );
-
-    if ( scalar keys %qmgrattr == 3 ) {
-	print "ok 7\n";
-    } else {
-	print "MQSeries::QueueManager->Inquire did not return 3 keys\n";
-	print "not ok 7\n";
-    }
-
-    my $notok8 = 0;
-
-    if ( $qmgrattr{Platform} !~ /^\w+$/ ) {
-	print "Inquired value of 'Platform' is invalid: '$qmgrattr{Platform}'\n";
-	$notok8 = 1;
-    }
-
-    if ( $qmgrattr{CodedCharSetId} !~ /^\d+$/ ) {
-	print "Inquired value of 'CodedCharSetId' is invalid: '$qmgrattr{CodedCharSetId}'\n";
-	$notok8 = 1;
-    }
-
-    if ( $qmgrattr{DeadLetterQName} !~ /^[\w\.\s]+$/ ) {
-	print "Inquired value of 'DeadLetterQName' is invalid: '$qmgrattr{DeadLetterQName}'\n";
-	$notok8 = 1;
-    }
-
-    if ( $notok8 ) {
-	print "not ok 8\n";
-    } else {
-	print "ok 8\n";
-    }
-
-    if ( $qmgr->Close() ) {
-	print "ok 9\n";
-    } else {
-	print("MQSeries::QueueManager->Close() failed.\n" .
-	      "CompCode => " . $qmgr->CompCode() . "\n" .
-	      "Reason   => " . $qmgr->Reason() . "\n");
-	print "not ok 9\n";
-    }
-
 }

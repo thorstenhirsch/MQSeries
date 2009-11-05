@@ -1,22 +1,21 @@
 #
-# $Id: Utils.pm,v 32.1 2009/05/22 15:28:15 biersma Exp $
+# $Id: Utils.pm,v 33.2 2009/07/10 17:51:15 biersma Exp $
 #
-# (c) 2000-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Utils;
 
-use 5.006;
+use 5.008;
 
 use strict;
 use Carp;
 
 use Exporter;
-use vars qw(@ISA @EXPORT_OK $VERSION);
-@ISA = qw(Exporter);
-@EXPORT_OK = qw(ConvertUnit);
-$VERSION = '1.29';
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(ConvertUnit);
+our $VERSION = '1.30';
 
 #
 # Convert a Unit value from a symbolic value to the value

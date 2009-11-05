@@ -1,13 +1,13 @@
 #
-# $Id: Base.pm,v 32.3 2009/05/22 15:28:12 biersma Exp $
+# $Id: Base.pm,v 33.3 2009/07/30 12:24:49 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 package MQSeries::Command::Base;
 
-use 5.006;
+use 5.008;
 
 use strict;
 use Carp;
@@ -19,9 +19,7 @@ use MQSeries::Command::MQSC;
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
-use vars qw($VERSION);
-
-$VERSION = '1.29';
+our $VERSION = '1.30';
 
 sub new {
 
@@ -31,18 +29,18 @@ sub new {
 
     my %MsgDesc =
       (
-       MsgType 	=> $class =~ /::Request/ ? MQSeries::MQMT_REQUEST : MQSeries::MQMT_REPLY,
-       Format 	=> $args{Type} eq 'MQSC' ? MQSeries::MQFMT_STRING : MQSeries::MQFMT_ADMIN,
+       MsgType  => $class =~ /::Request/ ? MQSeries::MQMT_REQUEST : MQSeries::MQMT_REPLY,
+       Format   => $args{Type} eq 'MQSC' ? MQSeries::MQFMT_STRING : MQSeries::MQFMT_ADMIN,
       );
 
     if ( exists $args{MsgDesc} ) {
-	unless ( ref $args{MsgDesc} eq "HASH" ) {
-	    $args{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
-	    return;
-	}	
-	foreach my $key ( keys %{$args{MsgDesc}} ) {
-	    $MsgDesc{$key} = $args{MsgDesc}->{$key};
-	}
+        unless ( ref $args{MsgDesc} eq "HASH" ) {
+            $args{Carp}->("Invalid argument: 'MsgDesc' must be a HASH reference.\n");
+            return;
+        }
+        foreach my $key ( keys %{$args{MsgDesc}} ) {
+            $MsgDesc{$key} = $args{MsgDesc}->{$key};
+        }
     }
 
     $args{MsgDesc} = {%MsgDesc};
@@ -53,13 +51,13 @@ sub new {
     # What type of request is this?  PCF or MQSC?
     #
     if ( $args{Type} ) {
-	unless ( $args{Type} eq 'PCF' or $args{Type} = 'MQSC' ) {
-	    $self->{Carp}->("Invalid argument: 'Type' must be one of: PCF MQSC");
-	    return;
-	}
-	$self->{Type} = $args{Type};
+        unless ( $args{Type} eq 'PCF' or $args{Type} = 'MQSC' ) {
+            $self->{Carp}->("Invalid argument: 'Type' must be one of: PCF MQSC");
+            return;
+        }
+        $self->{Type} = $args{Type};
     } else {
-	$self->{Type} = 'PCF';
+        $self->{Type} = 'PCF';
     }
 
     #
@@ -67,30 +65,30 @@ sub new {
     # check this in PutConvert.
     #
     if ( $args{"Header"} ) {
-	if ( ref $args{"Header"} eq 'HASH' ) {
-	    $self->{"Header"} = $args{"Header"};
-	    $self->{Command} = $self->{"Header"}->{Command}
-	      if exists $self->{"Header"}->{Command};
-	} else {
-	    $self->{Carp}->("Invalid argument: 'Header' must be a HASH reference");
-	    return;
-	}
+        if ( ref $args{"Header"} eq 'HASH' ) {
+            $self->{"Header"} = $args{"Header"};
+            $self->{Command} = $self->{"Header"}->{Command}
+              if exists $self->{"Header"}->{Command};
+        } else {
+            $self->{Carp}->("Invalid argument: 'Header' must be a HASH reference");
+            return;
+        }
     }
 
     if ( $args{Command} ) {
-	if ( $self->{Type} eq 'PCF' ) {
-	    unless ( exists $MQSeries::Command::PCF::Requests{$args{Command}} ) {
-		$self->{Carp}->("Invalid PCF command '$args{Command}'\n");
-		return;
-	    }
-	} else {
-	    unless ( exists $MQSeries::Command::MQSC::Requests{$args{Command}} ) {
-		$self->{Carp}->("Invalid MQSC command '$args{Command}'\n");
-		return;
-	    }
-	}
-	$self->{Command} = $args{Command};
-	$self->{"Header"}->{Command} = $args{Command};
+        if ( $self->{Type} eq 'PCF' ) {
+            unless ( exists $MQSeries::Command::PCF::Requests{$args{Command}} ) {
+                $self->{Carp}->("Invalid PCF command '$args{Command}'\n");
+                return;
+            }
+        } else {
+            unless ( exists $MQSeries::Command::MQSC::Requests{$args{Command}} ) {
+                $self->{Carp}->("Invalid MQSC command '$args{Command}'\n");
+                return;
+            }
+        }
+        $self->{Command} = $args{Command};
+        $self->{"Header"}->{Command} = $args{Command};
     }
 
     #
@@ -98,21 +96,21 @@ sub new {
     #
     if ( $args{Parameters} ) {
 
-	if ( ref $args{Parameters} eq 'HASH' ) {
-	    $self->{Parameters} = $args{Parameters};
-	} else {
-	    $self->{Carp}->("Invalid argument: 'Parameters' must be a HASH reference");
-	    return;
-	}
+        if ( ref $args{Parameters} eq 'HASH' ) {
+            $self->{Parameters} = $args{Parameters};
+        } else {
+            $self->{Carp}->("Invalid argument: 'Parameters' must be a HASH reference");
+            return;
+        }
     } else {
-	$self->{Parameters} = {};
+        $self->{Parameters} = {};
     }
 
     #
     # Do we want strict mapping turned on?
     #
     if ( exists $args{StrictMapping} ) {
-	$self->{StrictMapping} = $args{StrictMapping};
+        $self->{StrictMapping} = $args{StrictMapping};
     }
 
     #
@@ -142,47 +140,43 @@ sub _TranslatePCF {
     #
     # Set the type to either
     # - MQSeries::MQCFT_COMMAND (default)
-    # - MQSeries::MQCFT_COMMAND_XR (PCF against the MF)
-    #
-    # Since MQCFT_COMMAND_XR is new in MQ v6, and we need to be able
-    # to run the module when compiled against MQ v5, use a numeric
-    # constant instead of a symbolic one.
+    # - MQSeries::MQCFT_COMMAND_XR (PCF against the MF, filters)
     #
     ($header->{Type}) = ( $self->isa("MQSeries::Command::Response") ?
-			  MQSeries::MQCFT_RESPONSE :
-			  ( $self->{CommandVersion} < 3 ?
-			    MQSeries::MQCFT_COMMAND :
-                            16 ) # 16 = MQSeries::MQCFT_COMMAND_XR
-			);
+                          MQSeries::MQCFT_RESPONSE :
+                          ( $self->{CommandVersion} < 3 ?
+                            MQSeries::MQCFT_COMMAND :
+                            MQSeries::MQCFT_COMMAND_XR ),
+                        );
 
     my $parameters = [];
 
     my ($ForwardMap) = ( $self->isa("MQSeries::Command::Response") ?
-		         \%MQSeries::Command::PCF::Responses :
-			 \%MQSeries::Command::PCF::Requests );
+                         \%MQSeries::Command::PCF::Responses :
+                         \%MQSeries::Command::PCF::Requests );
 
     my ($RequiredMap) = ( $self->isa("MQSeries::Command::Response") ?
-			  {} :
-			  \%MQSeries::Command::PCF::RequestParameterRequired );
+                          {} :
+                          \%MQSeries::Command::PCF::RequestParameterRequired );
 
     #
     # Special handling for error responses.
     #
     my $CommandMap = $ForwardMap->{$command} || do {
-	$self->{Carp}->("Unknown command '$command'");
-	return;
+        $self->{Carp}->("Unknown command '$command'");
+        return;
     };
 
     $header->{Command} = $CommandMap->[0];
 
     my ($ParameterMap) = ( $header->{CompCode} ?
-			   $ForwardMap->{Error}->[1] :
-			   $CommandMap->[1] );
+                           $ForwardMap->{Error}->[1] :
+                           $CommandMap->[1] );
 
     my ($ParameterRequired) = ( exists $RequiredMap->{$command} ?
-				$RequiredMap->{$command} :
-				{} );
-    my @required_order = sort { $ParameterRequired->{$a} <=> 
+                                $RequiredMap->{$command} :
+                                {} );
+    my @required_order = sort { $ParameterRequired->{$a} <=>
                                 $ParameterRequired->{$b}
                               } keys %$ParameterRequired;
     my $ParameterOrderList = $MQSeries::Command::PCF::RequestParameterOrder{$command};
@@ -191,29 +185,177 @@ sub _TranslatePCF {
     my %ParameterOrderHash = map { ($_,1) } (@required_order, @optional_order);
 
     #
+    # If a FilterCommand has been specified, translate it into a
+    # StringFilterCommand, IntegerFilterCommand, or a
+    # ByteStringFilterCommand.
+    #
+    # We accept two types of filters:
+    # - string: QDepth > 500
+    # - hash: Parameter -> QDepth, Operator -> greater, Value -> 500
+    #
+    my $filter = delete $origparams->{FilterCommand};
+    if (defined $filter) {
+        #
+        # We only support filters for requests; and filters require
+        # the command version is 3.
+        #
+        if ($self->isa("MQSeries::Command::Response")) {
+            $self->{Carp}->("FilterCommand only support for PCF requests, not responses");
+            return;
+        }
+        if ($self->{CommandVersion} < MQSeries::MQCFH_VERSION_3) {
+            $self->{Carp}->("FilterCommand requires PCF commands with CommandVersion >= ", MQSeries::MQCFH_VERSION_3);
+            return;
+        }
+
+        my $valid = 0;
+        if (ref $filter) {
+            if (ref $filter eq 'HASH' &&
+                keys %$filter == 3 &&
+                defined $filter->{Parameter} &&
+                defined $filter->{Operator} &&
+                defined $filter->{Value}) {
+                $valid = 1;
+            }
+        } else {
+            if ($filter =~ /^ \s* (\w+) \s*
+                            ([<>!=]+ | \s+ like \s+ | \s+ contains \s+ | \s+ excludes \s+ | \s+ contains_gen \s+ | \s+ excludes_gen \s+ | \s+ not \s+ like \s+)
+                            \s* ( -?\d+ | \w+ | \'[^']+\' ) \s* $/ix) {
+                my ($param, $op, $val) = ($1, $2, $3);
+                $val = substr($val, 1, length($val)-2) if ($val =~ /^\'.*\'$/);
+                #print "_TranslatePCF: translate filter 'filter' into p $param, op $op, val $val\n";
+                $op = lc $op;   # for like / not like / ...
+                $op =~ s/^\s+//; # trim
+                $op =~ s/\s+$//;  # rtrim
+                $op =~ s/\s+/ /g; # for 'not like'
+                $filter = { 'Parameter' => $param,
+                            'Operator'  => $op,
+                            'Value'     => $val,
+                          };
+                $valid = 1;
+            } else {
+                $self->{Carp}->("Cannot parse filter '$filter', expected format 'QDepth > 500'");
+                return;
+            }
+        }
+        unless ($valid) {
+            $self->{Carp}->("Filter must be specified as a string or as a hash reference with Parameter, Operator, and Value");
+            return;
+        }
+
+        #
+        # Now find parameter; based on type, create the right filter type
+        #
+        # The parameters that can be specified are all the attributes
+        # for the object.  Since we need to have the type and possible
+        # values, we need to get the response parameters, not the response
+        # parameters.
+        #
+        my $param_map = $MQSeries::Command::PCF::Responses{$command}->[1];
+        unless (defined $param_map->{ $filter->{Parameter} }) {
+            $self->{Carp}->("Invalid filter: parameter '$filter->{Parameter}' not known");
+            return;
+        }
+        my ($paramkey,$paramtype,$ValueMap) = @{ $param_map->{ $filter->{Parameter} } };
+        if ($paramtype == MQSeries::MQCFT_STRING ||
+            $paramtype == MQSeries::MQCFT_STRING_LIST) {
+            $filter->{Command} = 'StringFilterCommand';
+        } elsif ($paramtype == MQSeries::MQCFT_BYTE_STRING) {
+            $filter->{Command} = 'ByteStringFilterCommand';
+        } elsif ($paramtype == MQSeries::MQCFT_INTEGER ||
+                 $paramtype == MQSeries::MQCFT_INTEGER_LIST) {
+            $filter->{Command} = 'IntegerFilterCommand';
+        } else {
+            $self->{Carp}->("Unexpected type '$paramtype' for filter parameter '$filter->{Parameter}'");
+            return;
+        }
+        if (defined $origparams->{ $filter->{Command} }) {
+            $self->{Carp}->("Cannot use both 'Filter' and '$filter->{Command}'");
+            return;
+        }
+
+        #
+        # Translate the operator string to an MQ constant
+        #
+        my %ops = ('<'    => MQSeries::MQCFOP_LESS,
+                   '<='   => MQSeries::MQCFOP_NOT_GREATER,
+                   '=='   => MQSeries::MQCFOP_EQUAL,
+                   '!='   => MQSeries::MQCFOP_NOT_EQUAL,
+                   '<>'   => MQSeries::MQCFOP_NOT_EQUAL,
+                   '>'    => MQSeries::MQCFOP_GREATER,
+                   '>='   => MQSeries::MQCFOP_NOT_LESS,
+                   'like' => MQSeries::MQCFOP_LIKE,
+                   'not like' => MQSeries::MQCFOP_NOT_LIKE,
+                  );
+        my %list_ops = ('=='           => MQSeries::MQCFOP_CONTAINS,
+                        'contains'     => MQSeries::MQCFOP_CONTAINS,
+                        '!='           => MQSeries::MQCFOP_EXCLUDES,
+                        '<>'           => MQSeries::MQCFOP_EXCLUDES,
+                        'excludes'     => MQSeries::MQCFOP_EXCLUDES,
+                        'like'         => MQSeries::MQCFOP_CONTAINS_GEN,
+                        'contains_gen' => MQSeries::MQCFOP_CONTAINS_GEN,
+                        'not like'     => MQSeries::MQCFOP_EXCLUDES_GEN,
+                        'excludes_gen' => MQSeries::MQCFOP_EXCLUDES_GEN,
+                       );
+        my $op = $ops{ $filter->{Operator} };
+        if ($paramtype == MQSeries::MQCFT_INTEGER_LIST ||
+            $paramtype == MQSeries::MQCFT_STRING_LIST) {
+            $op = $list_ops{ $filter->{Operator} };
+        }
+        unless (defined $op) {
+            $self->{Carp}->("Unexpected operator '$filter->{Operator}'  for filter parameter '$filter->{Parameter}'");
+            return;
+        }
+
+        #
+        # May have to translate value from text -> number
+        #
+        my $value = $filter->{Value};
+        if (defined $ValueMap) {
+            my $mapped = $ValueMap->{$value};
+            if (defined $mapped) {
+                #print "Translate value '$value' to '$mapped'\n";
+                $value = $mapped;
+            } else {
+                $self->{Carp}->("Cannot translate value '$value' to numeric constant for filter parameter '$filter->{Parameter}'");
+                return;
+            }
+        } else {
+            #print "No need to translate filter parameter '$filter->{Parameter}' value '$value'\n";
+        }
+
+        #
+        # The PCF XS code expects an array reference of format
+        # [ Parameter, Operator, Value ]
+        #
+        $origparams->{ $filter->{Command} } =
+          [ $paramkey, $op, $value ];
+    }
+
+    #
     # Verify that all of the parameters are known - this finds my typos...
     #
     {
-	my $unknown = 0;
-	foreach my $param (keys %$origparams) {
-	    next if (defined $ParameterMap->{$param});
-	    $self->{'Carp'}->("Unknown parameter '$param' for command '$command'");
-	    $unknown++;
-	}
-	return if $unknown;
+        my $unknown = 0;
+        foreach my $param (keys %$origparams) {
+            next if (defined $ParameterMap->{$param});
+            $self->{'Carp'}->("Unknown parameter '$param' for command '$command'");
+            $unknown++;
+        }
+        return if $unknown;
     }
 
     #
     # Verify that all of the required parameters have been given.
     #
     {
-	my $required = 0;
-	foreach my $param ( keys %$ParameterRequired ) {
-	    next if (defined $origparams->{$param});
-	    $self->{Carp}->("Required parameter '$param' not specified for command '$command'");
-	    $required++;
-	}
-	return if $required;
+        my $required = 0;
+        foreach my $param ( keys %$ParameterRequired ) {
+            next if (defined $origparams->{$param});
+            $self->{Carp}->("Required parameter '$param' not specified for command '$command'");
+            $required++;
+        }
+        return if $required;
     }
 
     #
@@ -225,131 +367,160 @@ sub _TranslatePCF {
                        [ 'Optional', \@optional_order ] ) {
         my ($type, $list) = @$pair;
 
-	foreach my $param (@$list) {
-	    next unless defined $origparams->{$param};
-	    push @ordered_params, $param;
-	}
-	#print STDERR "Ordered: @ordered_params\n";
+        foreach my $param (@$list) {
+            next unless defined $origparams->{$param};
+            push @ordered_params, $param;
+        }
+        #print STDERR "Ordered: @ordered_params\n";
 
-	foreach my $param (keys %$origparams) {
-	    
-	    next if ($type eq 'Required' && 
+        foreach my $param (keys %$origparams) {
+
+            next if ($type eq 'Required' &&
                      not exists $ParameterRequired->{$param});
-	    next if ($type eq 'Optional' && 
+            next if ($type eq 'Optional' &&
                      exists $ParameterRequired->{$param});
-	    push @ordered_params, $param 
+            push @ordered_params, $param
               unless $ParameterOrderHash{$param};
-	}
+        }
     }
     #print STDERR "Ordered: @ordered_params\n";
 
     foreach my $param (@ordered_params) {
-	my $origvalue = $origparams->{$param};
+        my $origvalue = $origparams->{$param};
 
-#	print STDERR "Param : $param\n";
-#	if (ref $origvalue) {
-#	    print STDERR "OrigVal:", @$origvalue,"\n";
-#	}
+        #print STDERR "Param : $param\n";
+        #if (ref $origvalue) {
+        #    print STDERR "OrigVal:", @$origvalue,"\n";
+        #}
 
+        my ($paramkey,$paramtype,$ValueMap) = @{ $ParameterMap->{$param} };
 
-	my ($paramkey,$paramtype,$ValueMap) = @{ $ParameterMap->{$param} };
+        #print STDERR "PKey: $paramkey\n";
+        #print STDERR "PType: $paramtype\n";
+        #if (ref $ValueMap) {
+        #    print STDERR "ValMap:", %$ValueMap, "\n";
+        #}
 
-#	print STDERR "PKey: $paramkey\n";
-#	print STDERR "PType: $paramtype\n";
-#	if (ref $ValueMap) {
-#	    print STDERR "ValMap:", %$ValueMap, "\n";
-#	}
+        my $newparameter =
+          {
+           Parameter    => $paramkey,
+          };
 
-	my $newparameter =
-	  {
-	   Parameter	=> $paramkey,
-	  };
-
-	#
-	# If the value passed is is an ARRAY, then make the
-	# parameter a string list (Strings).  If not, and the
-	# $paramtype requires a string list (MQCFT_STRING_LIST),
-	# then make the value into a single entry array.
-	#
-	# NOTE: We forcibly quote the values to force them into
-	# strings, otherwise SvPOK() will complain about integers,
-	# which can of course be represented as strings.  This
-	# might just be a bad choice on my part in the XS code.
-	#
-	if ( $paramtype == MQSeries::MQCFT_STRING || 
+        #
+        # If the value passed is is an ARRAY, then make the
+        # parameter a string list (Strings).  If not, and the
+        # $paramtype requires a string list (MQCFT_STRING_LIST),
+        # then make the value into a single entry array.
+        #
+        # NOTE: We forcibly quote the values to force them into
+        # strings, otherwise SvPOK() will complain about integers,
+        # which can of course be represented as strings.  This
+        # might just be a bad choice on my part in the XS code.
+        #
+        if ( $paramtype == MQSeries::MQCFT_STRING ||
              $paramtype == MQSeries::MQCFT_STRING_LIST ) {
-	    if ( ref $origvalue eq "ARRAY" ) {
-		$newparameter->{Strings} = [];
-		foreach my $value ( @$origvalue ) {
-		    my $newvalue = length($value) == 0 ? " " : "$value";
-		    push(@{$newparameter->{Strings}},"$newvalue");
-		}
-	    } else {
-		my $newvalue = length($origvalue) == 0 ? " " : "$origvalue";
-		if ( $paramtype == MQSeries::MQCFT_STRING_LIST ) {
-		    $newparameter->{Strings} = ["$newvalue"];
-		} else {
-		    $newparameter->{String} = "$newvalue";
-		}
-	    }
-	}
+            if ( ref $origvalue eq "ARRAY" ) {
+                $newparameter->{Strings} = [];
+                foreach my $value ( @$origvalue ) {
+                    my $newvalue = length($value) == 0 ? " " : "$value";
+                    push(@{$newparameter->{Strings}},"$newvalue");
+                }
+            } else {
+                my $newvalue = length($origvalue) == 0 ? " " : "$origvalue";
+                if ( $paramtype == MQSeries::MQCFT_STRING_LIST ) {
+                    $newparameter->{Strings} = ["$newvalue"];
+                } else {
+                    $newparameter->{String} = "$newvalue";
+                }
+            }
+        }
 
-	#
-	# BYTE_STRING - Added newly for WMQ6 : Not fully tested
-	#
-	if ( $paramtype == MQSeries::MQCFT_BYTE_STRING ) {
-	    my $newvalue = length($origvalue)== 0 ? "\0" : pack("H*",$origvalue);
-	    #print "byte string orig value: [$origvalue] - new value: [$newvalue]\n";
-	    $newparameter->{ByteString} = "$newvalue";
-	}
+        #
+        # BYTE_STRING - Added newly for WMQ6 : Not fully tested
+        #
+        if ( $paramtype == MQSeries::MQCFT_BYTE_STRING ) {
+            my $newvalue = length($origvalue)== 0 ? "\0" : pack("H*",$origvalue);
+            #print "byte string orig value: [$origvalue] - new value: [$newvalue]\n";
+            $newparameter->{ByteString} = "$newvalue";
+        }
 
-	if ( $paramtype == MQSeries::MQCFT_INTEGER ) {
-	    if ( ref $ValueMap ) {
-		#print STDERR %$ValueMap, "\n"; #FIXME
-		unless ( exists $ValueMap->{$origvalue} ) {
-		    $self->{Carp}->("Unknown int value '$origvalue' for " .
-				    "parameter '$param', command '$command'");
-		    return;
-		}
-		$newparameter->{Value} = $ValueMap->{$origvalue};
-	    } else {
-		$newparameter->{Value} = $origvalue;
-	    }
-	}
+        if ( $paramtype == MQSeries::MQCFT_INTEGER ) {
+            if ( ref $ValueMap ) {
+                #print STDERR %$ValueMap, "\n"; #FIXME
+                unless ( exists $ValueMap->{$origvalue} ) {
+                    $self->{Carp}->("Unknown int value '$origvalue' for " .
+                                    "parameter '$param', command '$command'");
+                    return;
+                }
+                $newparameter->{Value} = $ValueMap->{$origvalue};
+            } else {
+                $newparameter->{Value} = $origvalue;
+            }
+        }
 
-	if ( $paramtype == MQSeries::MQCFT_INTEGER_LIST ) {
-	    foreach my $value ( @$origvalue ) {	
-		if ( ref $ValueMap ) {
-		    
-		    unless ( exists $ValueMap->{$value} ) {
-			$self->{Carp}->("Unknown intlist value '$origvalue' for " .
-					"parameter '$param', command '$command'");
-			return;
-		    }
-		    push(@{$newparameter->{Values}},$ValueMap->{$value});
-		} else {
-		    push(@{$newparameter->{Values}},$value);
-		}
-	    }
-	}
-	push(@$parameters,$newparameter);
+        if ( $paramtype == MQSeries::MQCFT_INTEGER_LIST ) {
+            foreach my $value ( @$origvalue ) {
+                if ( ref $ValueMap ) {
+
+                    unless ( exists $ValueMap->{$value} ) {
+                        $self->{Carp}->("Unknown intlist value '$origvalue' for " .
+                                        "parameter '$param', command '$command'");
+                        return;
+                    }
+                    push(@{$newparameter->{Values}},$ValueMap->{$value});
+                } else {
+                    push(@{$newparameter->{Values}},$value);
+                }
+            }
+        }
+
+        #
+        # MQ v6 and above: Integer/String/ByteString Filter
+        #
+        if ($paramtype == MQSeries::MQCFT_BYTE_STRING_FILTER) {
+            unless (ref $origvalue eq 'ARRAY' &&
+                    @$origvalue == 3) {
+                $self->Carp("Invalid byte string filter for parameter '$param', command '$command': must be an array-reference with three elements");
+                return;
+            }
+            #print STDERR "XXX: Have byte string filter for [@$origvalue]\n";
+            $newparameter->{ByteStringFilter} = $origvalue;
+        } elsif ($paramtype == MQSeries::MQCFT_INTEGER_FILTER) {
+            unless (ref $origvalue eq 'ARRAY' &&
+                    @$origvalue == 3) {
+                $self->Carp("Invalid integer filter for parameter '$param', command '$command': must be an array-reference with three elements");
+                return;
+            }
+            #print STDERR "XXX: Have integer filter for [@$origvalue]\n";
+            $newparameter->{IntegerFilter} = $origvalue;
+        } elsif ($paramtype == MQSeries::MQCFT_STRING_FILTER) {
+            unless (ref $origvalue eq 'ARRAY' &&
+                    @$origvalue == 3) {
+                $self->Carp("Invalid string filter for parameter '$param', command '$command': must be an array-reference with three elements");
+                return;
+            }
+            #print STDERR "XXX: Have string filter for [@$origvalue]\n";
+            $newparameter->{StringFilter} = $origvalue;
+        }
+
+        push(@$parameters,$newparameter);
     }
-   # print STDERR "Params returned:", @$parameters,"\n";
+    #print STDERR "Params returned:", @$parameters,"\n";
 
-  #  foreach my $el(@$parameters) {
-#	print "Element:", %$el,"\n";
-#	foreach my $val(values %$el) {
-#	    if (ref $val) {
-#		print "Values: ", @$val, "\n";
-#	    }
-#	}
-#    }
+#     foreach my $el(@$parameters) {
+#       print "Element:", %$el,"\n";
+#        foreach my $val(values %$el) {
+#            if (ref $val) {
+#                print "Values: ", @$val, "\n";
+#            }
+#        }
+#     }
 
     #
     # Lets set the Version to work with advanced V6 cmds and V6 MF qmgrs
-    # 
+    #
     $header->{Version} = MQSeries::MQCFH_CURRENT_VERSION
-	unless ( $self->{CommandVersion} lt 3 );
+        unless ( $self->{CommandVersion} lt 3 );
 
     #print STDERR "Request Header: $header->{Type}, $header->{StrucLength}, $header->{Version}, $header->{Command}, $header->{Reason}, $header->{ParameterCount}...\n";
     #print STDERR "header\n", map { "\t$_:$header->{$_}\n" } sort keys %$header;
@@ -368,7 +539,7 @@ sub _UnTranslatePCF {
     my ($header,$origparams) = @_;
 
     my $command = $header->{Command};
-    
+
     #print STDERR "Response Header - $command, $header->{Type}, $header->{Version}, $header->{Reason}, $header->{ParameterCount}\n";
     #print STDERR "header\n", map { "\t$_:$header->{$_}\n" } sort keys %$header;
 
@@ -393,83 +564,85 @@ sub _UnTranslatePCF {
     my $parameters = {};
 
     my ($ReverseMap) = ( $self->isa("MQSeries::Command::Response") ?
-		         \%MQSeries::Command::PCF::_Responses :
-			 \%MQSeries::Command::PCF::_Requests );
+                         \%MQSeries::Command::PCF::_Responses :
+                         \%MQSeries::Command::PCF::_Requests );
 
-    
     my $CommandMap = $ReverseMap->{$command} || do {
-	$self->{Carp}->("Unknown command '$command'");
-	return;
+        $self->{Carp}->("Unknown command '$command'");
+        return;
     };
 
     $header->{Command} = $CommandMap->[0];
 
     my $ParameterMap = ( $header->{CompCode} ?
-			 $ReverseMap->{Error}->[1] :
-			 $CommandMap->[1] );
+                         $ReverseMap->{Error}->[1] :
+                         $CommandMap->[1] );
 
     foreach my $origparam ( @$origparams ) {
 
         #print "OrigP: $origparam\n";
-	my $paramkey = $ParameterMap->{$origparam->{Parameter}}->[0];
-	my $paramvalue = "";
+        my $paramkey = $ParameterMap->{$origparam->{Parameter}}->[0];
+        #unless (defined $paramkey) {
+        #    warn "Unexpected PCF parameter '$origparam->{Parameter}'\n";
+        #}
+        my $paramvalue = "";
 
-	#print STDERR "ParamKey: [$origparam->{Parameter}] [$paramkey]\n";
-	#print  "param\n", map { "\t$_:$origparam->{$_}\n" } sort keys %$origparam;
+        #print "ParamKey: [$origparam->{Parameter}] [$paramkey]\n";
+        #print  "param\n", map { "\t$_:$origparam->{$_}\n" } sort keys %$origparam;
 
-	if ( exists $origparam->{String} ) {
-	    ( $parameters->{$paramkey} = $origparam->{String} ) =~ s/\s+$//;
-	    next;
-	} elsif ( exists $origparam->{ByteString} ) {
-	   $parameters->{$paramkey} = unpack("H*",$origparam->{ByteString});
-	   #$parameters->{$paramkey} = $origparam->{ByteString};
-	   next; 
-	} elsif ( exists $origparam->{Strings} ) {
-	    foreach my $string ( @{$origparam->{Strings}} ) {
-		$string =~ s/\s+$//;
-		push(@{$parameters->{$paramkey}},$string);
-	    }
-	    next;
-	} elsif ( exists $origparam->{Value} ) {
-	    $paramvalue = $origparam->{Value};
-	} elsif ( exists $origparam->{Values} ) {
-	    $paramvalue = $origparam->{Values};
-	} else {
-	    # Uh...  MQDecodePCF shouldn't ever let this happen...
-	    $self->{Carp}->("Unable to map parameter '$paramkey'\n");
-	    return;
-	}
+        if ( exists $origparam->{String} ) {
+            ( $parameters->{$paramkey} = $origparam->{String} ) =~ s/\s+$//;
+            next;
+        } elsif ( exists $origparam->{ByteString} ) {
+            $parameters->{$paramkey} = unpack("H*",$origparam->{ByteString});
+            #$parameters->{$paramkey} = $origparam->{ByteString};
+            next;
+        } elsif ( exists $origparam->{Strings} ) {
+            foreach my $string ( @{$origparam->{Strings}} ) {
+                $string =~ s/\s+$//;
+                push(@{$parameters->{$paramkey}},$string);
+            }
+            next;
+        } elsif ( exists $origparam->{Value} ) {
+            $paramvalue = $origparam->{Value};
+        } elsif ( exists $origparam->{Values} ) {
+            $paramvalue = $origparam->{Values};
+        } else {
+            # Uh...  MQDecodePCF shouldn't ever let this happen...
+            $self->{Carp}->("Unable to map parameter '$paramkey'\n");
+            return;
+        }
 
-	my $ValueMap = $ParameterMap->{$origparam->{Parameter}}->[1] || do {
-	    $parameters->{$paramkey} = $paramvalue;
-	    next;
-	};
+        my $ValueMap = $ParameterMap->{$origparam->{Parameter}}->[1] || do {
+            $parameters->{$paramkey} = $paramvalue;
+            next;
+        };
 
-	if ( ref $paramvalue eq 'ARRAY' ) {
-	    my $newvalue = [];
-	    foreach my $value ( @$paramvalue ) {
-		if ( exists $ValueMap->{$value} ) {
-		    push(@$newvalue,$ValueMap->{$value});
-		} elsif ( $self->{StrictMapping} ) {
-		    $self->{Carp}->("Unable to map value of '$value' for parameter '$paramkey'");
-		    return;
-		} else {
-		    push(@$newvalue,$value);
-		}
-	    }
-	    $parameters->{$paramkey} = $newvalue;
+        if ( ref $paramvalue eq 'ARRAY' ) {
+            my $newvalue = [];
+            foreach my $value ( @$paramvalue ) {
+                if ( exists $ValueMap->{$value} ) {
+                    push(@$newvalue,$ValueMap->{$value});
+                } elsif ( $self->{StrictMapping} ) {
+                    $self->{Carp}->("Unable to map value of '$value' for parameter '$paramkey'");
+                    return;
+                } else {
+                    push(@$newvalue,$value);
+                }
+            }
+            $parameters->{$paramkey} = $newvalue;
 
-	} else {
-	   
-	    if ( exists $ValueMap->{$paramvalue} ) {
-		$parameters->{$paramkey} = $ValueMap->{$paramvalue};
-	    } elsif ( $self->{StrictMapping} ) {
-		$self->{Carp}->("Unable to map value of '$paramvalue' for parameter '$paramkey'");
-		return;
-	    } else {
-		$parameters->{$paramkey} = $paramvalue;
-	    }
-	}
+        } else {
+
+            if ( exists $ValueMap->{$paramvalue} ) {
+                $parameters->{$paramkey} = $ValueMap->{$paramvalue};
+            } elsif ( $self->{StrictMapping} ) {
+                $self->{Carp}->("Unable to map value of '$paramvalue' for parameter '$paramkey'");
+                return;
+            } else {
+                $parameters->{$paramkey} = $paramvalue;
+            }
+        }
 
     }
     return ($header,$parameters);
@@ -485,39 +658,39 @@ sub GetConvert {
 
     if ( $self->{Type} eq 'PCF' ) {
 
-	($header,$parameters) = MQDecodePCF($self->{Buffer}) or do {
-	    $self->{Carp}->("Unable to decode PCF buffer\n");
-	    return undef;
-	};
+        ($header,$parameters) = MQDecodePCF($self->{Buffer}) or do {
+            $self->{Carp}->("Unable to decode PCF buffer\n");
+            return undef;
+        };
 
-	($self->{"Header"},$self->{Parameters}) = $self->_UnTranslatePCF($header,$parameters) or do {
-	    $self->{Carp}->("Unable to translate Command/Parameters from MQDecodePCF output\n");
-	    return undef;
-	};
+        ($self->{"Header"},$self->{Parameters}) = $self->_UnTranslatePCF($header,$parameters) or do {
+            $self->{Carp}->("Unable to translate Command/Parameters from MQDecodePCF output\n");
+            return undef;
+        };
 
     } else {
 
-	if ( $self->isa("MQSeries::Command::Request") ) {
+        if ( $self->isa("MQSeries::Command::Request") ) {
 
-	    $self->{Carp}->("MQGETing a MQSeries::Command::Request is not supported for type MQSC\n");
-	    return undef;
+            $self->{Carp}->("MQGETing a MQSeries::Command::Request is not supported for type MQSC\n");
+            return undef;
 
-	} else {
+        } else {
 
-	    ($header,$self->{Parameters}) = $self->MQDecodeMQSC($self->{"Header"},$self->{Buffer}) or do {
-		$self->{Carp}->("Unable to parse MQSeries Command response from message\n");
-		return undef;
-	    };
+            ($header,$self->{Parameters}) = $self->MQDecodeMQSC($self->{"Header"},$self->{Buffer}) or do {
+                $self->{Carp}->("Unable to parse MQSeries Command response from message\n");
+                return undef;
+            };
 
-	    foreach my $key ( keys %$header ) {
-		if ( $key eq "ReasonText" ) {
-		    push(@{$self->{"Header"}->{$key}},$header->{$key});
-		} else {
-		    $self->{"Header"}->{$key} = $header->{$key};
-		}
-	    }
-	
-	}
+            foreach my $key ( keys %$header ) {
+                if ( $key eq "ReasonText" ) {
+                    push(@{$self->{"Header"}->{$key}},$header->{$key});
+                } else {
+                    $self->{"Header"}->{$key} = $header->{$key};
+                }
+            }
+
+        }
 
     }
 
@@ -530,31 +703,31 @@ sub PutConvert {
     my $self = shift;
 
     unless ( $self->{Command} ) {
-	$self->{Carp}->("Required argument 'Command' is missing\n");
-	return undef;
+        $self->{Carp}->("Required argument 'Command' is missing\n");
+        return undef;
     }
 
     if ( $self->{Type} eq 'PCF' ) {
 
-	my ($header,$parameters) = $self->_TranslatePCF($self->{Header},$self->{Parameters}) or do {
-	    $self->{Carp}->("Unable to translate Command/Parameters into MQEncodePCF input\n");
-	    return undef;
-	};
-	$self->{Buffer} = MQEncodePCF($header,$parameters);
+        my ($header,$parameters) = $self->_TranslatePCF($self->{Header},$self->{Parameters}) or do {
+            $self->{Carp}->("Unable to translate Command/Parameters into MQEncodePCF input\n");
+            return undef;
+        };
+        $self->{Buffer} = MQEncodePCF($header,$parameters);
     } else {
-	if ( $self->isa("MQSeries::Command::Response") ) {
-	    $self->{Carp}->("MQPUTing a MQSeries::Command::Response is not supported for type MQSC\n");
-	    return undef;
-	} else {
-	    $self->{Buffer} = $self->MQEncodeMQSC($self->{Command},$self->{Parameters});
-	}
+        if ( $self->isa("MQSeries::Command::Response") ) {
+            $self->{Carp}->("MQPUTing a MQSeries::Command::Response is not supported for type MQSC\n");
+            return undef;
+        } else {
+            $self->{Buffer} = $self->MQEncodeMQSC($self->{Command},$self->{Parameters});
+        }
     }
 
     if ( $self->{Buffer} ) {
-	return $self->{Buffer};
+        return $self->{Buffer};
     } else {
-	$self->{Carp}->("Unable to encode MQSeries Request Header and Parameters\n");
-	return undef;
+        $self->{Carp}->("Unable to encode MQSeries Request Header and Parameters\n");
+        return undef;
     }
 
 }
@@ -564,16 +737,16 @@ sub Parameters {
     my $self = shift;
 
     unless (
-	    ref $self->{Parameters} eq 'HASH' and
-	    keys %{$self->{Parameters}}
-	   ) {
-	return;
+            ref $self->{Parameters} eq 'HASH' and
+            keys %{$self->{Parameters}}
+           ) {
+        return;
     }
 
     if ( $_[0] ) {
-	return $self->{Parameters}->{$_[0]};
+        return $self->{Parameters}->{$_[0]};
     } else {
-	return $self->{Parameters};
+        return $self->{Parameters};
     }
 
 }
@@ -583,16 +756,16 @@ sub Header {
     my $self = shift;
 
     unless (
-	    ref $self->{"Header"} eq 'HASH' and
-	    keys %{$self->{"Header"}}
-	   ) {
-	return;
+            ref $self->{"Header"} eq 'HASH' and
+            keys %{$self->{"Header"}}
+           ) {
+        return;
     }
 
     if ( $_[0] ) {
-	return $self->{"Header"}->{$_[0]};
+        return $self->{"Header"}->{$_[0]};
     } else {
-	return $self->{"Header"};
+        return $self->{"Header"};
     }
 
 }
@@ -600,29 +773,29 @@ sub Header {
 sub Command {
     my $self = shift;
     if ( $self->{Command} ) {
-	return $self->{Command};
+        return $self->{Command};
     } elsif ( ref $self->{"Header"} ) {
-	return $self->{"Header"}->{Command};
+        return $self->{"Header"}->{Command};
     } else {
-	return;
+        return;
     }
 }
 
 sub CompCode {
     my $self = shift;
     if ( ref $self->{"Header"} ) {
-	return $self->{"Header"}->{"CompCode"};
+        return $self->{"Header"}->{"CompCode"};
     } else {
-	return;
+        return;
     }
 }
 
 sub Reason {
     my $self = shift;
     if ( ref $self->{"Header"} ) {
-	return $self->{"Header"}->{"Reason"};
+        return $self->{"Header"}->{"Reason"};
     } else {
-	return;
+        return;
     }
 }
 
@@ -632,11 +805,11 @@ sub ReasonText {
     my $reasontext = "";
 
     if ( ref $self->{"Header"} ) {
-	if ( exists $self->{"Header"}->{"ReasonText"} ) {
-	    $reasontext = join("\n",@{$self->{"Header"}->{"ReasonText"}});
-	} elsif ( exists $self->{"Header"}->{"Reason"} ) {
-	    $reasontext = MQReasonToText($self->{"Header"}->{"Reason"});
-	}
+        if ( exists $self->{"Header"}->{"ReasonText"} ) {
+            $reasontext = join("\n",@{$self->{"Header"}->{"ReasonText"}});
+        } elsif ( exists $self->{"Header"}->{"Reason"} ) {
+            $reasontext = MQReasonToText($self->{"Header"}->{"Reason"});
+        }
     }
 
     return $reasontext;
@@ -651,13 +824,13 @@ sub MQEncodeMQSC {
     my %skipparam = ();
 
     unless ( exists $MQSeries::Command::MQSC::Requests{$command} ) {
-	$self->{Carp}->("No such MQSC command '$command'\n");
-	return;
+        $self->{Carp}->("No such MQSC command '$command'\n");
+        return;
     }
 
     unless ( ref $MQSeries::Command::MQSC::Requests{$command} eq 'ARRAY' ) {
-	$self->{Carp}->("PCF command '$command' not supported via MQSC\n");
-	return;
+        $self->{Carp}->("PCF command '$command' not supported via MQSC\n");
+        return;
     }
 
     my ($requestname, $requestparameters, $requestargs) =
@@ -668,168 +841,168 @@ sub MQEncodeMQSC {
     my $foundattribute = 0;
 
     if ( $MQSeries::Command::MQSC::RequestParameterPrimary{$command} ) {
-	@parameters = (
-		       $MQSeries::Command::MQSC::RequestParameterPrimary{$command},
-		       grep(
-			    $_ ne $MQSeries::Command::MQSC::RequestParameterPrimary{$command},
-			    keys %$parameters
-			   )
-		      );
+        @parameters = (
+                       $MQSeries::Command::MQSC::RequestParameterPrimary{$command},
+                       grep(
+                            $_ ne $MQSeries::Command::MQSC::RequestParameterPrimary{$command},
+                            keys %$parameters
+                           )
+                      );
     } else {
-	@parameters = keys %$parameters;
+        @parameters = keys %$parameters;
     }
     foreach my $parameter ( @parameters ) {
-	next if $skipparam{$parameter};
+        next if $skipparam{$parameter};
 
-	unless (defined $requestparameters->{$parameter} ) {
-	    $self->{Carp}->("No such request parameter '$parameter' for command '$command'\n");
-	    return;
-	}
+        unless (defined $requestparameters->{$parameter} ) {
+            $self->{Carp}->("No such request parameter '$parameter' for command '$command'\n");
+            return;
+        }
 
-	if ( ref $requestargs && not $requestargs->{$parameter} ) {
-	    $foundattribute = 1;
-	}
+        if ( ref $requestargs && not $requestargs->{$parameter} ) {
+            $foundattribute = 1;
+        }
 
-	my ($key,$type) = @{$requestparameters->{$parameter}};
+        my ($key,$type) = @{$requestparameters->{$parameter}};
 
-	my $value = $parameters->{$parameter};
+        my $value = $parameters->{$parameter};
 
 #     print STDERR "$parameter: Key:$key: Type:$type: Value: $value\n";
 
-	if ( $key ) {
+        if ( $key ) {
 
-	    if ( ref $key eq 'HASH' ) {
+            if ( ref $key eq 'HASH' ) {
 
-		my ($subkey,$subvalues) = ($key->{Key},$key->{Values});
+                my ($subkey,$subvalues) = ($key->{Key},$key->{Values});
 
-		unless ( $parameters->{$subkey} ) {
-		    $self->{Carp}->("Required parameter '$subkey' for command '$command' missing\n");
-		    return;
-		}
+                unless ( $parameters->{$subkey} ) {
+                    $self->{Carp}->("Required parameter '$subkey' for command '$command' missing\n");
+                    return;
+                }
 
-		unless (defined $subvalues->{$parameters->{$subkey}} ) {
-		    $self->{Carp}->("Unknown value '$parameters->{$subkey}' for parameter '$subkey'\n");
-		    return;
-		}
+                unless (defined $subvalues->{$parameters->{$subkey}} ) {
+                    $self->{Carp}->("Unknown value '$parameters->{$subkey}' for parameter '$subkey'\n");
+                    return;
+                }
 
-		$key = $subvalues->{$parameters->{$subkey}};
+                $key = $subvalues->{$parameters->{$subkey}};
 
-		$skipparam{$subkey}++;
-		
-	    }
+                $skipparam{$subkey}++;
+
+            }
 
             $type = '' unless (defined $type); # -w cleanness
-	    if ( $type eq 'integer' ) {
-		push(@buffer,"$key($value)");
-	    } elsif ( $type eq 'string' ) {
+            if ( $type eq 'integer' ) {
+                push(@buffer,"$key($value)");
+            } elsif ( $type eq 'string' ) {
                 #print STDERR "Command [$command], parameter [$parameter]\n";
                 #
                 # Trust IBM to get this wrong... "Display Thread" is
                 # the only MQSC command where, if you ask for a
                 # specific thread name, it has to be quoted, but to
                 # ask for all threads, the asterisk may not be quoted.
-		#
-		# The same goes for 'CommandScope'...
                 #
-                if ($command eq 'InquireThread' && 
+                # The same goes for 'CommandScope'...
+                #
+                if ($command eq 'InquireThread' &&
                     $parameter eq 'ThreadName' &&
                     $value eq '*') {
                     push @buffer, "$key($value)";
-		} elsif ($parameter eq 'CommandScope' && $value eq '*') {
-		    push @buffer, "$key($value)";
+                } elsif ($parameter eq 'CommandScope' && $value eq '*') {
+                    push @buffer, "$key($value)";
                 } else {
                     push @buffer,"$key('$value')";
                 }
-	    }elsif ( ref $type eq 'ARRAY' ) {
-		if ( $value ) {
-		    push(@buffer,"$key($type->[1])");
-		} else {
-		    push(@buffer,"$key($type->[0])");
-		}
-	    } elsif ( ref $type eq 'HASH' ) {
-		#
-		# Fix for Header Compression and Message Compression introduced in V6
-		#
-		if ( ref $value eq 'ARRAY' && 
-		    exists $MQSeries::Command::MQSC::SpecialParameters{$parameter} )  {
-		    if ( scalar(@$value) ) {
-			my $completestring;
-			foreach my $string ( @$value ) {
-			    unless (defined $type->{$string} ) {
-				$self->{Carp}->("Unknown value '$string' for parameter '$parameter'\n");
-				return;
-			    }
-			    $completestring .= "$type->{$string}" . ',';
-			}
-			$completestring =~ s/,$//;
-			push(@buffer,"$key($completestring)");
-		    }
-		} else {
-		    push(@buffer,"$key($type->{$value})");
-		}		
-		
-	    } else {
-		push(@buffer,$key);
-	    }
-	} else {
-	    #
-	    # Perform the specified key/value mapping of the data
-	    #
-	    if ( ref $type eq 'HASH' ) {
-		if ( ref $value eq 'ARRAY' ) {
-		    if ( scalar(@$value) ) {
-			foreach my $string ( @$value ) {
-			    unless (defined $type->{$string} ) {
-				$self->{Carp}->("Unknown value '$string' for parameter '$parameter'\n");
-				return;
-			    }
-			    push(@buffer,$type->{$string});
-			}	
-		    }
-		    else {
-			# If the array is empty, we have to ignore this attribute
-			$foundattribute = 0;
-		    }
-		}
-		else {
-		    unless ( $type->{$value} ) {
-			$self->{Carp}->("Unknown value '$value' for parameter '$parameter'\n");
-			return;
-		    }
-		    push(@buffer,$type->{$value});
-		}
-	    }
-	    #
-	    # Perform a boolean lookup of the value to map it to
-	    # things like "NOREPLACE" or "REPLACE".
-	    #
-	    elsif ( ref $type eq 'ARRAY' ) {
-		if ( $value ) {
-		    push(@buffer,$type->[1]);
-		}
-		else {
-		    push(@buffer,$type->[0]);
-		}
-	    }
-	    #
-	    # The data is either passed through as-is, or if an ARRAY
-	    # is given, then the 'type' is the character to join the
-	    # data with.
-	    #
-	    else {
-		if ( ref $value eq "ARRAY" ) {
-		    push(@buffer,join($type,@$value));
-		}
-		else {
-		    push(@buffer,$value);
-		}
-	    }
-	}
+            }elsif ( ref $type eq 'ARRAY' ) {
+                if ( $value ) {
+                    push(@buffer,"$key($type->[1])");
+                } else {
+                    push(@buffer,"$key($type->[0])");
+                }
+            } elsif ( ref $type eq 'HASH' ) {
+                #
+                # Fix for Header Compression and Message Compression introduced in V6
+                #
+                if ( ref $value eq 'ARRAY' &&
+                    exists $MQSeries::Command::MQSC::SpecialParameters{$parameter} )  {
+                    if ( scalar(@$value) ) {
+                        my $completestring;
+                        foreach my $string ( @$value ) {
+                            unless (defined $type->{$string} ) {
+                                $self->{Carp}->("Unknown value '$string' for parameter '$parameter'\n");
+                                return;
+                            }
+                            $completestring .= "$type->{$string}" . ',';
+                        }
+                        $completestring =~ s/,$//;
+                        push(@buffer,"$key($completestring)");
+                    }
+                } else {
+                    push(@buffer,"$key($type->{$value})");
+                }
+
+            } else {
+                push(@buffer,$key);
+            }
+        } else {
+            #
+            # Perform the specified key/value mapping of the data
+            #
+            if ( ref $type eq 'HASH' ) {
+                if ( ref $value eq 'ARRAY' ) {
+                    if ( scalar(@$value) ) {
+                        foreach my $string ( @$value ) {
+                            unless (defined $type->{$string} ) {
+                                $self->{Carp}->("Unknown value '$string' for parameter '$parameter'\n");
+                                return;
+                            }
+                            push(@buffer,$type->{$string});
+                        }
+                    }
+                    else {
+                        # If the array is empty, we have to ignore this attribute
+                        $foundattribute = 0;
+                    }
+                }
+                else {
+                    unless ( $type->{$value} ) {
+                        $self->{Carp}->("Unknown value '$value' for parameter '$parameter'\n");
+                        return;
+                    }
+                    push(@buffer,$type->{$value});
+                }
+            }
+            #
+            # Perform a boolean lookup of the value to map it to
+            # things like "NOREPLACE" or "REPLACE".
+            #
+            elsif ( ref $type eq 'ARRAY' ) {
+                if ( $value ) {
+                    push(@buffer,$type->[1]);
+                }
+                else {
+                    push(@buffer,$type->[0]);
+                }
+            }
+            #
+            # The data is either passed through as-is, or if an ARRAY
+            # is given, then the 'type' is the character to join the
+            # data with.
+            #
+            else {
+                if ( ref $value eq "ARRAY" ) {
+                    push(@buffer,join($type,@$value));
+                }
+                else {
+                    push(@buffer,$value);
+                }
+            }
+        }
 
     }
 
     if ( ref $requestargs && $foundattribute == 0 ) {
-	push(@buffer,"ALL");
+        push(@buffer,"ALL");
     }
 
     #print STDERR "MQEncodeMQSC: Returning command [@buffer]\n";
@@ -857,8 +1030,8 @@ sub MQDecodeMQSC {
     # seperate message.
     #
     if ( $oldheader->{"ReasonText"} ) {
-	$newheader = { "ReasonText" => $buffer };
-	return $newheader;
+        $newheader = { "ReasonText" => $buffer };
+        return $newheader;
     }
 
     #
@@ -868,18 +1041,18 @@ sub MQDecodeMQSC {
     # done.  There are no parameters, so just return the header.
     #
     if ( $buffer =~ m{
-		      ^CSQN\S+\s+               # Message ID
-		      COUNT=\s+(\d+),\s* 	# LastMsgSeqNumber
-		      RETURN=(\w+),\s* 		# CompCode
-		      REASON=(\w+) 		# Reason
-		     }x ) {
-	$newheader =
-	  {
-	   "LastMsgSeqNumber"	=> $1,
-	   "CompCode"		=> eval "0x$2",
-	   "Reason"		=> eval "0x$3",
-	  };
-	return $newheader;
+                      ^CSQN\S+\s+               # Message ID
+                      COUNT=\s+(\d+),\s*        # LastMsgSeqNumber
+                      RETURN=(\w+),\s*          # CompCode
+                      REASON=(\w+)              # Reason
+                     }x ) {
+        $newheader =
+          {
+           "LastMsgSeqNumber"   => $1,
+           "CompCode"           => eval "0x$2",
+           "Reason"             => eval "0x$3",
+          };
+        return $newheader;
     }
 
     #
@@ -897,33 +1070,33 @@ sub MQDecodeMQSC {
     #       care not to assume any *XYZZY or /XYYZY is an error.
     #
     if ( $buffer =~ m{
-		      ^(?!CSQM4\d\dI)\S+\s+	# Message ID
-		      [\*/]\w+\s*               # The leading * or / is the key
-		      (.*)
-		     }x ) {
-	$newheader =
-	  {
-	   "ReasonText"		=> $1,
-	  };
-	return $newheader;
+                      ^(?!CSQM4\d\dI)\S+\s+     # Message ID
+                      [\*/]\w+\s*               # The leading * or / is the key
+                      (.*)
+                     }x ) {
+        $newheader =
+          {
+           "ReasonText"         => $1,
+          };
+        return $newheader;
     } elsif ( $buffer =~ m{
                            ^(?:CSQ9018E|CSQ9022I|CSQ9023E|CSQ9029E) \s+
                            \S+ \s+ \S+ \s+
                            ((?:ENDING|\'|FAILURE).*)
                           }x ) {
-	$newheader =
-	  {
-	   "ReasonText"		=> $1,
-	  };
-	return $newheader;
+        $newheader =
+          {
+           "ReasonText"         => $1,
+          };
+        return $newheader;
     }
 
     #
     # Now things get hard...
     #
     unless ( $MQSeries::Command::MQSC::Responses{$command} ) {
-	$self->{Carp}->("Unknown MQSC command '$command'\n");
-	return;
+        $self->{Carp}->("Unknown MQSC command '$command'\n");
+        return;
     }
 
     my $responseparameters = $MQSeries::Command::MQSC::Responses{$command};
@@ -952,127 +1125,127 @@ sub MQDecodeMQSC {
     my $origbuffer = $buffer;
 
     while ( $buffer ) {
-	my ($key,$value,$realkey,$realvalue);
-	my ($requestvalues);
-	my $valuetype;
+        my ($key,$value,$realkey,$realvalue);
+        my ($requestvalues);
+        my $valuetype;
 
-	#
-	# XXX -- MQSeries V2.2 on OS/390 changes the text returned by
-	# the command server.  In 2.1 and earlier, the messages look
-	# like:
-	#
-	#   CSQM409I   QMNAME(CSQ1 .....
-	#
-	# but now there is an extra field:
-	#
-	#   CSQM409I ]QMH1 QMNAME(QMH1
-	#
-	# So, as of 1.12, we'll accept bare keywords that are any
-	# non-whitespace, and then just let the bogus tag be ignored.
-	#
-	# Did I mention I hate this code yet? -- wpm, 8/18/2000
-	#
-	if ( $buffer =~ s{
-			  ^([\w\]]+) 		# keyword
-			  \b(?!\() 		# with NO following paren
-			  \s*			# trailing whitespace
-			 }{}x ) {
-	    $key = $1;
-	    $value = 1;
-	    $valuetype = 'implicit';
-	}
-	#
-	# ARGHH!!!  I hate this code.  Seriously....
-	#
-	# Special case for parsing "CONNAME(hostname(port))", which
-	# has embedded parens in the TCP case.  This code gets more
-	# vile, sick and obscene every time I touch it.  PCF is so
-	# damn easy....
-	#
-	elsif ( $buffer =~ s{
-			     ^(CONNAME|LOCLADDR)\( # Evil keyword with embedded parens
-			     (			# the usual hostname(port) syntax
-			      [^\(\)]+ 		#           hostname
-			      \( 		#                   (
-			      [^\(\)]+ 		#                    port
-			      \) 		#                        )
-			      [^\)]+ 		# everything that is not a closing paren
-			     )	
-			     \)\s* 		# close paren, and some whitespace
-			    }{}x ) {
+        #
+        # XXX -- MQSeries V2.2 on OS/390 changes the text returned by
+        # the command server.  In 2.1 and earlier, the messages look
+        # like:
+        #
+        #   CSQM409I   QMNAME(CSQ1 .....
+        #
+        # but now there is an extra field:
+        #
+        #   CSQM409I ]QMH1 QMNAME(QMH1
+        #
+        # So, as of 1.12, we'll accept bare keywords that are any
+        # non-whitespace, and then just let the bogus tag be ignored.
+        #
+        # Did I mention I hate this code yet? -- wpm, 8/18/2000
+        #
+        if ( $buffer =~ s{
+                          ^([\w\]]+)            # keyword
+                          \b(?!\()              # with NO following paren
+                          \s*                   # trailing whitespace
+                         }{}x ) {
+            $key = $1;
+            $value = 1;
+            $valuetype = 'implicit';
+        }
+        #
+        # ARGHH!!!  I hate this code.  Seriously....
+        #
+        # Special case for parsing "CONNAME(hostname(port))", which
+        # has embedded parens in the TCP case.  This code gets more
+        # vile, sick and obscene every time I touch it.  PCF is so
+        # damn easy....
+        #
+        elsif ( $buffer =~ s{
+                             ^(CONNAME|LOCLADDR)\( # Evil keyword with embedded parens
+                             (                  # the usual hostname(port) syntax
+                              [^\(\)]+          #           hostname
+                              \(                #                   (
+                              [^\(\)]+          #                    port
+                              \)                #                        )
+                              [^\)]+            # everything that is not a closing paren
+                             )
+                             \)\s*              # close paren, and some whitespace
+                            }{}x ) {
 
-	    ($key,$value) = ($1,$2);
+            ($key,$value) = ($1,$2);
 
-	    # Extra whitespace is evil (well, at least really ugly)
-	    $value =~ s/^\s+//;
-	    $value =~ s/\s+$//;
-	    $valuetype = 'explicit';
+            # Extra whitespace is evil (well, at least really ugly)
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+            $valuetype = 'explicit';
 
-	} elsif ( $buffer =~ s{
-			       ^(\w+)\(		# keyword with open paren
-			       ([^\)]*)		# everything that is not a closing paren
-			       \)\s* 		# close paren, and some whitespace
-			      }{}x ) {
+        } elsif ( $buffer =~ s{
+                               ^(\w+)\(         # keyword with open paren
+                               ([^\)]*)         # everything that is not a closing paren
+                               \)\s*            # close paren, and some whitespace
+                              }{}x ) {
 
-	    ($key,$value) = ($1,$2);
+            ($key,$value) = ($1,$2);
 
-	    # Extra whitespace is evil (well, at least really ugly)
-	    $value =~ s/^\s+//;
-	    $value =~ s/\s+$//;
-	    $valuetype = 'explicit';
+            # Extra whitespace is evil (well, at least really ugly)
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+            $valuetype = 'explicit';
 
-	} else {
-	    $self->{Carp}->("Unrecognized MQSC buffer: $buffer\n");
-	    last;
-	}
+        } else {
+            $self->{Carp}->("Unrecognized MQSC buffer: $buffer\n");
+            last;
+        }
 
-	unless ( $responseparameters->{$key} ) {
-	    $self->{Carp}->("Unrecognized response parameter '$key' (with value '$value') for command '$command'\n");
-	    next;
-	}
+        unless ( $responseparameters->{$key} ) {
+            $self->{Carp}->("Unrecognized response parameter '$key' (with value '$value') for command '$command'\n");
+            next;
+        }
 
-	($realkey,$requestvalues) = @{$responseparameters->{$key}};
-	$realvalue = $value;
+        ($realkey,$requestvalues) = @{$responseparameters->{$key}};
+        $realvalue = $value;
 
-	# A null realkey means this is to be ignored
-	next unless $realkey;
+        # A null realkey means this is to be ignored
+        next unless $realkey;
 
-	if ( $valuetype eq 'explicit' ) {
-	    if ( ref $requestvalues eq 'HASH' ) {
-		#
-		# Add a check for parameters of Array Type
-		# New in WMQ 6
-		#
-		if ( exists $MQSeries::Command::MQSC::SpecialParameters{$realkey} ) {
-		    my @split_values = split(',',$value);
-		    foreach my $eachvalue (@split_values) {
-			$eachvalue =~ s/^\s+//;
-			$eachvalue =~ s/\s+$//;
-			unless ( exists $requestvalues->{$eachvalue} ) {
-			   $self->{Carp}->("Unrecognized value '$eachvalue' for parameter '$realkey' for command '$command'\n");
-			} else {
-			   $realvalue =~ s/$eachvalue/$requestvalues->{$eachvalue}/;
-			}
-		    }
-		} else {
-		    unless ( exists $requestvalues->{$value} ) {
-		    	$self->{Carp}->("Unrecognized value '$value' for parameter '$realkey' for command '$command'\n");
-		    } else {
-		    	$realvalue = $requestvalues->{$value};
-		    }
-		} 
-	    }
-	} else {
-	    if (defined $requestvalues and not ref $requestvalues) {
-		$realvalue = $requestvalues;
-	    }
-	}
+        if ( $valuetype eq 'explicit' ) {
+            if ( ref $requestvalues eq 'HASH' ) {
+                #
+                # Add a check for parameters of Array Type
+                # New in WMQ 6
+                #
+                if ( exists $MQSeries::Command::MQSC::SpecialParameters{$realkey} ) {
+                    my @split_values = split(',',$value);
+                    foreach my $eachvalue (@split_values) {
+                        $eachvalue =~ s/^\s+//;
+                        $eachvalue =~ s/\s+$//;
+                        unless ( exists $requestvalues->{$eachvalue} ) {
+                           $self->{Carp}->("Unrecognized value '$eachvalue' for parameter '$realkey' for command '$command'\n");
+                        } else {
+                           $realvalue =~ s/$eachvalue/$requestvalues->{$eachvalue}/;
+                        }
+                    }
+                } else {
+                    unless ( exists $requestvalues->{$value} ) {
+                        $self->{Carp}->("Unrecognized value '$value' for parameter '$realkey' for command '$command'\n");
+                    } else {
+                        $realvalue = $requestvalues->{$value};
+                    }
+                }
+            }
+        } else {
+            if (defined $requestvalues and not ref $requestvalues) {
+                $realvalue = $requestvalues;
+            }
+        }
 
-	$parameters->{$realkey} = $realvalue;
+        $parameters->{$realkey} = $realvalue;
     }
 
     return ($newheader,$parameters);
-
 }
+
 
 1;

@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 30.1 2007/06/08 15:30:03 biersma Exp $
+# $Id: Makefile.PL,v 33.1 2009/07/10 17:44:38 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -45,10 +45,10 @@ if ( $Config{osname} =~ /(irix|sunos)/ ) {
 # Note that on OS/390 perl's -f stat() tests do not work with PDSes.
 #
 unless (
-	-f "$mqmtop/lib/libmqm.so" ||
-	-f "$mqmtop/lib/libmqm.sl" ||
-	-f "$mqmtop/lib/libmqm.a" ||
-	-f "$mqmtop/lib/mqm.lib"
+        -f "$mqmtop/lib/libmqm.so" ||
+        -f "$mqmtop/lib/libmqm.sl" ||
+        -f "$mqmtop/lib/libmqm.a" ||
+        -f "$mqmtop/lib/mqm.lib"
        ) {
     warn("No libmqm server library found, MQServer disabled\n")
       if $apitype eq 'MQServer'; # Whine once...
@@ -96,8 +96,8 @@ if ( $Config{osname} =~ /linux|hpux|aix/ ) {
     # library is different for single- and multi-threaded apps.
     #
     if ( $Config{usethread} ||
-	 $Config{usethreads} ||
-	 $Config{useithreads}
+         $Config{usethreads} ||
+         $Config{useithreads}
        ) {
         if ( $apitype eq "MQClient" ) {
             $libs = "$libdir -lmqic_r";
@@ -113,9 +113,9 @@ if ( $Config{osname} =~ /linux|hpux|aix/ ) {
     }
 } else {                        # All other platforms
     if ( $apitype eq "MQClient" ) {
-	$libs = "$libdir -lmqicg -lmqic -lmqic32 -lmqmcs -lmqmzse";
+        $libs = "$libdir -lmqicg -lmqic -lmqic32 -lmqmcs -lmqmzse";
     } else {
-	$libs = "$libdir -lmqm -lmqmcs -lmqmzse";
+        $libs = "$libdir -lmqm -lmqmcs -lmqmzse";
     }
 }
 
@@ -141,17 +141,15 @@ unless ( -d "t" ) {
 }
 
 %filemap = (
-	    "MQSeries.xs.in"		=> "MQSeries.xs",
-	    "MQSeries.pm.in" 		=> "MQSeries.pm",
-	   );
+            "MQSeries.xs.in"            => "MQSeries.xs",
+            "MQSeries.pm.in"            => "MQSeries.pm",
+           );
 
-opendir(TEST,"../t.in") || die "Unable to opendir ../t.in: $ERRNO\n";
-
+opendir(TEST, "../t.in") || die "Unable to opendir ../t.in: $ERRNO\n";
 foreach $file ( readdir(TEST) ) {
     next unless $file =~ /\.t$/;
     $filemap{"../t.in/$file"} = "t/$file";
 }
-
 closedir(TEST);
 
 foreach $file ( sort keys %filemap ) {
@@ -159,102 +157,112 @@ foreach $file ( sort keys %filemap ) {
     my @files = ();
 
     if ( -d $file ) {
-	opendir(INDIR,$file) || die "Unable to opendir $file: $ERRNO\n";
-	foreach ( readdir(INDIR) ) {
-	    next if /^\.\.?$/;
-	    next unless /^\d{2}/;
-	    next if /~$/;	# skip emacs backup files
-	    #
-	    # Skip files that do not match the current major version.
-	    # This lets us include MQCONNX and MQBEGIN only if we are
-	    # V5.
-	    #
-	    if ( /-v(\d+)$/ ) {
-		next unless $mqversion == $1;
-	    }
-	    push(@files,"$file/$_");
-	}
-	closedir(INDIR);
-    } else {
+        #
+        # We concatenate a bunch of files based on the two-digit
+        # number in front of the file.  A long, long time ago we had
+        # some files in multiple versions (-v2 and -v5) and picked the
+        # matching version.  The -2 files have long gone, and now we
+        # have added -v7 specific files.
+        #
+        # We don't want to rename the existing -v5 files (rewriting
+        # history), so basically we accept anything that's at our MQ
+        # release or below.  If at some point we need to introduce
+        # multiple versions of an API again, we'll stick the files in
+        # a hash by prefix and pick the highest version matching our
+        # MQ release.
+        #
+        opendir(INDIR, $file) || die "Unable to opendir $file: $ERRNO\n";
+        foreach ( readdir(INDIR) ) {
+            next if /^\.\.?$/;
+            next unless /^\d{2}/;
+            next if /~$/;       # skip emacs backup files
 
+            if ( /-v(\d+)$/ ) {
+                next unless $mqversion >= $1;  # Accept -v7 only on MQ v7
+            }
+            push(@files,"$file/$_");
+        }
+        closedir(INDIR);
+    } else {
         @files = ($file);
     }
 
-    open(OUT,">$filemap{$file}") || 
+    open(OUT, '>', $filemap{$file}) ||
       die "Unable to write to $filemap{$file}: $ERRNO\n";
 
     foreach my $subfile ( sort @files ) {
 
-	open(IN,$subfile) || die "Unable to open $subfile: $ERRNO\n";
+        open(IN, '<', $subfile) || die "Unable to open $subfile: $ERRNO\n";
 
-	while ( <IN> ) {
-	
-	    #
-	    # Special case: include the header files in the right order,
-	    # based on what's available.
-	    #
-	    if ( /__INCLUDES__/ ) {
+        while ( <IN> ) {
 
-		foreach my $header ( grep(/cmqc\.h$/,@headers),
-				     grep(!/cmqc\.h$/,@headers) ) {
-		    my $filename = basename($header);
-		    print OUT "#include <$filename>\n";
-		}
+            #
+            # Special case: include the header files in the right order,
+            # based on what's available.
+            #
+            if ( /__INCLUDES__/ ) {
 
-		next;
+                foreach my $header ( grep(/cmqc\.h$/,@headers),
+                                     grep(!/cmqc\.h$/,@headers) ) {
+                    my $filename = basename($header);
+                    print OUT "#include <$filename>\n";
+                }
 
-	    }
-	
-	    #
-	    # Another special case: include the macros found in the header
-	    # files dynamically.
-	    #
-	    if ( /__CONSTANTS__/ ) {
+                next;
 
-		foreach my $constant (
-				      sort (
-					    keys %constant_hex,
-					    keys %constant_numeric,
-					    keys %constant_string,
-					    keys %constant_null,
-					    keys %constant_char
-					   )
-				     ) {
-		    #
-		    # NOTE: 13 is the indentation of the qw() construct
-		    # being assigned to @EXPORT in MQSeries.pm.in.  This
-		    # is the author being incredibly anal about the
-		    # style....
-		    #
-		    print OUT " " x 13 . "$constant\n";
-		}
+            }
 
-		next;
+            #
+            # Another special case: include the macros found in the header
+            # files dynamically.
+            #
+            if ( /__CONSTANTS__/ ) {
 
-	    }
-	
-	    if ( /__CONSTANT_NULL__/ ) {
+                foreach my $constant (
+                                      sort (
+                                            keys %constant_hex,
+                                            keys %constant_numeric,
+                                            keys %constant_string,
+                                            keys %constant_null,
+                                            keys %constant_char
+                                           )
+                                     ) {
+                    #
+                    # NOTE: 13 is the indentation of the qw() construct
+                    # being assigned to @EXPORT in MQSeries.pm.in.  This
+                    # is the author being incredibly anal about the
+                    # style....
+                    #
+                    print OUT " " x 13 . "$constant\n";
+                }
 
-		foreach my $constant ( sort keys %constant_null ) {
-		    # More anal retentive indentation (the 3 and 20, that is)
-		    print OUT (" " x 3 . $constant .
-			       " " x (20 - length($constant)) .
-			       "=> $constant_null{$constant},\n");
-		}
+                next;
 
-		next;
+            }
 
-	    }
-	
-	    s/__APITYPE__/$apitype/g;
-	    s/__LOCALE__/$mqmlocale/g;
-	    s/__TEST_QUEUE__/$myconfig{QUEUE}/g;
-	    s/__TEST_QUEUE_MANAGER__/$myconfig{QUEUEMGR}/g;
-	    print OUT $_;
-	
-	}
+            if ( /__CONSTANT_NULL__/ ) {
 
-	close(IN) || die "Unable to close $subfile: $ERRNO\n";
+                foreach my $constant ( sort keys %constant_null ) {
+                    # More anal retentive indentation (the 3 and 20, that is)
+                    print OUT (" " x 3 . $constant .
+                               " " x (20 - length($constant)) .
+                               "=> $constant_null{$constant},\n");
+                }
+
+                next;
+
+            }
+
+            s/__APITYPE__/$apitype/g;
+            s/__LOCALE__/$mqmlocale/g;
+            s/__MQ_VERSION__/$mqversion/g;
+            s/__TEST_QUEUE__/$myconfig{QUEUE}/g;
+            s/__TEST_QUEUE_MANAGER__/$myconfig{QUEUEMGR}/g;
+            print OUT $_;
+
+        }
+
+        close(IN) || die "Unable to close $subfile: $ERRNO\n";
 
     }
 
@@ -267,7 +275,7 @@ foreach $file ( sort keys %filemap ) {
 # even though it will be generated by typemap.PL.  W/o this hack,
 # xsubpp is not called with a -typemap ./typemap argument.
 #
-open(TYPEMAP, ">>typemap") || die "Unable to touch typemap: $ERRNO\n";
+open(TYPEMAP, '>>', "typemap") || die "Unable to touch typemap: $ERRNO\n";
 close(TYPEMAP);
 
 #
@@ -283,13 +291,13 @@ if ($Config{archname} =~ /-object\b/i) {
 }
 if ($Config{osname} =~ /win32/i) {
     #
-    # On Win32, MakeMaker ain't picking up the constants.c.PL 
-    # file for free.  Probably a bug... 
+    # On Win32, MakeMaker ain't picking up the constants.c.PL
+    # file for free.  Probably a bug...
     #
     $extra_args{PL_FILES} = {
-			     'constants.c.PL' 	=> 'constants.c',
-			     'typemap.PL'     	=> 'typemap',
-			    };
+                             'constants.c.PL'   => 'constants.c',
+                             'typemap.PL'       => 'typemap',
+                            };
 }
 
 #
@@ -308,14 +316,14 @@ if ( $Config{archname} =~ /linux/ ) {
     my $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
 
     if ( $Config{use64bitall} ) {
-	unless ( $lddlflags =~ /64$/ ) {
-	    $lddlflags .= '64';
-	}
+        unless ( $lddlflags =~ /64$/ ) {
+            $lddlflags .= '64';
+        }
         $extra_args{LDDLFLAGS} .= $lddlflags;
     } elsif( $Config{archname} =~ /^x86_64-linux/ ) {
-	unless ( $lddlflags =~ /64$/ ) {
-	    $lddlflags .= '64';
-	}
+        unless ( $lddlflags =~ /64$/ ) {
+            $lddlflags .= '64';
+        }
         $extra_args{LDDLFLAGS} .= $lddlflags;
     } elsif ( $Config{archname} =~ /^i[3456]86-linux/ ) {
         $extra_args{LDDLFLAGS} .= $lddlflags;
@@ -331,17 +339,17 @@ if ( $Config{archname} =~ /linux/ ) {
     }
 } elsif ($Config{archname} =~ /^sun/) {
     if ($Config{cc} =~ /^gcc/) {
-	#
-	# See if the Sun linker is used (the default) or the GNU
-	# linker.  The Sun linker uses -R for the RPATH and the NU
-	# linker used -rpath.
-	#
-	my $lddlflags;
-	if ($Config{lddlflags} =~ /-[GR]/) { # -G or -R: Definitely Sun CC
-	    $lddlflags = " -shared -Wl,-R -Wl,$rpath";
-	} else {		# Assume GNU linker
-	    $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
-	}
+        #
+        # See if the Sun linker is used (the default) or the GNU
+        # linker.  The Sun linker uses -R for the RPATH and the NU
+        # linker used -rpath.
+        #
+        my $lddlflags;
+        if ($Config{lddlflags} =~ /-[GR]/) { # -G or -R: Definitely Sun CC
+            $lddlflags = " -shared -Wl,-R -Wl,$rpath";
+        } else {                # Assume GNU linker
+            $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
+        }
         $extra_args{LDDLFLAGS} .= $lddlflags;
     } elsif (
            $Config{cc}        =~ /^cc$/
@@ -384,14 +392,14 @@ if ( $Config{archname} =~ /linux/ ) {
 }
 
 WriteMakefile(
-	      NAME		=> "${apitype}::MQSeries",
-	      VERSION_FROM	=> "MQSeries.pm",
-	      LIBS		=> [ $libs ],
-	      INC		=> qq{-I"$include" -I../include},
-	      EXE_FILES		=> [],
-	      OBJECT		=> q[MQSeries$(OBJ_EXT) constants$(OBJ_EXT)],
-	      %extra_args,
-	     );
+              NAME              => "${apitype}::MQSeries",
+              VERSION_FROM      => "MQSeries.pm",
+              LIBS              => [ $libs ],
+              INC               => qq{-I"$include" -I../include},
+              EXE_FILES         => [],
+              OBJECT            => q[MQSeries$(OBJ_EXT) constants$(OBJ_EXT)],
+              %extra_args,
+             );
 
 # now we remove it again so that it will be out-of-date
 # with respect to typemap.PL.

@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 32.1 2009/05/22 15:28:11 biersma Exp $
+# $Id: PCF.pm,v 33.2 2009/07/10 18:31:01 biersma Exp $
 #
-# (c) 1999-2007 Morgan Stanley Dean Witter and Co.
+# (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -14,18 +14,13 @@ use Exporter;
 
 use MQSeries::Message;
 
-use vars qw( $VERSION @ISA @EXPORT_OK );
-
-$VERSION = '1.29';
-
-@ISA = qw( MQSeries::Message Exporter DynaLoader );
-
-@EXPORT_OK = qw( MQDecodePCF MQEncodePCF );
+our $VERSION = '1.30';
+our @ISA = qw(MQSeries::Message Exporter DynaLoader);
+our @EXPORT_OK = qw( MQDecodePCF MQEncodePCF );
 
 bootstrap MQSeries::Message::PCF;
 
 sub new {
-
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my %args = @_;
@@ -33,89 +28,81 @@ sub new {
     my $self = MQSeries::Message->new(%args) || return;
 
     if ( $args{Header} ) {
-	$self->{Header} = $args{Header};
+        $self->{Header} = $args{Header};
     }
 
     if ( $args{Parameters} ) {
-	$self->{Parameters} = $args{Parameters};
+        $self->{Parameters} = $args{Parameters};
     }
 
     bless ($self, $class);
     return $self;
-
 }
 
-sub GetConvert {
 
+sub GetConvert {
     my $self = shift;
     ($self->{Buffer}) = @_;
 
     my ($header,$parameters);
 
     unless ( ($header,$parameters) = MQDecodePCF($self->{Buffer}) ) {
-	$self->{Carp}->("Unable to decode PCF Header and Parameters\n");
-	return;
+        $self->{Carp}->("Unable to decode PCF Header and Parameters\n");
+        return;
     }
 
     ($self->{Header},$self->{Parameters}) = ($header,$parameters);
 
     return 1;
-
 }
 
-sub PutConvert {
 
+sub PutConvert {
     my $self = shift;
     my $buffer = "";
 
     if ( $buffer = MQEncodePCF($self->{Header},$self->{Parameters}) ) {
-	return $buffer;
+        return $buffer;
+    } else {
+        $self->{Carp}->("Unable to encode PCF Header and Parameters\n");
+        return undef;
     }
-    else {
-	$self->{Carp}->("Unable to encode PCF Header and Parameters\n");
-	return undef;
-    }
-
 }
+
 
 sub Header {
-
     my $self = shift;
 
     unless (
-	    ref $self->{Parameters} eq 'HASH' and
-	    keys %{$self->{Parameters}}
-	   ) {
-	return;
+            ref $self->{Parameters} eq 'HASH' and
+            keys %{$self->{Parameters}}
+           ) {
+        return;
     }
 
     if ( $_[0] ) {
-	return $self->{Parameters}->{$_[0]};
+        return $self->{Parameters}->{$_[0]};
+    } else {
+        return $self->{Parameters};
     }
-    else {
-	return $self->{Parameters};
-    }
-
 }
 
-sub Parameters {
 
+sub Parameters {
     my $self = shift;
 
     unless (
-	    ref $self->{Parameters} eq 'HASH' and
-	    keys %{$self->{Parameters}}
-	   ) {
-	return;
+            ref $self->{Parameters} eq 'HASH' and
+            keys %{$self->{Parameters}}
+           ) {
+        return;
     }
 
     if ( $_[0] ) {
-	return $self->{Parameters}->{$_[0]};
+        return $self->{Parameters}->{$_[0]};
+    } else {
+        return $self->{Parameters};
     }
-    else {
-	return $self->{Parameters};
-    }
-
 }
 
 1;
@@ -124,7 +111,7 @@ __END__
 
 =head1 NAME
 
-MQSeries::Message::PCF -- Generic OO and procedurel interface to PCF (Programmable Command Format) messages.
+MQSeries::Message::PCF -- Generic OO and procedural interface to PCF (Programmable Command Format) messages.
 
 =head1 SYNOPSIS
 
@@ -142,7 +129,7 @@ MQSeries::Message::PCF -- Generic OO and procedurel interface to PCF (Programmab
   #
   $header =
   {
-   Type		=> MQCFT_COMMAND,
+   Type         => MQCFT_COMMAND,
    Command      => MQCMD_INQUIRE_Q,
   };
 
@@ -156,20 +143,20 @@ MQSeries::Message::PCF -- Generic OO and procedurel interface to PCF (Programmab
 
    # QName is a string (MQCFST)
    {
-    Parameter	=> MQCA_Q_NAME,
-    String	=> "FOO.*",
+    Parameter   => MQCA_Q_NAME,
+    String      => "FOO.*",
    },
 
    # QType is an integer (MQCFIN)
    {
-    Parameter	=> MQIA_Q_TYPE,
-    Value	=> MQQT_LOCAL,
+    Parameter   => MQIA_Q_TYPE,
+    Value       => MQQT_LOCAL,
    },
 
    # QAttrs in an integer list (MQCFIL)
    {
-    Parameter	=> MQIACF_Q_ATTRS,
-    Values	=>
+    Parameter   => MQIACF_Q_ATTRS,
+    Values      =>
     [
      MQCA_Q_NAME,
      MQIA_Q_TYPE,
@@ -186,8 +173,8 @@ MQSeries::Message::PCF -- Generic OO and procedurel interface to PCF (Programmab
 
   my $message = MQSeries::Message::PCF->new
     (
-     Header			=> $header,
-     Parameters			=> $parameters,
+     Header                     => $header,
+     Parameters                 => $parameters,
     ) || die;
 
   #
@@ -218,8 +205,8 @@ Note that it the intention of the author to provide specific
 implementations of each of the standard PCF formats used in the
 MQSeries product, and the current release already includes support for:
 
-  PCF Command Server messages 		(MQSeries::Command)
-  Performance Events 			(MQSeries::Message::Event)
+  PCF Command Server messages           (MQSeries::Command)
+  Performance Events                    (MQSeries::Message::Event)
 
 If you are reading this documentation with the intention of using it
 for any of the above standard MQSeries messages, please see the docs
