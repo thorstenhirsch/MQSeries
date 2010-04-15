@@ -1,5 +1,5 @@
 #
-# $Id: 32async_put.t,v 33.5 2009/07/20 19:40:54 biersma Exp $
+# $Id: 32async_put.t,v 35.1 2010/03/04 16:35:15 anbrown Exp $
 #
 # (c) 2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -10,7 +10,7 @@ use warnings;
 use Data::Dumper;
 use Test::More tests => 25;
 BEGIN { 
-    our $VERSION = '1.30';
+    our $VERSION = '1.31';
     use_ok('__APITYPE__::MQSeries' => $VERSION); 
 }
 
@@ -89,6 +89,12 @@ SKIP: {
             "MQPUT - $counter");
     }
 
+    #
+    # XXX: Note that MQSTAT() is a new MQI call introduced with
+    # version 7 and that this test code was written when the value for
+    # MQSTS_CURRENT_VERSION was 1.  If you have a different value for
+    # this (look in cmqc.h), this test will unfortunately fail.
+    #
     print "Getting status info (MQSTAT)\n";
     my $stats = {};
     MQSTAT($Hconn,MQSTAT_TYPE_ASYNC_ERROR,$stats,$compcode,$reason);

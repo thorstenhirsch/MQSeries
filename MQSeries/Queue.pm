@@ -1,5 +1,5 @@
 #
-# $Id: Queue.pm,v 33.2 2009/07/10 17:50:27 biersma Exp $
+# $Id: Queue.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -26,7 +26,7 @@ use Params::Validate qw(validate);
 #
 use MQSeries::Command::PCF;
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 sub new {
     my $proto = shift;

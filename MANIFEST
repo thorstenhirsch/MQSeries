@@ -55,7 +55,6 @@ MQSeries/Command/MQSC/ResponseValues.pl
 MQSeries/Command/MQSC/Responses.pl
 MQSeries/Command/MQSC/SpecialParameters.pl
 MQSeries/Command/PCF.pm
-MQSeries/Command/PCF/.__afsC07D
 MQSeries/Command/PCF/RequestParameterOrder.pl
 MQSeries/Command/PCF/RequestParameterRequired.pl
 MQSeries/Command/PCF/RequestParameters.pl

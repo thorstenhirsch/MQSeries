@@ -6,7 +6,7 @@
 # (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 33.2 2009/07/10 18:35:27 biersma Exp $
+# $Id: Tail.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
 #
 
 package MQSeries::FDC::Tail;
@@ -17,7 +17,7 @@ use IO::File;
 
 use MQSeries::FDC::Parser;
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 #
 # The FDC logs are watched based on the following assumptions:

@@ -5,7 +5,7 @@ name: MQSeries
 abstract: "Interface to IBM's MQSeries Product"
 author:
   - 'MQ Engineering Group <mqseries@cpan.org>'
-version: 1.30
+version: 1.31
 version_from: MQSeries.pm
 installdirs: site
 build_requires:

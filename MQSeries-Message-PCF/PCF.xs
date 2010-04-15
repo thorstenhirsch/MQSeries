@@ -8,7 +8,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 33.2 2009/07/30 12:25:54 biersma Exp $";
+static char rcsid[] = "$Id: PCF.xs,v 33.5 2010/02/02 16:38:37 anbrown Exp $";
 
 /*
   (c) 1999-2009 Morgan Stanley & Co. Incorporated
@@ -88,12 +88,18 @@ MQDecodePCF(pBuffer)
          PMQCHAR   pTemp = pBuffer;
          PMQCHAR   pSListTemp;
          MQCFST   *pStringParam;
+#ifdef MQCFT_STRING_FILTER
+         MQCFSF   *pStringFilter;
+#endif
 #ifdef MQCFT_BYTE_STRING
          MQCFBS   *pByteStringParam;
 #endif
          MQCFIN   *pIntegerParam;
          MQCFSL   *pStringParamList;
          MQCFIL   *pIntegerParamList;
+#ifdef MQCFT_INTEGER_FILTER
+         MQCFIF   *pIntegerFilter;
+#endif
          MQLONG    StringLength;
 
          HV       *HeaderHV, *DataHV;
@@ -132,12 +138,18 @@ MQDecodePCF(pBuffer)
               * - Display unknown type number
               */
              pStringParam = (MQCFST *)pTemp;
+#ifdef MQCFT_STRING_FILTER
+             pStringFilter = (MQCFSF *)pTemp;
+#endif
 #ifdef MQCFT_BYTE_STRING
              pByteStringParam = (MQCFBS *)pTemp;
 #endif
              pIntegerParam = (MQCFIN *)pTemp;
              pStringParamList = (MQCFSL *)pTemp;
              pIntegerParamList = (MQCFIL *)pTemp;
+#ifdef MQCFT_INTEGER_FILTER
+             pIntegerFilter = (MQCFIF *)pTemp;
+#endif
 
              /* warn("PCF parameter %d is of type %d, structure length %d, parameter %d\n", count, pStringParam->Type, pStringParam->StrucLength, pStringParam->Parameter); */
 
@@ -151,13 +163,26 @@ MQDecodePCF(pBuffer)
 
                  av_push(DataAV,newRV_noinc((SV*)DataHV));
                  pTemp += pStringParam->StrucLength;
+#ifdef MQCFT_STRING_FILTER
+             } else if ( pStringFilter->Type == MQCFT_STRING_FILTER ) {
+                 DataHV = newHV();
+
+                 hv_store(DataHV,"Type",4,(newSViv(pStringFilter->Type)),0);
+                 hv_store(DataHV,"Parameter",9,(newSViv(pStringFilter->Parameter)),0);
+                 hv_store(DataHV,"Operator",8,(newSViv(pStringFilter->Operator)),0);
+                 hv_store(DataHV,"CodedCharSetId",14,(newSViv(pStringFilter->CodedCharSetId)),0);
+                 hv_store(DataHV,"FilterValue",11,(newSVpvn(pStringFilter->FilterValue,pStringFilter->FilterValueLength)),0);
+
+                 av_push(DataAV,newRV_noinc((SV*)DataHV));
+                 pTemp += pIntegerFilter->StrucLength;
+#endif /* MQCFT_INTEGER_FILTER */
 #ifdef MQCFT_BYTE_STRING
              } else if ( pByteStringParam->Type == MQCFT_BYTE_STRING ) {
                  DataHV = newHV();
 
                  hv_store(DataHV,"Type",4,(newSViv(pByteStringParam->Type)),0);
                  hv_store(DataHV,"Parameter",9,(newSViv(pByteStringParam->Parameter)),0);
-                 hv_store(DataHV,"ByteString",10,(newSVpvn(pByteStringParam->String,pByteStringParam->StringLength)),0);
+                 hv_store(DataHV,"ByteString",10,(newSVpvn((const char *)pByteStringParam->String,pByteStringParam->StringLength)),0);
 
                  av_push(DataAV,newRV_noinc((SV*)DataHV));
                  pTemp += pByteStringParam->StrucLength;
@@ -171,6 +196,18 @@ MQDecodePCF(pBuffer)
 
                  av_push(DataAV,newRV_noinc((SV*)DataHV));
                  pTemp += pIntegerParam->StrucLength;
+#ifdef MQCFT_INTEGER_FILTER
+             } else if ( pIntegerFilter->Type == MQCFT_INTEGER_FILTER ) {
+                 DataHV = newHV();
+
+                 hv_store(DataHV,"Type",4,(newSViv(pIntegerFilter->Type)),0);
+                 hv_store(DataHV,"Parameter",9,(newSViv(pIntegerFilter->Parameter)),0);
+                 hv_store(DataHV,"Operator",8,(newSViv(pIntegerFilter->Operator)),0);
+                 hv_store(DataHV,"FilterValue",11,(newSViv(pIntegerFilter->FilterValue)),0);
+
+                 av_push(DataAV,newRV_noinc((SV*)DataHV));
+                 pTemp += pIntegerFilter->StrucLength;
+#endif /* MQCFT_INTEGER_FILTER */
              } else if ( pStringParamList->Type == MQCFT_STRING_LIST ) {
                  DataHV = newHV();
 
@@ -370,13 +407,11 @@ MQEncodePCF(Header,ParameterList)
                * verify that it is an integer (not much else we can, or
                * want, to do here).
                */
-              if (Type == MQCFT_STRING || Type == MQCFT_STRING_LIST) {
-                  svp = hv_fetch(ParameterHV,"CodedCharSetId",14,0);
-                  if (svp != NULL) {
-                      CodedCharSetId = SvIV(*svp);
-                  } else {
-                      CodedCharSetId = MQCCSI_DEFAULT;
-                  }
+              svp = hv_fetch(ParameterHV,"CodedCharSetId",14,0);
+              if (svp != NULL) {
+                  CodedCharSetId = SvIV(*svp);
+              } else {
+                  CodedCharSetId = MQCCSI_DEFAULT;
               }
 
               /*

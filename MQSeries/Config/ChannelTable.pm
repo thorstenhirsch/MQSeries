@@ -1,5 +1,5 @@
 #
-# $Id: ChannelTable.pm,v 33.2 2009/07/10 18:35:41 biersma Exp $
+# $Id: ChannelTable.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
 #
 # (c) 2001-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -10,7 +10,7 @@ package MQSeries::Config::ChannelTable;
 use strict;
 use Carp;
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 our (@MQCDFields, %Outgoing, %Incoming, %SystemDefClntconn, %StrucLength);
 

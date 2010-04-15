@@ -4,7 +4,7 @@
 # (c) 2000-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: QMgr.pm,v 33.2 2009/07/10 18:35:51 biersma Exp $
+# $Id: QMgr.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
 #
 
 package MQSeries::Config::QMgr;
@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Config::Machine;
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 #
 # Constructor: Read and parse the /var/mqm/qmgrs/XYYZY/qm.ini file.

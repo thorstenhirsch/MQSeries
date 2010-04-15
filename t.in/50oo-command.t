@@ -1,5 +1,5 @@
 #
-# $Id: 50oo-command.t,v 33.4 2009/07/16 15:20:58 biersma Exp $
+# $Id: 50oo-command.t,v 33.6 2009/12/30 19:57:07 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -8,9 +8,9 @@
 use strict;
 use warnings;
 use Data::Dumper;
-use Test::More tests => 31;
+use Test::More tests => 32;
 BEGIN {
-    our $VERSION = '1.30';
+    our $VERSION = '1.31';
     use_ok('__APITYPE__::MQSeries' => $VERSION);
     use_ok('MQSeries::QueueManager' => $VERSION);
     use_ok('MQSeries::Command' => $VERSION);
@@ -24,7 +24,7 @@ BEGIN {
 
 SKIP: {
     if ( "__APITYPE__" eq "MQServer" && ! -d $systemdir ) {
-        skip("Cannot test server API on client host", 28);
+        skip("Cannot test server API on client host", 29);
     }
 
     #
@@ -32,7 +32,7 @@ SKIP: {
     #
     my $username = ($^O =~ /^MSWin / ? $ENV{USERNAME} : getpwuid($<));
     unless (lc $username eq 'mqm') {
-        skip("Not testing MQSeries::Command unless running as user 'mqm', not '$username'", 28);
+        skip("Not testing MQSeries::Command unless running as user 'mqm', not '$username'", 29);
     }
 
     my $QMgrName = $myconfig{"QUEUEMGR"};

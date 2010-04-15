@@ -3,6 +3,22 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.31
+
+The following fixes are included in the 1.31 release:
+
+=head2 XS code cleanup
+
+Fix support for builds on Solaris, and a few places where filters
+weren't completely supported properly.  Add some type casts to quiet
+some compiler warnings, and a workaround for non-C99 systems.
+
+=head2 Minor bugfixes
+
+Adjust the projected test count for one script to match the number of
+tests, fix an undefined variable use warning in MQSeries/Command.pm,
+and a parameter validation inaccuracy in MQSeries/QueueManager.pm.
+
 =head1 Changes for 1.30
 
 The following changes are included in the 1.30 release:
@@ -1886,7 +1902,7 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 33.3 2009/07/31 18:26:14 biersma Exp $
+# $Id: Changes.src,v 33.4 2010/02/20 06:22:21 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.

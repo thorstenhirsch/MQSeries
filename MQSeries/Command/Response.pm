@@ -1,5 +1,5 @@
 #
-# $Id: Response.pm,v 33.2 2009/07/10 18:28:59 biersma Exp $
+# $Id: Response.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -16,7 +16,7 @@ use MQSeries::Command::Base;
 use MQSeries::Message;
 
 our @ISA = qw(MQSeries::Command::Base MQSeries::Message);
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 1;
 

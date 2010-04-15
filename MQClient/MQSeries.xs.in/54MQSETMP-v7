@@ -1,6 +1,6 @@
 # -*-c-*-
 #
-# $Id: 54MQSETMP-v7,v 33.3 2009/07/11 11:56:56 biersma Exp $
+# $Id: 54MQSETMP-v7,v 35.1 2010/02/02 16:37:35 anbrown Exp $
 #
 # (c) 2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -102,6 +102,14 @@ MQSETMP(Hconn,Hmsg,SetPropOpts,Name,PropDesc,Type,Value,CompCode,Reason)
                         value_int64 = (MQINT64)SvIV(Value);
                     } else {
                         value_ptr = SvPV(Value, len);
+#if !defined(SCNdLEAST64)
+/* SCNdLEAST64 it a late addition to C99, but we may have SCNd64 */
+#if !defined(SCNd64)
+#define SCNdLEAST64 "lld"
+#else /* defined(SCNd64) */
+#define SCNdLEAST64 SCNd64
+#endif /* defined(SCNd64) */
+#endif /* defined(SCNdLEAST64) */
                         if (!sscanf(value_ptr, "%" SCNdLEAST64, &value_int64)) {
                             croak("Cannot turn string '%s' into 64-bit number", value_ptr);
                         }

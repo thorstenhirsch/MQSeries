@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 33.1 2009/07/10 17:44:38 biersma Exp $
+# $Id: Makefile.PL,v 33.2 2009/12/16 19:25:57 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -337,7 +337,7 @@ if ( $Config{archname} =~ /linux/ ) {
         $lddlflags = " -shared -Wl,-rpath -Wl,$rpath";
         $extra_args{LDDLFLAGS} .= $lddlflags;
     }
-} elsif ($Config{archname} =~ /^sun/) {
+} elsif ($Config{archname} =~ /-solaris-/) {
     if ($Config{cc} =~ /^gcc/) {
         #
         # See if the Sun linker is used (the default) or the GNU
@@ -365,6 +365,11 @@ if ( $Config{archname} =~ /linux/ ) {
         #
         my $lddlflags .= " -G -R$rpath";
         $extra_args{LDDLFLAGS} .= $lddlflags;
+        if ( $Config{archname} =~ /^sun.*-64$/ ){
+            $extra_args{LDDLFLAGS} .= " -xarch=v9 ";
+        } elsif  ( $Config{archname} =~ /^i86pc.*-64$/ ){
+            $extra_args{LDDLFLAGS} .= " -xarch=amd64 ";
+        }
     } else {
         #
         # Some other compiler on Sun...

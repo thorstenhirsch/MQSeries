@@ -15,6 +15,13 @@
 <ul>
 
 	<li><a href="#introduction">Introduction</a></li>
+	<li><a href="#changes_for_1_31">Changes for 1.31</a></li>
+	<ul>
+
+		<li><a href="#xs_code_cleanup">XS code cleanup</a></li>
+		<li><a href="#minor_bugfixes">Minor bugfixes</a></li>
+	</ul>
+
 	<li><a href="#changes_for_1_30">Changes for 1.30</a></li>
 	<ul>
 
@@ -318,6 +325,23 @@
 <h1><a name="introduction">Introduction</a></h1>
 <p>This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.</p>
+<p>
+</p>
+<hr />
+<h1><a name="changes_for_1_31">Changes for 1.31</a></h1>
+<p>The following fixes are included in the 1.31 release:</p>
+<p>
+</p>
+<h2><a name="xs_code_cleanup">XS code cleanup</a></h2>
+<p>Fix support for builds on Solaris, and a few places where filters
+weren't completely supported properly.  Add some type casts to quiet
+some compiler warnings, and a workaround for non-C99 systems.</p>
+<p>
+</p>
+<h2><a name="minor_bugfixes">Minor bugfixes</a></h2>
+<p>Adjust the projected test count for one script to match the number of
+tests, fix an undefined variable use warning in MQSeries/Command.pm,
+and a parameter validation inaccuracy in MQSeries/QueueManager.pm.</p>
 <p>
 </p>
 <hr />

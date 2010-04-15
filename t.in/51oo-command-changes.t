@@ -1,5 +1,5 @@
 #
-# $Id: 51oo-command-changes.t,v 33.1 2009/07/16 15:20:36 biersma Exp $
+# $Id: 51oo-command-changes.t,v 33.2 2009/12/30 19:57:07 anbrown Exp $
 #
 # (c) 2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -13,7 +13,7 @@ use warnings;
 use Data::Dumper;
 use Test::More tests => 102;
 BEGIN {
-    our $VERSION = '1.30';
+    our $VERSION = '1.31';
     use_ok('__APITYPE__::MQSeries' => $VERSION);
     use_ok('MQSeries::QueueManager' => $VERSION);
     use_ok('MQSeries::Command' => $VERSION);

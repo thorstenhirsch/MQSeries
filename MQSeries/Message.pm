@@ -1,5 +1,5 @@
 #
-# $Id: Message.pm,v 33.3 2009/07/10 17:49:20 biersma Exp $
+# $Id: Message.pm,v 35.1 2010/02/18 03:04:26 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -16,7 +16,7 @@ use MQSeries qw(:functions);
 use MQSeries::Properties;
 use MQSeries::Utils qw(ConvertUnit);
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 sub new {
     my $proto = shift;
@@ -290,7 +290,7 @@ the queue are expected to be larger, this must be set appropriately.
 
 =item MsgDesc
 
-The value of this key is a hash refernece which sets the key/values of
+The value of this key is a hash reference which sets the key/values of
 the MsgDesc structure.  See the "MQSeries Application Programming
 Reference" documentation for the possible keys and values of the MQMD
 structure.
@@ -369,7 +369,7 @@ For example, to retrieve a hash reference with the message properties
 matching 'perl.MQSeries.%' after a successful MQGET on MQ v7, do:
 
   my $rc = $queue->Get(Message => $msg, ...);
-  my $props = $msg->Poperties()->GetProperties(Name => 'perl.MQSeries.%');
+  my $props = $msg->Properties()->GetProperties(Name => 'perl.MQSeries.%');
 
 See the documentation of the MQSeries::Properties class for the
 available methods.

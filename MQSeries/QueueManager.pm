@@ -1,5 +1,5 @@
 #
-# $Id: QueueManager.pm,v 33.3 2009/07/20 19:38:58 biersma Exp $
+# $Id: QueueManager.pm,v 35.1 2010/01/19 15:20:42 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -29,7 +29,7 @@ use Params::Validate qw(validate);
 #
 use MQSeries::Command::PCF;
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 sub new {
     my $proto = shift;
@@ -463,14 +463,15 @@ sub Pending {
 
 sub Put1 {
     my $self = shift;
-    my %args = validate(@_, { 'Message'    => 1,
-                              'ObjDesc'    => 0, # one of Queue or ObjDesc
-                              'Queue'      => 0, # one of Queue or ObjDesc
-                              'Sync'       => 0,
-                              'PutMsgOpts' => 0,
-                              'PutMsgRecs' => 0,
-                              'PutConvert' => 0,
-                              'Properties' => 0, # MQ v7
+    my %args = validate(@_, { 'Message'      => 1,
+                              'ObjDesc'      => 0, # one of Queue or ObjDesc
+                              'Queue'        => 0, # one of Queue or ObjDesc
+                              'QueueManager' => 0,
+                              'Sync'         => 0,
+                              'PutMsgOpts'   => 0,
+                              'PutMsgRecs'   => 0,
+                              'PutConvert'   => 0,
+                              'Properties'   => 0, # MQ v7
                             });
 
     my $ObjDesc = {};

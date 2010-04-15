@@ -1,5 +1,5 @@
 #
-# $Id: 40oo-qmgr.t,v 33.3 2009/07/13 20:46:28 biersma Exp $
+# $Id: 40oo-qmgr.t,v 33.4 2009/12/30 19:57:07 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -10,7 +10,7 @@ use warnings;
 use Data::Dumper;
 use Test::More tests => 14;
 BEGIN {
-    our $VERSION = '1.30';
+    our $VERSION = '1.31';
     use_ok('__APITYPE__::MQSeries' => $VERSION);
     use_ok('MQSeries::QueueManager' => $VERSION);
 }

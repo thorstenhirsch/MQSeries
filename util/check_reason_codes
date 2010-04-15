@@ -81,7 +81,7 @@ foreach my $type (qw( ReasonText ReasonMacro)) {
 #
 #    ..../src/util/extract_reason_codes
 #
-# \$Id: extract_reason_codes,v 27.1 2007/01/11 20:20:45 molinam Exp biersma \$
+# \$Id: check_reason_codes,v 1.1 2009/12/03 17:04:40 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.

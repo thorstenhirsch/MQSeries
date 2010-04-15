@@ -1,5 +1,5 @@
 #
-# $Id: Base.pm,v 33.3 2009/07/30 12:24:49 biersma Exp $
+# $Id: Base.pm,v 33.6 2009/12/30 19:53:41 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -19,7 +19,7 @@ use MQSeries::Command::MQSC;
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 sub new {
 
@@ -607,6 +607,8 @@ sub _UnTranslatePCF {
             $paramvalue = $origparam->{Value};
         } elsif ( exists $origparam->{Values} ) {
             $paramvalue = $origparam->{Values};
+        } elsif ( exists $origparam->{FilterValue} ) {
+            $paramvalue = $origparam->{FilterValue};
         } else {
             # Uh...  MQDecodePCF shouldn't ever let this happen...
             $self->{Carp}->("Unable to map parameter '$paramkey'\n");

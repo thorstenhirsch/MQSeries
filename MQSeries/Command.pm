@@ -1,5 +1,5 @@
 #
-# $Id: Command.pm,v 33.7 2009/07/31 18:26:39 biersma Exp $
+# $Id: Command.pm,v 33.10 2009/12/30 19:53:41 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -22,7 +22,7 @@ use MQSeries::Command::Response;
 use MQSeries::Utils qw(ConvertUnit);
 use Params::Validate qw(validate);
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 sub new {
     my $proto = shift;
@@ -481,7 +481,7 @@ sub CreateObject {
 
         if ( $Attrs->{QType} eq 'Remote' && $Attrs->{RemoteQName} eq '' ) {
             $Type               = "QMgr Alias";
-        } elsif ( $Attrs->{QType} eq 'Local' && $Attrs->{Usage} eq 'XMITQ' ) {
+        } elsif ( $Attrs->{QType} eq 'Local' && defined($Attrs->{Usage}) && $Attrs->{Usage} eq 'XMITQ' ) {
             $Type               = "Transmission Queue";
         } else {
             $Type               = "$Attrs->{QType} Queue";
@@ -963,7 +963,8 @@ sub _Command {
         #
         {
             $self->{'Stats'}->{'NoResponses'}++;
-            my $get_size = length($response->Buffer());
+            my $buffer = $response->Buffer();
+            my $get_size = defined($buffer) ? length($buffer) : 0;
             $self->{'Stats'}->{'ResponseBytes'} += $get_size;
             $self->{'Stats'}->{'MaxResponse'} = $get_size
               if (! defined $self->{'Stats'}->{'MaxResponse'} ||

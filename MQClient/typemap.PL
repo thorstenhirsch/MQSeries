@@ -1,5 +1,5 @@
 #
-# $Id: typemap.PL,v 33.1 2009/07/10 17:46:08 biersma Exp $
+# $Id: typemap.PL,v 33.2 2009/12/03 16:44:16 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -266,7 +266,7 @@ EOF
     #
     return <<"EOF";
         {
-            STRLEN len = strnlen($isptr\$var.$field, $fieldsize);
+            STRLEN len = mqstrnlen($isptr\$var.$field, $fieldsize);
             hv_store((HV*)SvRV(\$arg),\\"$field\\",$fieldnamelen,
                      (newSVpv($isptr\$var.$field, len)),$hash);
         }

@@ -10,7 +10,7 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: 00header,v 33.1 2009/07/02 21:12:10 biersma Exp $";
+static char rcsid[] = "$Id: 00header,v 33.2 2009/12/03 16:43:14 anbrown Exp $";
 
 /*
   (c) 1999-2009 Morgan Stanley & Co. Incorporated
@@ -80,3 +80,16 @@ MQULONG constant_hex(char *name);
 MQLONG  constant_numeric(char *name);
 int     constant_string(char * name, char *value);
 int     constant_char(char * name, char *value);
+
+/*
+ * We need a strnlen()-like function, but since it's not portable,
+ * here's a replacement.
+ */
+size_t
+mqstrnlen(const char *s, size_t maxlen)
+{
+	size_t len = 0;
+	while (len < maxlen && *s++)
+		len++;
+	return (len);
+}

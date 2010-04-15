@@ -1,5 +1,5 @@
 #
-# $Id: Event.pm,v 33.2 2009/07/10 18:25:44 biersma Exp $
+# $Id: Event.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
 #
 # (c) 1999-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -18,7 +18,7 @@ use MQSeries::Message::PCF qw(MQDecodePCF);
 
 require "MQSeries/Message/Event.pl";
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 our @ISA = qw(MQSeries::Message);
 
 sub PutConvert {
