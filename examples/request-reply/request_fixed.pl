@@ -2,9 +2,9 @@
 #
 # request_fixed - request (client) application usign a fixed shared reply queue
 #
-# Copyright (c) 2009, Morgan Stanley & Co. Incorporated
+# Copyright (c) 2009-2010 Morgan Stanley & Co. Incorporated
 #
-# $Id: request_fixed.pl,v 33.2 2009/07/14 17:02:53 biersma Exp $
+# $Id: request_fixed.pl,v 33.3 2010/04/01 16:24:59 anbrown Exp $
 #
 
 use strict;

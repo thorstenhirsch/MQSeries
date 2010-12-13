@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 33.5 2010/02/02 16:38:37 anbrown Exp $";
+static char rcsid[] = "$Id: PCF.xs,v 36.1 2010/08/02 20:09:59 anbrown Exp $";
 
 /*
-  (c) 1999-2009 Morgan Stanley & Co. Incorporated
+  (c) 1999-2010 Morgan Stanley & Co. Incorporated
   See ..../src/LICENSE for terms of distribution.
  */
 
@@ -439,7 +439,7 @@ MQEncodePCF(Header,ParameterList)
                   IntegerParam.Parameter = Parameter;
                   IntegerParam.Value = Value;
                   sv_catpvn(ParameterResult,(char *)&IntegerParam,MQCFIN_STRUC_LENGTH);
-                  //warn("Parameter %d is integer; param %d, value %d\n", index, Parameter, Value);
+                  /* warn("Parameter %d is integer; param %d, value %d\n", index, Parameter, Value); */
               } else if (Type == MQCFT_STRING) {
                   /*
                    * Extract the String, which must obviously be a string
@@ -720,7 +720,7 @@ MQEncodePCF(Header,ParameterList)
                   pByteStringFilter->Operator = SvIV(*svp);
 
                   sv_catpvn(ParameterResult,(char *)pByteStringFilter,StrucLength);
-                  //warn("Have ByteStringFilter at %d with parameter %d, Operator %d, FilterValue %s\n", index, pByteStringFilter->Parameter, pByteStringFilter->Operator, pByteStringFilter->FilterValue);
+                  /* warn("Have ByteStringFilter at %d with parameter %d, Operator %d, FilterValue %s\n", index, pByteStringFilter->Parameter, pByteStringFilter->Operator, pByteStringFilter->FilterValue); */
                   free(pByteStringFilter);
               } else if (Type == MQCFT_INTEGER_FILTER) {
                   MQCFIF IntegerFilter = {MQCFIF_DEFAULT};
@@ -771,7 +771,7 @@ MQEncodePCF(Header,ParameterList)
                   IntegerFilter.FilterValue = SvIV(*svp);
 
                   sv_catpvn(ParameterResult,(char *)&IntegerFilter,MQCFIF_STRUC_LENGTH);
-                  //warn("Have IntegerFilter at %d with parameter %d, Operator %d, FilterValue %d\n", index, IntegerFilter.Parameter, IntegerFilter.Operator, IntegerFilter.FilterValue);
+                  /* warn("Have IntegerFilter at %d with parameter %d, Operator %d, FilterValue %d\n", index, IntegerFilter.Parameter, IntegerFilter.Operator, IntegerFilter.FilterValue); */
               } else if (Type == MQCFT_STRING_FILTER) {
                   MQCFSF *pStringFilter;
 
@@ -840,7 +840,7 @@ MQEncodePCF(Header,ParameterList)
                   pStringFilter->Operator = SvIV(*svp);
 
                   sv_catpvn(ParameterResult,(char *)pStringFilter,StrucLength);
-                  //warn("Have StringFilter at %d with parameter %d, Operator %d, FilterValue %s\n", index, pStringFilter->Parameter, pStringFilter->Operator, pStringFilter->FilterValue);
+                  /* warn("Have StringFilter at %d with parameter %d, Operator %d, FilterValue %s\n", index, pStringFilter->Parameter, pStringFilter->Operator, pStringFilter->FilterValue); */
                   free(pStringFilter);
 #endif /* MQCFT_INTEGER_FILTER */
               }

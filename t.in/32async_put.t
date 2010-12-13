@@ -1,7 +1,7 @@
 #
-# $Id: 32async_put.t,v 35.1 2010/03/04 16:35:15 anbrown Exp $
+# $Id: 32async_put.t,v 36.2 2010/09/21 20:30:06 anbrown Exp $
 #
-# (c) 2009 Morgan Stanley & Co. Incorporated
+# (c) 2009-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -91,16 +91,16 @@ SKIP: {
 
     #
     # XXX: Note that MQSTAT() is a new MQI call introduced with
-    # version 7 and that this test code was written when the value for
-    # MQSTS_CURRENT_VERSION was 1.  If you have a different value for
-    # this (look in cmqc.h), this test will unfortunately fail.
+    # version 7 and that this test code was last updated when the value for
+    # MQSTS_CURRENT_VERSION was 2.  If you have a different value for
+    # this (look in cmqc.h), this test will likely fail.
     #
     print "Getting status info (MQSTAT)\n";
     my $stats = {};
     MQSTAT($Hconn,MQSTAT_TYPE_ASYNC_ERROR,$stats,$compcode,$reason);
     ok ($compcode == MQCC_OK && $reason == MQRC_NONE, "MQSTAT");
     my $expected = { 'ResolvedQMgrName' => '',
-                     'PutSuccessCount' => 5,
+                     'PutSuccessCount' => 0,
                      'ObjectQMgrName' => '',
                      'PutFailureCount' => 0,
                      'ObjectName' => '',
@@ -109,7 +109,12 @@ SKIP: {
                      'CompCode' => 0,
                      'PutWarningCount' => 0,
                      'ResolvedObjectName' => '',
-                     'ObjectType' => 1
+                     'ObjectType' => 1,
+                     # starting with 7.0.1.0, MQSTS_CURRENT_VERSION == 2
+                     'OpenOptions' => '0',
+                     'SubOptions' => '0',
+                     'ObjectString' => '',
+                     'SubName' => '',
                    };
     is_deeply($stats, $expected, "MQSTAT result");
 

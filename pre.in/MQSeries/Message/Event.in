@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: Event.in,v 33.1 2009/07/10 17:06:05 biersma Exp $
+# $Id: Event.in,v 36.1 2010/08/02 20:02:23 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,6 +21,8 @@ package MQSeries::Message::Event;
    &MQCACH_CONNECTION_NAME              => "ConnectionName",
    &MQCACH_FORMAT_NAME                  => "Format",
    &MQCACH_XMIT_Q_NAME                  => "XmitQName",
+   &MQCACH_SSL_HANDSHAKE_STAGE          => "SSLHandshakeStage",
+   &MQCACH_SSL_PEER_NAME                => "SSLPeerName",
    &MQCA_BASE_Q_NAME                    => "BaseQName",
    &MQCA_PROCESS_NAME                   => "ProcessName",
    &MQCA_Q_MGR_NAME                     => "QMgrName",
@@ -35,6 +37,7 @@ package MQSeries::Message::Event;
    &MQIACF_OPEN_OPTIONS                 => "Options",
    &MQIACF_REASON_QUALIFIER             => "ReasonQualifier",
    &MQIACH_CHANNEL_TYPE                 => "ChannelType",
+   &MQIACH_SSL_RETURN_CODE              => "SSLReturnCode",
    &MQIA_APPL_TYPE                      => "ApplType",
    &MQIA_HIGH_Q_DEPTH                   => "HighQDepth",
    &MQIA_MSG_DEQ_COUNT                  => "MsgDeqCount",

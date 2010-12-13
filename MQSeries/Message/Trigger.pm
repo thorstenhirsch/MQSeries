@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::Trigger - Trigger Message
 #
-# (c) 2003-2009 Morgan Stanley & Co. Incorporated
+# (c) 2003-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Trigger.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
+# $Id: Trigger.pm,v 33.7 2010/04/01 16:24:56 anbrown Exp $
 #
 
 package MQSeries::Message::Trigger;
@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Message;
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 our @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Command/PCF/ResponseValues.pl"; # For ApplType

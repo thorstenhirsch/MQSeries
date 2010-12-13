@@ -1,8 +1,8 @@
 # -*-c-*-
 #
-# $Id: 34MQPUT-v5,v 33.1 2009/07/02 21:11:03 biersma Exp $
+# $Id: 34MQPUT-v5,v 33.3 2010/08/09 19:56:11 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,8 @@ MQPUT(Hconn,Hobj,MsgDesc,PutMsgOpts,Msg,CompCode,Reason)
     PREINIT:
         char     *Key, *pPutMsgRecPtr = NULL, *String;
         STRLEN    KeyLength, StringLength;
-        int       index, subindex, FieldSize;
+        int       index, subindex;
+        size_t    FieldSize;
         int       PutMsgRecSize = 0;
         PMQRR     pResponseRecPtr = NULL;
         PMQCHAR   Buffer;

@@ -1,7 +1,7 @@
 #
-# $Id: Message.pm,v 35.1 2010/02/18 03:04:26 anbrown Exp $
+# $Id: Message.pm,v 35.4 2010/04/01 16:24:55 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,7 +16,7 @@ use MQSeries qw(:functions);
 use MQSeries::Properties;
 use MQSeries::Utils qw(ConvertUnit);
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 sub new {
     my $proto = shift;

@@ -1,7 +1,7 @@
 #
-# $Id: 31properties.t,v 33.5 2009/12/30 19:57:07 anbrown Exp $
+# $Id: 31properties.t,v 33.6 2010/04/01 16:25:05 anbrown Exp $
 #
-# (c) 2009 Morgan Stanley & Co. Incorporated
+# (c) 2009-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

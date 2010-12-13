@@ -1,7 +1,7 @@
 #
-# $Id: 52oo-command-filter.t,v 33.2 2009/12/30 19:57:07 anbrown Exp $
+# $Id: 52oo-command-filter.t,v 33.3 2010/04/01 16:25:06 anbrown Exp $
 #
-# (c) 2009 Morgan Stanley & Co. Incorporated
+# (c) 2009-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Additional MQSeries::Command test to create, copy, change and delete

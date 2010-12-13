@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -254,6 +254,7 @@ package MQSeries::Command::PCF;
    AuthInfoType =>
    {
     CRLLDAP			=> 1,
+    OCSP			=> 2,            # new with v7.0.1.1
    },
 
    QStatusInputType =>

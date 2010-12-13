@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -152,6 +152,7 @@ package MQSeries::Command::PCF;
     CurrentLog			=> [ 3071,                            	4 ],
     LogPath			=> [ 3074,             			4 ],
     MediaRecoveryLog		=> [ 3073,                          	4 ],
+    PermitStandby		=> [ 1325,                   		3 ],
     QMgrName			=> [ 2015,             			4 ],
     QMgrStatus			=> [ 1149,                 		3,	$ResponseValues{QMgrStatus}  ],
     RestartRecoveryLog		=> [ 3072,                            	4 ],
@@ -553,6 +554,7 @@ package MQSeries::Command::PCF;
     AuthInfoType		=> [ 66,                   		3,                $ResponseValues{AuthInfoType} ],
     LDAPPassword		=> [ 2048,                		4 ],
     LDAPUserName		=> [ 2047,                 		4 ],
+    OCSPResponderURL		=> [ 2109,                     		4 ],
     ResponseId			=> [ 7004,                		9                   ],
     ResponseQMgrName		=> [ 3070,                        	4 ],
     QSGDisposition		=> [ 63,             			3,		$ResponseValues{QSGDisposition} ],
@@ -747,6 +749,7 @@ package MQSeries::Command::PCF;
 
    Connection =>
    {
+    ApplDesc		       => [ 3174,              			4 ],
     ApplTag		       => [ 3058,             			4 ],
     ApplType		       => [ 1,               			3,	        $ResponseValues{ConnApplType} ],
     ASID		       => [ 3081,         			4 ],
@@ -941,6 +944,7 @@ package MQSeries::Command::PCF;
     PublishedApplicationIdentifier => [ 3135,                       	4 ],
     RequestOnly			=> [ 1280,                 		3,		$ResponseValues{RequestOnly} ],
     Selector			=> [ 3160,                 		4 ],
+    SelectorType		=> [ 1321,                  		3 ],
     SubId			=> [ 7016,           			9                   ],
     SubName			=> [ 3152,             			4 ],
     SubscriptionLevel		=> [ 1307,              			3 ],

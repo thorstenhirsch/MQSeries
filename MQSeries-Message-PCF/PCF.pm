@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
+# $Id: PCF.pm,v 33.7 2010/04/01 16:24:48 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -14,7 +14,7 @@ use Exporter;
 
 use MQSeries::Message;
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 our @ISA = qw(MQSeries::Message Exporter DynaLoader);
 our @EXPORT_OK = qw( MQDecodePCF MQEncodePCF );
 

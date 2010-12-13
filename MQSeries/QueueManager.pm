@@ -1,7 +1,7 @@
 #
-# $Id: QueueManager.pm,v 35.1 2010/01/19 15:20:42 anbrown Exp $
+# $Id: QueueManager.pm,v 36.1 2010/08/02 20:03:55 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -29,7 +29,7 @@ use Params::Validate qw(validate);
 #
 use MQSeries::Command::PCF;
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 sub new {
     my $proto = shift;
@@ -1185,9 +1185,9 @@ value to the constructor, for example:
      QueueManager               => 'some.queue.manager',
      CompCode                   => \$CompCode,
      Reason                     => \$Reason,
-    ) || die "Unable to open queue: CompCode => $CompCode, Reason => $Reason\n";
+    ) || die "Unable to connect to QueueManager: CompCode => $CompCode, Reason => $Reason\n";
 
-But, this is ugly (authors opinion, but then, he gets to write the
+But, this is ugly (authors' opinion, but then, we get to write the
 docs, too).  Use the C<AutoConnect> option instead to separate C<new>
 and C<Connect>.
 

@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 33.10 2009/12/30 19:53:41 anbrown Exp $
+# $Id: Command.pm,v 36.3 2010/09/15 15:55:52 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -22,7 +22,7 @@ use MQSeries::Command::Response;
 use MQSeries::Utils qw(ConvertUnit);
 use Params::Validate qw(validate);
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 sub new {
     my $proto = shift;
@@ -644,7 +644,10 @@ sub CreateObject {
     # anyway.  In any event, this will be somewhat rare.
     #
     my $delete_first = 0;
-    if ($Key eq 'QName' && $Object && $Attrs->{QType} ne $Object->{QType}) {
+    if ($Key eq 'QName' && $Object &&
+       ($Attrs->{QType} ne $Object->{QType} || 
+       (defined $Attrs->{DefinitionType} && defined $Object->{QType} &&
+       $Attrs->{DefinitionType} ne $Object->{QType} ) ) ) {
         $delete_first = 1;
     } elsif ($Object) {
         foreach my $fld (qw(QSGDisposition
@@ -709,6 +712,9 @@ sub CreateObject {
     my $disp_field = 'QSGDisposition';
     if (defined $Object->{$disp_field}) {
         $Changes->{$disp_field} = $Object->{$disp_field};
+    }
+    if (defined $Changes->{'DefinitionType'}) {
+        delete $Changes->{'DefinitionType'};
     }
 
     #
@@ -1050,6 +1056,14 @@ sub _Command {
     #
     # Handle the InquireFooNames commands -- they're very easy.
     #
+    if ($command eq "InquireChannelNames") {
+	#
+	# Elide everything but the last response -- we may have gotten
+	# individual channel names back for client conns here (as if
+	# we had done InquireChannelName) and we don't want them.
+	#
+	@{$self->{Response}} = $self->{Response}->[-1];
+    }
     if ( $command =~ /^Inquire(\w+?Names)$/ ) {
         $key = $1;
         $key = 'QNames' if $key eq 'QueueNames';

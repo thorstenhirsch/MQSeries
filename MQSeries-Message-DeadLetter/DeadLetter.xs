@@ -8,10 +8,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: DeadLetter.xs,v 33.1 2009/07/10 18:30:12 biersma Exp $";
+static char rcsid[] = "$Id: DeadLetter.xs,v 33.2 2010/04/01 16:24:47 anbrown Exp $";
 
 /*
-  (c) 1999-2009 Morgan Stanley & Co. Incorporated
+  (c) 1999-2010 Morgan Stanley & Co. Incorporated
   See ..../src/LICENSE for terms of distribution.
  */
 

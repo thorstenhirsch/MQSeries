@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Message::Event;
@@ -30,6 +30,8 @@ package MQSeries::Message::Event;
    3506                                  => "ConnectionName",
    3533                                  => "Format",
    3505                                  => "XmitQName",
+   3546                                  => "SSLHandshakeStage",
+   3545                                  => "SSLPeerName",
    2002                                  => "BaseQName",
    2012                                  => "ProcessName",
    2015                                  => "QMgrName",
@@ -44,6 +46,7 @@ package MQSeries::Message::Event;
    1022                                  => "Options",
    1020                                  => "ReasonQualifier",
    1511                                  => "ChannelType",
+   1533                                  => "SSLReturnCode",
    1                                     => "ApplType",
    36                                    => "HighQDepth",
    38                                    => "MsgDeqCount",

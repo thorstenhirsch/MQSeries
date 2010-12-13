@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::RFH2 - RFH2 Message
 #
-# (c) 2004-2009 Morgan Stanley & Co. Incorporated
+# (c) 2004-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: RFH2.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
+# $Id: RFH2.pm,v 33.7 2010/04/01 16:24:56 anbrown Exp $
 #
 
 package MQSeries::Message::RFH2;
@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Message;
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 our @ISA = qw(MQSeries::Message);
 
 #

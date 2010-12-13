@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 #
-# $Id: check_version,v 33.1 2009/07/10 17:33:05 biersma Exp $
+# $Id: check_version,v 36.2 2010/04/01 16:25:07 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # OK, this hack fixes the $VERSION in all the modules, according the
@@ -127,9 +127,7 @@ foreach my $old ( @old) {
             # Fix the module version
             #
             if ( /\$VERSION\s+=\s+\'([\d\.]+)\'/ ) {
-                print NEW "\$VERSION = '$newversion';\n";
-            } else {
-                print NEW;
+                s//\$VERSION = '$newversion'/;
             }
         } else {
             #
@@ -139,8 +137,8 @@ foreach my $old ( @old) {
                 $oldversion = $1;
                 s/$oldversion/$newversion/;
             }
-            print NEW;
         }
+        print NEW;
 
     }
 

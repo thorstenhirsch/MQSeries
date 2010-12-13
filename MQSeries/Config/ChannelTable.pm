@@ -1,7 +1,7 @@
 #
-# $Id: ChannelTable.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
+# $Id: ChannelTable.pm,v 36.1 2010/08/02 20:07:52 anbrown Exp $
 #
-# (c) 2001-2009 Morgan Stanley & Co. Incorporated
+# (c) 2001-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,7 +10,7 @@ package MQSeries::Config::ChannelTable;
 use strict;
 use Carp;
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 our (@MQCDFields, %Outgoing, %Incoming, %SystemDefClntconn, %StrucLength);
 
@@ -381,6 +381,12 @@ sub writeFile {
 
     {
         my $supportedkeys = { map { $_->[0] => 1 } @MQCDFields };
+        # ssl hack -- SSLPeerNamePtr and SSLPeerNameLength are the
+        # names of the fields in the channel table, but SSLPeerName is
+        # what we work with internally
+        delete($supportedkeys->{SSLPeerNamePtr});
+        delete($supportedkeys->{SSLPeerNameLength});
+        $supportedkeys->{SSLPeerName} = 1;
         my $invalid = 0;
         foreach my $channel ( @channel ) {
             foreach my $key ( keys %$channel ) {
@@ -409,12 +415,13 @@ sub writeFile {
 
         my $channel = $channel[$index];
         $channel->{ShortConnectionName} ||=
+          !defined $channel->{ConnectionName} ? "" :
           substr($channel->{ConnectionName},0,20);
 
         my $mqcd = "";
 
-        $channel->{SSLPeerNameLength} = length($channel->{SSLPeerName})
-          if defined $channel->{SSLPeerName};
+        $channel->{SSLPeerNameLength} = defined $channel->{SSLPeerName} ?
+          length($channel->{SSLPeerName}) : 0;
 
         #
         # KeepAliveInterval: 'AUTO' = 0xffffffff
@@ -488,7 +495,7 @@ sub writeFile {
             $mqcd .= " " x 64;  # More 64 unknown spaces
             $mqcd .= $exitstring;
 
-            if ( $version >= 7 ) {
+            if ($version >= 7 && defined($channel->{SSLPeerNameLength})) {
                 $mqcd .= $class->writeString($channel->{SSLPeerName},
                                              $channel->{SSLPeerNameLength});
             }
@@ -600,6 +607,7 @@ sub readNumber {
 sub writeString {
     my $class = shift;
     my ($string,$length) = @_;
+    $string = "" if (!defined($string));
     return $string . ( " " x ( $length - length($string) ) );
 }
 
@@ -607,6 +615,7 @@ sub writeString {
 sub writeNumber {
     my $class = shift;
     my ($number) = @_;
+    $number = 0 if (!defined($number));
     return reverse pack("N",$number);
 }
 
@@ -621,6 +630,7 @@ sub readByte {
 sub writeByte {
     my $class = shift;
     my ($string,$length) = @_;
+    $string = "" if (!defined($string));
     if ( length($string) < $length ) {
         $string .= "\0" x ( $length - length($string) );
     }

@@ -1,7 +1,7 @@
 #
-# $Id: Utils.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
+# $Id: Utils.pm,v 33.7 2010/04/01 16:24:57 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -15,7 +15,7 @@ use Carp;
 use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(ConvertUnit);
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 #
 # Convert a Unit value from a symbolic value to the value

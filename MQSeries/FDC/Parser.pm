@@ -2,10 +2,10 @@
 # MQSeries::FDC::Parser.pm - Break an FDC log into chunks, then
 #                            create FDC::Entry objects from those chunks.
 #
-# (c) 2000-2009 Morgan Stanley & Co. Incorporated
+# (c) 2000-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 33.4 2009/12/30 19:53:41 anbrown Exp $
+# $Id: Parser.pm,v 33.7 2010/04/01 16:24:55 anbrown Exp $
 #
 
 package MQSeries::FDC::Parser;
@@ -15,7 +15,7 @@ use Carp;
 
 use MQSeries::FDC::Entry;
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 #
 # Constructor

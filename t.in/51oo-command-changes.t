@@ -1,7 +1,7 @@
 #
-# $Id: 51oo-command-changes.t,v 33.2 2009/12/30 19:57:07 anbrown Exp $
+# $Id: 51oo-command-changes.t,v 36.1 2010/09/27 19:59:20 anbrown Exp $
 #
-# (c) 2009 Morgan Stanley & Co. Incorporated
+# (c) 2009-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Additional MQSeries::Command test to create, copy, change and delete
@@ -232,7 +232,8 @@ SKIP: {
             #   string must change on copy.
             #
             print "Copy $type\n";
-            @required = ('AuthInfoType' => $info->{AuthInfoType})
+            @required = ('AuthInfoType' => $info->{AuthInfoType},
+                         'AuthInfoConnName' => $info->{AuthInfoConnName})
               if ($type eq 'AuthInfo');
             if ($type eq 'Topic') {
                 $info->{TopicString} .= '/more';

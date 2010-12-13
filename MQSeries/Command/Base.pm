@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 33.6 2009/12/30 19:53:41 anbrown Exp $
+# $Id: Base.pm,v 36.2 2010/07/08 14:47:11 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use MQSeries::Command::MQSC;
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 sub new {
 
@@ -480,7 +480,7 @@ sub _TranslatePCF {
         if ($paramtype == MQSeries::MQCFT_BYTE_STRING_FILTER) {
             unless (ref $origvalue eq 'ARRAY' &&
                     @$origvalue == 3) {
-                $self->Carp("Invalid byte string filter for parameter '$param', command '$command': must be an array-reference with three elements");
+                $self->{Carp}->("Invalid byte string filter for parameter '$param', command '$command': must be an array-reference with three elements");
                 return;
             }
             #print STDERR "XXX: Have byte string filter for [@$origvalue]\n";
@@ -488,7 +488,7 @@ sub _TranslatePCF {
         } elsif ($paramtype == MQSeries::MQCFT_INTEGER_FILTER) {
             unless (ref $origvalue eq 'ARRAY' &&
                     @$origvalue == 3) {
-                $self->Carp("Invalid integer filter for parameter '$param', command '$command': must be an array-reference with three elements");
+                $self->{Carp}->("Invalid integer filter for parameter '$param', command '$command': must be an array-reference with three elements");
                 return;
             }
             #print STDERR "XXX: Have integer filter for [@$origvalue]\n";
@@ -496,7 +496,7 @@ sub _TranslatePCF {
         } elsif ($paramtype == MQSeries::MQCFT_STRING_FILTER) {
             unless (ref $origvalue eq 'ARRAY' &&
                     @$origvalue == 3) {
-                $self->Carp("Invalid string filter for parameter '$param', command '$command': must be an array-reference with three elements");
+                $self->{Carp}->("Invalid string filter for parameter '$param', command '$command': must be an array-reference with three elements");
                 return;
             }
             #print STDERR "XXX: Have string filter for [@$origvalue]\n";
@@ -1039,7 +1039,7 @@ sub MQDecodeMQSC {
     #
     # The easy part...
     #
-    # The header is in a seperate message, so if we see one, we're
+    # The header is in a separate message, so if we see one, we're
     # done.  There are no parameters, so just return the header.
     #
     if ( $buffer =~ m{
@@ -1051,8 +1051,8 @@ sub MQDecodeMQSC {
         $newheader =
           {
            "LastMsgSeqNumber"   => $1,
-           "CompCode"           => eval "0x$2",
-           "Reason"             => eval "0x$3",
+           "CompCode"           => hex($2),
+           "Reason"             => hex($3),
           };
         return $newheader;
     }

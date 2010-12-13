@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 33.2 2009/12/16 19:25:57 anbrown Exp $
+# $Id: Makefile.PL,v 36.2 2010/09/17 17:32:01 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -395,6 +395,18 @@ if ( $Config{archname} =~ /linux/ ) {
     print STDERR "Unrecognized architecture [", $Config{archname},
         "] and compiler [", $Config{cc},"]. Not setting rpath.\n";
 }
+
+eval {
+    my $save;
+    open($save, ">&", \*STDERR);
+    my $null = $Config{osname} =~ /win32/ ? "nul" : "/dev/null";
+    open(STDERR, ">>", $null);
+    my $cmvc = qx{dspmqver};
+    if ($cmvc =~ m{CMVC level:\s+(\S+)}) {
+	$extra_args{DEFINE} .= " -DMQ_CMVC_LVALUE=\\\"$1\\\"";
+    }
+    open(STDERR, ">&", $save);
+};
 
 WriteMakefile(
               NAME              => "${apitype}::MQSeries",

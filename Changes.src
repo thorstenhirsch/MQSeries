@@ -3,6 +3,65 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.32
+
+The following fixes are included in the 1.32 release:
+
+=head2 ReasonQualifier Macro Translation
+
+Markus Sonderegger requested MQReasonQualifierToStrings(),
+MQReasonQualifierToMacro(), and MQReasonQualifierToText() functions
+(and the associated hashes) to translate the ReasonQualifier values to
+something more human-friendly.
+
+=head2 SSL Improvements
+
+SSLPeerName is now handled as part of the ClientConn passed to
+MQCONNX(), and also when passed as part of a channel definition when
+writing a channel table file.
+
+More SSL-related event types are now defined.
+
+=head2 MQSeries::Command fix for InquireChannelNames
+
+Investigation of a problem report with InquireChannelNames led to the
+discovery of a gap between the documentation and server-side
+implementation of InquireChannelNames.  Channel names are now taken
+from the last PCF response instead of the first on the grounds that
+that one is much more likely to contain the actual answer.
+
+=head2 Portability / Better code
+
+Some types were adjusted to better match the places where they are
+used and to avoid compiler warnings from some platforms/compilers.
+Similarly, some C++ style comments were changed to C comments so that
+pre-C99 compilers will be happy.
+
+The MQHMSG type is now translated to/from a perl type better.
+
+Macros that are defined to enable backwards compatible building
+against older MQ installs are now wrapped in #ifdef/#endif to avoid
+compiler warnings.
+
+The hex() function is now used to translate stringified hexadecimal
+into a number instead of eval().  Fix suggested by an anonymous
+well-intentioned problem ticket.
+
+A number of places in the code path for generation of a channel table
+could lead perl to emit warnings about undef.  Reasonable defaults
+have been applied to eliminate these.
+
+The test for MQSTAT() has been updated to match the current state of
+the art.
+
+=head2 MQSeries::Command fix for CreateObject
+
+CreateObject() would fail to create a local queue if a dynamic queue
+already existed with the same name because they have the same QType (a
+previously existing remote queue would be deleted first because the
+QType is different).  Now we also check the DefinitionType to see if a
+dynamic queue should be replaced with a local queue.
+
 =head1 Changes for 1.31
 
 The following fixes are included in the 1.31 release:
@@ -1902,9 +1961,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 33.4 2010/02/20 06:22:21 anbrown Exp $
+# $Id: Changes.src,v 36.3 2010/09/15 16:03:21 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

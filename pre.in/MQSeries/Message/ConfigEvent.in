@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ConfigEvent.in,v 33.1 2009/07/10 17:06:05 biersma Exp $
+# $Id: ConfigEvent.in,v 33.2 2010/04/01 16:25:04 anbrown Exp $
 #
-# (c) 2002-2009 Morgan Stanley & Co. Incorporated
+# (c) 2002-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

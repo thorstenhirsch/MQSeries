@@ -1,8 +1,8 @@
 # -*-c-*-
 #
-# $Id: 31MQCONNX-v5,v 33.1 2009/07/02 21:10:03 biersma Exp $
+# $Id: 31MQCONNX-v5,v 36.1 2010/08/02 20:16:57 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -35,7 +35,7 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
         if (hv_exists((HV*)SvRV(ST(1)),"ClientConn",10)) {
             SV     **cvp, **elem;
             HV      *options;
-            int      FieldSize;
+            size_t   FieldSize;
             STRLEN   StringLength;
             char    *String;
 
@@ -211,11 +211,21 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
           if (elem) {
               if (ConnectOpts.Version < MQCNO_VERSION_4)
                   ConnectOpts.Version = MQCNO_VERSION_4;
+              REQUIREATLEAST(ClientConnOpts.Version, MQCD_VERSION_7);
               FieldSize = sizeof(ClientConnOpts.SSLCipherSpec);
               String = SvPV(*elem, StringLength);
               strncpy(ClientConnOpts.SSLCipherSpec,
                       String,
                       StringLength > FieldSize ? FieldSize : StringLength);
+          }
+
+          /* SSLPeerName */
+          elem = hv_fetch(options, "SSLPeerName", 11, FALSE);
+          if (elem) {
+              STRLEN PeerLength;
+              char *peername = SvPV(*elem, PeerLength);
+              ClientConnOpts.SSLPeerNamePtr = peername;
+              ClientConnOpts.SSLPeerNameLength = strlen(peername);
           }
 
           /* KeepAliveInterval */
@@ -238,7 +248,7 @@ MQCONNX(Name,ConnectOpts,CompCode,Reason)
         if (hv_exists((HV*)SvRV(ST(1)),"SSLConfig",9)) {
             SV     **cvp, **elem;
             HV      *options;
-            int      FieldSize;
+            size_t   FieldSize;
             STRLEN   StringLength;
             char    *String;
 

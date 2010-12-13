@@ -15,6 +15,16 @@
 <ul>
 
 	<li><a href="#introduction">Introduction</a></li>
+	<li><a href="#changes_for_1_32">Changes for 1.32</a></li>
+	<ul>
+
+		<li><a href="#reasonqualifier_macro_translation">ReasonQualifier Macro Translation</a></li>
+		<li><a href="#ssl_improvements">SSL Improvements</a></li>
+		<li><a href="#mqseries__command_fix_for_inquirechannelnames">MQSeries::Command fix for InquireChannelNames</a></li>
+		<li><a href="#portability___better_code">Portability / Better code</a></li>
+		<li><a href="#mqseries__command_fix_for_createobject">MQSeries::Command fix for CreateObject</a></li>
+	</ul>
+
 	<li><a href="#changes_for_1_31">Changes for 1.31</a></li>
 	<ul>
 
@@ -325,6 +335,60 @@
 <h1><a name="introduction">Introduction</a></h1>
 <p>This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.</p>
+<p>
+</p>
+<hr />
+<h1><a name="changes_for_1_32">Changes for 1.32</a></h1>
+<p>The following fixes are included in the 1.32 release:</p>
+<p>
+</p>
+<h2><a name="reasonqualifier_macro_translation">ReasonQualifier Macro Translation</a></h2>
+<p>Markus Sonderegger requested MQReasonQualifierToStrings(),
+MQReasonQualifierToMacro(), and <code>MQReasonQualifierToText()</code> functions
+(and the associated hashes) to translate the ReasonQualifier values to
+something more human-friendly.</p>
+<p>
+</p>
+<h2><a name="ssl_improvements">SSL Improvements</a></h2>
+<p>SSLPeerName is now handled as part of the ClientConn passed to
+MQCONNX(), and also when passed as part of a channel definition when
+writing a channel table file.</p>
+<p>More SSL-related event types are now defined.</p>
+<p>
+</p>
+<h2><a name="mqseries__command_fix_for_inquirechannelnames">MQSeries::Command fix for InquireChannelNames</a></h2>
+<p>Investigation of a problem report with InquireChannelNames led to the
+discovery of a gap between the documentation and server-side
+implementation of InquireChannelNames.  Channel names are now taken
+from the last PCF response instead of the first on the grounds that
+that one is much more likely to contain the actual answer.</p>
+<p>
+</p>
+<h2><a name="portability___better_code">Portability / Better code</a></h2>
+<p>Some types were adjusted to better match the places where they are
+used and to avoid compiler warnings from some platforms/compilers.
+Similarly, some C++ style comments were changed to C comments so that
+pre-C99 compilers will be happy.</p>
+<p>The MQHMSG type is now translated to/from a perl type better.</p>
+<p>Macros that are defined to enable backwards compatible building
+against older MQ installs are now wrapped in #ifdef/#endif to avoid
+compiler warnings.</p>
+<p>The <code>hex()</code> function is now used to translate stringified hexadecimal
+into a number instead of eval().  Fix suggested by an anonymous
+well-intentioned problem ticket.</p>
+<p>A number of places in the code path for generation of a channel table
+could lead perl to emit warnings about undef.  Reasonable defaults
+have been applied to eliminate these.</p>
+<p>The test for <code>MQSTAT()</code> has been updated to match the current state of
+the art.</p>
+<p>
+</p>
+<h2><a name="mqseries__command_fix_for_createobject">MQSeries::Command fix for CreateObject</a></h2>
+<p><code>CreateObject()</code> would fail to create a local queue if a dynamic queue
+already existed with the same name because they have the same QType (a
+previously existing remote queue would be deleted first because the
+QType is different).  Now we also check the DefinitionType to see if a
+dynamic queue should be replaced with a local queue.</p>
 <p>
 </p>
 <hr />

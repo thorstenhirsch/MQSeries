@@ -1,7 +1,7 @@
 #
-# $Id: 50oo-command.t,v 33.6 2009/12/30 19:57:07 anbrown Exp $
+# $Id: 50oo-command.t,v 36.1 2010/09/27 19:57:29 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -138,6 +138,10 @@ SKIP: {
                 my $method = 'Inquire' . $type . 'Names';
                 my @names = $cmd->$method();
                 ok(@names, "Inquire $type Names");
+            }
+            else {
+                my @names = ({});
+                ok(@names, "Inquire $type Names (not supported)");
             }
 
             my $method = 'Inquire' . $type;

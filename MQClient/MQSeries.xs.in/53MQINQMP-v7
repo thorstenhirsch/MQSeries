@@ -1,8 +1,8 @@
 # -*-c-*-
 #
-# $Id: 53MQINQMP-v7,v 33.6 2010/02/02 16:38:37 anbrown Exp $
+# $Id: 53MQINQMP-v7,v 36.1 2010/08/02 20:22:46 anbrown Exp $
 #
-# (c) 2009 Morgan Stanley & Co. Incorporated
+# (c) 2009-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -130,10 +130,10 @@ MQINQMP(Hconn,Hmsg,InqPropOpts,Name,PropDesc,Type,Length,CompCode,Reason)
                 RETVAL = newSViv(*(PMQINT32)buffer);
                 break;
             case MQTYPE_INT64: /* 8 bytes */
-                if (sizeof(int) >= 8) {
-                    RETVAL = newSViv(*(PMQINT64)buffer);
+                if (sizeof(IV) >= 8) {
+                    RETVAL = newSViv((IV)*(PMQINT64)buffer);
                 } else {
-                    /* On systems with 32-bit int, return a string */
+                    /* On systems with 32-bit IV, return a string */
                     char   printed_number[32];
                     STRLEN len;
 

@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: MQSeries.pm.in,v 33.4 2009/12/30 19:53:41 anbrown Exp $
+# $Id: MQSeries.pm.in,v 36.1 2010/08/02 20:37:26 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -20,7 +20,7 @@ require "MQSeries/Constants.pl";
 our @ISA = qw(Exporter DynaLoader);
 our (@EXPORT, %EXPORT_TAGS, $AUTOLOAD);
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 $MQSeries::MQ_VERSION = __MQ_VERSION__; # Set to 5, 6 or 7 at compile time
 
 #
@@ -82,6 +82,10 @@ BEGIN {
                             MQReasonToStrings
                             MQReasonToText
                             MQReasonToMacro
+
+                            MQReasonQualifierToStrings
+                            MQReasonQualifierToText
+                            MQReasonQualifierToMacro
                            )
                          ],
         'constants' => [ qw(
@@ -115,6 +119,27 @@ sub MQReasonToStrings {
 	    $MQSeries::Constants::ReasonText{$reason},
 	    $MQSeries::Constants::ReasonMacro{$reason}
 	   );
+}
+
+
+sub MQReasonQualifierToText {
+    my ($reasonqualifier) = @_;
+    return (MQReasonToStrings($reasonqualifier))[0];
+}
+
+
+sub MQReasonQualifierToMacro {
+    my ($reasonqualifier) = @_;
+    return (MQReasonToStrings($reasonqualifier))[1];
+}
+
+
+sub MQReasonQualifierToStrings {
+    my ($reasonqualifier) = @_;
+    return (
+            $MQSeries::Constants::ReasonQualifierText{$reasonqualifier},
+            $MQSeries::Constants::ReasonQualifierMacro{$reasonqualifier}
+           );
 }
 
 

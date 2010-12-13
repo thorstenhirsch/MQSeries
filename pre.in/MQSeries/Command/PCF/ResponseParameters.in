@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ResponseParameters.in,v 33.2 2009/07/30 12:04:18 biersma Exp $
+# $Id: ResponseParameters.in,v 36.1 2010/09/27 19:56:19 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -143,6 +143,7 @@ package MQSeries::Command::PCF;
     CurrentLog			=> [ &MQCACF_CURRENT_LOG_EXTENT_NAME,	&MQCFT_STRING ],
     LogPath			=> [ &MQCACF_LOG_PATH,			&MQCFT_STRING ],
     MediaRecoveryLog		=> [ &MQCACF_MEDIA_LOG_EXTENT_NAME,	&MQCFT_STRING ],
+    PermitStandby		=> [ &MQIACF_PERMIT_STANDBY,		&MQCFT_INTEGER ],
     QMgrName			=> [ &MQCA_Q_MGR_NAME,			&MQCFT_STRING ],
     QMgrStatus			=> [ &MQIACF_Q_MGR_STATUS,		&MQCFT_INTEGER,	$ResponseValues{QMgrStatus}  ],
     RestartRecoveryLog		=> [ &MQCACF_RESTART_LOG_EXTENT_NAME,	&MQCFT_STRING ],
@@ -544,6 +545,7 @@ package MQSeries::Command::PCF;
     AuthInfoType		=> [ &MQIA_AUTH_INFO_TYPE,		&MQCFT_INTEGER,                $ResponseValues{AuthInfoType} ],
     LDAPPassword		=> [ &MQCA_LDAP_PASSWORD,		&MQCFT_STRING ],
     LDAPUserName		=> [ &MQCA_LDAP_USER_NAME,		&MQCFT_STRING ],
+    OCSPResponderURL		=> [ &MQCA_AUTH_INFO_OCSP_URL,		&MQCFT_STRING ],
     ResponseId			=> [ &MQBACF_RESPONSE_ID,		&MQCFT_BYTE_STRING ],
     ResponseQMgrName		=> [ &MQCACF_RESPONSE_Q_MGR_NAME,	&MQCFT_STRING ],
     QSGDisposition		=> [ &MQIA_QSG_DISP,			&MQCFT_INTEGER,		$ResponseValues{QSGDisposition} ],
@@ -738,6 +740,7 @@ package MQSeries::Command::PCF;
 
    Connection =>
    {
+    ApplDesc		       => [ &MQCACF_APPL_DESC,			&MQCFT_STRING ],
     ApplTag		       => [ &MQCACF_APPL_TAG,			&MQCFT_STRING ],
     ApplType		       => [ &MQIA_APPL_TYPE,			&MQCFT_INTEGER,	        $ResponseValues{ConnApplType} ],
     ASID		       => [ &MQCACF_ASID,			&MQCFT_STRING ],
@@ -932,6 +935,7 @@ package MQSeries::Command::PCF;
     PublishedApplicationIdentifier => [ &MQCACF_APPL_IDENTITY_DATA,	&MQCFT_STRING ],
     RequestOnly			=> [ &MQIACF_REQUEST_ONLY,		&MQCFT_INTEGER,		$ResponseValues{RequestOnly} ],
     Selector			=> [ &MQCACF_SUB_SELECTOR,		&MQCFT_STRING ],
+    SelectorType		=> [ &MQIACF_SELECTOR_TYPE,		&MQCFT_INTEGER ],
     SubId			=> [ &MQBACF_SUB_ID,			&MQCFT_BYTE_STRING ],
     SubName			=> [ &MQCACF_SUB_NAME,			&MQCFT_STRING ],
     SubscriptionLevel		=> [ &MQIACF_SUB_LEVEL,			&MQCFT_INTEGER ],

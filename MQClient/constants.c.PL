@@ -1,7 +1,7 @@
 #
-# $Id: constants.c.PL,v 33.2 2009/07/15 20:26:19 biersma Exp $
+# $Id: constants.c.PL,v 36.1 2010/08/02 20:15:37 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -64,11 +64,15 @@ EndOfText
     ;
     foreach my $name (sort keys %extra_hex) {
 	my $value = $extra_hex{$name};
+	print "#ifndef $name\n";
 	printf "#define $name 0x%04x\n", $value;
+	print "#endif /* $name */\n";
     }
     foreach my $name (sort keys %extra_num) {
 	my $value = $extra_num{$name};
+	print "#ifndef $name\n";
 	print "#define $name $value\n";
+	print "#endif /* $name */\n";
     }
     print "\n\n";
 }

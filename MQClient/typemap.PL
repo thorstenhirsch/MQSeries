@@ -1,7 +1,7 @@
 #
-# $Id: typemap.PL,v 33.2 2009/12/03 16:44:16 anbrown Exp $
+# $Id: typemap.PL,v 36.1 2010/08/02 19:59:30 anbrown Exp $
 #
-# (c) 1999-2009 Morgan Stanley & Co. Incorporated
+# (c) 1999-2010 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Script to generate a typemap from the MQSeries header files
@@ -91,12 +91,16 @@ while ( <> ) {
 
         if ($fieldt eq 'MQLONG' ||
             $fieldt eq 'MQHOBJ' ||
-            $fieldt eq 'MQHMSG' ||
             $fieldt eq 'MQBOOL') {
             $strlen = length($field);
 
             $input{$type} .= &long_input($field);
             $output{$type} .= &long_output($field);
+
+        } elsif ($fieldt eq 'MQHMSG') {
+            # MQHMSG is a MQINT64, not a MQLONG (or MQULONG)
+            $input{$type} .= &int64_input($field);
+            $output{$type} .= &int64_output($field);
 
         } elsif ($fieldt =~ /^MQCHAR(\d*)$/) {
             $size = $1;
@@ -116,7 +120,7 @@ while ( <> ) {
             $input{$type} .= &byte_input($field, $size);
 	} elsif ($fieldt eq 'MQCHARV') {
             $input{$type} .= &charv_input($field);
-            #$output{$type} .= &charv_output($field);
+            $output{$type} .= &charv_output($field);
         } else {
             warn "$0: warning: type $type.$field ($fieldt) not supported\n";
         }
@@ -242,6 +246,47 @@ sub long_output {
     return <<"EOF";
         hv_store((HV*)SvRV(\$arg),\\"$field\\",$strlen,
                  (newSViv(\$var.$field)),$hash);
+EOF
+}
+#==============================================================================
+sub int64_input {
+    my($field) = @_;
+    my($strlen) = length($field);
+
+    return <<"EOF";
+        if (hv_exists((HV*)SvRV(\$arg),\\"$field\\",$strlen)) {
+          SV *Value = *(hv_fetch((HV*)SvRV(\$arg),\\"$field\\",$strlen,0));
+          if (sizeof(IV) >= 8 || SvIOKp(Value)) {
+            \$var.$field = (MQINT64)SvIV(Value);
+          } else {
+            char   *val;
+            STRLEN  len;
+            val = SvPV(Value, len);
+            if (!sscanf(val, \\"%\\" SCNdLEAST64, &\$var.$field)) {
+              croak(\\"Cannot turn string '%s' into a 64-bit number\\", val);
+            }
+          }
+        }
+EOF
+}
+#==============================================================================
+sub int64_output {
+    my($field, $hash) = @_;
+    my($strlen) = length($field);
+
+    $hash = 0 unless $hash;
+    return <<"EOF";
+        if (sizeof(IV) >= 8) {
+          hv_store((HV*)SvRV(\$arg),\\"$field\\",$strlen,
+                   (newSViv((IV)\$var.$field)),$hash);
+        } else {
+          char   printed_number[32];
+          STRLEN len;
+          sprintf(printed_number, \\"%\\" PRIdLEAST64, \$var.$field);
+          len = strlen((const char *)printed_number);
+          hv_store((HV*)SvRV(\$arg),\\"$field\\",$strlen,
+                   (newSVpvn(printed_number,len)),$hash);
+        }
 EOF
 }
 #==============================================================================

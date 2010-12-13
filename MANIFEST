@@ -73,6 +73,8 @@ MQSeries/Constants.pl
 MQSeries/Constants/AttributeLength.pl
 MQSeries/Constants/AttributeString.pl
 MQSeries/Constants/ReasonMacro.pl
+MQSeries/Constants/ReasonQualifierMacro.pl
+MQSeries/Constants/ReasonQualifierText.pl
 MQSeries/Constants/ReasonText.pl
 MQSeries/Constants/StringAttribute.pl
 MQSeries/Constants/ValidPutMsgRecFields.pl
@@ -129,6 +131,8 @@ pre.in/MQSeries/Command/PCF/Responses.in
 pre.in/MQSeries/Constants/AttributeLength.in
 pre.in/MQSeries/Constants/AttributeString.in
 pre.in/MQSeries/Constants/ReasonMacro.in
+pre.in/MQSeries/Constants/ReasonQualifierMacro.in
+pre.in/MQSeries/Constants/ReasonQualifierText.in
 pre.in/MQSeries/Constants/ReasonText.in
 pre.in/MQSeries/Constants/StringAttribute.in
 pre.in/MQSeries/Constants/ValidPutMsgRecFields.in

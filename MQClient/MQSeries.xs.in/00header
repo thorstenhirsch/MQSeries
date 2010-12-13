@@ -10,10 +10,10 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: 00header,v 33.2 2009/12/03 16:43:14 anbrown Exp $";
+static char rcsid[] = "$Id: 00header,v 36.1 2010/08/02 20:25:23 anbrown Exp $";
 
 /*
-  (c) 1999-2009 Morgan Stanley & Co. Incorporated
+  (c) 1999-2010 Morgan Stanley & Co. Incorporated
   See ..../src/LICENSE for terms of distribution.
  */	
 
@@ -93,3 +93,27 @@ mqstrnlen(const char *s, size_t maxlen)
 		len++;
 	return (len);
 }
+
+/*
+ * PRIdLEAST64 and SCNdLEAST64 are a late additions to C99, but we may
+ * have the non-least versions.
+ */
+#if !defined(PRIdLEAST64)
+#if !defined(PRId64)
+#define PRIdLEAST64 "lld"
+#else /* defined(PRId64) */
+#define PRIdLEAST64 PRId64
+#endif /* defined(PRId64) */
+#endif /* defined(PRIdLEAST64) */
+#if !defined(SCNdLEAST64)
+#if !defined(SCNd64)
+#define SCNdLEAST64 "lld"
+#else /* defined(SCNd64) */
+#define SCNdLEAST64 SCNd64
+#endif /* defined(SCNd64) */
+#endif /* defined(SCNdLEAST64) */
+
+/*
+ * Some things require a specific level for various structure versions.
+ */
+#define REQUIREATLEAST(x, y) do { if ((x) < (y)) (x) = (y); } while (0)
