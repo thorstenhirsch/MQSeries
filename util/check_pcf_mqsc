@@ -2,10 +2,10 @@
 #
 # check_pcf_mqsc - Cross-check the PCF and MQSC command tables
 #
-# (c) 2005-2010 Morgan Stanley & Co. Incorporated
+# (c) 2005-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: check_pcf_mqsc,v 33.2 2010/04/01 16:25:06 anbrown Exp $
+# $Id: check_pcf_mqsc,v 33.3 2011/01/03 15:05:04 anbrown Exp $
 #
 
 use strict;

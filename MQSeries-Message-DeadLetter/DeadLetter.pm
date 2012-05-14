@@ -1,7 +1,7 @@
 #
-# $Id: DeadLetter.pm,v 33.7 2010/04/01 16:24:47 anbrown Exp $
+# $Id: DeadLetter.pm,v 33.9 2011/01/03 15:04:44 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,7 +16,7 @@ use Exporter;
 use MQSeries qw(:functions);
 use MQSeries::Message;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 our @ISA = qw( MQSeries::Message Exporter DynaLoader );
 our @EXPORT_OK = qw(MQDecodeDeadLetter MQEncodeDeadLetter);
 

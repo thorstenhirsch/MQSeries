@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 36.3 2010/09/15 15:55:52 anbrown Exp $
+# $Id: Command.pm,v 37.8 2011/05/27 16:18:20 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -22,7 +22,7 @@ use MQSeries::Command::Response;
 use MQSeries::Utils qw(ConvertUnit);
 use Params::Validate qw(validate);
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 sub new {
     my $proto = shift;
@@ -48,7 +48,7 @@ sub new {
       {
        Reason                   => 0,
        CompCode                 => 0,
-       CommandVersion           => 1,
+       CommandVersion           => MQSeries::MQCFH_VERSION_1,
        Wait                     => 60000, # 60 second wait for replies...
        #Expiry                  => 600, # 60 second expiry on requests
        Expiry                   => 999999999,
@@ -226,6 +226,19 @@ sub new {
         if (defined $args{$parameter}) {
             $self->{$parameter} = ConvertUnit($parameter, $args{$parameter});
         }
+    }
+
+    #
+    # CommandVersion may need to be bumped if we're talking to a MVS
+    # qmgr and we stayed with the default of MQCFH_VERSION_1.  We
+    # should be able to determine this now that we're actually
+    # connected to the qmgr.  Note that if you're using a proxy qmgr,
+    # this may still end up wrong, so the caller should really do this
+    # for us.
+    #
+    if (!defined($args{"CommandVersion"}) &&
+        $self->{"QueueManager"}->{"QMgrConfig"}->{"Platform"} eq "MVS") {
+        $self->{"CommandVersion"} = MQSeries::MQCFH_VERSION_3;
     }
 
     #
@@ -631,6 +644,10 @@ sub CreateObject {
             $Changes->{'QType'} = $Attrs->{'QType'};
         } elsif ($Key eq 'ChannelName') {
             $Changes->{'ChannelType'} = $Attrs->{'ChannelType'};
+        } elsif ($Key eq 'AuthInfoName' &&
+                defined($self->{QueueManager}->{QMgrConfig}) &&
+                $self->{QueueManager}->{QMgrConfig}->{CommandLevel} >= 700) {
+            $Changes->{'AuthInfoType'} = $Attrs->{'AuthInfoType'};
         }
     }
 
@@ -639,15 +656,23 @@ sub CreateObject {
     # QSGDisposition has changed, we'll have to delete the
     # old object first.
     #
+    # This looks complicated because you don't want to alter a dynamic
+    # queue that should be recreated as a real local queue (you want
+    # to delete it first) or fail to delete a permdyn queue that
+    # should be a tempdyn queue (but don't delete model queues where
+    # this is true), etc.
+    #
     # NOTE: We do *not* purge, unless the 'Clear' flag is specified.
     # That should be checked out manually, as it will be an odd case
     # anyway.  In any event, this will be somewhat rare.
     #
     my $delete_first = 0;
     if ($Key eq 'QName' && $Object &&
-       ($Attrs->{QType} ne $Object->{QType} || 
-       (defined $Attrs->{DefinitionType} && defined $Object->{QType} &&
-       $Attrs->{DefinitionType} ne $Object->{QType} ) ) ) {
+        ($Attrs->{QType} ne $Object->{QType} ||
+         (defined $Attrs->{DefinitionType} &&
+          defined $Object->{DefinitionType} &&
+          $Attrs->{QType} ne 'Model' &&
+          $Attrs->{DefinitionType} ne $Object->{DefinitionType} ) ) ) {
         $delete_first = 1;
     } elsif ($Object) {
         foreach my $fld (qw(QSGDisposition
@@ -658,7 +683,7 @@ sub CreateObject {
         }
     }
     if ($delete_first) {
-        print "Deleting $Object->{QType} $QMgr/$Attrs->{$Key}'\n"
+        print "Deleting $Type $QMgr/$Attrs->{$Key}'\n"
           unless $Quiet;
 
         #
@@ -712,9 +737,6 @@ sub CreateObject {
     my $disp_field = 'QSGDisposition';
     if (defined $Object->{$disp_field}) {
         $Changes->{$disp_field} = $Object->{$disp_field};
-    }
-    if (defined $Changes->{'DefinitionType'}) {
-        delete $Changes->{'DefinitionType'};
     }
 
     #
@@ -825,6 +847,17 @@ sub _Command {
     }
 
     #
+    # If you are (re)creating a non-dynamic local queue, you should
+    # not specify DefinitionType=Predefined.  It was needed above in
+    # order to see if we need to pre-delete a dynamic local queue, but
+    # it should go no further.
+    #
+    if ($command eq "CreateQueue" && $parameters->{"DefinitionType"} &&
+        $parameters->{"DefinitionType"} eq "Predefined") {
+        delete($parameters->{"DefinitionType"});
+    }
+
+    #
     # Allow 'GenericConnectionId' of InquireConnection to default to '00'
     #
     if ( $command eq 'InquireConnection' ) {
@@ -928,7 +961,8 @@ sub _Command {
     #
     {
         $self->{'Stats'}->{'NoRequests'}++;
-        my $put_size = length($self->{'Request'}->Buffer());
+        my $put_size = !defined($self->{'Request'}->Buffer()) ? 0 :
+          length($self->{'Request'}->Buffer());
         $self->{'Stats'}->{'RequestBytes'} += $put_size;
         $self->{'Stats'}->{'MaxRequest'} = $put_size
           if (! defined $self->{'Stats'}->{'MaxRequest'} ||
@@ -1346,7 +1380,7 @@ MQSeries::Command - OO interface to the Programmable Commands
   # InquireConnection)
   #
   my $command = MQSeries::Command->new(QueueManager   => $qmgr_obj,
-                                       CommandVersion => 3);
+                               CommandVersion => MQSeries::MQCFH_VERSION_3);
     or die("Unable to instantiate command object\n");
 
   #
@@ -1680,7 +1714,7 @@ follows to use PCF commands:
       new('ProxyQueueManager' => 'UNIXQM', # Also ReplyToQMgr
           'RealQueueManager'  => 'CSQ1',   # Displayed in messages
           'Type'              => 'PCF',
-          'CommandVersion'    => 3,
+          'CommandVersion'    => MQSeries::MQCFH_VERSION_3,
           'CommandQueue'      => $queue,
          ) ||
       die "Cannot create command";

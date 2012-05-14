@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_config,v 33.2 2010/04/01 16:25:08 anbrown Exp $
+# $Id: parse_config,v 33.4 2011/05/17 20:44:42 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Parse our config file to get the parameters we need
@@ -25,6 +25,9 @@ use File::Basename;
 #
 use Config;
 if ( $Config{osname} =~ /irix/ ) {
+    $ENV{PERL_DL_NONLAZY} = '0';
+}
+elsif ( $ENV{FORCE_PERL_DL_NONLAZY} ) {
     $ENV{PERL_DL_NONLAZY} = '0';
 }
 

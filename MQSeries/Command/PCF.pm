@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 33.7 2010/04/01 16:24:52 anbrown Exp $
+# $Id: PCF.pm,v 37.3 2011/06/01 18:33:20 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,7 +10,7 @@ package MQSeries::Command::PCF;
 use strict;
 
 our @ISA = qw(MQSeries::Command);
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 use MQSeries qw(:functions);
 
@@ -130,6 +130,7 @@ sub _ReverseMap {
 
         foreach my $parameter ( keys %$ForwardParameterMap ) {
 
+            my $ForwardType = $ForwardParameterMap->{$parameter}->[1];
             my $ForwardValueMap = $ForwardParameterMap->{$parameter}->[2];
 
             if ( ref $ForwardValueMap eq 'HASH' ) {
@@ -137,12 +138,38 @@ sub _ReverseMap {
                 my $ReverseValueMap = {};
 
                 foreach my $value ( keys %$ForwardValueMap ) {
-                    $ReverseValueMap->{ $ForwardValueMap->{$value} } = $value;
+                    if ($ForwardType == MQSeries::MQCFT_GROUP) {
+                        #
+                        # Groups have a $valuemap that's actually a
+                        # regular map (for mapping the subparams) so
+                        # we flip the key and primary value to produce
+                        # almost the same, instead of just inverting
+                        # the mapping.
+                        #
+                        $ReverseValueMap->{$ForwardValueMap->{$value}->[0]} =
+                            [
+                             $value,
+                             $ForwardValueMap->{$value}->[2],
+                            ];
+                    }
+                    else {
+                        $ReverseValueMap->{$ForwardValueMap->{$value}} =
+                            $value;
+                    }
                 }
 
 
                 $ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
                   [ $parameter, $ReverseValueMap ];
+
+            } elsif (ref($ForwardValueMap) eq "CODE") {
+
+                # VALUEMAP-CODEREF
+                # This is "needed" for KeepAliveInterval value
+                # handling, but isn't properly supported (yet) for
+                # non-MQCFT_INTEGER types.
+                $ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
+                  [ $parameter, $ForwardValueMap ];
 
             } else {
 

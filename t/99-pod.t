@@ -1,4 +1,11 @@
 #
+# $Id: 99-pod.t,v 33.3 2011/01/03 15:05:03 anbrown Exp $
+#
+# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# See ..../src/LICENSE for terms of distribution.
+#
+
+#
 # Morgan Stanley versioning - ignore
 #
 BEGIN {

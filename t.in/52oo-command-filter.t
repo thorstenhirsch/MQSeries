@@ -1,7 +1,7 @@
 #
-# $Id: 52oo-command-filter.t,v 33.3 2010/04/01 16:25:06 anbrown Exp $
+# $Id: 52oo-command-filter.t,v 33.7 2011/05/18 15:47:29 anbrown Exp $
 #
-# (c) 2009-2010 Morgan Stanley & Co. Incorporated
+# (c) 2009-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Additional MQSeries::Command test to create, copy, change and delete
@@ -10,19 +10,20 @@
 
 use strict;
 use warnings;
-use Data::Dumper;
-use Test::More tests => 86;
-BEGIN {
-    our $VERSION = '1.31';
-    use_ok('__APITYPE__::MQSeries' => $VERSION);
-    use_ok('MQSeries::QueueManager' => $VERSION);
-    use_ok('MQSeries::Command' => $VERSION);
-}
 
 our %myconfig;
 our $systemdir;
 BEGIN {
     require "../util/parse_config";
+}
+
+use Data::Dumper;
+use Test::More tests => 86;
+BEGIN {
+    our $VERSION = '1.33';
+    use_ok('__APITYPE__::MQSeries' => $VERSION);
+    use_ok('MQSeries::QueueManager' => $VERSION);
+    use_ok('MQSeries::Command' => $VERSION);
 }
 
 SKIP: {
@@ -37,7 +38,7 @@ SKIP: {
     #
     # We'll only test MQSeries::Command if we run as user 'mqm'
     #
-    my $username = ($^O =~ /^MSWin / ? $ENV{USERNAME} : getpwuid($<));
+    my $username = ($^O =~ /^MSWin/ ? $ENV{USERNAME} : getpwuid($<));
     unless (lc $username eq 'mqm') {
         skip("Not testing MQSeries::Command unless running as user 'mqm', not '$username'", 83);
     }

@@ -4,7 +4,7 @@
 # (c) 200-2009 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Machine.pm,v 33.6 2010/04/01 16:15:38 anbrown Exp $
+# $Id: Machine.pm,v 33.7 2010/12/30 22:52:05 anbrown Exp $
 #
 
 package MQSeries::Config::Machine;
@@ -12,7 +12,7 @@ package MQSeries::Config::Machine;
 use strict;
 use Carp;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 #
 # Constructor: Read and parse the /var/mqm/mqs.ini file.

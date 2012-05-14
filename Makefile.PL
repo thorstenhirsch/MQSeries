@@ -1,8 +1,8 @@
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 33.4 2010/04/01 16:24:58 anbrown Exp $
+# $Id: Makefile.PL,v 33.5 2011/01/03 15:04:55 anbrown Exp $
 #
 use English;
 use ExtUtils::MakeMaker;

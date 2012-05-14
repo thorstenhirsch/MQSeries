@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameters.pl,v 33.2 2010/04/01 16:24:50 anbrown Exp $
+# $Id: RequestParameters.pl,v 33.9 2011/05/27 19:20:32 jettisu Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -42,6 +42,7 @@ package MQSeries::Command::MQSC;
     DefXmitQName		=> [ "DEFXMITQ",	"string" ],
     ExpiryInterval              => [ "EXPRYINT",        "string" ], # OFF / Number
     Force			=> [ "FORCE" ],
+    GroupUR			=> [ "GROUPUR" ,        $RequestValues{Enabled} ],
     IGQPutAuthority             => [ "IGQAUT" ,        $RequestValues{IGQPutAuthority} ],
     InhibitEvent		=> [ "INHIBTEV",	$RequestValues{Enabled} ],
     IGQPutAuthority         => [ "IGQAUT",          $RequestValues{IGQPutAuthority} ],
@@ -58,11 +59,19 @@ package MQSeries::Command::MQSC;
     MaxActiveChannels           => [ "ACTCHL",          "integer" ],
     MaxChannels                 => [ "MAXCHL",          "integer" ],
     MaxMsgLength		=> [ "MAXMSGL",		"integer" ],
+    MaxPropertiesLength		=> [ "MAXPROPL",	$RequestValues{MaxPropertiesLength} ],
     MaxUncommittedMsgs		=> [ "MAXUMSGS", 	"integer" ],
+    MsgMarkBrowseInterval	=> [ "MARKINT",		$RequestValues{MsgMarkBrowseInterval} ],
     NonPersistentMsgClass       => [ "NPMCLASS",        $RequestValues{NonPersistentMsgClass} ],
     OutboundPortMax             => [ "OPORTMAX",        "integer" ],
     OutboundPortMin             => [ "OPORTMIN",        "integer" ],
+    Parent			=> [ "PARENT",		"string" ],
     PerformanceEvent		=> [ "PERFMEV",		$RequestValues{Enabled} ],
+    PubSubMaxMsgRetryCount	=> [ "PSRTYCNT",	"integer" ],
+    PubSubMode			=> [ "PSMODE",		$RequestValues{PubSubMode} ],
+    PubSubNPInputMsg		=> [ "PSNPMSG",		$RequestValues{PubSubNPInputMsg} ],
+    PubSubNPResponse		=> [ "PSNPRES",		$RequestValues{PubSubNPResponse} ],
+    PubSubSyncPoint		=> [ "PSSYNCPT",	$RequestValues{PubSubSyncPoint} ],
     QMgrDesc			=> [ "DESCR", 		"string" ],
     QMgrAttrs			=> [ "",		$RequestValues{QMgrAttrs} ],
     QueueAccounting             => [ "ACCTQ",           $RequestValues{QMgrAccounting} ],
@@ -73,6 +82,7 @@ package MQSeries::Command::MQSC;
     RemoteEvent			=> [ "REMOTEEV",	$RequestValues{Enabled} ],
     RepositoryName 		=> [ "REPOS",		"string" ],
     RepositoryNamelist		=> [ "REPOSNL",		"string" ],
+    SecurityCase		=> [ "SCYCASE",		$RequestValues{SecurityCase} ],
     SharedQQMgrName             => [ "SQQMNAME",        $RequestValues{SharedQQMgrName} ],
     SSLCRLNamelist              => [ "SSLCRLNL",        "string" ],
     SSLEvent                    => [ "SSLEV",           $RequestValues{Enabled} ],
@@ -86,6 +96,7 @@ package MQSeries::Command::MQSC;
     TCPStackType                => [ "TCPSTACK",        $RequestValues{TCPStackType} ],
     TraceRouteRecording         => [ "ROUTEREC",        $RequestValues{TraceRouteRecording} ],
     TriggerInterval		=> [ "TRIGINT", 	"integer" ],
+    TreeLifeTime		=> [ "TREELIFE", 	"integer" ],
    },
 
    Process =>
@@ -115,6 +126,7 @@ package MQSeries::Command::MQSC;
     BackoutRequeueName		=> [ "BOQNAME",		"string" ],
     BackoutThreshold		=> [ "BOTHRESH", 	"integer" ],
     BaseQName			=> [ "TARGQ", 		"string" ],
+    BaseType			=> [ "TARGTYPE",	$RequestValues{BaseType} ],
     CommandScope                => [ "CMDSCOPE",        "string" ],
     # CFStructure is for backwards compatibility with pre-1.24 (new: CFStructure)
     CFStructure                => [ "CFSTRUCT",        "string" ],
@@ -126,6 +138,8 @@ package MQSeries::Command::MQSC;
     DefInputOpenOption		=> [ "DEFSOPT",		$RequestValues{DefInputOpenOption} ],
     DefPersistence		=> [ "DEFPSIST",	$RequestValues{Yes} ],
     DefPriority			=> [ "DEFPRTY", 	"integer" ],
+    DefReadAhead		=> [ "DEFREADA", 	$RequestValues{DefReadAhead} ],
+    DefPutResponse		=> [ "DEFPRESP", 	$RequestValues{DefPutResponse} ],
     DefinitionType		=> [ "DEFTYPE", 	$RequestValues{DefinitionType} ],
     DistLists			=> [ "DISTL",		$RequestValues{Yes} ],
     Force			=> [ "FORCE" ],
@@ -138,6 +152,7 @@ package MQSeries::Command::MQSC;
     MaxQDepth			=> [ "MAXDEPTH",	"integer" ],
     MsgDeliverySequence		=> [ "MSGDLVSQ",	$RequestValues{MsgDeliverySequence} ],
     ProcessName			=> [ "PROCESS",		"string" ],
+    PropertyControl		=> [ "PROPCTL",		$RequestValues{PropertyControl} ],
     QDepthHighEvent		=> [ "QDPHIEV",		$RequestValues{Enabled} ],
     QDepthHighLimit		=> [ "QDEPTHHI",	"integer" ],
     QDepthLowEvent		=> [ "QDPLOEV",		$RequestValues{Enabled} ],
@@ -210,15 +225,18 @@ package MQSeries::Command::MQSC;
     ChannelMonitoring           => [ "MONCHL",          $RequestValues{QueueMonitoring} ],
     ChannelTable		=> [ "CHLTABLE", 	$RequestValues{ChannelTable} ],
     ChannelType 		=> [ "CHLTYPE",		$RequestValues{ChannelType} ],
+    ClientChannelWeight		=> [ "CLNTWGHT",	"integer" ],
     ClusterName			=> [ "CLUSTER",		"string" ],
     ClusterNamelist		=> [ "CLUSNL",		"string" ],
     CLWLChannelRank             => [ "CLWLRANK",        "integer" ],
     CLWLChannelPriority         => [ "CLWLPRTY",        "integer" ],
     CLWLChannelWeight           => [ "CLWLWGHT",        "integer" ],
     CommandScope                => [ "CMDSCOPE",        "string" ],
+    ConnectionAffinity		=> [ "AFFINITY",	$RequestValues{ConnectionAffinitity} ],
     ConnectionName		=> [ "CONNAME",		"string" ],
     DataConversion		=> [ "CONVERT",		$RequestValues{Yes} ],
     DataCount			=> [ "DATALEN",		"integer" ],
+    DefaultChannelDisposition	=> [ "DEFCDISP",	$RequestValues{ChannelDisposition} ],
     DiscInterval		=> [ "DISCINT",		"integer" ],
     EnvironmentParameters	=> [ "ENVPARM",		"string" ],
     FromChannelName		=> [ "LIKE",		"string" ],
@@ -228,9 +246,11 @@ package MQSeries::Command::MQSC;
     InitiationQName 		=> [ "INITQ",		"string" ],
     LongRetryCount		=> [ "LONGRTY",		"integer" ],
     LongRetryInterval		=> [ "LONGTMR",		"integer" ],
-    KeepAliveInterval           => [ "KAINT",           "string" ], # 0/AUTO/integer
+    KeepAliveInterval           => [ "KAINT",           $RequestValues{KeepAliveInterval} ],
     LocalAddress                => [ "LOCLADDR",        "string" ],
     LUName			=> [ "LUNAME",		"string" ],
+    MaxInstances		=> [ "MAXINST",		"integer" ],
+    MaxInstancesPerClient	=> [ "MAXINSTC",	"integer" ],
     MCAName			=> [ "MCANAME",		"string" ],
     MCAType			=> [ "MCATYPE",		$RequestValues{MCAType} ],
     MCAUserIdentifier		=> [ "MCAUSER",		"string" ],
@@ -249,6 +269,7 @@ package MQSeries::Command::MQSC;
     Parameter			=> [ "PARM",		"string" ],
     Password			=> [ "PASSWORD",	"string" ],
     Port			=> [ "PORT",		"integer" ],
+    PropertyControl		=> [ "PROPCTL",		$RequestValues{PropertyControl} ],
     PutAuthority		=> [ "PUTAUT",		$RequestValues{PutAuthority} ],
     QMgrName			=> [ "QMNAME",		"string" ],
     QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
@@ -262,6 +283,7 @@ package MQSeries::Command::MQSC;
     SendExit			=> [ "SENDEXIT",	"string" ],
     SendUserData		=> [ "SENDDATA",	"string" ],
     SeqNumberWrap		=> [ "SEQWRAP",		"integer" ],
+    SharingConversations	=> [ "SHARECNV",	"integer" ],
     ShortRetryCount		=> [ "SHORTRTY",	"integer" ],
     ShortRetryInterval		=> [ "SHORTTMR",	"integer" ],
     SSLCipherSpec               => [ "SSLCIPH",         "string" ],
@@ -362,6 +384,7 @@ package MQSeries::Command::MQSC;
     AuthInfoType                => [ "AUTHTYPE",        $RequestValues{AuthInfoType} ],
     LDAPPassword                => [ "LDAPPWD",         "string" ],
     LDAPUserName                => [ "LDAPUSER",        "string" ],
+    OCSPResponderURL		=> [ "OCSPURL",		"string" ],
     QSGDisposition    => [ "QSGDISP",         $RequestValues{QSGDisposition} ],
    # QSGDisposition		=> [ "QSGDISP",         $RequestValues{QSGDisposition} ],
     AuthInfoAttrs               => [ "",                $RequestValues{AuthInfoAttrs} ],

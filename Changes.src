@@ -3,6 +3,70 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.33
+
+=head2 Major work on Statistics messages and PCF types
+
+Support for the decoding of MQ v6 Accounting/Statistics messages was
+added to the PCF decoder, along with the new types these messages use.
+Though not strictly necessary, support for these types (MQCFT_GROUP,
+MQCFT_INTEGER64, and MQCFT_INTEGER64_LIST) is intended to be complete
+throughout the PCF framework, so encoding should work as well.
+
+New message subtypes MQSeries::Message::Accounting and
+MQSeries::Message::Statistics were added for this, both of which are
+derived from the new MQSeries::Message::System class, which mainly
+exists to handle the decoding of the messages.  The already existing
+MQSeries::Message::Event class was reparented to here.
+
+=head2 MQSC and PCF enhancements
+
+The encoding/decoding for KeepAliveInterval has been addressed, and
+support for more PCF and MQSC commands have been added, and more MQ v7
+items and types were included as well.  This should make the
+administration of a z/OS queue manager more complete.
+
+Note that as a part of this, the CreateAuthInfo and ChangeAuthInfo
+commands now require the AuthInfoType parameter which was previously
+optional.
+
+=head2 Minor tweaks
+
+MQSeries::Queue now allows a queue to be called "0".  Previously this
+was mistaken to be a false value (ok, it is, but it's also a defined
+and non-zero-length string, so you should be able to use it).
+
+MQSeries::Command was mixing up the DefinitionType setting on queues
+when creating or updating local and model queues.  In particular, you
+may end up with a PermDyn model queue where this is wrong, or the
+failure to delete a dynamic queue, in order to recreate as a local
+queue.
+
+MQSeries::QueueManager now explicitly sets the get/put counters it
+keeps to 0.  This is to eliminate messages of the form:
+
+    Currently  puts and 3 gets pending
+
+where the number of "puts" is simply missing.
+
+An old bug in MQSeries::Message::PCF was removed (wrt the Header and
+Parameters methods) once the new MQSeries::Message::System class was
+added.  It was completely wrong, so clearly no one had used it before
+now.  It's better now.  An old memory leak in MQEncodePCF in PCF.xs
+was also squashed (affected parties may have noticed a slow but
+continuing increase in memory size of a process that was sending lots
+of PCF messages).
+
+=head2 Important note for MQv5 and perl 5.6 users
+
+With the addition of the MQ v6 Statistics and Accounting support in
+this release, as well as the new PCF stuff, the possibility exists
+that the MQSeries perl module no longer supports either MQ v5 or perl
+5.6.  Support for these will be at a best effort kind of basis, but
+with the caveat that the maintainers no longer use either of these amy
+will likely not be able to replicate anything close to an environment
+involving either of this if you have any problems.
+
 =head1 Changes for 1.32
 
 The following fixes are included in the 1.32 release:
@@ -1961,9 +2025,9 @@ Automated the typemap generation using a typemap.PL file
 =cut
 
 #
-# $Id: Changes.src,v 36.3 2010/09/15 16:03:21 anbrown Exp $
+# $Id: Changes.src,v 37.3 2011/06/21 17:46:24 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

@@ -11,8 +11,8 @@
 #
 #    ..../src/util/extract_reason_codes
 #
-# $Id: ReasonQualifierMacro.in,v 1.1 2010/08/02 20:35:14 anbrown Exp $
-# (c) 2010 Morgan Stanley & Co. Incorporated
+# $Id: ReasonQualifierMacro.in,v 1.2 2011/01/03 15:05:00 anbrown Exp $
+# (c) 2010-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

@@ -1,7 +1,7 @@
 #
-# $Id: Storable.pm,v 33.7 2010/04/01 16:24:56 anbrown Exp $
+# $Id: Storable.pm,v 33.9 2011/01/03 15:04:53 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,7 +16,7 @@ use Storable qw(nfreeze thaw);
 
 use MQSeries::Message;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 our @ISA = qw(MQSeries::Message);
 
 sub PutConvert {

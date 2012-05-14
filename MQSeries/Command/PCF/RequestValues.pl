@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -75,6 +75,7 @@ package MQSeries::Command::PCF;
     DNSGroup			=> 2071,
     DNSWLM			=> 106,
     ExpiryInterval		=> 39,
+    GroupUR			=> 221,
     IGQUserId			=> 2041,
     IGQPutAuthority		=> 65,
     InhibitEvent		=> 48,
@@ -97,6 +98,7 @@ package MQSeries::Command::PCF;
     MQIAccounting		=> 133,
     MQIStatistics		=> 127,
     MsgMarkBrowseInterval	=> 68,
+    OpMode			=> 1326,
     OutboundPortMax		=> 140,
     OutboundPortMin		=> 110,
     Parent			=> 2102,
@@ -333,6 +335,7 @@ package MQSeries::Command::PCF;
     AlterationTime		=> 2028,
     BackoutRequeueName		=> 2019,
     BackoutThreshold		=> 22,
+    BaseObjectName		=> 2002,
     BaseQName			=> 2002,
     BaseType			=> 193,
     CFStructure			=> 2039,
@@ -384,6 +387,7 @@ package MQSeries::Command::PCF;
     QueueAccounting		=> 134,
     QueueMonitoring		=> 123,
     QueueStatistics		=> 128,
+    QSGDisposition		=> 63,
     QServiceInterval		=> 54,
     QServiceIntervalEvent	=> 46,
     QType			=> 20,
@@ -412,6 +416,12 @@ package MQSeries::Command::PCF;
     Local			=> 1,
     Model			=> 2,
     Remote			=> 6,
+   },
+
+   BaseType =>
+   {
+    Queue			=> 1,
+    Topic			=> 8,
    },
 
    QMoveType =>
@@ -662,6 +672,7 @@ package MQSeries::Command::PCF;
     BatchInterval		=> 1564,
     BatchSize			=> 1502,
     ChannelDesc			=> 3502,
+    ChannelDisposition		=> 1580,
     ChannelMonitoring		=> 122,
     ChannelName			=> 3501,
     ChannelNames		=> 3512,
@@ -726,6 +737,7 @@ package MQSeries::Command::PCF;
     All				=> -1,
     Private			=> 4,
     Shared			=> 2,
+    Fixshared			=> 5,
    },
 
    #
@@ -748,6 +760,7 @@ package MQSeries::Command::PCF;
     ChannelName			=> 3501,
     ChannelStartDate		=> 3529,
     ChannelStartTime		=> 3528,
+    ChannelStatus		=> 1527,
     ChannelType			=> 1511,
     CompressionRate		=> 1611,
     CompressionTime		=> 1612,
@@ -858,6 +871,21 @@ package MQSeries::Command::PCF;
     ZlibFast			=> 2,
     ZlibHigh			=> 4,
    },
+
+   # VALUEMAP-CODEREF
+   KeepAliveInterval =>
+        sub { return MQSeries::Command::Base::strinteger(@_, -1,
+                                                    "AUTO", 99999); },
+
+   # VALUEMAP-CODEREF
+   MsgMarkBrowseInterval =>
+        sub { return MQSeries::Command::Base::strinteger(@_, -1,
+                                                    "NOLIMIT", 999999999); },
+# 100MB max
+   # VALUEMAP-CODEREF
+   MaxPropertiesLength =>
+        sub { return MQSeries::Command::Base::strinteger(@_, -1,
+                                                    "NOLIMIT", 104857600); },
 
    TransportType =>
    {
@@ -1037,6 +1065,7 @@ package MQSeries::Command::PCF;
     Queue			=> 1,
     QueueManager		=> 5,
     Service			=> 12,
+    Topic			=> 8,
 
     Channel			=> 6,
 
@@ -1070,12 +1099,14 @@ package MQSeries::Command::PCF;
     AuthInfoType		=> 66,
     LDAPPassword		=> 2048,
     LDAPUserName		=> 2047,
+    OCSPResponderURL		=> 2109,
    },
 
    AuthInfoType =>
    {
     CRLLDAP			=> 1,
     OCSP			=> 2,            # new with v7.0.1.1
+    All				=> 0,
    },
 
    #
@@ -1096,6 +1127,7 @@ package MQSeries::Command::PCF;
     ApplTag			=> 3058,
     ApplType			=> 1,
     ASId			=> 3081,
+    AsynchronousState		=> 1308,
     ChannelName			=> 3501,
     Conname			=> 3506,
     CurrentQDepth		=> 3,
@@ -1242,6 +1274,21 @@ package MQSeries::Command::PCF;
     #SecuritySwitchSetting	=> 1155,
    },
 
+   #
+   # V7 for SetLog
+   #
+   LogCompression =>
+   {
+    None			=> 0,
+    RLE				=> 1,
+    Any				=> 268435455,
+   },
+
+   #
+   # Commented lines came out of v7. But they seem to be
+   # similar to existing ones except MQ being replaced with MX.
+   # Needs clarification.
+   #
    SecurityItem =>
    {
     All				=> 0,
@@ -1249,6 +1296,11 @@ package MQSeries::Command::PCF;
     Namelist			=> 2,
     Process			=> 3,
     Queue			=> 4,
+    #XAdministration		=> 7,
+    #XNamelist			=> 8,
+    #XProcess			=> 9,
+    #XQueue			=> 10,
+    #XTopic			=> 11,
    },
 
    #
@@ -1289,9 +1341,13 @@ package MQSeries::Command::PCF;
     Output			=> 11,
     PassAllContext		=> 12,
     PassIdentityContext		=> 13,
+    Publish			=> 19,
+    Resume			=> 21,
     Set				=> 14,
     SetAllContext		=> 15,
     SetIdentityContext		=> 16,
+    Subscribe			=> 20,
+    System			=> 22,
    },
 
    #
@@ -1496,6 +1552,7 @@ package MQSeries::Command::PCF;
     ProcessId			=> 1024,
     QMgrUOWId			=> 7009,
     QSGDisposition		=> 63,
+    ReadAhead			=> 189,
     StartUOWLogExtent		=> 3064,
     TaskNumber			=> 3084,
     ThreadId			=> 1025,
@@ -1507,6 +1564,7 @@ package MQSeries::Command::PCF;
     UOWStartTime		=> 3061,
     UOWState			=> 1128,
     UOWType			=> 1132,
+    URDisposition		=> 222,
     UserId			=> 3025,
     },
 
@@ -1515,6 +1573,16 @@ package MQSeries::Command::PCF;
     Conn			=> 1111,
     Handle			=> 1112,
     All				=> 1113,
+   },
+
+   #
+   # Unit of Recovery Disposition (V7)
+   #
+   URDisposition =>
+   {
+    All				=> -1,
+    Group			=> 3,
+    QMgr			=> 0,
    },
 
    #
@@ -1698,7 +1766,7 @@ package MQSeries::Command::PCF;
     ResumeTime			=> 2099,
     RetainedPublication		=> 1300,
     SubscriptionCount		=> 204,
-    SubscriptionId		=> 7016,
+    SubId			=> 7016,
     SubscriptionUserId		=> 3156,
     SubscriptionScope		=> 218,
     SubscriptionType		=> 1289,
@@ -1734,12 +1802,22 @@ package MQSeries::Command::PCF;
    },
 
    #
+   # For z/os v7
+   #
+   GroupUR =>
+   {
+    Disabled			=> 0,
+    Enabled			=> 1,
+   },
+
+   #
    # For RefreshQueueManager on z/OS
    #
    RefreshType =>
    {
     Configuration		=> 1,
     Expiry			=> 2,
+    ProxySub			=> 4,
    },
 
    #

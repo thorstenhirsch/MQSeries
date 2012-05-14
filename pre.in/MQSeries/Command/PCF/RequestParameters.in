@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: RequestParameters.in,v 33.3 2010/04/01 16:25:00 anbrown Exp $
+# $Id: RequestParameters.in,v 33.13 2011/05/27 20:08:08 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -52,6 +52,7 @@ package MQSeries::Command::PCF;
     ExpiryInterval		=> [ &MQIA_EXPIRY_INTERVAL,		&MQCFT_INTEGER ], # FIXME: need to support 'Off'
     Facility			=> [ &MQIACF_Q_MGR_FACILITY,		&MQCFT_INTEGER,		$RequestValues{QMgrFacility} ],
     Force			=> [ &MQIACF_FORCE,			&MQCFT_INTEGER ],
+    GroupUR			=> [ &MQIA_GROUP_UR,			&MQCFT_INTEGER,		$RequestValues{GroupUR} ],
     IGQPutAuthority		=> [ &MQIA_IGQ_PUT_AUTHORITY,		&MQCFT_INTEGER,		$RequestValues{IGQPutAuthority} ],
     IGQUserId			=> [ &MQCA_IGQ_USER_ID,			&MQCFT_STRING ],
     InhibitEvent		=> [ &MQIA_INHIBIT_EVENT,		&MQCFT_INTEGER ],
@@ -68,9 +69,9 @@ package MQSeries::Command::PCF;
     MaxChannels			=> [ &MQIA_MAX_CHANNELS,		&MQCFT_INTEGER ],
     MaxHandles			=> [ &MQIA_MAX_HANDLES,			&MQCFT_INTEGER ],
     MaxMsgLength		=> [ &MQIA_MAX_MSG_LENGTH,		&MQCFT_INTEGER ],
-    MaxPropertiesLength		=> [ &MQIA_MAX_PROPERTIES_LENGTH,	&MQCFT_INTEGER ],
+    MaxPropertiesLength		=> [ &MQIA_MAX_PROPERTIES_LENGTH,	&MQCFT_INTEGER,		$RequestValues{MaxPropertiesLength} ],
     MaxUncommittedMsgs		=> [ &MQIA_MAX_UNCOMMITTED_MSGS,	&MQCFT_INTEGER ],
-    MsgMarkBrowseInterval	=> [ &MQIA_MSG_MARK_BROWSE_INTERVAL,	&MQCFT_INTEGER ],
+    MsgMarkBrowseInterval	=> [ &MQIA_MSG_MARK_BROWSE_INTERVAL,	&MQCFT_INTEGER,		$RequestValues{MsgMarkBrowseInterval} ],
     MQIAccounting		=> [ &MQIA_ACCOUNTING_MQI,		&MQCFT_INTEGER ],
     MQIStatistics		=> [ &MQIA_STATISTICS_MQI,		&MQCFT_INTEGER ],
     OutboundPortMax		=> [ &MQIA_OUTBOUND_PORT_MAX,		&MQCFT_INTEGER ],
@@ -145,7 +146,9 @@ package MQSeries::Command::PCF;
 
     BackoutRequeueName		=> [ &MQCA_BACKOUT_REQ_Q_NAME,		&MQCFT_STRING ],
     BackoutThreshold		=> [ &MQIA_BACKOUT_THRESHOLD,		&MQCFT_INTEGER ],
+    BaseObjectName		=> [ &MQCA_BASE_OBJECT_NAME,		&MQCFT_STRING ],
     BaseQName			=> [ &MQCA_BASE_Q_NAME,			&MQCFT_STRING ],
+    BaseType			=> [ &MQIA_BASE_TYPE,			&MQCFT_INTEGER,			$RequestValues{BaseType} ],
     CFStructure			=> [ &MQCA_CF_STRUC_NAME,		&MQCFT_STRING ],
     ClusterInfo			=> [ &MQIACF_CLUSTER_INFO,		&MQCFT_INTEGER ],
     ClusterName			=> [ &MQCA_CLUSTER_NAME,		&MQCFT_STRING ],
@@ -244,7 +247,7 @@ package MQSeries::Command::PCF;
     HeaderCompression		=> [ &MQIACH_HDR_COMPRESSION,		&MQCFT_INTEGER_LIST,		$RequestValues{HeaderCompression} ],
     InDoubt			=> [ &MQIACH_IN_DOUBT,			&MQCFT_INTEGER,		$RequestValues{InDoubt} ],
     InitiationQName		=> [ &MQCA_INITIATION_Q_NAME,		&MQCFT_STRING ],
-    KeepAliveInterval		=> [ &MQIACH_KEEP_ALIVE_INTERVAL,	&MQCFT_INTEGER ],
+    KeepAliveInterval		=> [ &MQIACH_KEEP_ALIVE_INTERVAL,	&MQCFT_INTEGER,		$RequestValues{KeepAliveInterval} ],
     LocalAddress		=> [ &MQCACH_LOCAL_ADDRESS,		&MQCFT_STRING ],
     LongRetryCount		=> [ &MQIACH_LONG_RETRY,		&MQCFT_INTEGER ],
     LongRetryInterval		=> [ &MQIACH_LONG_TIMER,		&MQCFT_INTEGER ],
@@ -370,6 +373,7 @@ package MQSeries::Command::PCF;
     FromAuthInfoName		=> [ &MQCACF_FROM_AUTH_INFO_NAME,	&MQCFT_STRING ],
     LDAPPassword		=> [ &MQCA_LDAP_PASSWORD,		&MQCFT_STRING ],
     LDAPUserName		=> [ &MQCA_LDAP_USER_NAME,		&MQCFT_STRING ],
+    OCSPResponderURL		=> [ &MQCA_AUTH_INFO_OCSP_URL,		&MQCFT_STRING ],
     QSGDisposition		=> [ &MQIA_QSG_DISP,			&MQCFT_INTEGER,		$RequestValues{QSGDisposition} ],
     ToAuthInfoName		=> [ &MQCACF_TO_AUTH_INFO_NAME,		&MQCFT_STRING ],
    },
@@ -658,6 +662,7 @@ package MQSeries::Command::PCF;
     ConnInfoType		=> [ &MQIACF_CONN_INFO_TYPE,		&MQCFT_INTEGER,		 $RequestValues{ConnInfoType} ],
     CommandScope		=> [ &MQCACF_COMMAND_SCOPE,		&MQCFT_STRING ],
     GenericConnectionId		=> [ &MQBACF_GENERIC_CONNECTION_ID,	&MQCFT_BYTE_STRING ],
+    URDisposition		=> [ &MQIA_UR_DISP,			&MQCFT_INTEGER,		$RequestValues{URDisposition} ],
    },
 
    #
@@ -752,6 +757,7 @@ package MQSeries::Command::PCF;
    {
     CommandScope		=> [ &MQCACF_COMMAND_SCOPE,		&MQCFT_STRING ],
     DeallocateInterval		=> [ &MQIACF_SYSP_DEALLOC_INTERVAL,	&MQCFT_INTEGER ],
+    LogCompression		=> [ &MQIACF_LOG_COMPRESSION,		&MQCFT_INTEGER,		$RequestValues{LogCompression} ],
     MaxArchiveLog		=> [ &MQIACF_SYSP_MAX_ARCHIVE,		&MQCFT_INTEGER ],
     MaxReadTapeUnits		=> [ &MQIACF_SYSP_MAX_READ_TAPES,	&MQCFT_INTEGER ],
     OutputBufferCount		=> [ &MQIACF_SYSP_OUT_BUFFER_COUNT,	&MQCFT_INTEGER ],

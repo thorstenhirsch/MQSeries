@@ -1,7 +1,7 @@
 #
-# $Id: 60-logs.t,v 33.5 2010/04/01 16:25:06 anbrown Exp $
+# $Id: 60-logs.t,v 33.7 2011/01/03 15:05:03 anbrown Exp $
 #
-# (c) 2000-2010 Morgan Stanley & Co. Incorporated
+# (c) 2000-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,9 +16,9 @@ BEGIN {
 
 END { print "not ok 1\n" unless $loaded; }
 
-use __APITYPE__::MQSeries 1.32;
-use MQSeries::ErrorLog::Tail 1.32;
-use MQSeries::FDC::Tail 1.32;
+use __APITYPE__::MQSeries 1.33;
+use MQSeries::ErrorLog::Tail 1.33;
+use MQSeries::FDC::Tail 1.33;
 $loaded = 1;
 print "ok 1\n";
 

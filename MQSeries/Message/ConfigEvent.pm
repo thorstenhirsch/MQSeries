@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::ConfigEvent - Config Event Message
 #
-# (c) 2002-2010 Morgan Stanley & Co. Incorporated
+# (c) 2002-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: ConfigEvent.pm,v 33.7 2010/04/01 16:24:55 anbrown Exp $
+# $Id: ConfigEvent.pm,v 37.2 2011/06/13 22:21:07 anbrown Exp $
 #
 
 package MQSeries::Message::ConfigEvent;
@@ -15,8 +15,9 @@ use Convert::EBCDIC;
 
 use MQSeries qw(:functions);
 use MQSeries::Message;
+use MQSeries::Command::Base; # for valuemap translators
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 our @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Message/ConfigEvent.pl";
@@ -123,6 +124,9 @@ sub GetConvert {
                 } else {
                     $value .= " - <unknown $label>";
                 }
+            } elsif (ref($renum) eq "CODE") {
+                # VALUEMAP-CODEREF
+                $value = $renum->(decodepcf => $value);
             } elsif (defined $renum) {
                 #print STDERR "Have reverse enum [$label]\n";
                 foreach my $key (keys %$renum) {
@@ -150,6 +154,9 @@ sub GetConvert {
                     } else {
                         $lvalue .= " - <unknown $label>";
                     }
+                } elsif (ref($renum) eq "CODE") {
+                    # VALUEMAP-CODEREF
+                    $lvalue = $renum->(decodepcf => $lvalue);
                 } elsif (defined $renum) {
                     #print STDERR "Have reverse enum [$label]\n";
                     foreach my $key (keys %$renum) {
@@ -197,7 +204,7 @@ sub PutConvert {
 sub _readNumber {
     my $class = shift;
     my ($data,$offset,$length) = @_;
-    return unpack("N", substr($data,$offset,$length));
+    return unpack "l", pack "L", unpack("N", substr($data,$offset,$length));
 }
 
 

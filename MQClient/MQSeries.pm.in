@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: MQSeries.pm.in,v 36.1 2010/08/02 20:37:26 anbrown Exp $
+# $Id: MQSeries.pm.in,v 37.1 2011/04/27 16:23:55 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -20,8 +20,9 @@ require "MQSeries/Constants.pl";
 our @ISA = qw(Exporter DynaLoader);
 our (@EXPORT, %EXPORT_TAGS, $AUTOLOAD);
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 $MQSeries::MQ_VERSION = __MQ_VERSION__; # Set to 5, 6 or 7 at compile time
+# (that's "compile" as in "put together from the pieces in the src tree")
 
 #
 # This nonsense is only necessary if you don't have the locale files

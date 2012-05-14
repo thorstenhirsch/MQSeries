@@ -1,7 +1,7 @@
 #
-# $Id: ResponseValues.pl,v 33.2 2010/04/01 16:24:51 anbrown Exp $
+# $Id: ResponseValues.pl,v 33.7 2011/05/27 20:08:08 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -65,6 +65,7 @@ package MQSeries::Command::MQSC;
     ALL                 => "All",
     PRIVATE             => "Private",
     SHARED              => "Shared",
+    FIXSHARED		=> "Fixshared",
    },
 
    ChannelEvent =>
@@ -239,11 +240,17 @@ package MQSeries::Command::MQSC;
     XMITQ    		=> "XMITQ",
    },
 
-#   KeepAliveInterval =>
-#   {
-#    AUTO    		=> "Auto",
-#    0    		=> "0",
-#   },
+   # VALUEMAP-CODEREF
+   KeepAliveInterval =>
+    sub { MQSeries::Command::Base::strinteger(@_, -1, "AUTO"); },
+
+   # VALUEMAP-CODEREF
+   MsgMarkBrowseInterval =>
+       sub { MQSeries::Command::Base::strinteger(@_, -1, "NOLIMIT"); },
+
+   # VALUEMAP-CODEREF
+   MaxPropertiesLength =>
+       sub { MQSeries::Command::Base::strinteger(@_, -1, "NOLIMIT"); },
 
    ChannelStatus =>
    {
@@ -410,6 +417,8 @@ package MQSeries::Command::MQSC;
    AuthInfoType =>
    {
     CRLLDAP             => "CRLLDAP",
+    OCSP		=> "OCSP",
+    ALL		   	=> "All",
    },
 
    NamelistType =>
@@ -461,6 +470,84 @@ package MQSeries::Command::MQSC;
     COMPRESS		=> "Compressing",
     OTHER		=> "Other",
     ''			=> "", # Null value
+   },
+
+   BaseType => 
+   {
+    QUEUE			=> "Queue",
+    TOPIC			=> "Topic",
+   },
+
+   PubSubMode =>
+   {
+    COMPAT			=> "Compat",
+    ENABLED			=> "Enabled",
+    DISABLED			=> "Disabled",
+   },
+
+   PubSubNPInputMsg =>
+   {
+    DISCARD			=> "Discard",
+    KEEP			=> "Keep",
+   },
+
+   PubSubNPResponse =>
+   {
+    DISCARD			=> "Discard",
+    KEEP			=> "Keep",
+    NORMAL			=> "Normal",
+    SAFE			=> "SAFE",
+   },
+
+   PubSubSyncPoint =>
+   {
+    IFPER			=> "IfPersistent",
+    YES				=> "Yes",
+   },
+
+   SecurityCase =>
+   {
+    MIXED			=> "Mixed",
+    UPPER			=> "Upper",
+   },
+
+   DefReadAhead =>
+   {
+    DISABLED			=> "Disabled",
+    NO				=> "No",
+    YES				=> "Yes",
+   },
+
+   DefPutResponse =>
+   {
+    SYNC			=> "Sync",
+    ASYNC			=> "Async",
+   },
+
+   PropertyControl =>
+   {
+    ALL				=> "All",
+    COMPAT			=> "Compatibility",
+    FORCE			=> "ForceRFH2",
+    NONE			=> "None",
+   },
+
+   ConnectionAffinity =>
+   {
+    NONE			=> "None",
+    PREFERRED			=> "Preferred",
+   },
+
+   AsynchronousState => 
+   {
+    ACTIVE			=> "Active",
+    INACTIVE			=> "Inactive",
+    STARTED			=> "Started",
+    STARTWAIT			=> "StartWait",
+    STOPPED			=> "Stopped",
+    SUSPENDED			=> "Suspended",
+    SUSPTEMP			=> "SuspendedTemporary",
+    NONE			=> "None",
    },
 
  );

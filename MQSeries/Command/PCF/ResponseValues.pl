@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -38,6 +38,12 @@ package MQSeries::Command::PCF;
     Local			=> 1,
     Model			=> 2,
     Remote			=> 6,
+   },
+
+   BaseType =>
+   {
+    Queue			=> 1,
+    Topic			=> 8,
    },
 
    DefInputOpenOption =>
@@ -180,6 +186,7 @@ package MQSeries::Command::PCF;
     OS2				=> 4,
     OS400			=> 8,
     QMGR			=> 7,
+    SystemExtension		=> 35,
     UNIX			=> 6,
     USER			=> 25,
     VMS				=> 12,
@@ -229,6 +236,7 @@ package MQSeries::Command::PCF;
     Queue			=> 1,
     QueueManager		=> 5,
     Service			=> 12,
+    Topic			=> 8,
 
     Channel			=> 6,
 
@@ -255,6 +263,14 @@ package MQSeries::Command::PCF;
    {
     CRLLDAP			=> 1,
     OCSP			=> 2,            # new with v7.0.1.1
+    All				=> 0,
+   },
+
+   OpenType =>
+   {
+    All				=> 1,
+    Input			=> 2,
+    Output			=> 3,
    },
 
    QStatusInputType =>
@@ -312,18 +328,34 @@ package MQSeries::Command::PCF;
     Output			=> 11,
     PassAllContext		=> 12,
     PassIdentityContext		=> 13,
+    Publish			=> 19,
+    Resume			=> 21,
     Set				=> 14,
     SetAllContext		=> 15,
     SetIdentityContext		=> 16,
+    Subscribe			=> 20,
+    System			=> 22,
    },
 
     AsynchronousState          =>
    {
     Active			=> 6,
     Inactive			=> 7,
+    Started			=> 1,
+    StartWait			=> 2,
+    Stopped			=> 3,
     Suspended			=> 4,
     SuspendedTemporary		=> 5,
     None   			=> 0,
+   },
+   #
+   # Unit of Recovery Disposition (V7)
+   #
+   URDisposition =>
+   {
+    All				=> -1,
+    Group			=> 3,
+    QMgr			=> 0,
    },
 
    ChannelDisposition =>
@@ -331,6 +363,7 @@ package MQSeries::Command::PCF;
     All				=> -1,
     Private			=> 4,
     Shared			=> 2,
+    Fixshared			=> 5,
    },
 
    ChannelInitiatorControl =>
@@ -537,10 +570,20 @@ package MQSeries::Command::PCF;
     IPv6			=> 1,
    },
 
+   # VALUEMAP-CODEREF
    KeepAliveInterval =>
-   {
-    Auto			=> -1,
-   },
+        sub { return MQSeries::Command::Base::strinteger(@_, -1,
+                                                    "AUTO"); },
+
+   # VALUEMAP-CODEREF
+   MsgMarkBrowseInterval =>
+        sub { return MQSeries::Command::Base::strinteger(@_, -1,
+                                                    "NOLIMIT"); },
+
+   # VALUEMAP-CODEREF
+   MaxPropertiesLength =>
+        sub { return MQSeries::Command::Base::strinteger(@_, -1,
+                                                    "NOLIMIT"); },
 
    ListenerStartMode =>
    {
@@ -850,6 +893,7 @@ package MQSeries::Command::PCF;
     Queue			=> 3,
     Process			=> 1,
     Subsystem			=> 10,
+    Topic			=> 4,
    },
 
    SecuritySwitchSetting =>
@@ -862,7 +906,7 @@ package MQSeries::Command::PCF;
     OnOverridden		=> 26,
    },
 
-   StartMode =>
+   ServiceStartMode =>
    {
     Manual			=> 2,
     QMgr			=> 0,
@@ -1008,6 +1052,7 @@ package MQSeries::Command::PCF;
     QMgr		       => 5,
     Channel		       => 6,
     AuthInfo		       => 7,
+ #   Topic		       => 8,            # FIXME:do we need this in HandleObjectType?
     },
 
    HandleQSGDisposition =>
@@ -1026,6 +1071,7 @@ package MQSeries::Command::PCF;
     RRSBatch		      => 33,
     CICS		      => 1,
     IMS			      => 3,
+    SystemExtension	      => 35,
    },
 
    HandleState =>
@@ -1049,6 +1095,15 @@ package MQSeries::Command::PCF;
     RRS				=> 2,
     IMS				=> 3,
     XA				=> 4,
+   },
+
+   #
+   # On z/os, v7, GroupUR
+   #
+   GroupUR =>
+   {
+    Disabled			=> 0,
+    Enabled			=> 1,
    },
 
    #
@@ -1082,6 +1137,16 @@ package MQSeries::Command::PCF;
    },
 
    #
+   #  v7 stuff on z/os
+   #
+   LogCompression =>
+   {
+    None			=> 0,
+    RLE				=> 1,
+    Any				=> 268435455,
+   },
+
+   #
    # InquireSystem for z/OS
    #
    ParameterType =>
@@ -1094,6 +1159,15 @@ package MQSeries::Command::PCF;
    {
     Static			=> 0,
     Dynamic			=> 1,
+   },
+
+   #
+   # V7 on z/os
+   #
+   MULCCapture =>
+   {
+    Standard			=> 0,
+    Refined			=> 1,
    },
 
    #

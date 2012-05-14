@@ -1,7 +1,7 @@
 #
-# $Id: QueueManager.pm,v 36.1 2010/08/02 20:03:55 anbrown Exp $
+# $Id: QueueManager.pm,v 38.3 2012/03/02 21:00:48 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,6 +19,7 @@ use Config;
 
 use MQSeries qw(:functions);
 use MQSeries::Properties;
+use MQSeries::Message;
 use Params::Validate qw(validate);
 
 #
@@ -28,8 +29,9 @@ use Params::Validate qw(validate);
 # future release.
 #
 use MQSeries::Command::PCF;
+use MQSeries::Command::Base;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 sub new {
     my $proto = shift;
@@ -65,6 +67,8 @@ sub new {
                                      MQSeries::MQRC_Q_MGR_NOT_AVAILABLE,
                                      MQSeries::MQRC_Q_MGR_QUIESCING,
                                      MQSeries::MQRC_Q_MGR_STOPPING,
+                                     MQSeries::MQRC_CHANNEL_NOT_AVAILABLE,
+                                     MQSeries::MQRC_HOST_NOT_AVAILABLE,
                                     )
                                    },
        ConnectTimeoutSignal     => 'USR1',
@@ -340,14 +344,20 @@ sub Inquire {
 
         my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
 
-        if ( $ValueMap ) {
-            unless ( exists $ValueMap->{$value} ) {
-                $self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
-                return;
-            }
-            $values{$newkey} = $ValueMap->{$value};
-        } else {
+        if (!$ValueMap) {
             $values{$newkey} = $value;
+        }
+        elsif (ref($ValueMap) eq "CODE" && # VALUEMAP-CODEREF
+               defined($ValueMap = $ValueMap->(decodepcf => $value))) {
+            $values{$newkey} = $ValueMap;
+        }
+        elsif (ref($ValueMap) eq "HASH" &&
+               exists($ValueMap->{$value})) {
+            $values{$newkey} = $ValueMap->{$value}; # maybe not defined?
+        }
+        else {
+            $self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
+            return;
         }
 
     }
@@ -383,8 +393,8 @@ sub Disconnect {
 
     if ( $self->{_Pending} && $self->{AutoCommit} == 0 ) {
         $self->Backout() || do {
-            my $putcnt = $self->{_Pending}->{Put};
-            my $getcnt = $self->{_Pending}->{Get};
+            my $putcnt = $self->{_Pending}->{Put} || 0;
+            my $getcnt = $self->{_Pending}->{Get} || 0;
             $self->{Carp}->("Unable to backout pending transaction before disconnect\n" .
                             "Currently $putcnt puts and $getcnt gets pending\n" .
                             "Reason => " . MQReasonToText($self->Reason()) . "\n");
@@ -530,6 +540,7 @@ sub Put1 {
     # Sanity check the data conversion CODE snippets.
     #
     $self->{"PutConvertReason"} = 0;
+    $args{"Message"}->QueueManager($self);
     if ($args{PutConvert}) {
         if (ref $args{PutConvert} ne "CODE") {
             $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
@@ -561,6 +572,7 @@ sub Put1 {
             $buffer = $args{Message}->Data();
         }
     }
+    $args{"Message"}->QueueManager(undef);
 
     #
     # If the user specifies a Properties parameter, it must be a hash

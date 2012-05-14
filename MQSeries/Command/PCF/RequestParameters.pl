@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -61,6 +61,7 @@ package MQSeries::Command::PCF;
     ExpiryInterval		=> [ 39,                    		3 ], # FIXME: need to support 'Off'
     Facility			=> [ 1231,                   		3,		$RequestValues{QMgrFacility} ],
     Force			=> [ 1005,          			3 ],
+    GroupUR			=> [ 221,            			3,		$RequestValues{GroupUR} ],
     IGQPutAuthority		=> [ 65,                      		3,		$RequestValues{IGQPutAuthority} ],
     IGQUserId			=> [ 2041,              			4 ],
     InhibitEvent		=> [ 48,                  		3 ],
@@ -77,9 +78,9 @@ package MQSeries::Command::PCF;
     MaxChannels			=> [ 109,                		3 ],
     MaxHandles			=> [ 11,                			3 ],
     MaxMsgLength		=> [ 13,                   		3 ],
-    MaxPropertiesLength		=> [ 192,                         	3 ],
+    MaxPropertiesLength		=> [ 192,                         	3,		$RequestValues{MaxPropertiesLength} ],
     MaxUncommittedMsgs		=> [ 33,                         	3 ],
-    MsgMarkBrowseInterval	=> [ 68,                             	3 ],
+    MsgMarkBrowseInterval	=> [ 68,                             	3,		$RequestValues{MsgMarkBrowseInterval} ],
     MQIAccounting		=> [ 133,                  		3 ],
     MQIStatistics		=> [ 127,                  		3 ],
     OutboundPortMax		=> [ 140,                     		3 ],
@@ -154,7 +155,9 @@ package MQSeries::Command::PCF;
 
     BackoutRequeueName		=> [ 2019,                     		4 ],
     BackoutThreshold		=> [ 22,                      		3 ],
+    BaseObjectName		=> [ 2002,                   		4 ],
     BaseQName			=> [ 2002,              			4 ],
+    BaseType			=> [ 193,             			3,			$RequestValues{BaseType} ],
     CFStructure			=> [ 2039,                		4 ],
     ClusterInfo			=> [ 1083,                 		3 ],
     ClusterName			=> [ 2029,               		4 ],
@@ -253,7 +256,7 @@ package MQSeries::Command::PCF;
     HeaderCompression		=> [ 1575,                    		5,		$RequestValues{HeaderCompression} ],
     InDoubt			=> [ 1516,             			3,		$RequestValues{InDoubt} ],
     InitiationQName		=> [ 2008,                    		4 ],
-    KeepAliveInterval		=> [ 1566,                        	3 ],
+    KeepAliveInterval		=> [ 1566,                        	3,		$RequestValues{KeepAliveInterval} ],
     LocalAddress		=> [ 3520,                  		4 ],
     LongRetryCount		=> [ 1507,               		3 ],
     LongRetryInterval		=> [ 1506,               		3 ],
@@ -379,6 +382,7 @@ package MQSeries::Command::PCF;
     FromAuthInfoName		=> [ 3009,                        	4 ],
     LDAPPassword		=> [ 2048,                		4 ],
     LDAPUserName		=> [ 2047,                 		4 ],
+    OCSPResponderURL		=> [ 2109,                     		4 ],
     QSGDisposition		=> [ 63,             			3,		$RequestValues{QSGDisposition} ],
     ToAuthInfoName		=> [ 3010,                      		4 ],
    },
@@ -667,6 +671,7 @@ package MQSeries::Command::PCF;
     ConnInfoType		=> [ 1110,                   		3,		 $RequestValues{ConnInfoType} ],
     CommandScope		=> [ 3080,                  		4 ],
     GenericConnectionId		=> [ 7007,                          	9                   ],
+    URDisposition		=> [ 222,           			3,		$RequestValues{URDisposition} ],
    },
 
    #
@@ -761,6 +766,7 @@ package MQSeries::Command::PCF;
    {
     CommandScope		=> [ 3080,                  		4 ],
     DeallocateInterval		=> [ 1176,                          	3 ],
+    LogCompression		=> [ 1322,                    		3,		$RequestValues{LogCompression} ],
     MaxArchiveLog		=> [ 1177,                     		3 ],
     MaxReadTapeUnits		=> [ 1178,                        	3 ],
     OutputBufferCount		=> [ 1181,                          	3 ],

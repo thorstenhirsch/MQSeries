@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000-2010 Morgan Stanley & Co. Incorporated
+# (c) 2000-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: descriptions.pl,v 33.2 2010/04/01 16:24:54 anbrown Exp $
+# $Id: descriptions.pl,v 37.1 2011/07/06 16:39:08 anbrown Exp $
 #
 
 #
@@ -271,6 +271,12 @@ our $error_table =
 
    'AMQ6209' => [ "An unexpected asynchronous signal \\((\\d+)(?: : [A-Z\\d]+)?\\) has been received and ignored\\..* Process ($pid_patt) received an unexpected asynchronous signal and ignored it\\.",
                   "Signal", "Pid" ],
+
+   'AMQ6254' => [ "The system could not dynamically load the shared library '(\\S+)', library '(\\S+)' has been used instead.",
+                  "BadLibrary", "GoodLibrary" ],
+
+   'AMQ6255' => [ "The system could not dynamically load the shared library '(\\S+)'. The queue manager will continue without this module.",
+                  "BadLibrary" ],
 
    # NOTE: So far, encountered this error without a location.
    'AMQ6708' => [ "A disk full condition was encountered when formatting a new log file in location (.*?)\\.",

@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -82,6 +82,7 @@ package MQSeries::Command::PCF;
     DNSGroup			=> [ 2071,            			4 ],
     DNSWLM			=> [ 106,           			3 ],
     ExpiryInterval		=> [ 39,                    		3 ],
+    GroupUR			=> [ 221,            			3,		$ResponseValues{GroupUR} ],
     IGQPutAuthority		=> [ 65,                      		3,		$ResponseValues{IGQPutAuthority} ],
     InhibitEvent		=> [ 48,                  		3 ],
     IntraGroupQueueing		=> [ 64,                        		3 ],
@@ -99,9 +100,9 @@ package MQSeries::Command::PCF;
     MaxHandles			=> [ 11,                			3 ],
     MaxMsgLength		=> [ 13,                   		3 ],
     MaxPriority			=> [ 14,                 		3 ],
-    MaxPropertiesLength		=> [ 192,                         	3 ],
+    MaxPropertiesLength		=> [ 192,                         	3,		$ResponseValues{MaxPropertiesLength} ],
     MaxUncommittedMsgs		=> [ 33,                         	3 ],
-    MsgMarkBrowseInterval	=> [ 68,                             	3 ],
+    MsgMarkBrowseInterval	=> [ 68,                             	3,		$ResponseValues{MsgMarkBrowseInterval} ],
     MQIAccounting		=> [ 133,                  		3 ],
     MQIStatistics		=> [ 127,                  		3 ],
     OutboundPortMax		=> [ 140,                     		3 ],
@@ -165,7 +166,7 @@ package MQSeries::Command::PCF;
     BackoutRequeueName		=> [ 2019,                     		4 ],
     BackoutThreshold		=> [ 22,                      		3 ],
     BaseQName			=> [ 2002,              			4 ],
-    BaseType			=> [ 193,             			3,		$ResponseValues{QType} ],
+    BaseType			=> [ 193,             			3,		$ResponseValues{BaseType} ],
     CFStructure			=> [ 2039,                		4 ],
     ClusterDate			=> [ 2037,               		4 ],
     ClusterName			=> [ 2029,               		4 ],
@@ -301,6 +302,7 @@ package MQSeries::Command::PCF;
     CreationDate		=> [ 2004,                		4 ],
     CreationTime		=> [ 2005,                		4 ],
     DataConversion		=> [ 1515,                    		3 ],
+    DefaultChannelDisposition	=> [ 1614,                     		3,		$ResponseValues{ChannelDisposition} ],
     DiscInterval		=> [ 1503,                  		3 ],
     HeaderCompression		=> [ 1575,                    		5,	$ResponseValues{HeaderCompression} ],
     HeartbeatInterval		=> [ 1563,                		3 ],
@@ -465,7 +467,7 @@ package MQSeries::Command::PCF;
     ChannelName			=> [ 3501,                 		4 ],
     ConnectionName		=> [ 3506,                    		4 ],
     ChannelDesc			=> [ 3502,         			4 ],
-    KeepAliveInterval		=> [ 1566,                        	3 ],
+    KeepAliveInterval		=> [ 1566,                        	3,		$ResponseValues{KeepAliveInterval} ],
     LocalAddress		=> [ 3520,                  		4 ],
     MCAName			=> [ 3507,             			4 ],
     MCAType			=> [ 1517,             			3,		$ResponseValues{MCAType} ],
@@ -566,6 +568,7 @@ package MQSeries::Command::PCF;
    #
    QueueStatus =>
    {
+    ApplDesc			=> [ 3174,              			4 ],
     ApplTag			=> [ 3058,             			4 ],
     ApplType			=> [ 1,               			3,			$ResponseValues{ApplType} ],
     ASId			=> [ 3081,         			4, ],
@@ -582,7 +585,7 @@ package MQSeries::Command::PCF;
     MediaRecoveryLog		=> [ 3073,                          	4 ],
     OldestMsgAge		=> [ 1227,                   		3 ],
     OnQTime			=> [ 1226,                     		5 ],
-    OpenBrowse			=> [ 1102,                		3,		$ResponseValues{OpenBrowse} ],
+    OpenBrowse			=> [ 1102,                		3 ],
     OpenInputCount		=> [ 17,                     		3 ],
     OpenInputType		=> [ 1098,                    		3,		$ResponseValues{QStatusInputType} ],
     OpenInquire			=> [ 1101,                 		3 ],
@@ -590,6 +593,7 @@ package MQSeries::Command::PCF;
     OpenOutputCount		=> [ 18,                      		3 ],
     OpenOutput			=> [ 1099,                		3 ],
     OpenSet			=> [ 1100,             			3 ],
+    OpenType			=> [ 1023,              			3,		$ResponseValues{OpenType} ],
     PSBName			=> [ 3082,             			4 ],
     PSTId			=> [ 3083,           			4 ],
     ProcessId			=> [ 1024,               		3 ],
@@ -704,6 +708,8 @@ package MQSeries::Command::PCF;
     MaxConnects			=> [ 1186,                   		3 ],
     MaxConnectsBackground	=> [ 1188,                        	3 ],
     MaxConnectsForeground	=> [ 1187,                        	3 ],
+    MULCCapture			=> [ 1324,                 		3,		$ResponseValues{MULCCapture} ],
+    OpMode			=> [ 1326,                   		5 ],
     OTMADruExit			=> [ 3113,                       	4 ],
     OTMAGroup			=> [ 3111,                    		4 ],
     OTMAInterval		=> [ 1192,                       	3 ],
@@ -759,6 +765,8 @@ package MQSeries::Command::PCF;
     ConnectionName	       => [ 3506,                    		4 ],
     ConnectionOptions	       => [ 1108,                    		5 ],
     ConnInfoType	       => [ 1110,                   		3 ,	        $ResponseValues{ConnInfoType} ],
+    Destination 	       => [ 3154,                		4 ],
+    DestinationQMgr	       => [ 3153,                      		4 ],
     GenericConnectionId        => [ 7007,                                9                   ],
     HandleState		       => [ 1028,                 		3,	        $ResponseValues{HandleState} ],
     ObjectName		       => [ 3046,                		4 ],
@@ -775,8 +783,11 @@ package MQSeries::Command::PCF;
     ResponseId			=> [ 7004,                		9                   ],
     ResponseQMgrName		=> [ 3070,                        	4 ],
     StartUOWLogExtent	       => [ 3064,                        	4 ],
+    SubId		       => [ 7016,           			9                   ],
+    SubName		       => [ 3152,             			4 ],
     TaskNumber		       => [ 3084,                		4 ],
     ThreadId		       => [ 1025,              			3 ],
+    TopicString		       => [ 2094,               			4 ],
     TransactionId	       => [ 3085,                   		4 ],
     UOWIdentifier	       => [ 7005,                    		9                   ],
     UOWLogStartDate	       => [ 3062,                       		4 ],
@@ -785,6 +796,7 @@ package MQSeries::Command::PCF;
     UOWStartTime	       => [ 3061,                   		4 ],
     UOWState		       => [ 1128,              			3,		     $ResponseValues{UOWState} ],
     UOWType		       => [ 1132,             			3,		     $ResponseValues{UOWType} ],
+    URDisposition	       => [ 222,           			3,		$ResponseValues{URDisposition} ],
     UserId		       => [ 3025,                    		4],
    },
 
@@ -850,7 +862,7 @@ package MQSeries::Command::PCF;
     ServiceType			=> [ 121,                		3,	$ResponseValues{ServiceType} ],
     StartArguments		=> [ 2080,                     		4 ],
     StartCommand		=> [ 2079,                        	4 ],
-    StartMode			=> [ 139,                   		3,	$ResponseValues{StartMode} ],
+    StartMode			=> [ 139,                   		3,	$ResponseValues{ServiceStartMode} ],
     StopArguments		=> [ 2082,                    		4 ],
     StopCommand			=> [ 2081,                       	4 ],
     StderrDestination		=> [ 2084,                     		4 ],
@@ -1039,7 +1051,7 @@ package MQSeries::Command::PCF;
     ResumeTime			=> [ 2099,              			4 ],
     RetainedPublication		=> [ 1300,                         	3 ],
     SubscriptionCount		=> [ 204,             			3 ],
-    SubscriptionId		=> [ 7016,           			9                   ],
+    SubId			=> [ 7016,           			9                   ],
     SubscriptionUserId		=> [ 3156,                		4 ],
     SubscriptionScope		=> [ 218,             			3,		$ResponseValues{PubSubScope} ],
     SubscriptionType		=> [ 1289,             			3,		$ResponseValues{SubscriptionType} ],
@@ -1057,6 +1069,7 @@ package MQSeries::Command::PCF;
     DualBSDS			=> [ 1185,                   		3 ],
     InputBufferSize		=> [ 1179,                        	3 ],
     LogArchive			=> [ 1182,                 		3 ],
+    LogCompression		=> [ 1322,                    		3, 	$ResponseValues{LogCompression} ],
     MaxArchiveLog		=> [ 1177,                     		3 ],
     MaxReadTapeUnits		=> [ 1178,                        	3 ],
     OutputBufferCount		=> [ 1181,                          	3 ],

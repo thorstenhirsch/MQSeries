@@ -1,9 +1,9 @@
 # MQSeries::FDC::Entry.pm - One entry from an FDC log.
 #
-# (c) 2000-2010 Morgan Stanley & Co. Incorporated
+# (c) 2000-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 33.7 2010/04/01 16:24:55 anbrown Exp $
+# $Id: Entry.pm,v 33.9 2011/01/03 15:04:52 anbrown Exp $
 #
 
 package MQSeries::FDC::Entry;
@@ -15,7 +15,7 @@ use overload ('""'  => 'as_string',
               'cmp' => 'compare',
               '<=>' => 'compare');
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 #
 # Constructor

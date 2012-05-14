@@ -1,9 +1,9 @@
 /*
  * Extensions for the PCF Command Set
  *
- * $Id: cmqcfce.h,v 33.2 2010/04/01 16:25:00 anbrown Exp $
+ * $Id: cmqcfce.h,v 33.3 2011/01/03 15:04:57 anbrown Exp $
  *
- * (c) 1999-2010 Morgan Stanley & Co. Incorporated
+ * (c) 1999-2011 Morgan Stanley & Co. Incorporated
  * See ..../src/LICENSE for terms of distribution.
  *
  */

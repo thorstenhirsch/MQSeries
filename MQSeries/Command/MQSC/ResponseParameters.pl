@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 33.2 2010/04/01 16:24:51 anbrown Exp $
+# $Id: ResponseParameters.pl,v 33.9 2011/05/27 19:09:36 jettisu Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -46,6 +46,7 @@ package MQSeries::Command::MQSC;
     DNSGROUP	=> [ "DNSGroup" ],
     DNSWLM	=> [ "DNSWLM",			$ResponseValues{Yes} ],
     EXPRYINT    => [ "ExpiryInterval" ],
+    GROUPUR	=> [ "GroupUR",			$ResponseValues{Enabled} ],
     IGQ         => [ "IntraGroupQueueing",      $ResponseValues{Enabled} ],
     IGQAUT      => [ "IGQPutAuthority",         $ResponseValues{IGQPutAuthority} ],
     IGQUSER     => [ "IGQUserid" ],
@@ -57,9 +58,11 @@ package MQSeries::Command::MQSC;
     LU62CHL	=> [ "LU62Channels" ],
     LUGROUP	=> [ "LUGroupName" ],
     LUNAME	=> [ "LUName" ],
+    MARKINT	=> [ "MsgMarkBrowseInterval",	$ResponseValues{MsgMarkBrowseInterval} ],
     MAXCHL	=> [ "MaxChannels" ],
     MAXHANDS	=> [ "MaxHandles" ],
     MAXMSGL	=> [ "MaxMsgLength" ],
+    MAXPROPL	=> [ "MaxPropertiesLength", 	$ResponseValues{MaxPropertiesLength} ],
     MAXPRTY	=> [ "MaxPriority" ],
     MAXUMSGS	=> [ "MaxUncommittedMsgs" ],
     MONACLS     => [ "ClusterSenderMonitoringDefault", $ResponseValues{ClusterSenderMonitoringDefault} ],
@@ -67,8 +70,14 @@ package MQSeries::Command::MQSC;
     MONQ	=> [ "QueueMonitoring",		$ResponseValues{QMgrMonitoring} ],
     OPORTMAX	=> [ "OutboundPortMax" ],
     OPORTMIN	=> [ "OutboundPortMin" ],
+    PARENT	=> [ "Parent" ],
     PERFMEV	=> [ "PerformanceEvent",	$ResponseValues{Enabled} ],
     PLATFORM	=> [ "Platform", ],
+    PSMODE	=> [ "PubSubMode",		$ResponseValues{PubSubMode} ],
+    PSNPMSG	=> [ "PubSubNPInputMsg",	$ResponseValues{PubSubNPInputMsg} ],
+    PSNPRES	=> [ "PubSubNPResponse",	$ResponseValues{PubSubNPResponse} ],
+    PSRTYCNT	=> [ "PubSubMaxMsgRetryCount" ],
+    PSSYNCPT	=> [ "PubSubSyncPoint",		$ResponseValues{PubSubSyncPoint} ],
     QMID	=> [ "QMgrIdentifier" ],
     QMNAME	=> [ "QMgrName" ],
     QSGNAME     => [ "QSharingGroupName" ],
@@ -79,6 +88,7 @@ package MQSeries::Command::MQSC;
     REPOS	=> [ "RepositoryName" ],
     REPOSNL	=> [ "RepositoryNamelist" ],
     ROUTEREC    => [ "TraceRouteRecording",	$ResponseValues{TraceRouteRecording} ],
+    SCYCASE	=> [ "SecurityCase",		$ResponseValues{SecurityCase} ],
     SQQMNAME    => [ "SharedQQmgrName",		$ResponseValues{SharedQQmgrName} ],
     SSLCRLNL    => [ "SSLCRLNamelist" ],
     SSLEV	=> [ "SSLEvent",		$ResponseValues{Enabled} ],
@@ -93,6 +103,7 @@ package MQSeries::Command::MQSC;
     TCPSTACK	=> [ "TCPStackType",		$ResponseValues{TCPStackType} ],
     TRAXTBL	=> [ "ChinitTraceTableSize" ],
     TRAXSTR	=> [ "ChinitTraceAutoStart",	$ResponseValues{Yes} ],
+    TREELIFE	=> [ "TreeLifeTime" ],
     TRIGINT	=> [ "TriggerInterval" ],
    },
 
@@ -115,6 +126,7 @@ package MQSeries::Command::MQSC;
    Queue =>
    {
     ACCTQ	=> [ "QueueAccounting",		$ResponseValues{QueueAccounting} ],
+    ASTATE	=> [ "AsynchronousState",	$ResponseValues{AsynchronousState} ],
     BOQNAME	=> [ "BackoutRequeueName" ],
     BOTHRESH	=> [ "BackoutThreshold" ],
     CFSTRUCT    => [ "CFStructure" ],
@@ -130,6 +142,8 @@ package MQSeries::Command::MQSC;
     CURDEPTH	=> [ "CurrentQDepth" ],
     DEFPRTY	=> [ "DefPriority" ],
     DEFPSIST	=> [ "DefPersistence",		$ResponseValues{Yes} ],
+    DEFPRESP	=> [ "DefPutResponse",		$ResponseValues{DefPutResponse} ],
+    DEFREADA	=> [ "DefReadAhead",		$ResponseValues{DefReadAhead} ],
     DEFSOPT	=> [ "DefInputOpenOption",	$ResponseValues{DefInputOpenOption} ],
     DEFTYPE	=> [ "DefinitionType",		$ResponseValues{DefinitionType} ],
     DESCR	=> [ "QDesc" ],
@@ -148,6 +162,7 @@ package MQSeries::Command::MQSC;
     NPMCLASS    => [ "NonPersistentMsgClass",   $ResponseValues{NonPersistentMsgClass} ],
     OPPROCS	=> [ "OpenOutputCount" ],
     PROCESS	=> [ "ProcessName" ],
+    PROPCTL	=> [ "PropertyControl",		$ResponseValues{PropertyControl} ],
     PSID        => [ "PageSetId" ],
     PUT		=> [ "InhibitPut",		$ResponseValues{Disabled} ],
     QDEPTHHI	=> [ "QDepthHighLimit" ],
@@ -168,6 +183,8 @@ package MQSeries::Command::MQSC;
     SCOPE	=> [ "Scope",			$ResponseValues{Scope} ],
     STGCLASS	=> [ "StorageClass" ],
     TARGQ	=> [ "BaseQName" ],
+    TARGET	=> [ "BaseQName" ],
+    TARGTYPE	=> [ "BaseType",		$ResponseValues{BaseType} ],
     TPIPE	=> [ "TPipeNames" ],
     TRIGDATA	=> [ "TriggerData" ],
     TRIGDPTH	=> [ "TriggerDepth" ],
@@ -208,6 +225,7 @@ package MQSeries::Command::MQSC;
     #
     # Most of these are primarily from DISPLAY CHSTATUS 
     #
+    AFFINITY	=> [ "ConnectionAffinity",	$ResponseValues{ConnectionAffinity} ],
     BATCHES	=> [ "Batches" ],
     BUFSRCVD	=> [ "BuffersReceived" ],
     BUFSSENT	=> [ "BuffersSent" ],
@@ -216,6 +234,7 @@ package MQSeries::Command::MQSC;
     CHSTADA	=> [ "ChannelStartDate" ],
     CHSTATI	=> [ "ChannelStartTime" ],
     CHSTATUS	=> [ "ChannelName" ],
+    CLNTWGHT	=> [ "ClientChannelWeight",	$ResponseValues{ClientChannelWeight} ],
     CLWLRANK    => [ "CLWLChannelRank" ],
     CLWLPRTY    => [ "CLWLChannelPriority" ],
     CLWLWGHT    => [ "CLWLChannelWeight" ],
@@ -226,6 +245,8 @@ package MQSeries::Command::MQSC;
     CURLUWID	=> [ "CurrentLUWID" ],
     CURMSGS	=> [ "CurrentMsgs" ],
     CURSEQNO	=> [ "CurrentSequenceNumber" ],
+    CURSHCNV    => [ "CurrentSharingConversations" ],
+    DEFCDISP	=> [ "DefaultChannelDisposition",	$ResponseValues{ChannelDisposition} ],
     EXITTIME	=> [ "ExitTime" ],
     INDOUBT	=> [ "InDoubtStatus",		$ResponseValues{Yes} ],
     JOBNAME	=> [ "MCAJobName" ],
@@ -234,10 +255,15 @@ package MQSeries::Command::MQSC;
     LSTMSGDA	=> [ "LastMsgDate" ],
     LSTMSGTI	=> [ "LastMsgTime" ],
     LSTSEQNO	=> [ "LastSequenceNumber" ],
+    MAXINST	=> [ "MaxInstances" ],
+    MAXINSTC	=> [ "MaxInstancesPerClient" ],
+    MAXSHCNV    => [ "MaxSharingConversations" ],
     MCASTAT	=> [ "MCAStatus",		$ResponseValues{MCAStatus} ],
     MONCHL	=> [ "ChannelMonitoring",	$ResponseValues{MonitoringDft} ],
     MSGS	=> [ "Msgs" ],
     NETTIME	=> [ "NetTime" ],
+    PROPCTL	=> [ "PropertyControl",		$ResponseValues{PropertyControl} ],
+    SHARECNV	=> [ "SharingConversations", ],
     SHORTRTS	=> [ "ShortRetriesLeft" ],
     SSLCERTI	=> [ "SSLCertRemoteIssuerName" ],
     SSLCERTU	=> [ "SSLCertUserId" ],
@@ -268,7 +294,7 @@ package MQSeries::Command::MQSC;
     DESCR	=> [ "ChannelDesc" ],
     DISCINT	=> [ "DiscInterval" ],
     HBINT	=> [ "HeartbeatInterval" ],
-    KAINT       => [ "KeepAliveInterval", ],#	$ResponseValues{KeepAliveInterval} ],
+    KAINT       => [ "KeepAliveInterval",	$ResponseValues{KeepAliveInterval} ],
     LOCLADDR    => [ "LocalAddress" ],
     LONGRTY	=> [ "LongRetryCount" ],
     LONGTMR	=> [ "LongRetryInterval" ],
@@ -446,6 +472,7 @@ package MQSeries::Command::MQSC;
     DESCR       => [ "AuthInfoDesc" ],
     LDAPPWD     => [ "LDAPPassword" ],
     LDAPUSER    => [ "LDAPUserName" ],
+    OCSPURL	=> [ "OCSPResponderURL",	$ResponseValues{OCSPResponderURL} ],
     QSGDISP     => [ "QSGDisposition",		$ResponseValues{QSGDisposition} ],
     #QSGDISP     => [ "QSGDisposition",		$ResponseValues{QSGDisposition} ],
    },

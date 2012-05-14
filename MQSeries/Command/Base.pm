@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 36.2 2010/07/08 14:47:11 anbrown Exp $
+# $Id: Base.pm,v 37.14 2011/06/03 17:53:27 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use MQSeries::Command::MQSC;
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 sub new {
 
@@ -176,6 +176,23 @@ sub _TranslatePCF {
     my ($ParameterRequired) = ( exists $RequiredMap->{$command} ?
                                 $RequiredMap->{$command} :
                                 {} );
+
+    #
+    # Now copy the required parameters list so that we can muck with
+    # the copy.  Some of the values in the list may, in fact, be code
+    # refs (and not just plain numbers), which will decide (at this
+    # time, based on the target qmgr's command level) whether they are
+    # required or not.
+    #
+    $ParameterRequired = { %{$ParameterRequired} };
+    foreach my $param (keys %{$ParameterRequired}) {
+        next if (ref($ParameterRequired->{$param}) ne "CODE");
+        my $newval = delete($ParameterRequired->{$param})->
+            ($self->{QueueManager}->{QMgrConfig}->{CommandLevel});
+        next if (!defined($newval));
+        $ParameterRequired->{$param} = $newval;
+    }
+
     my @required_order = sort { $ParameterRequired->{$a} <=>
                                 $ParameterRequired->{$b}
                               } keys %$ParameterRequired;
@@ -385,7 +402,9 @@ sub _TranslatePCF {
     }
     #print STDERR "Ordered: @ordered_params\n";
 
-    foreach my $param (@ordered_params) {
+    my @groupstack;
+    for (my $idx = 0; $idx < @ordered_params; $idx++) {
+        my $param = $ordered_params[$idx];
         my $origvalue = $origparams->{$param};
 
         #print STDERR "Param : $param\n";
@@ -404,6 +423,7 @@ sub _TranslatePCF {
         my $newparameter =
           {
            Parameter    => $paramkey,
+           Type         => $paramtype,  # PCF.xs might want to know...
           };
 
         #
@@ -419,7 +439,36 @@ sub _TranslatePCF {
         #
         if ( $paramtype == MQSeries::MQCFT_STRING ||
              $paramtype == MQSeries::MQCFT_STRING_LIST ) {
-            if ( ref $origvalue eq "ARRAY" ) {
+            if ( ref($ValueMap) eq "CODE" ) {
+                # VALUEMAP-CODEREF - leave type and $origvalue alone
+            } elsif ( ref $origvalue eq "ARRAY" &&
+                 $paramtype == MQSeries::MQCFT_STRING ) {
+                # flip type to match list
+                $newparameter->{"Type"} = $paramtype =
+                    MQSeries::MQCFT_STRING_LIST;
+            } elsif ( ref $origvalue ne "ARRAY" &&
+                      $paramtype == MQSeries::MQCFT_STRING_LIST ) {
+                # array-ify non array
+                $origvalue = [ $origvalue ];
+            }
+            if (ref($ValueMap) eq "CODE") {
+                my ($typename, $newvalue);
+                if ($paramtype == MQSeries::MQCFT_STRING) {
+                    $typename = "String";
+                    # VALUEMAP-CODEREF
+                    $newvalue = $ValueMap->(encodepcf => $origvalue);
+                } elsif (ref($origvalue) eq "ARRAY") {
+                    $typename = "Strings";
+                    # VALUEMAP-CODEREF
+                    $newvalue = [map({ $ValueMap->(encodepcf => $_) }
+                                     @{$origvalue})];
+                } else {
+                    $typename = "Strings";
+                    # VALUEMAP-CODEREF
+                    $newvalue = [$ValueMap->(encodepcf => $origvalue)];
+                }
+                $newparameter->{$typename} = $newvalue;
+            } elsif ( $paramtype == MQSeries::MQCFT_STRING_LIST ) {
                 $newparameter->{Strings} = [];
                 foreach my $value ( @$origvalue ) {
                     my $newvalue = length($value) == 0 ? " " : "$value";
@@ -427,11 +476,7 @@ sub _TranslatePCF {
                 }
             } else {
                 my $newvalue = length($origvalue) == 0 ? " " : "$origvalue";
-                if ( $paramtype == MQSeries::MQCFT_STRING_LIST ) {
-                    $newparameter->{Strings} = ["$newvalue"];
-                } else {
-                    $newparameter->{String} = "$newvalue";
-                }
+                $newparameter->{String} = $newvalue;
             }
         }
 
@@ -444,26 +489,32 @@ sub _TranslatePCF {
             $newparameter->{ByteString} = "$newvalue";
         }
 
-        if ( $paramtype == MQSeries::MQCFT_INTEGER ) {
-            if ( ref $ValueMap ) {
-                #print STDERR %$ValueMap, "\n"; #FIXME
-                unless ( exists $ValueMap->{$origvalue} ) {
-                    $self->{Carp}->("Unknown int value '$origvalue' for " .
-                                    "parameter '$param', command '$command'");
-                    return;
-                }
-                $newparameter->{Value} = $ValueMap->{$origvalue};
-            } else {
+        if ( $paramtype == MQSeries::MQCFT_INTEGER ||
+             $paramtype == MQSeries::MQCFT_INTEGER64 ) {
+            if (!ref($ValueMap)) {
                 $newparameter->{Value} = $origvalue;
+            }
+            elsif (ref($ValueMap) eq "CODE") {
+                # VALUEMAP-CODEREF
+                $newparameter->{Value} = $ValueMap->(encodepcf => $origvalue);
+            }
+            elsif (exists($ValueMap->{$origvalue})) {
+                $newparameter->{Value} = $ValueMap->{$origvalue};
+            }
+            if (!defined($newparameter->{Value})) {
+                $self->{Carp}->("Unknown int value '$origvalue' for " .
+                                "parameter '$param', command '$command'");
+                return;
             }
         }
 
-        if ( $paramtype == MQSeries::MQCFT_INTEGER_LIST ) {
+        if ( $paramtype == MQSeries::MQCFT_INTEGER_LIST ||
+             $paramtype == MQSeries::MQCFT_INTEGER64_LIST ) {
             foreach my $value ( @$origvalue ) {
                 if ( ref $ValueMap ) {
 
                     unless ( exists $ValueMap->{$value} ) {
-                        $self->{Carp}->("Unknown intlist value '$origvalue' for " .
+                        $self->{Carp}->("Unknown intlist value '$value' for " .
                                         "parameter '$param', command '$command'");
                         return;
                     }
@@ -501,9 +552,61 @@ sub _TranslatePCF {
             }
             #print STDERR "XXX: Have string filter for [@$origvalue]\n";
             $newparameter->{StringFilter} = $origvalue;
+        } elsif ($paramtype == MQSeries::MQCFT_GROUP) {
+            if (ref($origvalue) ne 'ARRAY') {
+                $self->{Carp}->("Invalid group for parameter '$param', command '$command': must be an array-reference");
+                return;
+            }
+            # replace current parameter with an ObjectCount; the group
+            # itself will be handled below
+            if (!defined($header->{"Version"})) {
+                $header->{"Version"} = MQSeries::MQCFH_VERSION_3;
+            }
+            $newparameter = {
+                             "Parameter" => MQSeries::MQIAMO_OBJECT_COUNT,
+                             "Type"      => MQSeries::MQCFT_INTEGER,
+                             "Value"     => scalar(@{$origvalue}),
+                            };
         }
 
         push(@$parameters,$newparameter);
+
+        # if we're entering a group, add group stack frames
+        if ($paramtype == MQSeries::MQCFT_GROUP) {
+            # push all group elements into *this* encoding unit
+            my $top = $parameters;
+            # replace encoding state with all group elements (note
+            # that while they actually get encoded in reverse order,
+            # they are added to $parameters here in the proper order)
+            foreach my $gelem (0..$#{$origvalue}) {
+                # make and add a brand new parameter to $top
+                $newparameter = {
+                                 "Parameter" => $paramkey, 
+                                 "Type"      => $paramtype,
+                                 "Group"     => [],
+                                };
+                push(@$top, $newparameter);
+                # save current encoding state
+                my $frame = [$origparams, $parameters, $ParameterMap,
+                             $idx, @ordered_params];
+                push(@groupstack, $frame);
+                # flip encoding state to *this* group element
+                $origparams     = $origvalue->[$gelem];
+                $parameters     = $newparameter->{"Group"};
+                $ParameterMap   = $ValueMap;
+                $idx            = -1; # account for increment in top for (;;)
+                # XXX - note that @ordered_params is actually unordered
+                # (maybe we'll fix this later)
+                @ordered_params = keys %{$origparams};
+            }
+        }
+
+        # if we're done with a group, pop off group stack frames
+        while ($idx + 1 >= @ordered_params && @groupstack) {
+            my $frame = pop(@groupstack);
+            ($origparams, $parameters, $ParameterMap,
+             $idx, @ordered_params) = @{$frame};
+        }
     }
     #print STDERR "Params returned:", @$parameters,"\n";
 
@@ -578,7 +681,9 @@ sub _UnTranslatePCF {
                          $ReverseMap->{Error}->[1] :
                          $CommandMap->[1] );
 
-    foreach my $origparam ( @$origparams ) {
+    my @groupstack;
+    for (my $idx = 0; $idx < @$origparams; $idx++) {
+        my $origparam = $origparams->[$idx];
 
         #print "OrigP: $origparam\n";
         my $paramkey = $ParameterMap->{$origparam->{Parameter}}->[0];
@@ -591,24 +696,23 @@ sub _UnTranslatePCF {
         #print  "param\n", map { "\t$_:$origparam->{$_}\n" } sort keys %$origparam;
 
         if ( exists $origparam->{String} ) {
-            ( $parameters->{$paramkey} = $origparam->{String} ) =~ s/\s+$//;
-            next;
+            ( $paramvalue = $origparam->{String} ) =~ s/\s+$//;
         } elsif ( exists $origparam->{ByteString} ) {
-            $parameters->{$paramkey} = unpack("H*",$origparam->{ByteString});
-            #$parameters->{$paramkey} = $origparam->{ByteString};
-            next;
+            $paramvalue = unpack("H*",$origparam->{ByteString});
         } elsif ( exists $origparam->{Strings} ) {
+            $paramvalue = [];
             foreach my $string ( @{$origparam->{Strings}} ) {
                 $string =~ s/\s+$//;
-                push(@{$parameters->{$paramkey}},$string);
+                push(@{$paramvalue}, $string);
             }
-            next;
         } elsif ( exists $origparam->{Value} ) {
             $paramvalue = $origparam->{Value};
         } elsif ( exists $origparam->{Values} ) {
             $paramvalue = $origparam->{Values};
         } elsif ( exists $origparam->{FilterValue} ) {
             $paramvalue = $origparam->{FilterValue};
+        } elsif ( exists $origparam->{Group} ) {
+            $paramvalue = $origparam->{Group};
         } else {
             # Uh...  MQDecodePCF shouldn't ever let this happen...
             $self->{Carp}->("Unable to map parameter '$paramkey'\n");
@@ -617,13 +721,30 @@ sub _UnTranslatePCF {
 
         my $ValueMap = $ParameterMap->{$origparam->{Parameter}}->[1] || do {
             $parameters->{$paramkey} = $paramvalue;
-            next;
+            goto endgroup;
         };
+
+        if ($origparam->{Group}) {
+            my $frame = [$parameters, $ParameterMap, $idx, $origparams];
+            push(@groupstack, $frame);
+            my $newparameters = {};
+            push(@{$parameters->{$paramkey}}, $newparameters);
+            $parameters = $newparameters;
+            $ParameterMap = $ValueMap;
+            $idx = -1; # account for increment in top for (;;)
+            $origparams = $paramvalue;
+            goto endgroup;
+        }
 
         if ( ref $paramvalue eq 'ARRAY' ) {
             my $newvalue = [];
             foreach my $value ( @$paramvalue ) {
-                if ( exists $ValueMap->{$value} ) {
+                if (ref($ValueMap) eq "CODE" &&
+                    # VALUEMAP-CODEREF
+                    defined(my $dvalue = $ValueMap->(decodepcf => $value))) {
+                    push(@$newvalue, $dvalue);
+                } elsif ( ref($ValueMap) eq "HASH" &&
+                          exists $ValueMap->{$value} ) {
                     push(@$newvalue,$ValueMap->{$value});
                 } elsif ( $self->{StrictMapping} ) {
                     $self->{Carp}->("Unable to map value of '$value' for parameter '$paramkey'");
@@ -636,7 +757,12 @@ sub _UnTranslatePCF {
 
         } else {
 
-            if ( exists $ValueMap->{$paramvalue} ) {
+            if (ref($ValueMap) eq "CODE" &&
+                # VALUEMAP-CODEREF
+                defined(my $dvalue = $ValueMap->(decodepcf => $paramvalue))) {
+                $parameters->{$paramkey} = $dvalue;
+            } elsif (ref($ValueMap) eq "HASH" &&
+                     exists($ValueMap->{$paramvalue})) {
                 $parameters->{$paramkey} = $ValueMap->{$paramvalue};
             } elsif ( $self->{StrictMapping} ) {
                 $self->{Carp}->("Unable to map value of '$paramvalue' for parameter '$paramkey'");
@@ -646,6 +772,11 @@ sub _UnTranslatePCF {
             }
         }
 
+      endgroup:
+        while ($idx + 1 >= @$origparams && @groupstack) {
+            my $frame = pop(@groupstack);
+            ($parameters, $ParameterMap, $idx, $origparams) = @{$frame};
+        }
     }
     return ($header,$parameters);
 
@@ -921,6 +1052,14 @@ sub MQEncodeMQSC {
                 } else {
                     push(@buffer,"$key($type->[0])");
                 }
+            } elsif ( ref $type eq 'CODE' ) {
+                # VALUEMAP-CODEREF
+                my $newval = $type->(encodemqsc => $value);
+                if (!defined($newval)) {
+                    $self->{Carp}->("Unknown value '$value' for parameter '$parameter'\n");
+                    return;
+                }
+                push(@buffer, "$key($newval)");
             } elsif ( ref $type eq 'HASH' ) {
                 #
                 # Fix for Header Compression and Message Compression introduced in V6
@@ -1236,6 +1375,14 @@ sub MQDecodeMQSC {
                         $realvalue = $requestvalues->{$value};
                     }
                 }
+            } elsif (ref($requestvalues) eq "CODE") {
+                # VALUEMAP-CODEREF
+                my $newval = $requestvalues->(decodemqsc => $value);
+                if (!defined($newval)) {
+                    $self->{Carp}->("Unrecognized value '$value' for parameter '$realkey' for command '$command'\n");
+                } else {
+                    $realvalue = $newval;
+                }
             }
         } else {
             if (defined $requestvalues and not ref $requestvalues) {
@@ -1248,6 +1395,28 @@ sub MQDecodeMQSC {
 
     return ($newheader,$parameters);
 }
+
+
+# VALUEMAP-CODEREF
+sub strinteger {
+    my ($direction, $value, $number, $string, $limit) = @_;
+
+    if (defined($value)) {
+        # use "eq" for a numeric compare so that we don't get warnings
+        # for a non-numeric one
+        if ($value eq $number || lc($value) eq lc($string)) {
+            # note that BOTH decodes and ALSO encodemqsc intentionally
+            # render as STRING
+            return ($direction eq "encodepcf") ? $number : uc($string);
+        }
+        if ($value =~ /^(0|[1-9]\d+)$/ &&
+            (!defined($limit) || $value <= $limit)) {
+            return $value;
+        }
+    }
+
+    return; # fail!
+};
 
 
 1;

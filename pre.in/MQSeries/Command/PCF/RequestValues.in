@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: RequestValues.in,v 33.3 2010/09/27 19:51:51 anbrown Exp $
+# $Id: RequestValues.in,v 37.10 2011/07/01 18:16:13 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -66,6 +66,7 @@ package MQSeries::Command::PCF;
     DNSGroup			=> &MQCA_DNS_GROUP,
     DNSWLM			=> &MQIA_DNS_WLM,
     ExpiryInterval		=> &MQIA_EXPIRY_INTERVAL,
+    GroupUR			=> &MQIA_GROUP_UR,
     IGQUserId			=> &MQCA_IGQ_USER_ID,
     IGQPutAuthority		=> &MQIA_IGQ_PUT_AUTHORITY,
     InhibitEvent		=> &MQIA_INHIBIT_EVENT,
@@ -88,6 +89,7 @@ package MQSeries::Command::PCF;
     MQIAccounting		=> &MQIA_ACCOUNTING_MQI,
     MQIStatistics		=> &MQIA_STATISTICS_MQI,
     MsgMarkBrowseInterval	=> &MQIA_MSG_MARK_BROWSE_INTERVAL,
+    OpMode			=> &MQIACF_OPERATION_MODE,
     OutboundPortMax		=> &MQIA_OUTBOUND_PORT_MAX,
     OutboundPortMin		=> &MQIA_OUTBOUND_PORT_MIN,
     Parent			=> &MQCA_PARENT,
@@ -324,6 +326,7 @@ package MQSeries::Command::PCF;
     AlterationTime		=> &MQCA_ALTERATION_TIME,
     BackoutRequeueName		=> &MQCA_BACKOUT_REQ_Q_NAME,
     BackoutThreshold		=> &MQIA_BACKOUT_THRESHOLD,
+    BaseObjectName		=> &MQCA_BASE_OBJECT_NAME,
     BaseQName			=> &MQCA_BASE_Q_NAME,
     BaseType			=> &MQIA_BASE_TYPE,	
     CFStructure			=> &MQCA_CF_STRUC_NAME,
@@ -375,6 +378,7 @@ package MQSeries::Command::PCF;
     QueueAccounting		=> &MQIA_ACCOUNTING_Q,
     QueueMonitoring		=> &MQIA_MONITORING_Q,
     QueueStatistics		=> &MQIA_STATISTICS_Q,
+    QSGDisposition		=> &MQIA_QSG_DISP,
     QServiceInterval		=> &MQIA_Q_SERVICE_INTERVAL,
     QServiceIntervalEvent	=> &MQIA_Q_SERVICE_INTERVAL_EVENT,
     QType			=> &MQIA_Q_TYPE,
@@ -403,6 +407,12 @@ package MQSeries::Command::PCF;
     Local			=> &MQQT_LOCAL,
     Model			=> &MQQT_MODEL,
     Remote			=> &MQQT_REMOTE,
+   },
+
+   BaseType => 
+   {
+    Queue			=> &MQOT_Q,
+    Topic			=> &MQOT_TOPIC,
    },
 
    QMoveType =>
@@ -653,6 +663,7 @@ package MQSeries::Command::PCF;
     BatchInterval		=> &MQIACH_BATCH_INTERVAL,
     BatchSize			=> &MQIACH_BATCH_SIZE,
     ChannelDesc			=> &MQCACH_DESC,
+    ChannelDisposition		=> &MQIACH_CHANNEL_DISP,
     ChannelMonitoring		=> &MQIA_MONITORING_CHANNEL,
     ChannelName			=> &MQCACH_CHANNEL_NAME,
     ChannelNames		=> &MQCACH_CHANNEL_NAMES,
@@ -717,6 +728,7 @@ package MQSeries::Command::PCF;
     All				=> &MQCHLD_ALL,
     Private			=> &MQCHLD_PRIVATE,
     Shared			=> &MQCHLD_SHARED,
+    Fixshared			=> &MQCHLD_FIXSHARED,
    },
 
    #
@@ -739,6 +751,7 @@ package MQSeries::Command::PCF;
     ChannelName			=> &MQCACH_CHANNEL_NAME,
     ChannelStartDate		=> &MQCACH_CHANNEL_START_DATE,
     ChannelStartTime		=> &MQCACH_CHANNEL_START_TIME,
+    ChannelStatus		=> &MQIACH_CHANNEL_STATUS,
     ChannelType			=> &MQIACH_CHANNEL_TYPE,
     CompressionRate		=> &MQIACH_COMPRESSION_RATE,
     CompressionTime		=> &MQIACH_COMPRESSION_TIME,		
@@ -849,6 +862,21 @@ package MQSeries::Command::PCF;
     ZlibFast			=> &MQCOMPRESS_ZLIBFAST,
     ZlibHigh			=> &MQCOMPRESS_ZLIBHIGH,
    },
+
+   # VALUEMAP-CODEREF
+   KeepAliveInterval => 
+        sub { return MQSeries::Command::Base::strinteger(@_, &MQKAI_AUTO,
+                                                    "AUTO", 99999); },
+
+   # VALUEMAP-CODEREF
+   MsgMarkBrowseInterval => 
+        sub { return MQSeries::Command::Base::strinteger(@_, &MQMMBI_UNLIMITED,
+                                                    "NOLIMIT", 999999999); },
+# 100MB max
+   # VALUEMAP-CODEREF
+   MaxPropertiesLength => 
+        sub { return MQSeries::Command::Base::strinteger(@_, &MQPROP_UNRESTRICTED_LENGTH,
+                                                    "NOLIMIT", 104857600); },
 
    TransportType =>
    {
@@ -1028,6 +1056,7 @@ package MQSeries::Command::PCF;
     Queue			=> &MQOT_Q,
     QueueManager		=> &MQOT_Q_MGR,
     Service			=> &MQOT_SERVICE,
+    Topic			=> &MQOT_TOPIC,
 
     Channel			=> &MQOT_CHANNEL,
 
@@ -1061,12 +1090,14 @@ package MQSeries::Command::PCF;
     AuthInfoType		=> &MQIA_AUTH_INFO_TYPE,
     LDAPPassword		=> &MQCA_LDAP_PASSWORD,
     LDAPUserName		=> &MQCA_LDAP_USER_NAME,
+    OCSPResponderURL		=> &MQCA_AUTH_INFO_OCSP_URL,
    },
 
    AuthInfoType =>
    {
     CRLLDAP			=> &MQAIT_CRL_LDAP,
     OCSP			=> &MQAIT_OCSP, # new with v7.0.1.1
+    All				=> &MQAIT_ALL,
    },
 
    #
@@ -1087,6 +1118,7 @@ package MQSeries::Command::PCF;
     ApplTag			=> &MQCACF_APPL_TAG,
     ApplType			=> &MQIA_APPL_TYPE,
     ASId			=> &MQCACF_ASID,
+    AsynchronousState		=> &MQIACF_ASYNC_STATE,
     ChannelName			=> &MQCACH_CHANNEL_NAME,
     Conname			=> &MQCACH_CONNECTION_NAME,
     CurrentQDepth		=> &MQIA_CURRENT_Q_DEPTH,
@@ -1232,7 +1264,22 @@ package MQSeries::Command::PCF;
     #SecuritySwitchProfile	=> &MQCACF_SECURITY_PROFILE,
     #SecuritySwitchSetting	=> &MQIACF_SECURITY_SETTING,
    },
+   
+   # 
+   # V7 for SetLog 
+   #
+   LogCompression =>
+   {
+    None			=> &MQCOMPRESS_NONE,
+    RLE				=> &MQCOMPRESS_RLE,
+    Any				=> &MQCOMPRESS_ANY,
+   },
 
+   #
+   # Commented lines came out of v7. But they seem to be 
+   # similar to existing ones except MQ being replaced with MX.
+   # Needs clarification.
+   #
    SecurityItem =>
    {
     All				=> &MQSECITEM_ALL,
@@ -1240,6 +1287,11 @@ package MQSeries::Command::PCF;
     Namelist			=> &MQSECITEM_MQNLIST,
     Process			=> &MQSECITEM_MQPROC,
     Queue			=> &MQSECITEM_MQQUEUE,
+    #XAdministration		=> &MQSECITEM_MXADMIN, 
+    #XNamelist			=> &MQSECITEM_MXNLIST,
+    #XProcess			=> &MQSECITEM_MXPROC,
+    #XQueue			=> &MQSECITEM_MXQUEUE,
+    #XTopic			=> &MQSECITEM_MXTOPIC, 
    },
 
    #
@@ -1280,9 +1332,13 @@ package MQSeries::Command::PCF;
     Output			=> &MQAUTH_OUTPUT,
     PassAllContext		=> &MQAUTH_PASS_ALL_CONTEXT,
     PassIdentityContext		=> &MQAUTH_PASS_IDENTITY_CONTEXT,
+    Publish			=> &MQAUTH_PUBLISH,
+    Resume			=> &MQAUTH_RESUME,
     Set				=> &MQAUTH_SET,
     SetAllContext		=> &MQAUTH_SET_ALL_CONTEXT,
     SetIdentityContext		=> &MQAUTH_SET_IDENTITY_CONTEXT,
+    Subscribe			=> &MQAUTH_SUBSCRIBE,
+    System			=> &MQAUTH_SYSTEM,
    },
 
    #
@@ -1487,6 +1543,7 @@ package MQSeries::Command::PCF;
     ProcessId			=> &MQIACF_PROCESS_ID,
     QMgrUOWId			=> &MQBACF_Q_MGR_UOW_ID,
     QSGDisposition		=> &MQIA_QSG_DISP,
+    ReadAhead			=> &MQIA_READ_AHEAD,
     StartUOWLogExtent		=> &MQCACF_UOW_LOG_EXTENT_NAME,
     TaskNumber			=> &MQCACF_TASK_NUMBER,
     ThreadId			=> &MQIACF_THREAD_ID,
@@ -1498,6 +1555,7 @@ package MQSeries::Command::PCF;
     UOWStartTime		=> &MQCACF_UOW_START_TIME,
     UOWState			=> &MQIACF_UOW_STATE,
     UOWType			=> &MQIACF_UOW_TYPE,
+    URDisposition		=> &MQIA_UR_DISP,
     UserId			=> &MQCACF_USER_IDENTIFIER,
     },
 
@@ -1506,6 +1564,16 @@ package MQSeries::Command::PCF;
     Conn			=> &MQIACF_CONN_INFO_CONN,
     Handle			=> &MQIACF_CONN_INFO_HANDLE,
     All				=> &MQIACF_CONN_INFO_ALL,
+   },
+
+   #
+   # Unit of Recovery Disposition (V7)
+   #
+   URDisposition =>
+   {
+    All				=> &MQQSGD_ALL,
+    Group			=> &MQQSGD_GROUP,
+    QMgr			=> &MQQSGD_Q_MGR,
    },
 
    #
@@ -1689,7 +1757,7 @@ package MQSeries::Command::PCF;
     ResumeTime			=> &MQCA_RESUME_TIME,
     RetainedPublication		=> &MQIACF_RETAINED_PUBLICATION,
     SubscriptionCount		=> &MQIA_SUB_COUNT,
-    SubscriptionId		=> &MQBACF_SUB_ID,
+    SubId			=> &MQBACF_SUB_ID,
     SubscriptionUserId		=> &MQCACF_SUB_USER_ID,
     SubscriptionScope		=> &MQIA_SUB_SCOPE,
     SubscriptionType		=> &MQIACF_SUB_TYPE,
@@ -1724,6 +1792,15 @@ package MQSeries::Command::PCF;
     Topic			=> &MQWS_TOPIC,
    },
 
+   # 
+   # For z/os v7
+   #
+   GroupUR =>
+   {
+    Disabled			=> &MQGUR_DISABLED,
+    Enabled			=> &MQGUR_ENABLED,
+   },
+
    #
    # For RefreshQueueManager on z/OS
    #
@@ -1731,6 +1808,7 @@ package MQSeries::Command::PCF;
    {
     Configuration		=> &MQRT_CONFIGURATION,
     Expiry			=> &MQRT_EXPIRY,
+    ProxySub			=> &MQRT_PROXYSUB,
    },
 
    #

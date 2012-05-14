@@ -1,7 +1,7 @@
 #
-# $Id: Event.pm,v 33.7 2010/04/01 16:24:56 anbrown Exp $
+# $Id: Event.pm,v 33.13 2011/03/16 21:47:25 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -13,133 +13,49 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
-use MQSeries::Message;
-use MQSeries::Message::PCF qw(MQDecodePCF);
+use MQSeries::Message::System;
 
 require "MQSeries/Message/Event.pl";
 
-our $VERSION = '1.32';
-our @ISA = qw(MQSeries::Message);
+our $VERSION = '1.33';
+our @ISA = qw(MQSeries::Message::System);
 
-sub PutConvert {
-    my $self = shift;
-    $self->{Carp}->("MQPUTing an MQEvent object is not supported\n");
-    return undef;
+
+sub import {
+    my ($class) = @_;
+
+    $class->_Register(\&_Translatable);
+
+    return;
 }
 
 
-sub GetConvert {
-    my $self = shift;
+sub _Translatable {
+    my ($self, $header) = @_;
 
-    ($self->{Buffer}) = @_;
-
-    my ($header,$parameters);
-
-    unless ( ($header,$parameters) = MQDecodePCF($self->{Buffer}) ) {
-        $self->{Carp}->("Unable to parse PCF contents from message\n");
-        return undef;
+    if ($header->{"Type"} == MQSeries::MQCFT_EVENT &&
+       ($header->{"Command"} == MQSeries::MQCMD_Q_MGR_EVENT ||
+        $header->{"Command"} == MQSeries::MQCMD_PERFM_EVENT ||
+        $header->{"Command"} == MQSeries::MQCMD_CHANNEL_EVENT)) {
+       return (\%MQSeries::Message::Event::ResponseParameters,
+               "%MQSeries::Message::Event::ResponseParameters");
     }
 
-    unless ( ($self->{EventHeader},$self->{EventData}) = $self->_TranslatePCF($header,$parameters) ) {
-        $self->{Carp}->("Unable to parse MQSeries Event from message\n");
-        return undef;
-    }
-
-    #
-    # The message data is useless in an event -- it all gets parsed
-    # into the EventHeader and Eventdata, so just feed back something
-    # which is true.
-    #
-    return 1;
-
-}
-
-
-sub _TranslatePCF {
-    my $self = shift;
-    my ($origheader,$origparams) = @_;
-
-    my $header = $origheader;
-    my $parameters = {};
-
-    my $ResponseParameters = \%MQSeries::Message::Event::ResponseParameters;
-
-    if (
-        $header->{Type} != MQSeries::MQCFT_EVENT ||
-        (
-         $header->{Command} != MQSeries::MQCMD_Q_MGR_EVENT &&
-         $header->{Command} != MQSeries::MQCMD_PERFM_EVENT &&
-         $header->{Command} != MQSeries::MQCMD_CHANNEL_EVENT
-        )
-       ) {
-        $self->{Carp}->("Not an MQSeries performance event\n");
-        return;
-    }
-
-    foreach my $origparam ( @$origparams ) {
-
-        my ($key,$value);
-
-        if ( $ResponseParameters->{$origparam->{Parameter}} ) {
-            $key = $ResponseParameters->{$origparam->{Parameter}};
-        }
-        else {
-            $self->{Carp}->("No such parameter '$origparam->{Parameter}' " .
-                            "defined in %MQSeries::Message::Event::ResponseParameters\n");
-            $key = $origparam->{Parameter};
-        }
-
-        #
-        # NOTE: events don't use the MQCFT_STRING_LIST or
-        # MQCFT_INTEGER_LIST types.
-        #
-        if ( $origparam->{Type} == MQSeries::MQCFT_STRING ) {
-            ( $parameters->{$key} = $origparam->{String} ) =~ s/\s+$//;
-        }
-
-        if ( $origparam->{Type} == MQSeries::MQCFT_INTEGER ) {
-            $parameters->{$key} = $origparam->{Value};
-        }
-
-    }
-
-    return ($header,$parameters);
+    return;
 }
 
 
 sub EventHeader {
     my $self = shift;
 
-    $self->{EventHeader} = {} unless $self->{EventHeader};
-
-    if ( $_[0] ) {
-        if ( exists $self->{EventHeader}->{$_[0]} ) {
-            return $self->{EventHeader}->{$_[0]};
-        } else {
-            $self->{Carp}->("No such EventHeader field: $_[0]\n");
-            return;
-        }
-    } else {
-        return $self->{EventHeader};
-    }
+    return $self->Header(@_);
 }
 
 
 sub EventData {
     my $self = shift;
 
-    $self->{EventData} = {} unless $self->{EventData};
-
-    if ( $_[0] ) {
-        if ( exists $self->{EventData}->{$_[0]} ) {
-            return $self->{EventData}->{$_[0]};
-        } else {
-            $self->{Carp}->("No such EventData field: $_[0]\n");
-            return;
-        }
-    } else {
-        return $self->{EventData};
-    }
+    return $self->Parameters(@_);
 }
 
 1;
@@ -157,59 +73,30 @@ MQSeries::Message::Event -- OO Class for decoding MQSeries event messages
 
 =head1 DESCRIPTION
 
-This class is a subclass of MQSeries::Message which provides a
-GetConvert() method to decode standard MQSeries Event messages.
+This class is a subclass of MQSeries::Message::System which includes a
+table for MQSeries::Message::System to use to decode standard MQSeries
+Event messages.
 
 =head1 METHODS
 
-Since this is a subclass of MQSeries::Message, all of that classes
-methods are available, as well as the following.
-
-=head2 PutConvert, GetConvert
-
-Neither of these methods are called by the users application, but are
-used internally by MQSeries::Queue::Put() and MQSeries::Queue::Get(),
-as well as MQSeries::QueueManager::Put1().
-
-The PutConvert method will cause a failure, since this class is only
-to be used for decoding MQSeries events, not generating them.  Perhaps
-a futute release will support the creation of such events.
-
-The GetConvert method decodes the message contents into the
-EventHeader and EventData hashes, which are available via the methods
-of the same name.
-
-=head2 Buffer
-
-Actually, this is one of the MQSeries::Message methods, and not
-specific to MQSeries::Message::Event.  However, it is important to
-note that this class is one of those that saves the raw buffer
-returned by MQGET in the object.
-
-The Buffer method will return the raw, unconverted PCF data in the
-original message.  The autor uses this to echo the original event
-message to other systems management software that wants to parse the
-PCF.
-
 =head2 EventHeader
 
-This method can be used to query the EventHeader data structure.  If
-no argument is given, then the entire EventHeader hash is returned.
-If a single argument is given, then this is interpreted as a specific
-key, and the value of that key in the EventHeader hash is returned.
+This method can be used to query the Header data structure.  If no
+argument is given, then the entire Header hash is returned.  If a
+single argument is given, then this is interpreted as a specific key,
+and the value of that key in the Header hash is returned.
 
-The keys in the EventHeader hash are the fields from the MQCFH
-structure.  See the "MQSeries Programmable System Management"
-documentation.
+The keys in the Header hash are the fields from the MQCFH structure.
+See the "MQSeries Programmable System Management" documentation.
 
 =head2 EventData
 
-This method can be used to query the EventData data structure.  If no
-argument is given, then the entire EventData hash is returned.  If a
+This method can be used to query the Parameters data structure.  If no
+argument is given, then the entire Parameters hash is returned.  If a
 single argument is given, then this is interpreted as a specific key,
-and the value of that key in the EventData hash is returned.
+and the value of that key in the Parameters hash is returned.
 
-The keys in the EventData hash vary, depending on the specific event.
+The keys in the Parameters hash vary, depending on the specific event.
 In general, these are the strings shown in the documentation for each
 individual event described in the "MQSeries Programmable System
 Management" documentation.  The data structures in the eventdata in
@@ -232,6 +119,8 @@ The macros are mapped to strings as follows:
    MQCACH_CHANNEL_NAME                  ChannelName
    MQCACH_CONNECTION_NAME               ConnectionName
    MQCACH_FORMAT_NAME                   Format
+   MQCACH_SSL_HANDSHAKE_STAGE           SSLHandshakeStage
+   MQCACH_SSL_PEER_NAME                 SSLPeerName
    MQCACH_XMIT_Q_NAME                   XmitQName
    MQCA_BASE_Q_NAME                     BaseQName
    MQCA_PROCESS_NAME                    ProcessName
@@ -247,6 +136,7 @@ The macros are mapped to strings as follows:
    MQIACF_OPEN_OPTIONS                  Options
    MQIACF_REASON_QUALIFIER              ReasonQualifier
    MQIACH_CHANNEL_TYPE                  ChannelType
+   MQIACH_SSL_RETURN_CODE               SSLReturnCode
    MQIA_APPL_TYPE                       ApplType
    MQIA_HIGH_Q_DEPTH                    HighQDepth
    MQIA_MSG_DEQ_COUNT                   MsgDeqCount
@@ -254,9 +144,14 @@ The macros are mapped to strings as follows:
    MQIA_Q_TYPE                          QType
    MQIA_TIME_SINCE_RESET                TimeSinceReset
 
+These functions are simply wrappers around the Header and Parameters
+methods in MQSeries::Message::PCF and are provided for backwards
+compatibility with the previous implementation.
+
 =head1 SEE ALSO
 
 MQSeries(3), MQSeries::QueueManager(3), MQSeries::Queue(3),
-MQSeries::Message(3)
+MQSeries::Message(3), MQSeries::Message::PCF(3),
+MQSeries::Message::System(3)
 
 =cut

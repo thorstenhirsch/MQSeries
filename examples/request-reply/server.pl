@@ -2,9 +2,9 @@
 #
 # server - Sample server script for request/reply examples
 #
-# Copyright (c) 2009-2010 Morgan Stanley & Co. Incorporated
+# Copyright (c) 2009-2011 Morgan Stanley & Co. Incorporated
 #
-# $Id: server.pl,v 33.2 2010/04/01 16:24:59 anbrown Exp $
+# $Id: server.pl,v 33.3 2011/01/03 15:04:56 anbrown Exp $
 #
 
 use strict;

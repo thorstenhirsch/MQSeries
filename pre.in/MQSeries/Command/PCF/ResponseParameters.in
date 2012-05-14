@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: ResponseParameters.in,v 36.1 2010/09/27 19:56:19 anbrown Exp $
+# $Id: ResponseParameters.in,v 38.1 2012/01/20 20:27:11 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -73,6 +73,7 @@ package MQSeries::Command::PCF;
     DNSGroup			=> [ &MQCA_DNS_GROUP,			&MQCFT_STRING ],
     DNSWLM			=> [ &MQIA_DNS_WLM,			&MQCFT_INTEGER ],
     ExpiryInterval		=> [ &MQIA_EXPIRY_INTERVAL,		&MQCFT_INTEGER ],
+    GroupUR			=> [ &MQIA_GROUP_UR,			&MQCFT_INTEGER,		$ResponseValues{GroupUR} ],
     IGQPutAuthority		=> [ &MQIA_IGQ_PUT_AUTHORITY,		&MQCFT_INTEGER,		$ResponseValues{IGQPutAuthority} ],
     InhibitEvent		=> [ &MQIA_INHIBIT_EVENT,		&MQCFT_INTEGER ],
     IntraGroupQueueing		=> [ &MQIA_INTRA_GROUP_QUEUING,		&MQCFT_INTEGER ],
@@ -90,9 +91,9 @@ package MQSeries::Command::PCF;
     MaxHandles			=> [ &MQIA_MAX_HANDLES,			&MQCFT_INTEGER ],
     MaxMsgLength		=> [ &MQIA_MAX_MSG_LENGTH,		&MQCFT_INTEGER ],
     MaxPriority			=> [ &MQIA_MAX_PRIORITY,		&MQCFT_INTEGER ],
-    MaxPropertiesLength		=> [ &MQIA_MAX_PROPERTIES_LENGTH,	&MQCFT_INTEGER ],
+    MaxPropertiesLength		=> [ &MQIA_MAX_PROPERTIES_LENGTH,	&MQCFT_INTEGER,		$ResponseValues{MaxPropertiesLength} ],
     MaxUncommittedMsgs		=> [ &MQIA_MAX_UNCOMMITTED_MSGS,	&MQCFT_INTEGER ],
-    MsgMarkBrowseInterval	=> [ &MQIA_MSG_MARK_BROWSE_INTERVAL,	&MQCFT_INTEGER ],
+    MsgMarkBrowseInterval	=> [ &MQIA_MSG_MARK_BROWSE_INTERVAL,	&MQCFT_INTEGER,		$ResponseValues{MsgMarkBrowseInterval} ],
     MQIAccounting		=> [ &MQIA_ACCOUNTING_MQI,		&MQCFT_INTEGER ],
     MQIStatistics		=> [ &MQIA_STATISTICS_MQI,		&MQCFT_INTEGER ],
     OutboundPortMax		=> [ &MQIA_OUTBOUND_PORT_MAX,		&MQCFT_INTEGER ],
@@ -156,7 +157,7 @@ package MQSeries::Command::PCF;
     BackoutRequeueName		=> [ &MQCA_BACKOUT_REQ_Q_NAME,		&MQCFT_STRING ],
     BackoutThreshold		=> [ &MQIA_BACKOUT_THRESHOLD,		&MQCFT_INTEGER ],
     BaseQName			=> [ &MQCA_BASE_Q_NAME,			&MQCFT_STRING ],
-    BaseType			=> [ &MQIA_BASE_TYPE,			&MQCFT_INTEGER,		$ResponseValues{QType} ],
+    BaseType			=> [ &MQIA_BASE_TYPE,			&MQCFT_INTEGER,		$ResponseValues{BaseType} ],
     CFStructure			=> [ &MQCA_CF_STRUC_NAME,		&MQCFT_STRING ],
     ClusterDate			=> [ &MQCA_CLUSTER_DATE,		&MQCFT_STRING ],
     ClusterName			=> [ &MQCA_CLUSTER_NAME,		&MQCFT_STRING ],
@@ -292,6 +293,7 @@ package MQSeries::Command::PCF;
     CreationDate		=> [ &MQCA_CREATION_DATE,		&MQCFT_STRING ],
     CreationTime		=> [ &MQCA_CREATION_TIME,		&MQCFT_STRING ],
     DataConversion		=> [ &MQIACH_DATA_CONVERSION,		&MQCFT_INTEGER ],
+    DefaultChannelDisposition	=> [ &MQIACH_DEF_CHANNEL_DISP,		&MQCFT_INTEGER,		$ResponseValues{ChannelDisposition} ],
     DiscInterval		=> [ &MQIACH_DISC_INTERVAL,		&MQCFT_INTEGER ],
     HeaderCompression		=> [ &MQIACH_HDR_COMPRESSION,		&MQCFT_INTEGER_LIST,	$ResponseValues{HeaderCompression} ],
     HeartbeatInterval		=> [ &MQIACH_HB_INTERVAL,		&MQCFT_INTEGER ],
@@ -456,7 +458,7 @@ package MQSeries::Command::PCF;
     ChannelName			=> [ &MQCACH_CHANNEL_NAME,		&MQCFT_STRING ],
     ConnectionName		=> [ &MQCACH_CONNECTION_NAME,		&MQCFT_STRING ],
     ChannelDesc			=> [ &MQCACH_DESC,			&MQCFT_STRING ],
-    KeepAliveInterval		=> [ &MQIACH_KEEP_ALIVE_INTERVAL,	&MQCFT_INTEGER ],
+    KeepAliveInterval		=> [ &MQIACH_KEEP_ALIVE_INTERVAL,	&MQCFT_INTEGER,		$ResponseValues{KeepAliveInterval} ],
     LocalAddress		=> [ &MQCACH_LOCAL_ADDRESS,		&MQCFT_STRING ],
     MCAName			=> [ &MQCACH_MCA_NAME,			&MQCFT_STRING ],
     MCAType			=> [ &MQIACH_MCA_TYPE,			&MQCFT_INTEGER,		$ResponseValues{MCAType} ],
@@ -557,6 +559,7 @@ package MQSeries::Command::PCF;
    #
    QueueStatus =>
    {
+    ApplDesc			=> [ &MQCACF_APPL_DESC,			&MQCFT_STRING ],
     ApplTag			=> [ &MQCACF_APPL_TAG,			&MQCFT_STRING ],
     ApplType			=> [ &MQIA_APPL_TYPE,			&MQCFT_INTEGER,			$ResponseValues{ApplType} ],
     ASId			=> [ &MQCACF_ASID,			&MQCFT_STRING, ],
@@ -573,7 +576,7 @@ package MQSeries::Command::PCF;
     MediaRecoveryLog		=> [ &MQCACF_MEDIA_LOG_EXTENT_NAME,	&MQCFT_STRING ],
     OldestMsgAge		=> [ &MQIACF_OLDEST_MSG_AGE,		&MQCFT_INTEGER ],
     OnQTime			=> [ &MQIACF_Q_TIME_INDICATOR,		&MQCFT_INTEGER_LIST ],
-    OpenBrowse			=> [ &MQIACF_OPEN_BROWSE,		&MQCFT_INTEGER,		$ResponseValues{OpenBrowse} ],
+    OpenBrowse			=> [ &MQIACF_OPEN_BROWSE,		&MQCFT_INTEGER ],
     OpenInputCount		=> [ &MQIA_OPEN_INPUT_COUNT,		&MQCFT_INTEGER ],
     OpenInputType		=> [ &MQIACF_OPEN_INPUT_TYPE,		&MQCFT_INTEGER,		$ResponseValues{QStatusInputType} ],
     OpenInquire			=> [ &MQIACF_OPEN_INQUIRE,		&MQCFT_INTEGER ],
@@ -581,6 +584,7 @@ package MQSeries::Command::PCF;
     OpenOutputCount		=> [ &MQIA_OPEN_OUTPUT_COUNT,		&MQCFT_INTEGER ],
     OpenOutput			=> [ &MQIACF_OPEN_OUTPUT,		&MQCFT_INTEGER ],
     OpenSet			=> [ &MQIACF_OPEN_SET,			&MQCFT_INTEGER ],
+    OpenType			=> [ &MQIACF_OPEN_TYPE,			&MQCFT_INTEGER,		$ResponseValues{OpenType} ],
     PSBName			=> [ &MQCACF_PSB_NAME,			&MQCFT_STRING ],
     PSTId			=> [ &MQCACF_PST_ID,			&MQCFT_STRING ],
     ProcessId			=> [ &MQIACF_PROCESS_ID,		&MQCFT_INTEGER ],
@@ -695,6 +699,8 @@ package MQSeries::Command::PCF;
     MaxConnects			=> [ &MQIACF_SYSP_MAX_CONNS,		&MQCFT_INTEGER ],
     MaxConnectsBackground	=> [ &MQIACF_SYSP_MAX_CONNS_BACK,	&MQCFT_INTEGER ],
     MaxConnectsForeground	=> [ &MQIACF_SYSP_MAX_CONNS_FORE,	&MQCFT_INTEGER ],
+    MULCCapture			=> [ &MQIACF_MULC_CAPTURE,		&MQCFT_INTEGER,		$ResponseValues{MULCCapture} ],
+    OpMode			=> [ &MQIACF_OPERATION_MODE,		&MQCFT_INTEGER_LIST ],
     OTMADruExit			=> [ &MQCACF_SYSP_OTMA_DRU_EXIT,	&MQCFT_STRING ],
     OTMAGroup			=> [ &MQCACF_SYSP_OTMA_GROUP,		&MQCFT_STRING ],
     OTMAInterval		=> [ &MQIACF_SYSP_OTMA_INTERVAL,	&MQCFT_INTEGER ],
@@ -750,6 +756,8 @@ package MQSeries::Command::PCF;
     ConnectionName	       => [ &MQCACH_CONNECTION_NAME,		&MQCFT_STRING ],
     ConnectionOptions	       => [ &MQIACF_CONNECT_OPTIONS,		&MQCFT_INTEGER_LIST ],
     ConnInfoType	       => [ &MQIACF_CONN_INFO_TYPE,		&MQCFT_INTEGER ,	        $ResponseValues{ConnInfoType} ],
+    Destination 	       => [ &MQCACF_DESTINATION,		&MQCFT_STRING ],
+    DestinationQMgr	       => [ &MQCACF_DESTINATION_Q_MGR,		&MQCFT_STRING ],
     GenericConnectionId        => [ &MQBACF_GENERIC_CONNECTION_ID,      &MQCFT_BYTE_STRING ],
     HandleState		       => [ &MQIACF_HANDLE_STATE,		&MQCFT_INTEGER,	        $ResponseValues{HandleState} ],
     ObjectName		       => [ &MQCACF_OBJECT_NAME,		&MQCFT_STRING ],
@@ -766,8 +774,11 @@ package MQSeries::Command::PCF;
     ResponseId			=> [ &MQBACF_RESPONSE_ID,		&MQCFT_BYTE_STRING ],
     ResponseQMgrName		=> [ &MQCACF_RESPONSE_Q_MGR_NAME,	&MQCFT_STRING ],
     StartUOWLogExtent	       => [ &MQCACF_UOW_LOG_EXTENT_NAME,	&MQCFT_STRING ],
+    SubId		       => [ &MQBACF_SUB_ID,			&MQCFT_BYTE_STRING ],
+    SubName		       => [ &MQCACF_SUB_NAME,			&MQCFT_STRING ],
     TaskNumber		       => [ &MQCACF_TASK_NUMBER,		&MQCFT_STRING ],
     ThreadId		       => [ &MQIACF_THREAD_ID,			&MQCFT_INTEGER ],
+    TopicString		       => [ &MQCA_TOPIC_STRING,			&MQCFT_STRING ],
     TransactionId	       => [ &MQCACF_TRANSACTION_ID,		&MQCFT_STRING ],
     UOWIdentifier	       => [ &MQBACF_EXTERNAL_UOW_ID,		&MQCFT_BYTE_STRING ],
     UOWLogStartDate	       => [ &MQCACF_UOW_LOG_START_DATE,		&MQCFT_STRING ],
@@ -776,6 +787,7 @@ package MQSeries::Command::PCF;
     UOWStartTime	       => [ &MQCACF_UOW_START_TIME,		&MQCFT_STRING ],
     UOWState		       => [ &MQIACF_UOW_STATE,			&MQCFT_INTEGER,		     $ResponseValues{UOWState} ],
     UOWType		       => [ &MQIACF_UOW_TYPE,			&MQCFT_INTEGER,		     $ResponseValues{UOWType} ],
+    URDisposition	       => [ &MQIA_UR_DISP,			&MQCFT_INTEGER,		$ResponseValues{URDisposition} ],
     UserId		       => [ &MQCACF_USER_IDENTIFIER,		&MQCFT_STRING],
    },
 
@@ -841,7 +853,7 @@ package MQSeries::Command::PCF;
     ServiceType			=> [ &MQIA_SERVICE_TYPE,		&MQCFT_INTEGER,	$ResponseValues{ServiceType} ],
     StartArguments		=> [ &MQCA_SERVICE_START_ARGS,		&MQCFT_STRING ],
     StartCommand		=> [ &MQCA_SERVICE_START_COMMAND,	&MQCFT_STRING ],
-    StartMode			=> [ &MQIA_SERVICE_CONTROL,		&MQCFT_INTEGER,	$ResponseValues{StartMode} ],
+    StartMode			=> [ &MQIA_SERVICE_CONTROL,		&MQCFT_INTEGER,	$ResponseValues{ServiceStartMode} ],
     StopArguments		=> [ &MQCA_SERVICE_STOP_ARGS,		&MQCFT_STRING ],
     StopCommand			=> [ &MQCA_SERVICE_STOP_COMMAND,	&MQCFT_STRING ],
     StderrDestination		=> [ &MQCA_STDERR_DESTINATION,		&MQCFT_STRING ],
@@ -1030,7 +1042,7 @@ package MQSeries::Command::PCF;
     ResumeTime			=> [ &MQCA_RESUME_TIME,			&MQCFT_STRING ],
     RetainedPublication		=> [ &MQIACF_RETAINED_PUBLICATION,	&MQCFT_INTEGER ],
     SubscriptionCount		=> [ &MQIA_SUB_COUNT,			&MQCFT_INTEGER ],
-    SubscriptionId		=> [ &MQBACF_SUB_ID,			&MQCFT_BYTE_STRING ],
+    SubId			=> [ &MQBACF_SUB_ID,			&MQCFT_BYTE_STRING ],
     SubscriptionUserId		=> [ &MQCACF_SUB_USER_ID,		&MQCFT_STRING ],
     SubscriptionScope		=> [ &MQIA_SUB_SCOPE,			&MQCFT_INTEGER,		$ResponseValues{PubSubScope} ],
     SubscriptionType		=> [ &MQIACF_SUB_TYPE,			&MQCFT_INTEGER,		$ResponseValues{SubscriptionType} ],
@@ -1048,6 +1060,7 @@ package MQSeries::Command::PCF;
     DualBSDS			=> [ &MQIACF_SYSP_DUAL_BSDS,		&MQCFT_INTEGER ],
     InputBufferSize		=> [ &MQIACF_SYSP_IN_BUFFER_SIZE,	&MQCFT_INTEGER ],
     LogArchive			=> [ &MQIACF_SYSP_ARCHIVE,		&MQCFT_INTEGER ],
+    LogCompression		=> [ &MQIACF_LOG_COMPRESSION,		&MQCFT_INTEGER, 	$ResponseValues{LogCompression} ],
     MaxArchiveLog		=> [ &MQIACF_SYSP_MAX_ARCHIVE,		&MQCFT_INTEGER ],
     MaxReadTapeUnits		=> [ &MQIACF_SYSP_MAX_READ_TAPES,	&MQCFT_INTEGER ],
     OutputBufferCount		=> [ &MQIACF_SYSP_OUT_BUFFER_COUNT,	&MQCFT_INTEGER ],

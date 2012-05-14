@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# $Id: flatten_macros,v 33.2 2010/04/01 16:25:07 anbrown Exp $
+# $Id: flatten_macros,v 37.1 2011/05/06 19:39:07 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # NOTE: this file is just a tool to flatten all of the MQ* macros in
@@ -80,7 +80,7 @@ foreach my $infile ( @infiles ) {
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 EndOfWarning
@@ -89,7 +89,7 @@ EndOfWarning
 
     while ( <IN> ) {
 
-        while ( /&(MQ[A-Z0-9_]+)(,)?/ ) {
+        while ( /&(MQ[A-Z0-9_]+)\b(,)?/ ) {
 
             my ($key,$comma) = ($1,$2);
             my $value = "";

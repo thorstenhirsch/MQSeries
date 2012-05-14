@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: Responses.in,v 33.3 2010/04/01 16:25:02 anbrown Exp $
+# $Id: Responses.in,v 37.1 2011/05/27 16:56:51 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -11,6 +11,7 @@ package MQSeries::Command::PCF;
 %Responses =
   (
    Error				=> [ "Error",				$ResponseParameters{Error} ],
+   None					=> [ &MQCMD_NONE,			$ResponseParameters{Error} ],
 
    ChangeAuthInfo			=> [ &MQCMD_CHANGE_AUTH_INFO,		$ResponseParameters{AuthInfo} ],
    ChangeCFStruc			=> [ &MQCMD_CHANGE_CF_STRUC,		$ResponseParameters{CFStruc} ],

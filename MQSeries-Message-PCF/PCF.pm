@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 33.7 2010/04/01 16:24:48 anbrown Exp $
+# $Id: PCF.pm,v 37.1 2011/03/08 20:44:43 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -14,7 +14,7 @@ use Exporter;
 
 use MQSeries::Message;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 our @ISA = qw(MQSeries::Message Exporter DynaLoader);
 our @EXPORT_OK = qw( MQDecodePCF MQEncodePCF );
 
@@ -74,16 +74,16 @@ sub Header {
     my $self = shift;
 
     unless (
-            ref $self->{Parameters} eq 'HASH' and
-            keys %{$self->{Parameters}}
+            ref $self->{Header} eq 'HASH' and
+            keys %{$self->{Header}}
            ) {
         return;
     }
 
     if ( $_[0] ) {
-        return $self->{Parameters}->{$_[0]};
+        return $self->{Header}->{$_[0]};
     } else {
-        return $self->{Parameters};
+        return $self->{Header};
     }
 }
 

@@ -3,10 +3,10 @@
 #                               and return parsed ErrorLog::Entry objects
 #                               for any new content added.
 #
-# (c) 2000-2010 Morgan Stanley & Co. Incorporated
+# (c) 2000-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Tail.pm,v 33.7 2010/04/01 16:24:54 anbrown Exp $
+# $Id: Tail.pm,v 33.9 2011/01/03 15:04:51 anbrown Exp $
 #
 
 package MQSeries::ErrorLog::Tail;
@@ -17,7 +17,7 @@ use IO::File;
 
 use MQSeries::ErrorLog::Parser;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 #
 # Constructor

@@ -1,7 +1,7 @@
 #
-# $Id: Queue.pm,v 33.7 2010/04/01 16:24:57 anbrown Exp $
+# $Id: Queue.pm,v 37.4 2011/05/19 18:48:16 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -26,7 +26,7 @@ use Params::Validate qw(validate);
 #
 use MQSeries::Command::PCF;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 sub new {
     my $proto = shift;
@@ -137,9 +137,10 @@ sub new {
     }
 
     #
-    # We require (minimally) a Queue name
+    # We require (minimally) a Queue name (and yes, "0" is a valid
+    # queue name, even if it's a really stupid one)
     #
-    if ( $args{Queue} ) {
+    if ( defined($args{Queue}) && $args{Queue} ne q{} ) {
         $self->{Queue} = $args{Queue};
         if ( ref $args{Queue} eq "ARRAY" ) {
             # Distribution list
@@ -386,6 +387,7 @@ sub Put {
 
     $self->{"PutConvertReason"} = 0;
 
+    $args{"Message"}->QueueManager($self->{"QueueManager"});
     if ( $args{PutConvert} ) {
         if ( ref $args{PutConvert} ne "CODE" ) {
             $self->{Carp}->("Invalid argument: 'PutConvert' must be a CODE reference");
@@ -417,10 +419,11 @@ sub Put {
             $buffer = $args{Message}->Data();
         }
     }
+    $args{"Message"}->QueueManager(undef);
 
     #
     # If the user specifies a Properties parameter, it must be a hash
-    # reference or an MQSeries::Propeties object.  This ignores any
+    # reference or an MQSeries::Properties object.  This ignores any
     # existing message-level properties object.
     #
     my $props_obj;		# Scope must extend past MQPUT
@@ -1374,7 +1377,7 @@ The default, as one might guess, is Carp::carp();
 
 These are CODE references to subroutines which are used to convert the
 data in a MQSeries::Message object prior to passing it to the MQPUT
-MQI call, or convert the data retreived from the queue by the MQGET
+MQI call, or convert the data retrieved from the queue by the MQGET
 MQI call before inserting it into a MQSeries::Message object.
 
 See the MQSeries::QueueManager documentation for details on the
@@ -1628,9 +1631,9 @@ following key/value pairs (required keys are marked with a '*'):
 The return value of Get() is either 1, 0 or -1.  Success or failure
 can still be interpreted in a Boolean context, with the following
 caveat.  A value of 1 is returned when a message was successfully
-retreives from the queue.  A value of 0 is returned if some form of
+retrieved from the queue.  A value of 0 is returned if some form of
 error was encountered.  A value of -1 is returned when no message was
-retreived, but the MQGET call failed with a Reason Code of
+retrieved, but the MQGET call failed with a Reason Code of
 "MQRC_NO_MSG_AVAILABLE".
 
 The last condition (-1) may or may not be an error, depending on your
@@ -1665,7 +1668,7 @@ MQSeries::Queue->new() constructor or the Get() method.
 This argument is the MQSeries::Message object into which the message
 extracted from the queue is placed.  This can be a 'raw'
 MQSeries::Message, or it can be one with the MsgId, or some other key
-in the MsgDesc explicitly specified, in order to retreive a specific
+in the MsgDesc explicitly specified, in order to retrieve a specific
 message.  See MQSeries::Message documentation for more details.
 
 =item GetMsgOpts

@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -117,13 +117,6 @@ package MQSeries::Command::PCF;
     ToTopicName			=> 2,
    },
 
-   CreateAuthInfo		=>
-   {
-    AuthInfoName		=> 1,
-    AuthInfoConnName		=> 3,
-    AuthInfoType		=> 2,
-   },
-
    CreateTopic			=>
    {
     TopicName			=> 1,
@@ -174,10 +167,11 @@ package MQSeries::Command::PCF;
     RefreshType			=> 1,
    },
 
-   RefreshSecurity		=>
-   {
-    SecurityItem		=> 1,
-   },
+# This is actually optional and is only applicable to z/OS.
+#   RefreshSecurity		=>
+#   {
+#    SecurityItem		=> 1,
+#   },
 
    ResetCluster			=>
    {
@@ -216,9 +210,20 @@ package MQSeries::Command::PCF;
 #
 # This *greatly* shrinks the size of this file...
 #
+$RequestParameterRequired{CreateAuthInfo} =
+  {
+   AuthInfoName		=> 1,
+   AuthInfoType		=> 2,
+  };
+
+$RequestParameterRequired{ChangeAuthInfo} =
+  {
+   AuthInfoName		=> 1,
+   AuthInfoType		=> sub { return $_[0] >= 700 ? 2 : undef; },
+  };
+
 $RequestParameterRequired{InquireAuthInfo} =
   $RequestParameterRequired{InquireAuthInfoNames} =
-  $RequestParameterRequired{ChangeAuthInfo} =
   $RequestParameterRequired{DeleteAuthInfo} =
   {
    AuthInfoName		=> 1,

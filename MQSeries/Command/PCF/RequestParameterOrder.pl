@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -31,6 +31,7 @@ package MQSeries::Command::PCF;
    InquireQueueStatus		=> [ qw(StatusType OpenType QStatusAttrs) ],
    InquireClusterQueueManager	=> [ qw(Channel ClusterName ClusterQMgrAtrrs) ],
    InquireConnection		=> [ qw(ConnectionId GenericConnectionId) ],
+   InquireChannel               => [ qw(ChannelType) ],
   );
 
 1;

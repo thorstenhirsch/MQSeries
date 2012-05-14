@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 33.4 2010/04/01 16:25:08 anbrown Exp $
+# $Id: parse_headers,v 37.1 2011/06/01 18:36:43 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
@@ -353,14 +353,19 @@ our %extra_num = (
                   MQCFOP_NOT_LIKE             => 21,
                   MQCFT_BYTE_STRING_FILTER    => 15,
                   MQCFT_COMMAND_XR            => 16,
+                  MQCFT_GROUP                 => 20,
                   MQCFT_INTEGER_FILTER        => 13,
+                  MQCFT_INTEGER64             => 23,
                   MQCFT_STRING_FILTER         => 14,
                   MQGMO_VERSION_4             => 4,
+                  MQIAMO_OBJECT_COUNT         => 732,
                   MQOD_VERSION_4              => 4,
                   MQPMO_VERSION_3             => 3,
                   MQRC_NO_SUBSCRIPTION        => 2428,
                   MQRC_PROPERTY_NOT_AVAILABLE => 2471,
                   MQRC_PROPERTY_VALUE_TOO_BIG => 2469,
+                  MQRC_CHANNEL_NOT_AVAILABLE  => 2537,
+                  MQRC_HOST_NOT_AVAILABLE     => 2538,
                  );
 foreach my $name (sort keys %extra_hex) {
     my $value = $extra_hex{$name};

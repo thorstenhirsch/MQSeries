@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 36.2 2010/09/17 17:32:01 anbrown Exp $
+# $Id: Makefile.PL,v 37.1 2011/05/18 14:49:59 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -399,7 +399,7 @@ if ( $Config{archname} =~ /linux/ ) {
 eval {
     my $save;
     open($save, ">&", \*STDERR);
-    my $null = $Config{osname} =~ /win32/ ? "nul" : "/dev/null";
+    my $null = $Config{osname} =~ /win32/i ? "nul" : "/dev/null";
     open(STDERR, ">>", $null);
     my $cmvc = qx{dspmqver};
     if ($cmvc =~ m{CMVC level:\s+(\S+)}) {

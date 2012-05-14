@@ -1,7 +1,7 @@
 #
-# $Id: RequestValues.pl,v 33.2 2010/04/01 16:24:51 anbrown Exp $
+# $Id: RequestValues.pl,v 33.7 2011/05/27 20:08:08 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -69,6 +69,7 @@ package MQSeries::Command::MQSC;
     CommandLevel		=> "CMDLEVEL",
     CommandServerControl        => "SCMDSERV",
     ConfigurationEvent          => "CONFIGEV",
+    CPILevel			=> "CPILEVEL",
     DeadLetterQName		=> "DEADQ",
     DefXmitQName		=> "DEFXMITQ",
     DistLists			=> "DISTL",
@@ -92,13 +93,21 @@ package MQSeries::Command::MQSC;
     MaxHandles			=> "MAXHANDS",
     MaxMsgLength		=> "MAXMSGL",
     MaxPriority			=> "MAXPRTY",
+    MaxPropertiesLength		=> "MAXPROPL",
     MaxUncommittedMsgs		=> "MAXUMSGS",
     MQIAccounting               => "ACCTMQI",
     MQIStatistics               => "STATMQI",
+    MsgMarkBrowseInterval	=> "MARKINT",
     OutboundPortMax             => "OPORTMAX",
     OutboundPortMin             => "OPORTMIN",
+    Parent			=> "PARENT",
     PerformanceEvent		=> "PERFMEV",
     Platform			=> "PLATFORM",
+    PubSubMaxMsgRetryCount	=> "PSRTYCNT",
+    PubSubMode			=> "PSMODE",
+    PubSubNPInputMsg		=> "PSNPMSG",
+    PubSubNPResponse		=> "PSNPRES",
+    PubSubSyncPoint		=> "PSSYNCPT",
     QMgrDesc			=> "DESCR",
     QMgrIdentifier		=> "QMID",
     QMgrName			=> "QMNAME",
@@ -112,6 +121,7 @@ package MQSeries::Command::MQSC;
     RemoteEvent			=> "REMOTEEV",
     RepositoryName		=> "REPOS",
     RepositoryNamelist		=> "REPOSNL",
+    SecurityCase		=> "SCYCASE",
     SharedQQmgrName             => "SQQMNAME",
     SSLCRLNamelist              => "SSLCRLNL",
     SSLEvent                    => "SSLEV",
@@ -127,6 +137,7 @@ package MQSeries::Command::MQSC;
     TCPName                     => "TCPNAME",
     TCPStackType                => "TCPSTACK",
     TraceRouteRecording         => "ROUTEREC",
+    TreeLifeTime		=> "TREELIFE",
     TriggerInterval		=> "TRIGINT",
    },
 
@@ -200,6 +211,33 @@ package MQSeries::Command::MQSC;
     IPv6		        => "IPV6",
    },
    
+   PubSubMode => 
+   {
+   Compat			=> "COMPAT",
+   Enabled			=> "ENABLED",
+   Disabled			=> "DISABLED",
+   },
+
+   PubSubNPInputMsg =>
+   {
+   Discard			=> "DISCARD",
+   Keep				=> "KEEP",
+   },
+
+   PubSubNPResponse =>
+   {
+   Discard			=> "DISCARD",
+   Keep				=> "KEEP",
+   Normal			=> "NORMAL",
+   SAFE				=> "SAFE",
+   },
+
+   PubSubSyncPoint =>
+   {
+   IfPersistent			=> "IFPER",
+   Yes				=> "YES",
+   },
+
    QMgrAccounting =>	      # QMgr-level QueueAccounting
    {
     None                       => "NONE",
@@ -212,6 +250,12 @@ package MQSeries::Command::MQSC;
     Add    		       => "ADD",
     Equal    		       => "EQUAL",
     Multiply   		       => "MULTIPLY",
+   },
+
+   SecurityCase =>
+   {
+    Mixed			=> "MIXED",
+    Upper			=> "UPPER",
    },
 
    SharedQQmgrName =>
@@ -254,6 +298,8 @@ package MQSeries::Command::MQSC;
     DefInputOpenOption		=> "DEFSOPT",
     DefPersistence		=> "DEFPSIST",
     DefPriority			=> "DEFPRTY",
+    DefPutResponse		=> "DEFPRESP",
+    DefReadAhead		=> "DEFREADA",
     DefinitionType		=> "DEFTYPE",
     DistLists			=> "DISTL",
     HardenGetBackout		=> "HARDENBO",
@@ -269,6 +315,7 @@ package MQSeries::Command::MQSC;
     NonPersistentMsgClass       => "NPMCLASS",
     PageSetId                   => "PSID",
     ProcessName			=> "PROCESS",
+    PropertyControl		=> "PROPCTL",
     QAccounting                 => "ACCTQ",
     QDepthHighEvent		=> "QDPHIEV",
     QDepthHighLimit		=> "QDEPTHHI",
@@ -298,6 +345,33 @@ package MQSeries::Command::MQSC;
     XmitQName			=> "XMITQ",
    },
 
+   BaseType =>
+   {
+    Queue			=> "QUEUE",
+    Topic			=> "TOPIC",
+   },
+
+   DefReadAhead =>
+   {
+    Disabled			=> "DISABLED",
+    No				=> "NO",
+    Yes				=> "YES", 
+   },
+# I couldn't find 'AsParent' equivalent in MQSC
+   DefPutResponse =>
+   {
+    Sync			=> "SYNC",
+    Async			=> "ASYNC",
+   },
+
+   PropertyControl =>
+   {
+    All				=> "ALL",
+    Compatibility		=> "COMPAT",
+    ForceRFH2			=> "FORCE",
+    None			=> "None",
+   },
+
    #
    # These parameters are used to determine what attributes must be
    # returned by a "display auth info" command.  The default for an
@@ -313,11 +387,14 @@ package MQSeries::Command::MQSC;
     AuthInfoType                => "AUTHTYPE",
     LDAPPassword                => "LDAPPWD",
     LDAPUserName                => "LDAPUSER",
+    OCSPResponderURL		=> "OCSPURL",
    },
 
    AuthInfoType =>
    {
     CRLLDAP                     => "CRLLDAP",
+    OCSP			=> "OCSP",
+    All				=> "ALL",
    },
 
    ApplType =>
@@ -357,6 +434,7 @@ package MQSeries::Command::MQSC;
     All                         => "ALL",
     Private                     => "PRIVATE",
     Shared                      => "SHARED",
+    Fixshared			=> "FIXSHARED",
    },
 
    CLWLUseQ =>
@@ -549,6 +627,7 @@ package MQSeries::Command::MQSC;
     BytesReceived		=> "BYTSRCVD",
     BytesSent			=> "BYTSSENT",
     ChannelDesc			=> "DESCR",
+    ChannelDisposition		=> "CHLDISP",
     ChannelInstanceType		=> "CHLTYPE",
     ChannelName			=> "",
     ChannelNames		=> "",
@@ -557,11 +636,13 @@ package MQSeries::Command::MQSC;
     ChannelStartTime		=> "CHSTATI",
     ChannelStatus		=> "",
     ChannelType			=> "CHLTYPE",
+    ClientChannelWeight		=> "CLNTWGHT",
     ClusterName 		=> "CLUSTER",
     ClusterNamelist		=> "CLUSNL",
     CLWLChannelRank             => "CLWLRANK",
     CLWLChannelPriority         => "CLWLPRTY",
     CLWLChannelWeight           => "CLWLWGHT",
+    ConnectionAffinity		=> "AFFINITY",
     ConnectionName		=> "CONNAME",
     CurrentLUWID		=> "CURLUWID",
     CurrentMsgs			=> "CURMSGS",
@@ -580,6 +661,8 @@ package MQSeries::Command::MQSC;
     LongRetriesLeft		=> "LONGRTS",
     LongRetryCount		=> "LONGRTY",
     LongRetryInterval		=> "LONGTMR",
+    MaxInstances		=> "MAXINST",
+    MaxInstancesPerClient	=> "MAXINSTC",
     MCAJobName			=> "JOBNAME",
     MCAName			=> "MCANAME",
     MCAStatus			=> "MCASTAT",
@@ -597,6 +680,7 @@ package MQSeries::Command::MQSC;
     Msgs			=> "MSGS",
     NonPersistentMsgSpeed	=> "NPMSPEED",
     Password			=> "PASSWORD",
+    PropertyControl		=> "PROPCTL",
     PutAuthority		=> "PUTAUT",
     QMgrName			=> "QMNAME",
     QSGDisposition		=> "QSGDISP",
@@ -620,6 +704,12 @@ package MQSeries::Command::MQSC;
     XmitQName			=> "XMITQ",
    },
 
+   ConnectionAffinity =>
+   {
+    None			=> "NONE",
+    Preferred			=> "PREFERRED",
+   },
+
    DefBind =>
    {
     OnOpen			=> "OPEN",
@@ -640,7 +730,20 @@ package MQSeries::Command::MQSC;
     ZlibFast			=> "ZLIBFAST",
     ZlibHigh			=> "ZLIBHIGH",
    },
+  
+   # VALUEMAP-CODEREF
+   KeepAliveInterval =>
+    sub { MQSeries::Command::Base::strinteger(@_, -1, "AUTO", 99999); }, 
+
+   # VALUEMAP-CODEREF
+   MsgMarkBrowseInterval =>
+       sub { MQSeries::Command::Base::strinteger(@_, -1, "NOLIMIT", 999999999); },
    
+# 100MB max
+   # VALUEMAP-CODEREF
+   MaxPropertiesLength =>
+       sub { MQSeries::Command::Base::strinteger(@_, -1, "NOLIMIT", 104857600); },
+
    NamelistAttrs =>
    {
     All				=> "ALL",
@@ -789,6 +892,7 @@ package MQSeries::Command::MQSC;
     AddressSpaceId              => "ASID",
     ApplTag                     => "APPLTAG",
     ApplType                    => "APPLTYPE",
+    AsynchronousState		=> "ASTATE",
     ChannelName                 => "CHANNEL",
     Conname                     => "CONNAME",
     CurrentQDepth               => "CURDEPTH",

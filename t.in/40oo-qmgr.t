@@ -1,24 +1,25 @@
 #
-# $Id: 40oo-qmgr.t,v 33.5 2010/04/01 16:25:05 anbrown Exp $
+# $Id: 40oo-qmgr.t,v 33.8 2011/05/17 20:46:07 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 use strict;
 use warnings;
-use Data::Dumper;
-use Test::More tests => 14;
-BEGIN {
-    our $VERSION = '1.31';
-    use_ok('__APITYPE__::MQSeries' => $VERSION);
-    use_ok('MQSeries::QueueManager' => $VERSION);
-}
 
 our %myconfig;
 our $systemdir;
 BEGIN {
     require "../util/parse_config";
+}
+
+use Data::Dumper;
+use Test::More tests => 14;
+BEGIN {
+    our $VERSION = '1.33';
+    use_ok('__APITYPE__::MQSeries' => $VERSION);
+    use_ok('MQSeries::QueueManager' => $VERSION);
 }
 
 SKIP: {

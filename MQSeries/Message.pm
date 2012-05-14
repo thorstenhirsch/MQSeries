@@ -1,7 +1,7 @@
 #
-# $Id: Message.pm,v 35.4 2010/04/01 16:24:55 anbrown Exp $
+# $Id: Message.pm,v 37.1 2011/05/19 18:48:00 anbrown Exp $
 #
-# (c) 1999-2010 Morgan Stanley & Co. Incorporated
+# (c) 1999-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -16,7 +16,7 @@ use MQSeries qw(:functions);
 use MQSeries::Properties;
 use MQSeries::Utils qw(ConvertUnit);
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 sub new {
     my $proto = shift;
@@ -157,6 +157,28 @@ sub BufferLength {
     }
 
     return $self->{BufferLength};
+}
+
+
+#
+# Get/Set the QueueManager to which the message is being put.
+# Intended only to be set/used during PutConvert() operations.
+#
+sub QueueManager {
+    my $self = shift;
+
+    return $self->{QueueManager} if (!@_);
+
+    my $newqmgr = shift(@_);
+    return delete($self->{QueueManager}) if (!defined($newqmgr));
+
+    if (!ref($newqmgr) || !$newqmgr->isa("MQSeries::QueueManager")) {
+        $self->{Carp}->("Invalid argument: must be an MQSeries::QueueManager object.\n");
+        return; 
+    }
+
+    (my $oldqmgr, $self->{QueueManager}) = ($self->{QueueManager}, $newqmgr);
+    return $oldqmgr;
 }
 
 

@@ -2,10 +2,10 @@
 # MQSeries::ErrorLog::Parser.pm - Parse error-log files into error-log
 #                                 entry objects
 #
-# (c) 2000-2010 Morgan Stanley & Co. Incorporated
+# (c) 2000-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 33.7 2010/04/01 16:24:54 anbrown Exp $
+# $Id: Parser.pm,v 33.9 2011/01/03 15:04:51 anbrown Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -23,7 +23,7 @@ use MQSeries::ErrorLog::Entry;
 our $error_table;
 require "MQSeries/ErrorLog/descriptions.pl";
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 #
 # Constructor

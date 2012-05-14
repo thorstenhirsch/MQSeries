@@ -1,23 +1,24 @@
 #
-# $Id: 32async_put.t,v 36.2 2010/09/21 20:30:06 anbrown Exp $
+# $Id: 32async_put.t,v 36.5 2011/05/17 20:46:07 anbrown Exp $
 #
-# (c) 2009-2010 Morgan Stanley & Co. Incorporated
+# (c) 2009-2011 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 use strict;
 use warnings;
-use Data::Dumper;
-use Test::More tests => 25;
-BEGIN { 
-    our $VERSION = '1.31';
-    use_ok('__APITYPE__::MQSeries' => $VERSION); 
-}
 
 our %myconfig;
 our $systemdir;
 BEGIN {
     require "../util/parse_config";
+}
+
+use Data::Dumper;
+use Test::More tests => 25;
+BEGIN { 
+    our $VERSION = '1.33';
+    use_ok('__APITYPE__::MQSeries' => $VERSION); 
 }
 
 SKIP: {
