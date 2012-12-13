@@ -1,7 +1,7 @@
 #
-# $Id: SpecialParameters.pl,v 33.3 2011/01/03 15:04:48 anbrown Exp $
+# $Id: SpecialParameters.pl,v 33.4 2012/09/26 16:15:08 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

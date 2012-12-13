@@ -2,10 +2,10 @@
 # descriptions.pl - Include file for MQSeries::ErrorLog::Parser
 #                   that describes all known error types.
 #
-# (c) 2000-2011 Morgan Stanley & Co. Incorporated
+# (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: descriptions.pl,v 37.1 2011/07/06 16:39:08 anbrown Exp $
+# $Id: descriptions.pl,v 38.3 2012/09/26 16:15:13 jettisu Exp $
 #
 
 #
@@ -26,7 +26,7 @@ my $channel_patt = '[\w\.\%\/]+';
 my $code_patt = '-?\d+';
 my $exit_patt = '[\w\.\/\-\(\)]+';
 my $hex_patt = '[A-F\d]+';
-my $hostname_patt = '\w[\w\-\.]+';
+my $hostname_patt = '\w[\w\-\.]*';
 my $ip_patt = '\d+\.\d+\.\d+\.\d+';
 my $host_patt = "$hostname_patt \\($ip_patt\\) \\(\\d+\\)|$hostname_patt \\($ip_patt\\)|$ip_patt \\(\\d+\\)|$ip_patt";
 my $logfile_patt = 'S\d+\.LOG';
@@ -224,6 +224,8 @@ our $error_table =
    'AMQ6037' => [ "$product_patt was unable to obtain enough storage\\." ],
 
    'AMQ6047' => [ "$product_patt is unable to convert string data tagged in CCSID \\d+ to data in CCSID \\d+\\." ],
+
+   'AMQ6048' => [ "$product_patt is unable to convert string data due to a DBCS error\." ],
 
    'AMQ6050' => [ "$product_patt is unable to convert string data in CCSID \\d+ to data in CCSID \\d+\\." ],
 

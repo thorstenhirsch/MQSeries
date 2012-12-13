@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameters.pl,v 33.9 2011/05/27 19:20:32 jettisu Exp $
+# $Id: RequestParameters.pl,v 33.14 2012/09/26 16:13:37 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -18,6 +18,11 @@ package MQSeries::Command::MQSC;
    #
    QueueManager =>
    {
+    CFConlos			=> [ "CFCONLOS",	$RequestValues{CFConlos} ],
+    ChlAuthRecords		=> [ "CHLAUTH",		$RequestValues{Enabled} ],
+    ChildName			=> [ "CHILD",		"string" ],			
+    Custom			=> [ "CUSTOM",		"string" ],
+    PubSubClus			=> [ "PSCLUS",		$RequestValues{Enabled} ],
     ActivityRecording           => [ "ACTIVREC",        $RequestValues{ActivityRecording} ],
     AuthorityEvent		=> [ "AUTHOREV", 	$RequestValues{Enabled} ],
     ChannelAutoDef		=> [ "CHAD",		$RequestValues{Enabled} ],
@@ -40,6 +45,7 @@ package MQSeries::Command::MQSC;
     ConfigurationEvent          => [ "CONFIGEV",        $RequestValues{Enabled} ],
     DeadLetterQName		=> [ "DEADQ", 		"string" ],
     DefXmitQName		=> [ "DEFXMITQ",	"string" ],
+    EncryptionPolicySuiteB	=> [ "SUITEB",		$RequestValues{EncryptionPolicySuiteB} ],
     ExpiryInterval              => [ "EXPRYINT",        "string" ], # OFF / Number
     Force			=> [ "FORCE" ],
     GroupUR			=> [ "GROUPUR" ,        $RequestValues{Enabled} ],
@@ -97,6 +103,8 @@ package MQSeries::Command::MQSC;
     TraceRouteRecording         => [ "ROUTEREC",        $RequestValues{TraceRouteRecording} ],
     TriggerInterval		=> [ "TRIGINT", 	"integer" ],
     TreeLifeTime		=> [ "TREELIFE", 	"integer" ],
+    Version			=> [ "VERSION",		"string" ],
+    SSLFipsRequired		=> [ "SSLFIPS",		$RequestValues{Yes} ],
    },
 
    Process =>
@@ -123,6 +131,8 @@ package MQSeries::Command::MQSC;
 
    Queue =>
    {
+    Custom			=> [ "CUSTOM",		"string" ],
+    Authrec			=> [ "AUTHREC",		$RequestValues{Yes} ],
     BackoutRequeueName		=> [ "BOQNAME",		"string" ],
     BackoutThreshold		=> [ "BOTHRESH", 	"integer" ],
     BaseQName			=> [ "TARGQ", 		"string" ],
@@ -212,6 +222,11 @@ package MQSeries::Command::MQSC;
    #
    Channel =>
    {
+    BatchDataLimit		=> [ "BATCHLIM",	"integer" ],
+    DefReconnect		=> [ "DEFRECON",	$RequestValues{DefReconnect} ],
+    ResetRequested		=> [ "RESETSEQ",	"integer" ],
+    UseDLQ			=> [ "USEDLQ",		$RequestValues{Yes} ],
+    ClientIdentifier		=> [ "CLIENTID",	"string" ],
     AutoStart			=> [ "AUTOSTART",	$RequestValues{Enabled} ],
     BatchHeartBeat              => [ "BATCHHB",         "integer" ],
     BatchInterval		=> [ "BATCHINT",       	"integer" ],
@@ -277,6 +292,9 @@ package MQSeries::Command::MQSC;
     Quiesce 			=> [ "MODE",		$RequestValues{Quiesce} ],
     ReceiveExit			=> [ "RCVEXIT",		"string" ],
     ReceiveUserData		=> [ "RCVDATA",		"string" ],
+    RemoteQMgrName		=> [ "RQMNAME",		"string" ],
+    RemoteProduct		=> [ "RPRODUCT",	"string" ],
+    RemoteVersion		=> [ "RVERSION",	"string" ],
     Replace			=> [ "",		$RequestValues{Replace} ],
     SecurityExit		=> [ "SCYEXIT",		"string" ],
     SecurityUserData		=> [ "SCYDATA",		"string" ],
@@ -295,6 +313,28 @@ package MQSeries::Command::MQSC;
     UserIdentifier		=> [ "USERID",		"string" ],
     XmitQName			=> [ "XMITQ",		"string" ],
    },
+
+   ChlAuthRec =>
+   {
+    Address			=> [ "ADDRESS",		"string" ],
+    Addrlist			=> [ "ADDRLIST",	"string" ],
+    ChlAuth			=> [ "CHLAUTH",		"string" ],
+    Action			=> [ "ACTION",		$RequestValues{ChlAuthAction} ],
+    ChlAuthAttrs		=> [ "",		$RequestValues{ChlAuthAttrs} ],
+    ChlAuthDesc			=> [ "DESCR",		"string" ],
+    ChlAuthType			=> [ "TYPE",		$RequestValues{ChlAuthType} ],
+    ClientUserId		=> [ "CLNTUSER",	"string" ],
+    CommandScope		=> [ "CMDSCOPE",	"string" ],
+    Custom			=> [ "CUSTOM",		"string" ],
+    Match			=> [ "MATCH",		$RequestValues{ChlAuthMatch} ],
+    MCAUserIdentifier		=> [ "MCAUSER",		"string" ],
+    RemoteQMgrName		=> [ "QMNAME",		"string" ],
+    SSLPeerName			=> [ "SSLPEER",		"string" ],
+    MCAUserIdList		=> [ "USERLIST",	"string" ],
+    UserSource			=> [ "USERSRC",		$RequestValues{UserSource} ],
+    Warning			=> [ "WARN",		$RequestValues{Yes} ],
+   },
+
 
    Namelist =>
    {
@@ -398,8 +438,20 @@ package MQSeries::Command::MQSC;
    #
    CFStruc =>
    {
+    CFConlos			=> [ "CFCONLOS",	$RequestValues{CFConlos} ],
+    DSBlock			=> [ "DSBLOCK",		$RequestValues{DSBlock} ],
+    DSBufs			=> [ "DSBUFS",		"integer" ],
+    DSExpand			=> [ "DSEXPAND",	$RequestValues{DSExpand} ],
+    DSGroup			=> [ "DSGROUP",		"string" ],
+    Offload			=> [ "OFFLOAD",		$RequestValues{Offload} ],
+    OFFLD1SZ			=> [ "OFFLD1SZ",	"string" ],
+    OFFLD2SZ			=> [ "OFFLD2SZ",	"string" ],
+    OFFLD3SZ			=> [ "OFFLD3SZ",	"string" ],
+    OFFLD1TH			=> [ "OFFLD1TH",	"integer" ],
+    OFFLD2TH			=> [ "OFFLD2TH",	"integer" ],
+    OFFLD3TH			=> [ "OFFLD3TH",	"integer" ],
+    Recauto			=> [ "RECAUTO",		$RequestValues{Yes} ],
     CFStrucAttrs		=> [ "",                $RequestValues{CFStrucAttrs} ],
-
     CFLevel			=> [ "CFLEVEL",         "integer" ],
     CFStrucDesc			=> [ "DESCR",           "string", ],
     CFStrucName			=> [ "CFSTRUCT",        "string" ],
@@ -419,6 +471,19 @@ package MQSeries::Command::MQSC;
    {
     CFStructAttrs               => [ "",                $RequestValues{CFStructAttrs} ],
 
+    CFConlos			=> [ "CFCONLOS",	$RequestValues{CFConlos} ],
+    DSBlock			=> [ "DSBLOCK",		$RequestValues{DSBlock} ],
+    DSBufs			=> [ "DSBUFS",		"integer" ],
+    DSExpand			=> [ "DSEXPAND",	$RequestValues{DSExpand} ],
+    DSGroup			=> [ "DSGROUP",		"string" ],
+    Offload			=> [ "OFFLOAD",		$RequestValues{Offload} ],
+    OFFLD1SZ			=> [ "OFFLD1SZ",	"string" ],
+    OFFLD2SZ			=> [ "OFFLD2SZ",	"string" ],
+    OFFLD3SZ			=> [ "OFFLD3SZ",	"string" ],
+    OFFLD1TH			=> [ "OFFLD1TH",	"integer" ],
+    OFFLD2TH			=> [ "OFFLD2TH",	"integer" ],
+    OFFLD3TH			=> [ "OFFLD3TH",	"integer" ],
+    Recauto			=> [ "RECAUTO",		$RequestValues{Yes} ],
     CFStructDesc                => [ "DESCR",           "string", ],
     CFStructLevel               => [ "CFLEVEL",         "integer" ],
     CFStructName                => [ "CFSTRUCT",        "string" ],

@@ -1,7 +1,7 @@
 #
-# $Id: Properties.pm,v 33.9 2011/01/03 15:04:54 anbrown Exp $
+# $Id: Properties.pm,v 33.11 2012/09/26 16:15:18 jettisu Exp $
 #
-# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -15,7 +15,7 @@ use Carp;
 use MQSeries qw(:functions);
 use Params::Validate qw(validate);
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 #
 # Constructor

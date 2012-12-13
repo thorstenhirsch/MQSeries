@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -27,6 +27,7 @@ package MQSeries::Command::PCF;
    ChangeCFStruct		=> [ 101,                    		$RequestParameters{CFStruct} ],
    ChangeChannel		=> [ 21,                    		$RequestParameters{Channel} ],
    ChangeChannelListener	=> [ 93,                     		$RequestParameters{Listener} ],
+   ChangeComminfo		=> [ 192,                     		$RequestParameters{Comminfo} ],
    ChangeNamelist		=> [ 32,                     		$RequestParameters{Namelist} ],
    ChangeProcess		=> [ 3,                     		$RequestParameters{Process} ],
    ChangeQueue			=> [ 8,               			$RequestParameters{Queue} ],
@@ -44,6 +45,7 @@ package MQSeries::Command::PCF;
    CopyCFStruc			=> [ 110,                  		$RequestParameters{CFStruc} ],
    CopyChannel			=> [ 22,                  		$RequestParameters{Channel} ],
    CopyChannelListener		=> [ 94,                   		$RequestParameters{Listener} ],
+   CopyComminfo			=> [ 193,                   		$RequestParameters{Comminfo} ],
    CopyNamelist			=> [ 33,                   		$RequestParameters{Namelist} ],
    CopyProcess			=> [ 4,                   		$RequestParameters{Process} ],
    CopyQueue			=> [ 10,            			$RequestParameters{Queue} ],
@@ -59,6 +61,7 @@ package MQSeries::Command::PCF;
    CreateChannel		=> [ 23,                    		$RequestParameters{Channel} ],
    CreateNamelist		=> [ 34,                     		$RequestParameters{Namelist} ],
    CreateChannelListener	=> [ 95,                     		$RequestParameters{Listener} ],
+   CreateComminfo		=> [ 190,                     		$RequestParameters{Comminfo} ],
    CreateProcess		=> [ 5,                     		$RequestParameters{Process} ],
    CreateQueue			=> [ 11,              			$RequestParameters{Queue} ],
    CreateService		=> [ 151,                   		$RequestParameters{Service} ],
@@ -72,6 +75,7 @@ package MQSeries::Command::PCF;
    # NOTE: DeleteCFStruct is for backwards compatibility with pre-1.24 MQSC
    DeleteCFStruct		=> [ 112,                    		$RequestParameters{CFStruct} ],
    DeleteChannel		=> [ 24,                    		$RequestParameters{Channel} ],
+   DeleteComminfo		=> [ 194,                     		$RequestParameters{Comminfo} ],
    DeleteNamelist		=> [ 35,                     		$RequestParameters{Namelist} ],
    DeleteChannelListener	=> [ 96,                     		$RequestParameters{Listener} ],
    DeleteProcess		=> [ 6,                     		$RequestParameters{Process} ],
@@ -94,6 +98,7 @@ package MQSeries::Command::PCF;
    InquireCFStruct		=> [ 115,                     		$RequestParameters{CFStruct} ],
    InquireCFStructNames		=> [ 147,                           	$RequestParameters{CFStruct} ],
    InquireChannel		=> [ 25,                     		$RequestParameters{Channel} ],
+   InquireChlAuthRecs		=> [ 204,                         	$RequestParameters{ChlAuthRec} ],
    InquireChannelInitiator	=> [ 118,                         	$RequestParameters{ChannelInitiator} ],
    InquireChannelNames		=> [ 20,                           	$RequestParameters{Channel} ],
    InquireChannelStatus		=> [ 42,                            	$RequestParameters{ChannelStatus} ],
@@ -101,6 +106,7 @@ package MQSeries::Command::PCF;
    InquireConnection		=> [ 85,                        		$RequestParameters{Connection} ],
    InquireChannelListener	=> [ 97,                      		$RequestParameters{Listener} ],
    InquireChannelListenerStatus	=> [ 98,                             	$RequestParameters{ListenerStatus} ],
+   InquireComminfo		=> [ 191,                      		$RequestParameters{Comminfo} ],
    InquireEntityAuthority	=> [ 88,                         	$RequestParameters{AuthorityRecords} ],
    InquireGroup			=> [ 119,                		$RequestParameters{InquireGroup} ],
    InquireLog			=> [ 120,                		$RequestParameters{Log} ],
@@ -108,6 +114,7 @@ package MQSeries::Command::PCF;
    InquireNamelistNames		=> [ 37,                            	$RequestParameters{Namelist} ],
    InquireProcess		=> [ 7,                      		$RequestParameters{Process} ],
    InquireProcessNames		=> [ 19,                           	$RequestParameters{Process} ],
+   InquirePubSubStatus		=> [ 185,                          	$RequestParameters{PubSubStatus} ],
    InquireQueue			=> [ 13,               			$RequestParameters{Queue} ],
    InquireQueueManager		=> [ 2,                    		$RequestParameters{QueueManager} ],
    InquireQueueManagerStatus	=> [ 161,                               $RequestParameters{QueueManagerStatus} ],
@@ -150,6 +157,7 @@ package MQSeries::Command::PCF;
    ReverifySecurity		=> [ 133,                      		$RequestParameters{ReverifySecurity} ],
 
    SetAuthorityRecord		=> [ 90,                  		$RequestParameters{SetAuthorityRecord} ],
+   SetChlAuthRec		=> [ 203,                    		$RequestParameters{ChlAuthRec} ],
    SetLog			=> [ 136,            			$RequestParameters{Log} ],
    SetSystem			=> [ 137,               			$RequestParameters{System} ],
 
@@ -170,8 +178,8 @@ package MQSeries::Command::PCF;
    #
    # Extended command set
    #
-   InquireAuthority		=> [ 1000,                      		$RequestParameters{Authority} ],
-   ChangeAuthority		=> [ 1001,                     		$RequestParameters{Authority} ],
+   InquireAuthority		=> [ 1000,                      		$RequestParameters{MorganAuthority} ],
+   ChangeAuthority		=> [ 1001,                     		$RequestParameters{MorganAuthority} ],
 
   );
 

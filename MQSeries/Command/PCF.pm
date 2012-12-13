@@ -1,7 +1,7 @@
 #
-# $Id: PCF.pm,v 37.3 2011/06/01 18:33:20 anbrown Exp $
+# $Id: PCF.pm,v 37.5 2012/09/26 16:15:08 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -10,7 +10,7 @@ package MQSeries::Command::PCF;
 use strict;
 
 our @ISA = qw(MQSeries::Command);
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 use MQSeries qw(:functions);
 

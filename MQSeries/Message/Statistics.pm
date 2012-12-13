@@ -1,7 +1,7 @@
 #
-# $Id: Statistics.pm,v 37.4 2012/03/02 21:16:20 anbrown Exp $
+# $Id: Statistics.pm,v 37.6 2012/09/26 16:15:17 jettisu Exp $
 #
-# (c) 2011 Morgan Stanley & Co. Incorporated
+# (c) 2011-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -17,7 +17,7 @@ use MQSeries::Message::System;
 
 require "MQSeries/Message/Statistics.pl";
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::System);
 
 
@@ -54,17 +54,17 @@ sub _Translatable {
 
 
 package MQSeries::Message::Statistics::QueueManager;
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::Statistics);
 
 
 package MQSeries::Message::Statistics::Queue;
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::Statistics);
 
 
 package MQSeries::Message::Statistics::Channel;
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::Statistics);
 
 

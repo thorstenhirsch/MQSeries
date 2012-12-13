@@ -1,7 +1,7 @@
 #
-# $Id: MQSeries.pm,v 33.9 2011/01/03 15:04:46 anbrown Exp $
+# $Id: MQSeries.pm,v 33.11 2012/09/26 16:10:13 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # This is intended to be a wrapper routine to include either the
@@ -22,7 +22,7 @@ require DynaLoader;
 use MQSeries::Config::Machine;
 
 our @ISA = qw(Exporter DynaLoader);
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our (@EXPORT, %EXPORT_TAGS);
 
 BEGIN {

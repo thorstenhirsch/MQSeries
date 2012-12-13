@@ -2,10 +2,10 @@
 # MQSeries::ErrorLog::Parser.pm - Parse error-log files into error-log
 #                                 entry objects
 #
-# (c) 2000-2011 Morgan Stanley & Co. Incorporated
+# (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 33.9 2011/01/03 15:04:51 anbrown Exp $
+# $Id: Parser.pm,v 38.2 2012/09/26 16:15:12 jettisu Exp $
 #
 
 package MQSeries::ErrorLog::Parser;
@@ -23,7 +23,7 @@ use MQSeries::ErrorLog::Entry;
 our $error_table;
 require "MQSeries/ErrorLog/descriptions.pl";
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 #
 # Constructor
@@ -223,14 +223,18 @@ sub parse_one_chunk {
             # For TCP/IP errors, split 'Host' field into either:
             # - 'HostName', 'IPAddress' and 'IPPort'
             # - 'HostName' and 'IPAddress'
+            # - 'IPAddress' and 'IPPort'
             # - 'IPAddress'
-            # depending on how muich is available
+            # depending on how much is available
             #
             if (defined $fields->{'Host'}) {
                 if ($fields->{'Host'} =~ m!^(\S+)\s+\((\d+\.\d+\.\d+\.\d+)\)\s+\((\d+)\)$!) {
                     $fields->{'HostName'} = $1;
                     $fields->{'IPAddress'} = $2;
                     $fields->{'IPPort'} = $3;
+                } elsif ($fields->{'Host'} =~ m!^(\d+\.\d+\.\d+\.\d+)\s+\((\d+)\)$!) {
+                    $fields->{'IPAddress'} = $1;
+                    $fields->{'IPPort'} = $2;
                 } elsif ($fields->{'Host'} =~ m!^(\S+)\s+\((\d+\.\d+\.\d+\.\d+)\)$!) {
                     $fields->{'HostName'} = $1;
                     $fields->{'IPAddress'} = $2;

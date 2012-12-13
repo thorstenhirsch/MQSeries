@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: parse_headers,v 37.1 2011/06/01 18:36:43 anbrown Exp $
+# $Id: parse_headers,v 38.5 2012/09/26 16:15:38 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # This code pulls in all of the #define definitions, and creates
@@ -183,8 +183,8 @@ foreach my $header ( @headers ) {
         #
         next if ($key =~ /^MQPROP_INQUIRE_ALL/);  # ..ALL, ..ALL_USR
 
-        $value =~ s/^\(//;
-        $value =~ s/\)$//;
+        $value =~ s/^\(\s*//;
+        $value =~ s/\s*\)$//;
 
         #
         # Hex
@@ -192,6 +192,16 @@ foreach my $header ( @headers ) {
         if ( $value =~ /^0x/ ) {
             $value =~ s/L$//;
             $constant_hex{$key} = eval($value);
+        }
+        #
+        # Some #defines are expressed in terms of others (binary OR).
+        # Postpone them and handle them at the end of the file
+        #
+        elsif ($value =~ /^\s* (MQ\w+ \s* \| \s*)+ MQ\w+ \s*$/x) {
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+            $postponed{$key} = $value;
+            next;
         }
 
         #
@@ -260,15 +270,6 @@ foreach my $header ( @headers ) {
             $value =~ s/\'//g;
             $value =~ s/\\x(\w{2})/chr(hex($1))/ge;
             $constant_char{$key} = $value;
-        }
-        #
-        # Some #defines are expressed in terms of others (binary OR).
-        # Postpone them and handle them at the end of the file
-        #
-        elsif ($value =~ /^\s* (MQ\w+ \s* \| \s*)+ MQ\w+ \s*$/x) {
-            $value =~ s/^\s+//;
-            $postponed{$key} = $value;
-            next;
         }
         #
         # Ignore the function macros in cmqbc.h
@@ -366,6 +367,7 @@ our %extra_num = (
                   MQRC_PROPERTY_VALUE_TOO_BIG => 2469,
                   MQRC_CHANNEL_NOT_AVAILABLE  => 2537,
                   MQRC_HOST_NOT_AVAILABLE     => 2538,
+                  MQRCCF_CHLAUTH_NOT_FOUND    => 3338,
                  );
 foreach my $name (sort keys %extra_hex) {
     my $value = $extra_hex{$name};

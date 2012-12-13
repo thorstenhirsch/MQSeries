@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -113,6 +113,7 @@ package MQSeries::Command::PCF;
     Sender			=> 1,
     Server			=> 2,
     Svrconn			=> 7,
+    Telemetry			=> 10,
    },
 
    ChannelInstanceType =>
@@ -161,6 +162,27 @@ package MQSeries::Command::PCF;
     Normal			=> 1,
    },
 
+   DefReconnect =>
+   {
+    QMgr 			=> 2,
+    Disabled			=> 3,
+    No				=> 0,
+    Yes				=> 1,
+   },
+
+   UseDLQ =>
+   {
+    No				=> 1,
+    Yes				=> 2,
+   },
+
+   TopicUseDLQ =>
+   {
+    AsParent			=> 0,
+    No				=> 1,
+    Yes				=> 2,
+   },
+
    ChannelStatus =>
    {
     Binding			=> 1,
@@ -174,6 +196,43 @@ package MQSeries::Command::PCF;
     Stopped			=> 6,
     Stopping			=> 4,
    },
+
+   ChlAuthAction =>
+   {
+    Add				=> 5,
+    Replace			=> 6,
+    Remove			=> 7,
+    RemoveAll			=> 8,
+   },
+
+   ChlAuthType =>
+   {
+    BlockUser			=> 1,
+    BlockAddress		=> 2,
+    SSLPeerMap			=> 3,
+    AddressMap			=> 4,
+    UserMap			=> 5,
+    QMgrMap			=> 6,
+   },
+
+#   ChlAuthRecords =>
+#   {
+#    Disabled			=> 0,
+#    Enabled			=> 1,
+#   },
+
+   UserSource =>
+   {
+    Channel			=> 2,
+    Map				=> 0,
+    NoAccess			=> 1,
+   },
+
+#   ChlAuthWarning =>
+#   {
+#    No				=> 0,
+#    Yes				=> 1,
+#   },
 
    ApplType =>
    {
@@ -225,6 +284,7 @@ package MQSeries::Command::PCF;
    {
     NotFixed			=> 1,
     OnOpen			=> 0,
+    OnGroup			=> 2,
    },
 
    ObjectType =>
@@ -254,6 +314,9 @@ package MQSeries::Command::PCF;
     SavedChannel		=> 1012,
     SvrconnChannel		=> 1013,
     ClntconnChannel		=> 1014,
+    CFStruc			=> 10,
+    ChlAuth			=> 1016,
+    StorageClass		=> 4,
    },
 
    #
@@ -314,6 +377,11 @@ package MQSeries::Command::PCF;
    #
    Authority =>
    {
+    All				=> -1,
+    AllAdmin			=> -2,
+    AllMqi			=> -3,
+    Control			=> 17,
+    ControlExtended		=> 18,
     AltUser			=> 1,
     Browse			=> 2,
     Change			=> 3,
@@ -478,6 +546,7 @@ package MQSeries::Command::PCF;
    #
    DefPutResponse =>
    {
+    AsParent			=> 0,
     Async			=> 2,
     Sync			=> 1,
    },
@@ -502,13 +571,31 @@ package MQSeries::Command::PCF;
    },
 
    #
-   # Durable Pub/Sub Subscriptions for MQ v7
+   # Durable Pub/Sub Subscriptions for MQ v7 (for topic object)
    #
-   DurableSubscriptions =>
+   TopicDurableSubscriptions =>
    {
     AsParent			=> 0,
     Durable			=> 1,
     NonDurable			=> 2,
+   },
+
+   #
+   # Durable Pub/Sub Subscriptions for MQ v7 (for topicstatus object)
+   #
+   TopicStatusDurableSubscriptions =>
+   {
+    Allowed			=> 1,
+    Inhibited			=> 2,
+   },
+
+   #
+   # Durable Pub/Sub Subscriptions for MQ v7 (for subscription object)
+   #
+   Durable =>
+   {
+    No				=> 2,
+    Yes				=> 1,
    },
 
    #
@@ -585,6 +672,11 @@ package MQSeries::Command::PCF;
         sub { return MQSeries::Command::Base::strinteger(@_, -1,
                                                     "NOLIMIT"); },
 
+   # VALUEMAP-CODEREF
+   ComminfoCCSID =>
+        sub { return MQSeries::Command::Base::strinteger(@_, -4,
+                                                    "ASPUB"); },
+
    ListenerStartMode =>
    {
     Manual			=> 2,
@@ -624,6 +716,7 @@ package MQSeries::Command::PCF;
     All				=> 2,
     Compatibility		=> 0,
     ForceRFH2			=> 3,
+    V6Compat			=> 4,
     None			=> 1,
    },
 
@@ -635,6 +728,12 @@ package MQSeries::Command::PCF;
     FirstUse			=> 2,
     Force			=> 1,
    },
+
+#   PubSubClus =>
+#   {
+#    Disabled			=> 0,
+#    Enabled			=> 1,
+#   },
 
    #
    # PublishPriority for
@@ -661,6 +760,7 @@ package MQSeries::Command::PCF;
    PubSubProperties =>
    {
     Compat			=> 1,
+    MsgProp			=> 3,
     None			=> 0,
     RFH2			=> 2,
    },
@@ -976,6 +1076,7 @@ package MQSeries::Command::PCF;
     BufferPool			=> 1170,
     DataSet			=> 1169,
     Pageset			=> 1168,
+    SMDS			=> 1335,
    },
 
    UsageDataSetType =>
@@ -1009,6 +1110,12 @@ package MQSeries::Command::PCF;
     Passthru			=> 2,
    },
 
+   RetainedPublication =>
+   {
+    Yes				=> 1,
+    No				=> 0,
+   },
+
    #
    # For CFStruc on V6
    CFStatusType =>
@@ -1016,6 +1123,7 @@ package MQSeries::Command::PCF;
     CFStatusSummary		=> 1136,
     CFStatusConnect		=> 1137,
     CFStatusBackup		=> 1138,
+    CFStatusSMDS		=> 1333,
    },
 
    CFStrucStatus =>
@@ -1026,12 +1134,65 @@ package MQSeries::Command::PCF;
     InBackup			=> 3,
     InRecover			=> 2,
     Unknown			=> 6,
+    None			=> 5,
+    Recovered			=> 7,
+    Empty			=> 8,
+    New				=> 9,
    },
 
    CFStrucType =>
    {
     Admin			=> 1,
     Appl			=> 0,
+   },
+
+   CFStrucAccess =>
+   {
+    Enabled			=> 0,
+    Disabled			=> 2,
+    Suspended			=> 1,
+   },
+
+   DSBlock =>
+   {
+    "8K"                          => 1,
+    "16K"                         => 2,
+    "32K"                         => 3,
+    "64K"                         => 4,
+    "128K"                        => 5,
+    "256K"                        => 6,
+    "512K"                        => 7,
+    "1024K"                       => 8,
+    "1M"                          => 8,
+   },
+
+   CFConlos =>
+   {
+    AsQMgr                      => 2,
+    Terminate                   => 0,
+    Tolerate                    => 1,
+   },
+
+   EncryptionPolicySuiteB =>
+   {
+    None			=> 1,
+    "128Bit"			=> 2,
+    "192Bit"			=> 4,
+   },
+
+   Offload =>
+   {
+    DB2                         => 2,
+    SMDS                        => 1,
+    None                        => 0,
+    Both                        => 3,
+   },
+
+   DSExpand =>
+   {
+    Yes                         => 1,
+    No                          => 2,
+    Default                     => 0,
    },
 
    #
@@ -1170,6 +1331,13 @@ package MQSeries::Command::PCF;
     Refined			=> 1,
    },
 
+   SelectorType =>
+   {
+    None			=> 0,
+    Standard			=> 1,
+    Extended			=> 2,
+   },
+
    #
    # Variable Userid for Subscriptions in MQ v7
    #
@@ -1192,6 +1360,83 @@ package MQSeries::Command::PCF;
    {
     Seconds			=> 1,
     Minutes			=> 0,
+   },
+
+   #
+   # Type for Inquire PubSubStatus in MQ V7
+   #
+   PubSubStatusType =>
+   {
+    Child			=> 3,
+    Local			=> 1,
+    Parent			=> 2,
+   },
+
+   #
+   # PubSubStatus for Inquire PubSubStatus in MQ V7
+   #
+   PubSubStatus =>
+   {
+    Active			=> 3,
+    Compat			=> 4,
+    Error			=> 5,
+    Inactive			=> 0,
+    Starting			=> 1,
+    Stopping			=> 2,
+    Active			=> 3,
+    Refused			=> 6,
+   },
+
+   #
+   # Comminfo Encoding
+   #
+   Encoding =>
+   {
+    AsPublished                 => -1,
+    Normal                      => 273,
+    Reversed                    => 546,
+    S390                        => 785,
+    TNS                         => 1041,
+   },
+
+   #
+   # Comminfo ComminfoType
+   # Currently only supported type is Multicast.
+   #
+   ComminfoType =>
+   {
+    Multicast                   => 1,
+   },
+
+   #
+   # Comminfo CommEvent
+   #
+   CommEvent =>
+   {
+    Disabled                    => 0,
+    Enabled                     => 1,
+    Exception                   => 2,
+   },
+
+   #
+   # Comminfo NewSubHistory
+   #
+   NewSubHistory =>
+   {
+    None                        => 0,
+    All                         => -1,
+   },
+
+   #
+   # Comminfo MulticastPropControl
+   #
+   MulticastPropControl =>
+   {
+    All                         => -1,
+    Reply                       => 2,
+    User                        => 1,
+    None                        => 0,
+    Compat                      => -2,
    },
 
    #

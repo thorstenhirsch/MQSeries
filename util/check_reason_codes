@@ -4,7 +4,7 @@
 # files with reason code numbers / constants.  Those files,
 # themselves, are pre-processed later.
 #
-# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -81,9 +81,9 @@ foreach my $type (qw( ReasonText ReasonMacro)) {
 #
 #    ..../src/util/extract_reason_codes
 #
-# \$Id: check_reason_codes,v 36.2 2011/01/03 15:05:04 anbrown Exp $
+# \$Id: check_reason_codes,v 36.3 2012/09/26 16:15:36 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

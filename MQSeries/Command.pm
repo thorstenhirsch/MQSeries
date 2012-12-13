@@ -1,7 +1,7 @@
 #
-# $Id: Command.pm,v 37.8 2011/05/27 16:18:20 anbrown Exp $
+# $Id: Command.pm,v 37.13 2012/09/26 16:10:14 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -22,7 +22,7 @@ use MQSeries::Command::Response;
 use MQSeries::Utils qw(ConvertUnit);
 use Params::Validate qw(validate);
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 sub new {
     my $proto = shift;
@@ -443,7 +443,7 @@ sub CreateObject {
                                      QName StorageClassName AuthInfoName
                                      CFStructName CFStrucName
                                      ListenerName ServiceName
-                                     SubName TopicName);
+                                     SubName TopicName ChlAuth ComminfoName);
     my $KeyCount                = 0;
 
     #
@@ -553,7 +553,20 @@ sub CreateObject {
         $Change                 = "ChangeTopic";
         $Key                    = "TopicName";
         $Type                   = "Topic";
-    }
+    } elsif ($Attrs->{ChlAuth} ) {
+        $Inquire                = "InquireChlAuthRecs";
+        $Create                 = "SetChlAuthRec";
+        $Change                 = "SetChlAuthRec";
+        $Key                    = "ChlAuth";
+        $Type                   = "ChlAuthRec";
+    } elsif ($Attrs->{ComminfoName} ) {
+        $Inquire                = "InquireComminfo";
+        $Create                 = "CreateComminfo";
+        $Change                 = "ChangeComminfo";
+        $Key                    = "ComminfoName";
+        $Type                   = "Comminfo";
+    } 
+        
 
     #
     # First check to see if it exists.
@@ -567,7 +580,8 @@ sub CreateObject {
     if ( $self->Reason() &&
          $self->Reason() != MQSeries::MQRC_UNKNOWN_OBJECT_NAME &&
          $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND &&
-         $self->Reason() != MQSeries::MQRC_NO_SUBSCRIPTION
+         $self->Reason() != MQSeries::MQRC_NO_SUBSCRIPTION &&
+         $self->Reason() != MQSeries::MQRCCF_CHLAUTH_NOT_FOUND
        ) {
         my $rc = $self->Reason();
         $self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}' (Reason=$rc)\n");
@@ -591,6 +605,15 @@ sub CreateObject {
         if (defined $Object->{'QSGDisposition'} &&
             $Object->{'QSGDisposition'} eq 'Copy') {
             $Object->{'QSGDisposition'} = 'Group';
+        }
+
+        #
+        # For mq 7.1 and above
+        # Channel Authentication Records are added/replaced/removed
+        # with the same command but with different action parameters
+        #
+        if ($Attrs->{'ChlAuth'} && (! defined $Attrs->{'Action'})) {
+            $Attrs->{'Action'} = 'Replace';
         }
 
         #
@@ -621,6 +644,10 @@ sub CreateObject {
     } else {
         print "$Type '$QMgr/$Attrs->{$Key}' is missing\n" unless $Quiet;
         $method = $Create;
+
+        if ($Attrs->{'ChlAuth'} && (! defined $Attrs->{'Action'})) {
+            $Attrs->{'Action'} = 'Add';
+        }
         $Changes = $Callback->($Attrs);
     }
 
@@ -648,6 +675,9 @@ sub CreateObject {
                 defined($self->{QueueManager}->{QMgrConfig}) &&
                 $self->{QueueManager}->{QMgrConfig}->{CommandLevel} >= 700) {
             $Changes->{'AuthInfoType'} = $Attrs->{'AuthInfoType'};
+        } elsif ($Key eq 'ChlAuth') {
+            $Changes->{'ChlAuthType'} = $Attrs->{'ChlAuthType'};
+            $Changes->{'Action'} = $Attrs->{'Action'}; 
         }
     }
 
@@ -712,7 +742,14 @@ sub CreateObject {
     }
 
     unless ( $Quiet ) {
-        print( ($method eq $Change ? "Updating" : "Creating") . " $Type '$QMgr/$Attrs->{$Key}'\n");
+        my $action;
+        if ((defined $Attrs->{'ChlAuth'}) && (defined $Attrs->{'Action'})) {
+            $action = $Attrs->{'Action'} eq "Add" ? "Creating" : "Updating";
+        }
+        else {
+            $action = $method eq $Change ? "Updating" : "Creating"; 
+        }
+        print("$action $Type '$QMgr/$Attrs->{$Key}'\n");
     }
 
     #
@@ -831,6 +868,8 @@ sub _Command {
        InquireTopic              => 'TopicName',
        InquireTopicNames         => 'TopicName',
        InquireTopicStatus        => 'TopicString',
+       InquireChlAuthRecs        => 'ChlAuth',
+       InquireComminfo		 => 'ComminfoName',
       );
 
     if ( $command2name{$command} ) {
@@ -876,7 +915,9 @@ sub _Command {
       (
        InquireChannel                   => 'ChannelAttrs',
        InquireChannelStatus             => 'ChannelInstanceAttrs',
+       InquireChlAuthRecs               => 'ChlAuthAttrs',
        InquireClusterQueueManager       => 'ClusterQMgrAttrs',
+       InquireComminfo                  => 'ComminfoAttrs',
        InquireConnection                => 'ConnectionAttrs',
        InquireNamelist                  => 'NamelistAttrs',
        InquireProcess                   => 'ProcessAttrs',
@@ -892,6 +933,7 @@ sub _Command {
        InquireSubscriptionStatus        => 'SubscriptionStatusAttrs',
        InquireTopic                     => 'TopicAttrs',
        InquireTopicStatus               => 'TopicStatusAttrs',
+       InquirePubSubStatus              => 'PubSubStatusAttrs',
       );
 
     if ( $command2all{$command} ) {

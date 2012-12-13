@@ -1,10 +1,10 @@
 #
 # MQSeries::ErrorLog::Entry.pm - One entry from the ErrorLog
 #
-# (c) 2000-2011 Morgan Stanley & Co. Incorporated
+# (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 33.9 2011/01/03 15:04:51 anbrown Exp $
+# $Id: Entry.pm,v 33.11 2012/09/26 16:15:12 jettisu Exp $
 #
 
 package MQSeries::ErrorLog::Entry;
@@ -16,7 +16,7 @@ use overload ('""'  => 'as_string',
               'cmp' => 'compare',
               '<=>' => 'compare');
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 #
 # ErrorLog::Entry constructor

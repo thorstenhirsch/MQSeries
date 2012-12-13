@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -26,10 +26,13 @@ package MQSeries::Command::PCF;
     AccountingInterval		=> [ 135,                       		3 ],
     Action			=> [ 1086,           			3,		$RequestValues{QMgrAction} ],
     ActivityRecording		=> [ 138,                      		3,		$RequestValues{Recording} ],
+    ActivityConnOverride	=> [ 239,                          	3 ],
+    ActivityTrace		=> [ 240,                  		3 ],
     AdoptNewMCACheck		=> [ 102,                     		3,		$RequestValues{AdoptNewMCACheck} ],
     AdoptNewMCAType		=> [ 103,                    		3,		$RequestValues{AdoptNewMCAType} ],
     AuthorityEvent		=> [ 47,                    		3 ],
     BridgeEvent			=> [ 74,                 		3 ],
+    CFConlos			=> [ 245,                 		3,		$RequestValues{CFConlos} ],
     ChannelAutoDef		=> [ 55,                     		3 ],
     ChannelAutoDefEvent		=> [ 56,                           	3 ],
     ChannelAutoDefExit		=> [ 2026,                        	4 ],
@@ -37,11 +40,13 @@ package MQSeries::Command::PCF;
     ChannelInitiatorControl	=> [ 119,                  		3,		$RequestValues{QMgrServiceControl} ],
     ChannelMonitoring		=> [ 122,                      		3,		$RequestValues{QMgrMonitoring} ],
     ChannelStatistics		=> [ 129,                      		3,		$RequestValues{QMgrMonitoring} ],
+    ChildName			=> [ 2101,        			4 ],
     ChinitAdapters		=> [ 101,                   		3 ],
     ChinitDispatchers		=> [ 105,                      		3 ],
     ChinitServiceParm		=> [ 2076,                      		4 ],
     ChinitTraceAutoStart	=> [ 117,                           	3 ], # Boolean
     ChinitTraceTableSize	=> [ 118,                           	3 ],
+    ChlAuthRecords		=> [ 248,                   		3 ],
     ClusterSenderMonitoringDefault => [ 124,                           	3,		$RequestValues{QMgrMonitoring} ],
     ClusterSenderStatistics	=> [ 130,                           	3,		$RequestValues{QMgrMonitoring} ],
     ClusterWorkLoadData		=> [ 2034,                        	4 ],
@@ -54,10 +59,12 @@ package MQSeries::Command::PCF;
     CommandScope		=> [ 3080,                  		4 ],
     CommandServerControl	=> [ 120,                      		3,		$RequestValues{QMgrServiceControl} ],
     ConfigurationEvent		=> [ 51,                        		3 ],
+    Custom			=> [ 2119,         			4 ],
     DeadLetterQName		=> [ 2006,                     		4 ],
     DefXmitQName		=> [ 2025,                  		4 ],
     DNSGroup			=> [ 2071,            			4 ],
     DNSWLM			=> [ 106,           			3 ], # Boolean
+    EncryptionPolicySuiteB	=> [ 247,                    		5,		$RequestValues{EncryptionPolicySuiteB} ],
     ExpiryInterval		=> [ 39,                    		3 ], # FIXME: need to support 'Off'
     Facility			=> [ 1231,                   		3,		$RequestValues{QMgrFacility} ],
     Force			=> [ 1005,          			3 ],
@@ -87,6 +94,7 @@ package MQSeries::Command::PCF;
     OutboundPortMin		=> [ 110,                     		3 ],
     Parent			=> [ 2102,         			4 ],
     PerformanceEvent		=> [ 53,                      		3 ],
+    PubSubClus			=> [ 249,                  		3 ],
     PubSubMaxMsgRetryCount	=> [ 206,                             	3 ],
     PubSubMode			=> [ 187,               			3,		$RequestValues{PubSubMode} ],
     PubSubNPInputMsg		=> [ 203,                 		3,		$RequestValues{PubSubNPInputMsg} ],
@@ -121,6 +129,8 @@ package MQSeries::Command::PCF;
     TraceRouteRecording		=> [ 137,                         	3,		$RequestValues{Recording} ],
     TreeLifeTime		=> [ 183,                  		3 ],
     TriggerInterval		=> [ 25,                     		3 ],
+    Version			=> [ 2120,          			4 ],
+    XrCapability			=> [ 243,                 		3 ],
    },
 
    QueueManagerStatus =>
@@ -150,6 +160,7 @@ package MQSeries::Command::PCF;
    Queue =>
    {
     QAttrs			=> [ 1002,            			5,		$RequestValues{Queue} ],
+    Authrec			=> [ 1398,                   		3 ],
     IntegerFilterCommand	=> [ 13,		13 ],
     StringFilterCommand		=> [ 14,		14 ],
 
@@ -166,6 +177,7 @@ package MQSeries::Command::PCF;
     CLWLQueueRank		=> [ 95,                			3 ],
     CLWLUseQ			=> [ 98,              			3,		$RequestValues{QueueCLWLUseQ} ],
     CommandScope		=> [ 3080,                  		4 ],
+    Custom			=> [ 2119,         			4 ],
     DefBind			=> [ 61,             			3,		$RequestValues{DefBind} ],
     DefinitionType		=> [ 7,                     		3,		$RequestValues{DefinitionType} ],
     DefInputOpenOption		=> [ 4,                           	3,		$RequestValues{DefInputOpenOption} ],
@@ -227,6 +239,7 @@ package MQSeries::Command::PCF;
     IntegerFilterCommand	=> [ 13,		13 ],
     StringFilterCommand		=> [ 14,		14 ],
 
+    BatchDataLimit		=> [ 1624,                     		3 ],
     BatchHeartBeat		=> [ 1567,             			3 ],
     BatchInterval		=> [ 1564,                   		3 ],
     BatchSize			=> [ 1502,               		3 ],
@@ -249,6 +262,7 @@ package MQSeries::Command::PCF;
     ConnectionName		=> [ 3506,                    		4 ],
     DataConversion		=> [ 1515,                    		3 ],
     DataCount			=> [ 1512,               		3 ],
+    DefReconnect		=> [ 1640,                  		3,		$RequestValues{DefReconnect} ],
     DiscInterval		=> [ 1503,                  		3 ],
     EnvironmentInfo		=> [ 3089,             			4 ],
     FromChannelName		=> [ 3007,                      		4 ],
@@ -287,6 +301,7 @@ package MQSeries::Command::PCF;
     ReceiveExit			=> [ 3511,                  		4 ],
     ReceiveUserData		=> [ 3516,                       	4 ],
     Replace			=> [ 1006,            			3 ],
+    ResetRequested		=> [ 1623,                    		3 ],
     SecurityExit		=> [ 3508,                  		4 ],
     SecurityUserData		=> [ 3513,                       	4 ],
     SendExit			=> [ 3510,                   		4 ],
@@ -304,6 +319,32 @@ package MQSeries::Command::PCF;
     TransportType		=> [ 1501,                       	3,		$RequestValues{TransportType} ],
     UserIdentifier		=> [ 3517,            			4 ],
     XmitQName			=> [ 3505,                		4 ],
+    UseDLQ			=> [ 234,                     		3,		$RequestValues{UseDLQ} ],
+   },
+
+   # Introduced at v7.1
+   ChlAuthRec =>
+   {
+    Address			=> [ 3506,                    		4 ],
+    Addrlist			=> [ 3566,                         	6 ],
+    ByteStringFilterCommand	=> [ 15,                        		15                         ],
+    ChlAuth			=> [ 3501,                 		4 ],
+    Action			=> [ 1086,           			3,		$RequestValues{ChlAuthAction} ],
+    ChlAuthAttrs		=> [ 1355,                  		5,		$RequestValues{ChlAuthAttrs} ],
+    ChlAuthDesc			=> [ 2118,               		4, ],
+    ChlAuthType			=> [ 1352,                 		3,		$RequestValues{ChlAuthType} ],
+    ClientUserId		=> [ 3567,                   		4 ],
+    CommandScope		=> [ 3080,                  		4 ],
+    Custom			=> [ 2119,         			4 ],
+    IntegerFilterCommand	=> [ 13,		13 ],
+    Match			=> [ 1637,          			3,		$RequestValues{ChlAuthMatch} ],
+    MCAUserIdentifier		=> [ 3527,                		4, ],
+    RemoteQMgrName		=> [ 2017,                    		4 ],
+    SSLPeerName			=> [ 3545,                  		4 ],
+    StringFilterCommand		=> [ 14,		14 ],
+    MCAUserIdList		=> [ 3568,                     		6 ],
+    UserSource			=> [ 1638,                		3,		$RequestValues{UserSource} ],
+    Warning			=> [ 1639,            			3 ],
    },
 
    ChannelInitiator =>
@@ -314,7 +355,10 @@ package MQSeries::Command::PCF;
    ChannelStatus =>
    {
     ChannelInstanceAttrs	=> [ 1524,                           	5,		$RequestValues{ChannelInstanceAttrs} ],
+    ClientIdentifier		=> [ 3564,              			4 ],
     IntegerFilterCommand	=> [ 13,		13 ],
+    MaxResponses		=> [ 230,                 		3 ],
+    ResponseRestartPoint 	=> [ 231,                          	3 ],
     StringFilterCommand		=> [ 14,		14 ],
 
     ChannelDisposition		=> [ 1580,                 		3,		$RequestValues{ChannelDisposition} ],
@@ -410,11 +454,24 @@ package MQSeries::Command::PCF;
     IntegerFilterCommand	=> [ 13,		13 ],
     StringFilterCommand		=> [ 14,		14 ],
 
+    CFConlos			=> [ 246,               			3,	$RequestValues{CFConlos} ],
     CFLevel			=> [ 70,             			3 ],
     CFStatusType		=> [ 1135,                   		3,		$RequestValues{CFStatusType} ],
     CFStrucDesc			=> [ 2052,                		4 ],
     CFStrucName			=> [ 2039,                		4 ],
+    DSBlock			=> [ 1328,                       	3,		$RequestValues{DSBlock} ],
+    DSBufs			=> [ 228,                   		3,],
+    DSExpand			=> [ 1329,                   		3,		$RequestValues{DSExpand} ],
+    DSGroup			=> [ 3182,                         	4 ],
     FromCFStrucName		=> [ 3093,                       	4 ],
+    Offload			=> [ 224,              			3,		$RequestValues{Offload} ],
+    OFFLD1SZ			=> [ 3179,                     		4 ],
+    OFFLD2SZ			=> [ 3180,                     		4 ],
+    OFFLD3SZ			=> [ 3181,                     		4 ],
+    OFFLD1TH			=> [ 225,                         	3 ],
+    OFFLD2TH			=> [ 226,                         	3 ],
+    OFFLD3TH			=> [ 227,                         	3 ],
+    Recauto			=> [ 244,              			3 ],
     Recovery			=> [ 71,               			3 ],
     Replace			=> [ 1006,            			3 ],
     ToCFStrucName		=> [ 3094,                     		4 ],
@@ -450,6 +507,20 @@ package MQSeries::Command::PCF;
     Recovery			=> [ 71,               			3 ],
     Replace			=> [ 1006,            			3 ],
     ToCFStructName		=> [ 3094,                     		4 ],
+
+    CFConlos			=> [ 246,               			3,	$RequestValues{CFConlos} ],
+    DSBlock			=> [ 1328,                       	3,		$RequestValues{DSBlock} ],
+    DSBufs			=> [ 228,                   		3,],
+    DSExpand			=> [ 1329,                   		3,		$RequestValues{DSExpand} ],
+    DSGroup			=> [ 3182,                         	4 ],
+    Offload			=> [ 224,              			3,		$RequestValues{Offload} ],
+    OFFLD1SZ			=> [ 3179,                     		4 ],
+    OFFLD2SZ			=> [ 3180,                     		4 ],
+    OFFLD3SZ			=> [ 3181,                     		4 ],
+    OFFLD1TH			=> [ 225,                         	3 ],
+    OFFLD2TH			=> [ 226,                         	3 ],
+    OFFLD3TH			=> [ 227,                         	3 ],
+    Recauto			=> [ 244,              			3 ],
    },
 
    #
@@ -485,9 +556,11 @@ package MQSeries::Command::PCF;
 
    ListenerStatus =>
    {
+    IntegerFilterCommand	=> [ 13,		13 ],
     ListenerStatusAttrs		=> [ 1223,                          	5, $RequestValues{ListenerStatusAttrs} ],
 
     ListenerName		=> [ 3554,                  		4 ],
+    StringFilterCommand		=> [ 14,		14 ],
    },
 
    #
@@ -554,6 +627,7 @@ package MQSeries::Command::PCF;
     DestinationClass		=> [ 1273,                      		3,		$RequestValues{DestinationClass} ],
     DestinationCorrelId		=> [ 7015,                          	9                   ],
     DestinationQueueManager	=> [ 3153,                      		4 ],
+    Durable			=> [ 1274,                         	3,		$RequestValues{Durable} ],
     Expiry			=> [ 1244,           			3 ],
     FromSubscriptionName	=> [ 3163,                  		4 ],
     PublishPriority		=> [ 1283,                 		3,		$RequestValues{PublishPriority} ],
@@ -565,6 +639,8 @@ package MQSeries::Command::PCF;
     SubName			=> [ 3152,             			4 ],
     SubscriptionLevel		=> [ 1307,              			3 ],
     SubscriptionScope		=> [ 1275,                       	3,		$RequestValues{SubscriptionScope} ],
+    SubscriptionUser		=> [ 3156,                		4 ],
+    SubType			=> [ 1289,             			3,		$RequestValues{SubscriptionType} ],
     TopicObject			=> [ 3031,          			4 ],
     TopicString			=> [ 2094,               		4 ],
     ToSubscriptionName		=> [ 3164,                		4 ],
@@ -581,7 +657,7 @@ package MQSeries::Command::PCF;
     SubscriptionStatusAttrs	=> [ 1294,                     		5,		$RequestValues{SubscriptionStatusAttrs} ],
 
     ActiveConnection		=> [ 7006,                  		9                   ],
-    Durable			=> [ 1274,                         	3,		$RequestValues{DurableSubscriptions} ],
+    Durable			=> [ 1274,                         	3,		$RequestValues{Durable} ],
     LastMessageDate		=> [ 3168,                  		4 ],
     LastMessageTime		=> [ 3167,                  		4 ],
     NumberOfMessages		=> [ 1290,                  		3 ],
@@ -594,12 +670,23 @@ package MQSeries::Command::PCF;
    },
 
    #
+   # pub/sub status
+   #
+   PubSubStatus =>
+   {
+    CommandScope		=> [ 3080,                  		4 ],
+    PubSubStatusAttrs		=> [ 1318,                        	5,	$RequestValues{PubSubStatusAttrs} ],
+    Type			=> [ 1314,                   		3,		$RequestValues{PubSubStatusType} ],
+   },
+
+   #
    # Clear Topic String (new for MQ v7)
    #
    ClearTopicString =>
    {
     TopicString			=> [ 2094,               		4 ],
     ClearType			=> [ 1305,               		3,		$RequestValues{Scope} ],
+    CommandScope		=> [ 3080,                  		4 ],
     Scope			=> [ 45,          			3,		$RequestValues{Scope} ],
    },
 
@@ -611,8 +698,12 @@ package MQSeries::Command::PCF;
     TopicAttrs			=> [ 1269,                		5,		$RequestValues{TopicAttrs} ],
     IntegerFilterCommand	=> [ 13,		13 ],
     StringFilterCommand		=> [ 14,		14 ],
+    Authrec			=> [ 1398,                   		3, 	$RequestValues{Authrec} ],
 
     ClusterName			=> [ 2029,               		4 ],
+    CommandScope		=> [ 3080,                  		4 ],
+    ComminfoName		=> [ 2110,                 		4 ],
+    Custom			=> [ 2119,         			4 ],
     DefPutResponse		=> [ 184,                         	3,		$RequestValues{DefPutResponse} ],
     DefPersistence		=> [ 185,                         	3,		$RequestValues{TopicDefPersistence} ],
     DefPriority			=> [ 6,                  		3,		$RequestValues{TopicDefPriority} ],
@@ -621,6 +712,7 @@ package MQSeries::Command::PCF;
     FromTopicName		=> [ 3150,                    		4 ],
     InhibitPublications		=> [ 181,               			3,		$RequestValues{InhibitPublications} ],
     InhibitSubscriptions	=> [ 182,               			3,		$RequestValues{InhibitSubscriptions} ],
+    Multicast			=> [ 176,             			3,		$RequestValues{Multicast} ],
     NonDurableModelQName	=> [ 2097,                      		4 ],
     NonPersistentMsgDelivery	=> [ 196,                		3,		$RequestValues{MsgDelivery} ],
     PersistentMsgDelivery	=> [ 195,               			3,		$RequestValues{MsgDelivery} ],
@@ -634,6 +726,7 @@ package MQSeries::Command::PCF;
     TopicString			=> [ 2094,               		4 ],
     ToTopicName			=> [ 3149,                  		4 ],
     TopicType			=> [ 208,              			3,		$RequestValues{TopicType}],
+    UseDLQ			=> [ 234,                     		3,	$RequestValues{TopicUseDLQ} ],
     WildcardOperation		=> [ 216,                      		3,		$RequestValues{WildcardOperation} ],
    },
 
@@ -645,6 +738,7 @@ package MQSeries::Command::PCF;
     TopicStatusAttrs		=> [ 1301,                       	5,		$RequestValues{TopicStatusAttrs} ],
     IntegerFilterCommand	=> [ 13,		13 ],
     StringFilterCommand		=> [ 14,		14 ],
+    CommandScope		=> [ 3080,                  		4 ],
 
     StatusType			=> [ 1302,                      		3,		$RequestValues{TopicStatusType} ],
     TopicString			=> [ 2094,               		4 ],
@@ -672,6 +766,32 @@ package MQSeries::Command::PCF;
     CommandScope		=> [ 3080,                  		4 ],
     GenericConnectionId		=> [ 7007,                          	9                   ],
     URDisposition		=> [ 222,           			3,		$RequestValues{URDisposition} ],
+   },
+
+   #
+   # Comminfo in 7.1
+   #
+   Comminfo =>
+   {
+    ComminfoAttrs		=> [ 1327,                    		5,	$RequestValues{ComminfoAttrs} ],
+    IntegerFilterCommand	=> [ 13,		13 ],
+    StringFilterCommand		=> [ 14,		14 ],
+    FromComminfoName		=> [ 3177,                        	4 ],
+    ToComminfoName		=> [ 3178,                      		4 ],
+    ComminfoName		=> [ 2110,                 		4 ],
+    Bridge			=> [ 233,                		3 ],
+    CodedCharSetId		=> [ 2,                       		3,		$RequestValues{ComminfoCCSID} ],
+    CommEvent			=> [ 232,              			3,		$RequestValues{CommEvent} ],
+    ComminfoDesc		=> [ 2111,                 		4 ],
+    Encoding			=> [ 1243,             			3,		$RequestValues{Encoding} ],
+    GrpAddress			=> [ 3562,                  		4 ],
+    MonitorInterval		=> [ 81,                     		3 ],
+    MsgHistory			=> [ 1625,                		3 ],
+    MulticastHeartbeat		=> [ 1628,                   		3 ],
+    MulticastPropControl	=> [ 1626,                         	3,		$RequestValues{MulticastPropControl} ],
+    NewSubHistory		=> [ 1627,                           	3,		$RequestValues{NewSubHistory} ],
+    PortNumber			=> [ 1522,         			3 ],
+    ComminfoType		=> [ 223,                  		3,		$RequestValues{ComminfoType} ],
    },
 
    #
@@ -804,13 +924,16 @@ package MQSeries::Command::PCF;
    #
    # Used by Morgan Stanley extensions
    #
-   Authority =>
+   MorganAuthority =>
    {
     ObjectType			=> [ 1000,               		3,		$RequestValues{ObjectType} ],
     ObjectName			=> [ 3000,               		4 ],
 
     EntityType			=> [ 1001,               		3,		$RequestValues{MorganEntityType} ],
     EntityName			=> [ 3001,               		4 ],
+
+    ExpiresAt                   => [ 4000,                               23 ],
+    ExpiresAfter                => [ 4001,                               3 ],
 
     Connect			=> [ 1011,                		3 ],
     Browse			=> [ 1012,               		3 ],

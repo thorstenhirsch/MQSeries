@@ -15,6 +15,7 @@
 <ul>
 
 	<li><a href="#introduction">Introduction</a></li>
+	<li><a href="#changes_for_1_34">Changes for 1.34</a></li>
 	<li><a href="#changes_for_1_33">Changes for 1.33</a></li>
 	<ul>
 
@@ -344,6 +345,32 @@
 <h1><a name="introduction">Introduction</a></h1>
 <p>This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.</p>
+<p>
+</p>
+<hr />
+<h1><a name="changes_for_1_34">Changes for 1.34</a></h1>
+<p>MQClient/typemap.PL will handle MQINT64 like how it handles MQHMSG.</p>
+<p>MQSeries/Comamnd/Base.pm: In untraslatePCF, the filters handled
+properly.  Filters may also apply to MQCFT_INTEGER64 and 
+MQCFT_INTEGER64_LIST as well as the shorter kinds.</p>
+<p>MQSeries/Command.pm : Added support for ChlAuth and Comminfo objects 
+of mqv7.1.</p>
+<p>MQSeries/ErrorLog/Parser.pm: addied a 'ip.ad.dre.ss (port)' parser
+for the error log</p>
+<p>MQSeries/ErrorLog/descriptions.pl:
+Allow single-character hostnames.  more likely this is the first
+character of an ip address where the first octet is a single digit.
+Add AMQ6048 for dbcs error.</p>
+<p>MQSeries/Message/RFH2.pm : Modified based CPAN user's input. It 
+handles NameValueData correctly. Also sets the default Format to 
+MQFMT_NONE instead of undef.</p>
+<p>util/parse_headers:
+Some defines are now both compound (ie, they are multiple macros |'ed
+together) and the last one ends in L, so the check for the former must
+move above the check for the latter so that it works with 7.1
+string leading and trailing spaces from or'ed values.  This makes the
+postponed parsing of or'ed defines work, where the or'ed define has
+spaces inside the parentheses.</p>
 <p>
 </p>
 <hr />

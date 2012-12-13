@@ -1,7 +1,7 @@
 #
-# $Id: RequestParameterPrimary.pl,v 33.3 2011/01/03 15:04:47 anbrown Exp $
+# $Id: RequestParameterPrimary.pl,v 33.6 2012/09/26 16:10:15 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -79,6 +79,12 @@ package MQSeries::Command::MQSC;
    CreateCFStruct		=> "CFStructName",
    DeleteCFStruct		=> "CFStructName",
    InquireCFStruct		=> "CFStructName",
+
+   # 
+   # ChannelAuthRecords commands
+   #
+   InquireChlAuthRecs		=> "ChlAuth",
+   SetChlAuthRec		=> "ChlAuth",
 
   );
 

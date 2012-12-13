@@ -1,7 +1,7 @@
 #
-# $Id: pcf.t,v 33.7 2011/01/03 15:04:45 anbrown Exp $
+# $Id: pcf.t,v 33.9 2012/09/26 16:10:12 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,7 +21,7 @@ BEGIN {
 }
 
 END { print "not ok 1\n" unless $loaded; }
-use MQSeries::Message::PCF 1.33 qw(MQEncodePCF MQDecodePCF);
+use MQSeries::Message::PCF 1.34 qw(MQEncodePCF MQDecodePCF);
 $loaded = 1;
 print "ok 1\n";
 

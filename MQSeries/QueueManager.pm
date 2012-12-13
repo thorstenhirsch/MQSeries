@@ -1,7 +1,7 @@
 #
-# $Id: QueueManager.pm,v 38.3 2012/03/02 21:00:48 anbrown Exp $
+# $Id: QueueManager.pm,v 38.6 2012/09/26 16:15:19 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -31,7 +31,7 @@ use Params::Validate qw(validate);
 use MQSeries::Command::PCF;
 use MQSeries::Command::Base;
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 sub new {
     my $proto = shift;
@@ -1239,7 +1239,7 @@ section.
 
 =head2 Disconnect
 
-This methodtakes no arguments, and merely calls MQDISC() to disconnect
+This method takes no arguments, and merely calls MQDISC() to disconnect
 from the queue manager.
 
 It is important to note that normally, this method need not be called,

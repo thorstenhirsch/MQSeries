@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: Accounting.in,v 37.1 2011/03/10 20:41:00 anbrown Exp $
+# $Id: Accounting.in,v 37.2 2012/09/26 16:15:30 jettisu Exp $
 #
-# (c) 2011 Morgan Stanley & Co. Incorporated
+# (c) 2011-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

@@ -1,9 +1,9 @@
 /*
  * Extensions for the PCF Command Set
  *
- * $Id: cmqcfce.h,v 33.3 2011/01/03 15:04:57 anbrown Exp $
+ * $Id: cmqcfce.h,v 33.5 2012/09/26 16:15:24 jettisu Exp $
  *
- * (c) 1999-2011 Morgan Stanley & Co. Incorporated
+ * (c) 1999-2012 Morgan Stanley & Co. Incorporated
  * See ..../src/LICENSE for terms of distribution.
  *
  */
@@ -49,6 +49,9 @@ extern "C" {
 
 #define MQCAE_OBJECT_NAME			3000L
 #define MQCAE_ENTITY_NAME			3001L
+
+#define MQIA64E_EXPIRES_AT                      4000L
+#define MQIAE_EXPIRES_AFTER                     4001L
 
 #define MQAUTH_YES				1L
 #define MQAUTH_NO				0L

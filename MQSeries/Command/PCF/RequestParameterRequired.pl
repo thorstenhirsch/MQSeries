@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -362,4 +362,23 @@ $RequestParameterRequired{InquireTopicStatus} =
    TopicString		=> 1,
   };
 
+$RequestParameterRequired{SetChlAuthRec} =
+  $RequestParameterRequired{InquireChlAuthRecs} =
+  {
+   ChlAuth		=> 1,
+  };
+
+$RequestParameterRequired{InquireComminfo} =
+  $RequestParameterRequired{DeleteComminfo} =
+  $RequestParameterRequired{ChangeComminfo} =
+  $RequestParameterRequired{CreateComminfo} =
+  {
+   ComminfoName		=> 1,
+  };
+
+$RequestParameterRequired{CopyComminfo} =
+  {
+   FromComminfoName	=> 1,
+   ToComminfoName	=> 2,
+  };
 1;

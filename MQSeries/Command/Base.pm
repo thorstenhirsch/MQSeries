@@ -1,7 +1,7 @@
 #
-# $Id: Base.pm,v 37.14 2011/06/03 17:53:27 anbrown Exp $
+# $Id: Base.pm,v 38.8 2012/09/26 16:10:14 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,7 +19,7 @@ use MQSeries::Command::MQSC;
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 sub new {
 
@@ -265,8 +265,9 @@ sub _TranslatePCF {
         #
         # The parameters that can be specified are all the attributes
         # for the object.  Since we need to have the type and possible
-        # values, we need to get the response parameters, not the response
-        # parameters.
+        # values, we need to get the response parameters, not the
+        # request parameters.  Filters effectively apply to what is
+        # coming back, not what you are asking for.
         #
         my $param_map = $MQSeries::Command::PCF::Responses{$command}->[1];
         unless (defined $param_map->{ $filter->{Parameter} }) {
@@ -280,7 +281,9 @@ sub _TranslatePCF {
         } elsif ($paramtype == MQSeries::MQCFT_BYTE_STRING) {
             $filter->{Command} = 'ByteStringFilterCommand';
         } elsif ($paramtype == MQSeries::MQCFT_INTEGER ||
-                 $paramtype == MQSeries::MQCFT_INTEGER_LIST) {
+                 $paramtype == MQSeries::MQCFT_INTEGER64 ||
+                 $paramtype == MQSeries::MQCFT_INTEGER_LIST ||
+                 $paramtype == MQSeries::MQCFT_INTEGER64_LIST) {
             $filter->{Command} = 'IntegerFilterCommand';
         } else {
             $self->{Carp}->("Unexpected type '$paramtype' for filter parameter '$filter->{Parameter}'");
@@ -316,6 +319,7 @@ sub _TranslatePCF {
                        );
         my $op = $ops{ $filter->{Operator} };
         if ($paramtype == MQSeries::MQCFT_INTEGER_LIST ||
+            $paramtype == MQSeries::MQCFT_INTEGER64_LIST ||
             $paramtype == MQSeries::MQCFT_STRING_LIST) {
             $op = $list_ops{ $filter->{Operator} };
         }
@@ -329,7 +333,9 @@ sub _TranslatePCF {
         #
         my $value = $filter->{Value};
         if (defined $ValueMap) {
-            my $mapped = $ValueMap->{$value};
+            # VALUEMAP-CODEREF
+            my $mapped = ref($ValueMap) eq "CODE" ?
+                $ValueMap->(encodepcf => $value) : $ValueMap->{$value};
             if (defined $mapped) {
                 #print "Translate value '$value' to '$mapped'\n";
                 $value = $mapped;
@@ -512,13 +518,15 @@ sub _TranslatePCF {
              $paramtype == MQSeries::MQCFT_INTEGER64_LIST ) {
             foreach my $value ( @$origvalue ) {
                 if ( ref $ValueMap ) {
-
-                    unless ( exists $ValueMap->{$value} ) {
+                    # VALUEMAP-CODEREF
+                    my $mapped = ref($ValueMap) eq "CODE" ?
+                        $ValueMap->(encodepcf => $value) : $ValueMap->{$value};
+                    if (!defined($mapped)) {
                         $self->{Carp}->("Unknown intlist value '$value' for " .
                                         "parameter '$param', command '$command'");
                         return;
                     }
-                    push(@{$newparameter->{Values}},$ValueMap->{$value});
+                    push(@{$newparameter->{Values}}, $mapped);
                 } else {
                     push(@{$newparameter->{Values}},$value);
                 }
@@ -719,11 +727,16 @@ sub _UnTranslatePCF {
             return;
         }
 
-        my $ValueMap = $ParameterMap->{$origparam->{Parameter}}->[1] || do {
-            $parameters->{$paramkey} = $paramvalue;
-            goto endgroup;
-        };
+        my $ValueMap = $ParameterMap->{$origparam->{Parameter}}->[1];
 
+        #
+        # Restructure.  What we have here is either a group (in which
+        # case the current parser state goes into the groupstack) or a
+        # regular attribute (which might be a filter, might require
+        # looking into the $ValueMap, etc).  Either way, then we fall
+        # into the other end of group handling which pops state off
+        # the group stack.
+        #
         if ($origparam->{Group}) {
             my $frame = [$parameters, $ParameterMap, $idx, $origparams];
             push(@groupstack, $frame);
@@ -733,46 +746,104 @@ sub _UnTranslatePCF {
             $ParameterMap = $ValueMap;
             $idx = -1; # account for increment in top for (;;)
             $origparams = $paramvalue;
-            goto endgroup;
         }
-
-        if ( ref $paramvalue eq 'ARRAY' ) {
-            my $newvalue = [];
-            foreach my $value ( @$paramvalue ) {
-                if (ref($ValueMap) eq "CODE" &&
-                    # VALUEMAP-CODEREF
-                    defined(my $dvalue = $ValueMap->(decodepcf => $value))) {
-                    push(@$newvalue, $dvalue);
-                } elsif ( ref($ValueMap) eq "HASH" &&
-                          exists $ValueMap->{$value} ) {
-                    push(@$newvalue,$ValueMap->{$value});
-                } elsif ( $self->{StrictMapping} ) {
-                    $self->{Carp}->("Unable to map value of '$value' for parameter '$paramkey'");
-                    return;
-                } else {
-                    push(@$newvalue,$value);
+        else {
+            #
+            # First, regardless of whether this is a filter or a known
+            # parameter, the value (or values) may require remapping
+            # via $ValueMap, so do that first.  Coerce singular values
+            # into an array for this so that we don't have the
+            # duplicate code.
+            #
+            if ($ValueMap) {
+                my @o;
+                foreach my $value ((ref($paramvalue) eq 'ARRAY') ?
+                                   @{$paramvalue} : $paramvalue) {
+                    if (ref($ValueMap) eq "CODE" &&
+                        # VALUEMAP-CODEREF
+                        defined(my $dvalue = $ValueMap->(decodepcf => $value))) {
+                        push(@o, $dvalue);
+                    }
+                    elsif (ref($ValueMap) eq "HASH" &&
+                           exists($ValueMap->{$value})) {
+                        push(@o, $ValueMap->{$value});
+                    }
+                    elsif (!$self->{StrictMapping}) {
+                	push(@o, $value);
+                    }
+                    else {
+                        $self->{Carp}->("Unable to map value of '$value' for parameter '$paramkey'");
+                        return;
+                    }
                 }
+                $paramvalue = (ref($paramvalue) eq 'ARRAY') ? [@o] : shift(@o);
             }
-            $parameters->{$paramkey} = $newvalue;
 
-        } else {
-
-            if (ref($ValueMap) eq "CODE" &&
-                # VALUEMAP-CODEREF
-                defined(my $dvalue = $ValueMap->(decodepcf => $paramvalue))) {
-                $parameters->{$paramkey} = $dvalue;
-            } elsif (ref($ValueMap) eq "HASH" &&
-                     exists($ValueMap->{$paramvalue})) {
-                $parameters->{$paramkey} = $ValueMap->{$paramvalue};
-            } elsif ( $self->{StrictMapping} ) {
-                $self->{Carp}->("Unable to map value of '$paramvalue' for parameter '$paramkey'");
-                return;
-            } else {
+            #
+            # Now to the decoding of the parameter itself.  If this is
+            # a filter, that gets "special" decoding since it's not a
+            # plain key/value tuple ($paramvalue is the value being
+            # matched against, got valuemap handling done above, but
+            # we also need the operator and parameter parts of the
+            # filter for completeness).  What we emit here may not be
+            # precisely the same as what went into _TranslatePCF(),
+            # but _TranslatePCF() should be able to give back what
+            # we're looking at now.
+            #
+	    if ($origparam->{"FilterValue"}) {
+                my %revop = (
+                             # duplicates are commented out and the
+                             # less ambiguous mappings were selected
+                             MQSeries::MQCFOP_LESS         => '<',
+                             MQSeries::MQCFOP_NOT_GREATER  => '<=',
+                             MQSeries::MQCFOP_EQUAL        => '==',
+                             MQSeries::MQCFOP_NOT_EQUAL    => '!=',
+                             # MQSeries::MQCFOP_NOT_EQUAL    => '<>',
+                             MQSeries::MQCFOP_GREATER      => '>',
+                             MQSeries::MQCFOP_NOT_LESS     => '>=',
+                             MQSeries::MQCFOP_LIKE         => 'like',
+                             MQSeries::MQCFOP_NOT_LIKE     => 'not like',
+                             # MQSeries::MQCFOP_CONTAINS     => '==',
+                             MQSeries::MQCFOP_CONTAINS     => 'contains',
+                             # MQSeries::MQCFOP_EXCLUDES     => '!=',
+                             # MQSeries::MQCFOP_EXCLUDES     => '<>',
+                             MQSeries::MQCFOP_EXCLUDES     => 'excludes',
+                             # MQSeries::MQCFOP_CONTAINS_GEN => 'like',
+                             MQSeries::MQCFOP_CONTAINS_GEN => 'contains_gen',
+                             # MQSeries::MQCFOP_EXCLUDES_GEN => 'not like',
+                             MQSeries::MQCFOP_EXCLUDES_GEN => 'excludes_gen',
+                            );
+                my $op = $origparam->{Operator};
+                if ($self->{StrictMapping} && !defined($revop{$op})) {
+                    $self->{Carp}->("Unable to map operator '$op' for filter parameter '$paramkey'");
+                }
+                $parameters->{"FilterCommand"} =
+                {
+                 "Parameter" => $paramkey,
+                 "Operator"  => $revop{$op} || $op,
+                 "Value"     => $paramvalue,
+                };
+            }
+            elsif (!defined($paramkey)) {
+                #
+                # If $paramkey is not defined, that means we couldn't
+                # map the number to a name.  Rather than just stuff it
+                # in "as is" (which tends to be less than useless),
+                # save the original parameter in an array under "*".
+                # This makes it easier to see what's missing and fix
+                # it.
+                #
+                # Drop the result we have in $paramvalue; if the
+                # $paramkey is not defined, neither will the $ValueMap
+                # be, so they are the same as in $origparam.
+                #
+                push(@{$parameters->{"*"}}, $origparam);
+            }
+            else {
                 $parameters->{$paramkey} = $paramvalue;
             }
         }
 
-      endgroup:
         while ($idx + 1 >= @$origparams && @groupstack) {
             my $frame = pop(@groupstack);
             ($parameters, $ParameterMap, $idx, $origparams) = @{$frame};

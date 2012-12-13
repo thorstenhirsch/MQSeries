@@ -1,7 +1,7 @@
 #
-# $Id: Accounting.pm,v 1.12 2012/03/02 21:16:20 anbrown Exp $
+# $Id: Accounting.pm,v 1.14 2012/09/26 16:15:15 jettisu Exp $
 #
-# (c) 2011 Morgan Stanley & Co. Incorporated
+# (c) 2011-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -17,7 +17,7 @@ use MQSeries::Message::System;
 
 require "MQSeries/Message/Accounting.pl";
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::System);
 
 
@@ -52,12 +52,12 @@ sub _Translatable {
 
 
 package MQSeries::Message::Accounting::QueueManager;
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::Accounting);
 
 
 package MQSeries::Message::Accounting::Queue;
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::Accounting);
 
 

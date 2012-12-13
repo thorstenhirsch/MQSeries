@@ -1,8 +1,8 @@
 #-*-perl-*-
 #
-# $Id: Responses.in,v 37.1 2011/05/27 16:56:51 anbrown Exp $
+# $Id: Responses.in,v 37.5 2012/09/26 16:15:27 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -19,6 +19,7 @@ package MQSeries::Command::PCF;
    ChangeCFStruct			=> [ &MQCMD_CHANGE_CF_STRUC,		$ResponseParameters{CFStruct} ],
    ChangeChannel			=> [ &MQCMD_CHANGE_CHANNEL,		$ResponseParameters{Channel} ],
    ChangeChannelListener		=> [ &MQCMD_CHANGE_LISTENER,		$ResponseParameters{Listener} ],
+   ChangeComminfo			=> [ &MQCMD_CHANGE_COMM_INFO,		$ResponseParameters{Comminfo} ],
    ChangeNamelist			=> [ &MQCMD_CHANGE_NAMELIST,		$ResponseParameters{Namelist} ],
    ChangeProcess			=> [ &MQCMD_CHANGE_PROCESS,		$ResponseParameters{Process} ],
    ChangeQueue				=> [ &MQCMD_CHANGE_Q,			$ResponseParameters{Queue} ],
@@ -33,6 +34,7 @@ package MQSeries::Command::PCF;
    CopyAuthInfo				=> [ &MQCMD_COPY_AUTH_INFO,		$ResponseParameters{AuthInfo} ],
    CopyChannel				=> [ &MQCMD_COPY_CHANNEL,		$ResponseParameters{Channel} ],
    CopyChannelListener			=> [ &MQCMD_COPY_LISTENER,		$ResponseParameters{Listener} ],
+   CopyComminfo				=> [ &MQCMD_COPY_COMM_INFO,		$ResponseParameters{Comminfo} ],
    CopyNamelist				=> [ &MQCMD_COPY_NAMELIST,		$ResponseParameters{Namelist} ],
    CopyProcess				=> [ &MQCMD_COPY_PROCESS,		$ResponseParameters{Process} ],
    CopyQueue				=> [ &MQCMD_COPY_Q,			$ResponseParameters{Queue} ],
@@ -47,6 +49,7 @@ package MQSeries::Command::PCF;
    CreateCFStruct			=> [ &MQCMD_CREATE_CF_STRUC,		$ResponseParameters{CFStruct} ],
    CreateChannel			=> [ &MQCMD_CREATE_CHANNEL,		$ResponseParameters{Channel} ],
    CreateChannelListener		       => [ &MQCMD_CREATE_LISTENER,	       $ResponseParameters{Listener} ],
+   CreateComminfo			=> [ &MQCMD_CREATE_COMM_INFO,		$ResponseParameters{Comminfo} ],
    CreateNamelist			=> [ &MQCMD_CREATE_NAMELIST,		$ResponseParameters{Namelist} ],
    CreateProcess			=> [ &MQCMD_CREATE_PROCESS,		$ResponseParameters{Process} ],
    CreateQueue				=> [ &MQCMD_CREATE_Q,			$ResponseParameters{Queue} ],
@@ -62,6 +65,7 @@ package MQSeries::Command::PCF;
    DeleteCFStruct			=> [ &MQCMD_DELETE_CF_STRUC,		$ResponseParameters{CFStruct} ],
    DeleteChannel			=> [ &MQCMD_DELETE_CHANNEL,		$ResponseParameters{Channel} ],
    DeleteChannelListener		       => [ &MQCMD_DELETE_LISTENER,	       $ResponseParameters{Listener}],
+   DeleteComminfo			=> [ &MQCMD_DELETE_COMM_INFO,		$ResponseParameters{Comminfo} ],
    DeleteNamelist			=> [ &MQCMD_DELETE_NAMELIST,		$ResponseParameters{Namelist} ],
    DeleteProcess			=> [ &MQCMD_DELETE_PROCESS,		$ResponseParameters{Process} ],
    DeleteQueue				=> [ &MQCMD_DELETE_Q,			$ResponseParameters{Queue} ],
@@ -83,7 +87,9 @@ package MQSeries::Command::PCF;
    InquireCFStruct			=> [ &MQCMD_INQUIRE_CF_STRUC,		$ResponseParameters{CFStruct} ],
    InquireCFStructNames			=> [ &MQCMD_INQUIRE_CF_STRUC_NAMES,	$ResponseParameters{CFStruct} ],
    InquireChannel			=> [ &MQCMD_INQUIRE_CHANNEL,		$ResponseParameters{Channel} ],
+   InquireChlAuthRecs			=> [ &MQCMD_INQUIRE_CHLAUTH_RECS,	$ResponseParameters{ChlAuthRec} ],
    InquireChannelInitiator		=> [ &MQCMD_INQUIRE_CHANNEL_INIT,	$ResponseParameters{ChannelInitiator} ],
+   InquireComminfo			=> [ &MQCMD_INQUIRE_COMM_INFO,		$ResponseParameters{Comminfo} ],
    InquireChannelNames			=> [ &MQCMD_INQUIRE_CHANNEL_NAMES,	$ResponseParameters{Channel} ],
    InquireChannelStatus			=> [ &MQCMD_INQUIRE_CHANNEL_STATUS,	$ResponseParameters{ChannelStatus} ],
    InquireConnection			=> [ &MQCMD_INQUIRE_CONNECTION,		$ResponseParameters{Connection} ],
@@ -97,6 +103,7 @@ package MQSeries::Command::PCF;
    InquireNamelistNames			=> [ &MQCMD_INQUIRE_NAMELIST_NAMES,	$ResponseParameters{Namelist} ],
    InquireProcess			=> [ &MQCMD_INQUIRE_PROCESS,		$ResponseParameters{Process} ],
    InquireProcessNames			=> [ &MQCMD_INQUIRE_PROCESS_NAMES,	$ResponseParameters{Process} ],
+   InquirePubSubStatus			=> [ &MQCMD_INQUIRE_PUBSUB_STATUS,	$ResponseParameters{PubSubStatus} ],
    InquireQueue				=> [ &MQCMD_INQUIRE_Q,			$ResponseParameters{Queue} ],
    InquireQueueManager			=> [ &MQCMD_INQUIRE_Q_MGR,		$ResponseParameters{QueueManager} ],
    InquireQueueManagerStatus		=> [ &MQCMD_INQUIRE_Q_MGR_STATUS,	$ResponseParameters{QueueManagerStatus} ],
@@ -129,6 +136,7 @@ package MQSeries::Command::PCF;
    ReverifySecurity			=> [ &MQCMD_REVERIFY_SECURITY,		$ResponseParameters{ReverifySecurity} ],
 
    SetAuthorityRecord			=> [ &MQCMD_SET_AUTH_REC,		$ResponseParameters{AuthorityRecord} ],
+   SetChlAuthRec			=> [ &MQCMD_SET_CHLAUTH_REC,		$ResponseParameters{ChlAuthRec} ],
 
 
    StartChannel				=> [ &MQCMD_START_CHANNEL,		$ResponseParameters{Channel} ],

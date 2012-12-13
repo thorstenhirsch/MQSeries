@@ -1,7 +1,7 @@
 #
-# $Id: RequestValues.pl,v 33.7 2011/05/27 20:08:08 anbrown Exp $
+# $Id: RequestValues.pl,v 33.12 2012/09/26 16:13:37 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -44,6 +44,7 @@ package MQSeries::Command::MQSC;
     AlterationTime              => "ALTTIME",
     AuthorityEvent		=> "AUTHOREV",
     BridgeEvent                 => "BRIDGEEV",
+    CFConlos			=> "CFCONLOS",
     ChannelAutoDef		=> "CHAD",
     ChannelAutoDefEvent		=> "CHADEV",
     ChannelAutoDefExit		=> "CHADEXIT",
@@ -56,6 +57,7 @@ package MQSeries::Command::MQSC;
     ChinitServiceParm           => "CHISERVP",
     ChinitTraceAutoStart        => "TRAXSTR",
     ChinitTraceTableSize        => "TRAXTBL",
+    ChlAuthRecords		=> "CHLAUTH",
     ClusterSenderMonitoringDefault => "MONACLS",
     ClusterSenderStatistics     => "STATACLS",
     ClusterWorkLoadData		=> "CLWLDATA",
@@ -75,6 +77,7 @@ package MQSeries::Command::MQSC;
     DistLists			=> "DISTL",
     DNSGroup                    => "DNSGROUP",
     DNSWorkloadMgr              => "DNSWLM",
+    EncryptionPolicySuiteB	=> "SUITEB",
     ExpiryInterval              => "EXPRYINT",
     InhibitEvent		=> "INHIBTEV",
     IntraGroupQueuing           => "IGQ",
@@ -103,6 +106,7 @@ package MQSeries::Command::MQSC;
     Parent			=> "PARENT",
     PerformanceEvent		=> "PERFMEV",
     Platform			=> "PLATFORM",
+    PubSubClus			=> "PSCLUS",
     PubSubMaxMsgRetryCount	=> "PSRTYCNT",
     PubSubMode			=> "PSMODE",
     PubSubNPInputMsg		=> "PSNPMSG",
@@ -139,6 +143,7 @@ package MQSeries::Command::MQSC;
     TraceRouteRecording         => "ROUTEREC",
     TreeLifeTime		=> "TREELIFE",
     TriggerInterval		=> "TRIGINT",
+    Version			=> "VERSION",
    },
 
    QMgrMonitoring =>
@@ -295,6 +300,7 @@ package MQSeries::Command::MQSC;
     CreationDate		=> "CRDATE",
     CreationTime		=> "CRTIME",
     CurrentQDepth		=> "CURDEPTH",
+    Custom			=> "CUSTOM",
     DefInputOpenOption		=> "DEFSOPT",
     DefPersistence		=> "DEFPSIST",
     DefPriority			=> "DEFPRTY",
@@ -558,6 +564,7 @@ package MQSeries::Command::MQSC;
     Clntconn			=> "CLNTCONN",
     ClusterReceiver		=> "CLUSRCVR",
     ClusterSender		=> "CLUSSDR",
+    Telemetry			=> "MQTT",
    },
 
    MCAType =>
@@ -618,6 +625,7 @@ package MQSeries::Command::MQSC;
     All				=> "ALL",
     AlterationDate		=> "ALTDATE",
     AlterationTime		=> "ALTTIME",
+    BatchDataLimit		=> "BATCHLIM",
     BatchHeartBeat              => "BATCHHB",
     BatchInterval		=> "BATCHINT",
     BatchSize			=> "BATCHSZ",
@@ -648,6 +656,7 @@ package MQSeries::Command::MQSC;
     CurrentMsgs			=> "CURMSGS",
     CurrentSequenceNumber	=> "CURSEQNO",
     DataConversion		=> "CONVERT",
+    DefReconnect		=> "DEFRECON",
     DiscInterval		=> "DISCINT",
     HeaderCompression           => "COMPHDR",
     HeartbeatInterval		=> "HBINT",
@@ -686,6 +695,10 @@ package MQSeries::Command::MQSC;
     QSGDisposition		=> "QSGDISP",
     ReceiveExit			=> "RCVEXIT",
     ReceiveUserData		=> "RCVDATA",
+    RemoteQMgrName		=> "RQMNAME",
+    RemoteProduct		=> "RPRODUCT",
+    RemoteVersion		=> "RVERSION",
+    ResetRequested		=> "RESETSEQ",
     SecurityExit		=> "SCYEXIT",
     SecurityUserData		=> "SCYDATA",
     SendExit			=> "SENDEXIT",
@@ -702,6 +715,7 @@ package MQSeries::Command::MQSC;
     TransportType		=> "TRPTYPE",
     UserIdentifier		=> "USERID",
     XmitQName			=> "XMITQ",
+    UseDLQ			=> "USEDLQ",
    },
 
    ConnectionAffinity =>
@@ -712,6 +726,7 @@ package MQSeries::Command::MQSC;
 
    DefBind =>
    {
+    OnGroup			=> "GROUP",
     OnOpen			=> "OPEN",
     NotFixed			=> "NOTFIXED",
    },
@@ -922,6 +937,19 @@ package MQSeries::Command::MQSC;
     CFStrucDesc			=> "DESCR",
     CFStrucLevel		=> "CFLEVEL",
     Recovery                    => "RECOVER",
+    CFConlos			=> "CFCONLOS",
+    DSBlock			=> "DSBLOCK",
+    DSBufs			=> "DSBUFS",
+    DSExpand			=> "DSEXPAND",
+    DSGroup			=> "DSGROUP",
+    OFFLD1SZ			=> "OFFLD1SZ",
+    OFFLD2SZ			=> "OFFLD2SZ",
+    OFFLD3SZ			=> "OFFLD3SZ",
+    OFFLD1TH			=> "OFFLD1TH",
+    OFFLD2TH			=> "OFFLD2TH",
+    OFFLD3TH			=> "OFFLD3TH",
+    OFFLOAD			=> "OFFLOAD",
+    Recauto			=> "RECAUTO",
    },
 
    #
@@ -940,6 +968,19 @@ package MQSeries::Command::MQSC;
     CFStructDesc                => "DESCR",
     CFStructLevel               => "CFLEVEL",
     Recovery                    => "RECOVER",
+    CFConlos			=> "CFCONLOS",
+    DSBlock			=> "DSBLOCK",
+    DSBufs			=> "DSBUFS",
+    DSExpand			=> "DSEXPAND",
+    DSGroup			=> "DSGROUP",
+    OFFLD1SZ			=> "OFFLD1SZ",
+    OFFLD2SZ			=> "OFFLD2SZ",
+    OFFLD3SZ			=> "OFFLD3SZ",
+    OFFLD1TH			=> "OFFLD1TH",
+    OFFLD2TH			=> "OFFLD2TH",
+    OFFLD3TH			=> "OFFLD3TH",
+    OFFLOAD			=> "OFFLOAD",
+    Recauto			=> "RECAUTO",
    },
 
    NamelistType =>
@@ -950,6 +991,111 @@ package MQSeries::Command::MQSC;
     AuthInfo                    => "AUTHINFO",
    },
 
+   #
+   # Added in 1.33 to match to what is done for PCF in 1.33
+   #
+   CFConlos =>
+   {
+    AsQMgr			=> "ASQMGR",
+    Terminate			=> "TERMINATE",
+    Tolerate			=> "TOLERATE",
+   },
+
+   EncryptionPolicySuiteB =>
+   {
+    None			=> "NONE",
+    "128Bit"			=> "128_BIT",
+    "192Bit"			=> "192_BIT",
+   },
+
+   ChlAuthAction =>
+   {
+    Add				=> "ADD",
+    Replace			=> "REPLACE",
+    Remove			=> "REMOVE",
+    RemoveAll			=> "REMOVEALL",
+   },
+   
+   ChlAuthAttrs =>
+   {
+    All				=> "ALL",
+    AlterationDate		=> "ALTDATE", 
+    AlterationTime		=> "ALTTIME",
+    ChlAuth			=> "CHLAUTH",
+    ChlAuthDesc			=> "DESCR",
+    RemoteQMgrName		=> "QMNAME",
+    ClientUserId		=> "CLNTUSER",
+    Address			=> "ADDRESS",
+    Addrlist			=> "ADDRLIST",
+    MCAUserIdentifier		=> "MCAUSER",
+    MCAUserIdList		=> "USERLIST",
+    SSLPeerName			=> "SSLPEER",
+    Custom			=> "CUSTOM",
+    ChAuthType			=> "TYPE",
+    UserSource			=> "USERSRC",
+    Warning			=> "WARN",
+   },
+
+   ChlAuthType =>
+   {
+    BlockUser			=> "BLOCKUSER",
+    BlockAddress		=> "BLOCKADDR",
+    SSLPeerMap			=> "SSLPEERMAP",
+    AddressMap			=> "ADDRESSMAP",
+    UserMap			=> "USERMAP",
+    QMgrMap			=> "QMGRMAP",
+    All				=> "ALL",
+   },
+
+   ChlAuthMatch =>
+   {
+    Runcheck			=> "RUNCHECK",
+    Exact			=> "EXACT",
+    Generic			=> "GENERIC",
+    All				=> "ALL",
+   },
+
+   UserSource =>
+   {
+    Channel			=> "CHANNEL",
+    Map				=> "MAP",
+    NoAcesss			=> "NOACCESS",
+   },
+
+   DSBlock =>
+   {
+    "0K"				=> "0K",
+    "8K"				=> "8K",
+    "16K"				=> "16K",
+    "32K"				=> "32K",
+    "64K"				=> "64K",
+    "128K"			=> "128K",
+    "256K"			=> "256K",
+    "512K"			=> "512K",
+    "1M"				=> "1M",
+   },
+
+   DSExpand =>
+   {
+    Yes				=> "YES",
+    No				=> "NO",
+    Default			=> "DEFAULT",
+   },
+
+   Offload =>
+   {
+    DB2				=> "DB2",
+    SMDS			=> "SMDS",
+    None			=> "NONE",
+   },
+  
+   DefReconnect =>
+   {
+    QMgr			=> "QMGR",
+    Disabled			=> "DISABLED",
+    No				=> "NO",
+    Yes				=> "YES",
+   },
 
   );
 

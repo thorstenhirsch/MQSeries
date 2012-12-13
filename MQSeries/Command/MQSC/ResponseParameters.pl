@@ -1,7 +1,7 @@
 #
-# $Id: ResponseParameters.pl,v 33.9 2011/05/27 19:09:36 jettisu Exp $
+# $Id: ResponseParameters.pl,v 33.14 2012/09/26 16:13:38 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -11,6 +11,11 @@ package MQSeries::Command::MQSC;
   (
    QueueManager =>
    {
+    CHLAUTH	=> [ "ChlAuthRecords",		$ResponseValues{Enabled} ],
+    CFCONLOS	=> [ "CFConlos",		$ResponseValues{CFConlos} ],
+    CUSTOM	=> [ "Custom" ],
+    PSCLUS	=> [ "PubSubClus",		$ResponseValues{Enabled} ],
+    SUITEB	=> [ "EncryptionPolicySuiteB",	$ResponseValues{EncryptionPolicySuiteB} ],
     ACCMQI	=> [ "MQIAccounting" ],
     ACCTQ	=> [ "QueueAccounting",		$ResponseValues{QMgrAccounting} ],
     ACTCHL	=> [ "MaxActiveChannels" ],
@@ -92,6 +97,7 @@ package MQSeries::Command::MQSC;
     SQQMNAME    => [ "SharedQQmgrName",		$ResponseValues{SharedQQmgrName} ],
     SSLCRLNL    => [ "SSLCRLNamelist" ],
     SSLEV	=> [ "SSLEvent",		$ResponseValues{Enabled} ],
+    SSLFIPS	=> [ "SSLFipsRequired",		$ResponseValues{Yes} ],
     SSLKEYR     => [ "SSLKeyRepository" ],
     SSLRKEYC	=> [ "SSLKeyResetCount" ],
     SSLTASKS    => [ "SSLTasks" ],
@@ -105,6 +111,7 @@ package MQSeries::Command::MQSC;
     TRAXSTR	=> [ "ChinitTraceAutoStart",	$ResponseValues{Yes} ],
     TREELIFE	=> [ "TreeLifeTime" ],
     TRIGINT	=> [ "TriggerInterval" ],
+    VERSION	=> [ "Version" ],
    },
 
    Process =>
@@ -125,6 +132,7 @@ package MQSeries::Command::MQSC;
 
    Queue =>
    {
+    CUSTOM	=> [ "Custom" ],
     ACCTQ	=> [ "QueueAccounting",		$ResponseValues{QueueAccounting} ],
     ASTATE	=> [ "AsynchronousState",	$ResponseValues{AsynchronousState} ],
     BOQNAME	=> [ "BackoutRequeueName" ],
@@ -225,6 +233,13 @@ package MQSeries::Command::MQSC;
     #
     # Most of these are primarily from DISPLAY CHSTATUS 
     #
+    BATCHLIM	=> [ "BatchDataLimit" ],
+    DEFRECON	=> [ "DefReconnect",		$ResponseValues{DefReconnect} ],
+    USEDLQ	=> [ "UseDLQ",			$ResponseValues{Yes} ],
+    CLIENTID	=> [ "ClientIdentifier" ],
+    RPRODUCT	=> [ "RemoteProduct" ],
+    RVERSION	=> [ "RemoteVersion" ],
+    
     AFFINITY	=> [ "ConnectionAffinity",	$ResponseValues{ConnectionAffinity} ],
     BATCHES	=> [ "Batches" ],
     BUFSRCVD	=> [ "BuffersReceived" ],
@@ -485,6 +500,22 @@ package MQSeries::Command::MQSC;
     CFSTRUCT    => [ "CFStrucName" ],
     DESCR       => [ "CFStrucDesc" ],
     RECOVER     => [ "Recovery",                $ResponseValues{Yes} ],
+    ACCESS	=> [ "Access",			$ResponseValues{CFStrucAccess} ],
+    RCVDATE	=> [ "RcvDate" ],
+    RCVTIME	=> [ "RcvTime" ],
+    CFCONLOS	=> [ "CFConlos",		$ResponseValues{CFConlos} ],
+    DSBLOCK	=> [ "DSBlock",			$ResponseValues{DSBlock} ],
+    DSBUFS	=> [ "DSBufs" ],
+    DSEXPAND	=> [ "DSExpand",		$ResponseValues{DSExpand} ],
+    DSGROUP	=> [ "DSGroup" ],
+    OFFLOAD	=> [ "Offload",			$ResponseValues{Offload} ],
+    OFFLD1SZ	=> [ "OFFLD1SZ" ],
+    OFFLD2SZ	=> [ "OFFLD2SZ" ],
+    OFFLD3SZ	=> [ "OFFLD3SZ" ],
+    OFFLD1TH	=> [ "OFFLD1TH" ],
+    OFFLD2TH	=> [ "OFFLD2TH" ],
+    OFFLD3TH	=> [ "OFFLD3TH" ],
+    RECAUTO	=> [ "Recauto",			$ResponseValues{Yes} ],
    },
 
    #
@@ -499,6 +530,43 @@ package MQSeries::Command::MQSC;
     CFSTRUCT    => [ "CFStructName" ],
     DESCR       => [ "CFStructDesc" ],
     RECOVER     => [ "Recovery",                $ResponseValues{Yes} ],
+    ACCESS	=> [ "Access",			$ResponseValues{CFStrucAccess} ],
+    RCVDATE	=> [ "RcvDate" ],
+    RCVTIME	=> [ "RcvTime" ],
+    CFCONLOS	=> [ "CFConlos",		$ResponseValues{CFConlos} ],
+    DSBLOCK	=> [ "DSBlock",			$ResponseValues{DSBlock} ],
+    DSBUFS	=> [ "DSBufs" ],
+    DSEXPAND	=> [ "DSExpand",		$ResponseValues{DSExpand} ],
+    DSGROUP	=> [ "DSGroup" ],
+    OFFLOAD	=> [ "Offload",			$ResponseValues{Offload} ],
+    OFFLD1SZ	=> [ "OFFLD1SZ" ],
+    OFFLD2SZ	=> [ "OFFLD2SZ" ],
+    OFFLD3SZ	=> [ "OFFLD3SZ" ],
+    OFFLD1TH	=> [ "OFFLD1TH" ],
+    OFFLD2TH	=> [ "OFFLD2TH" ],
+    OFFLD3TH	=> [ "OFFLD3TH" ],
+    RECAUTO	=> [ "Recauto",			$ResponseValues{Yes} ],
+   },
+
+   ChlAuthRec => 
+   {
+    ALTDATE	=> [ "AlterationDate" ],
+    ALTTIME	=> [ "AlterationTime" ],
+    ADDRESS	=> [ "Address" ],
+    ADDRLIST	=> [ "Addrlist" ],
+    CHLAUTH	=> [ "ChlAuth" ],
+    ACTION	=> [ "Action", 			$ResponseValues{ChlAuthAction} ],
+    DESCR	=> [ "ChlAuthDesc" ],
+    TYPE	=> [ "ChlAuthType",		$ResponseValues{ChlAuthType} ],
+    CLNTUSER	=> [ "ClientUserId" ],
+    CMDSCOPE	=> [ "CommandScope" ],
+    CUSTOM	=> [ "Custom" ],
+    MCAUSER	=> [ "MCAUserIdentifier" ],
+    QMNAME	=> [ "RemoteQMgrName" ],
+    SSLPEER	=> [ "SSLPeerName" ],
+    USERLIST	=> [ "MCAUserIdList" ],
+    USERSRC	=> [ "UserSource",		$ResponseValues{UserSource} ],
+    WARN	=> [ "Warning",			$ResponseValues{Yes} ],
    },
 
   );

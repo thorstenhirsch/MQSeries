@@ -1,7 +1,7 @@
 #
-# $Id: dlq.t,v 33.7 2011/01/03 15:04:44 anbrown Exp $
+# $Id: dlq.t,v 33.9 2012/09/26 16:10:10 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -21,8 +21,8 @@ BEGIN {
 }
 
 END { print "not ok 1\n" unless $loaded; }
-use MQSeries 1.33;
-use MQSeries::Message::DeadLetter 1.33 qw( MQDecodeDeadLetter MQEncodeDeadLetter );
+use MQSeries 1.34;
+use MQSeries::Message::DeadLetter 1.34 qw( MQDecodeDeadLetter MQEncodeDeadLetter );
 $loaded = 1;
 print "ok 1\n";
 

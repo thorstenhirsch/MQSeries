@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# $Id: flatten_macros,v 37.1 2011/05/06 19:39:07 anbrown Exp $
+# $Id: flatten_macros,v 37.2 2012/09/26 16:15:37 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # NOTE: this file is just a tool to flatten all of the MQ* macros in
@@ -80,7 +80,7 @@ foreach my $infile ( @infiles ) {
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 EndOfWarning

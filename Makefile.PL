@@ -1,8 +1,8 @@
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 33.5 2011/01/03 15:04:55 anbrown Exp $
+# $Id: Makefile.PL,v 38.2 2012/09/26 16:15:20 jettisu Exp $
 #
 use English;
 use ExtUtils::MakeMaker;
@@ -73,7 +73,7 @@ WriteMakefile(
               AUTHOR      => 'MQ Engineering Group <mqseries@cpan.org>',
               ABSTRACT	  => "Interface to IBM's MQSeries Product",
 	      PREREQ_PM   => { 'Convert::EBCDIC'  => '0.06',
-			       'Params::Validate' => '0.89',
+			       'Params::Validate' => '1.00',
 			       'Test::Simple'     => '0.62',
 			       'Test::Pod'        => '1.20',
 			     },

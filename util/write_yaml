@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# $Id: write_yaml,v 33.5 2011/01/03 15:05:05 anbrown Exp $
+# $Id: write_yaml,v 33.6 2012/09/26 16:15:38 jettisu Exp $
 #
-# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # write_yaml - Write YAML file; we cannot get ExtUtils::MakeMaker
@@ -10,7 +10,7 @@
 #              build the tarball but out own mechanim to deal
 #              with the Morgan Stanley source environment.
 #
-# $Id: write_yaml,v 33.5 2011/01/03 15:05:05 anbrown Exp $
+# $Id: write_yaml,v 33.6 2012/09/26 16:15:38 jettisu Exp $
 #
 
 use strict;

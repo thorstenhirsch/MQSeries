@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -28,6 +28,7 @@ package MQSeries::Command::PCF;
    ChangeCFStruct			=> [ 101,                    		$ResponseParameters{CFStruct} ],
    ChangeChannel			=> [ 21,                    		$ResponseParameters{Channel} ],
    ChangeChannelListener		=> [ 93,                     		$ResponseParameters{Listener} ],
+   ChangeComminfo			=> [ 192,                     		$ResponseParameters{Comminfo} ],
    ChangeNamelist			=> [ 32,                     		$ResponseParameters{Namelist} ],
    ChangeProcess			=> [ 3,                     		$ResponseParameters{Process} ],
    ChangeQueue				=> [ 8,               			$ResponseParameters{Queue} ],
@@ -42,6 +43,7 @@ package MQSeries::Command::PCF;
    CopyAuthInfo				=> [ 80,                    		$ResponseParameters{AuthInfo} ],
    CopyChannel				=> [ 22,                  		$ResponseParameters{Channel} ],
    CopyChannelListener			=> [ 94,                   		$ResponseParameters{Listener} ],
+   CopyComminfo				=> [ 193,                   		$ResponseParameters{Comminfo} ],
    CopyNamelist				=> [ 33,                   		$ResponseParameters{Namelist} ],
    CopyProcess				=> [ 4,                   		$ResponseParameters{Process} ],
    CopyQueue				=> [ 10,            			$ResponseParameters{Queue} ],
@@ -56,6 +58,7 @@ package MQSeries::Command::PCF;
    CreateCFStruct			=> [ 108,                    		$ResponseParameters{CFStruct} ],
    CreateChannel			=> [ 23,                    		$ResponseParameters{Channel} ],
    CreateChannelListener		       => [ 95,                     	       $ResponseParameters{Listener} ],
+   CreateComminfo			=> [ 190,                     		$ResponseParameters{Comminfo} ],
    CreateNamelist			=> [ 34,                     		$ResponseParameters{Namelist} ],
    CreateProcess			=> [ 5,                     		$ResponseParameters{Process} ],
    CreateQueue				=> [ 11,              			$ResponseParameters{Queue} ],
@@ -71,6 +74,7 @@ package MQSeries::Command::PCF;
    DeleteCFStruct			=> [ 112,                    		$ResponseParameters{CFStruct} ],
    DeleteChannel			=> [ 24,                    		$ResponseParameters{Channel} ],
    DeleteChannelListener		       => [ 96,                     	       $ResponseParameters{Listener}],
+   DeleteComminfo			=> [ 194,                     		$ResponseParameters{Comminfo} ],
    DeleteNamelist			=> [ 35,                     		$ResponseParameters{Namelist} ],
    DeleteProcess			=> [ 6,                     		$ResponseParameters{Process} ],
    DeleteQueue				=> [ 12,              			$ResponseParameters{Queue} ],
@@ -92,7 +96,9 @@ package MQSeries::Command::PCF;
    InquireCFStruct			=> [ 115,                     		$ResponseParameters{CFStruct} ],
    InquireCFStructNames			=> [ 147,                           	$ResponseParameters{CFStruct} ],
    InquireChannel			=> [ 25,                     		$ResponseParameters{Channel} ],
+   InquireChlAuthRecs			=> [ 204,                         	$ResponseParameters{ChlAuthRec} ],
    InquireChannelInitiator		=> [ 118,                         	$ResponseParameters{ChannelInitiator} ],
+   InquireComminfo			=> [ 191,                      		$ResponseParameters{Comminfo} ],
    InquireChannelNames			=> [ 20,                           	$ResponseParameters{Channel} ],
    InquireChannelStatus			=> [ 42,                            	$ResponseParameters{ChannelStatus} ],
    InquireConnection			=> [ 85,                        		$ResponseParameters{Connection} ],
@@ -106,6 +112,7 @@ package MQSeries::Command::PCF;
    InquireNamelistNames			=> [ 37,                            	$ResponseParameters{Namelist} ],
    InquireProcess			=> [ 7,                      		$ResponseParameters{Process} ],
    InquireProcessNames			=> [ 19,                           	$ResponseParameters{Process} ],
+   InquirePubSubStatus			=> [ 185,                          	$ResponseParameters{PubSubStatus} ],
    InquireQueue				=> [ 13,               			$ResponseParameters{Queue} ],
    InquireQueueManager			=> [ 2,                    		$ResponseParameters{QueueManager} ],
    InquireQueueManagerStatus		=> [ 161,                         	$ResponseParameters{QueueManagerStatus} ],
@@ -138,6 +145,7 @@ package MQSeries::Command::PCF;
    ReverifySecurity			=> [ 133,                      		$ResponseParameters{ReverifySecurity} ],
 
    SetAuthorityRecord			=> [ 90,                  		$ResponseParameters{AuthorityRecord} ],
+   SetChlAuthRec			=> [ 203,                    		$ResponseParameters{ChlAuthRec} ],
 
 
    StartChannel				=> [ 28,                   		$ResponseParameters{Channel} ],

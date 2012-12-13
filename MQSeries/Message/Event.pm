@@ -1,7 +1,7 @@
 #
-# $Id: Event.pm,v 33.13 2011/03/16 21:47:25 anbrown Exp $
+# $Id: Event.pm,v 33.15 2012/09/26 16:15:16 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -17,7 +17,7 @@ use MQSeries::Message::System;
 
 require "MQSeries/Message/Event.pl";
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::System);
 
 

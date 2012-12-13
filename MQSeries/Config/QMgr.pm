@@ -1,10 +1,10 @@
 #
 # MQSeries::Config::QMgr.pm - Queue manager configuration from qm.ini
 #
-# (c) 2000-2011 Morgan Stanley & Co. Incorporated
+# (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: QMgr.pm,v 33.9 2011/01/03 15:04:50 anbrown Exp $
+# $Id: QMgr.pm,v 33.11 2012/09/26 16:15:11 jettisu Exp $
 #
 
 package MQSeries::Config::QMgr;
@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Config::Machine;
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 #
 # Constructor: Read and parse the /var/mqm/qmgrs/XYYZY/qm.ini file.

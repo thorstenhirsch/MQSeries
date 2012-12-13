@@ -1,7 +1,7 @@
 #
-# $Id: 51oo-command-changes.t,v 36.7 2011/05/19 18:36:47 anbrown Exp $
+# $Id: 51oo-command-changes.t,v 36.9 2012/09/26 16:15:34 jettisu Exp $
 #
-# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Additional MQSeries::Command test to create, copy, change and delete
@@ -20,7 +20,7 @@ BEGIN {
 use Data::Dumper;
 use Test::More tests => 102;
 BEGIN {
-    our $VERSION = '1.33';
+    our $VERSION = '1.34';
     use_ok('__APITYPE__::MQSeries' => $VERSION);
     use_ok('MQSeries::QueueManager' => $VERSION);
     use_ok('MQSeries::Command' => $VERSION);

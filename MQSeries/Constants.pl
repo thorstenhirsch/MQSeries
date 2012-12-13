@@ -1,7 +1,7 @@
 #
-# $Id: Constants.pl,v 36.2 2011/01/03 15:04:50 anbrown Exp $
+# $Id: Constants.pl,v 36.3 2012/09/26 16:15:11 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 

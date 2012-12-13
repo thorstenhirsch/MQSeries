@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -35,11 +35,16 @@ package MQSeries::Command::PCF;
     AccountingConnOverride	=> [ 136,                            	3,],
     AccountingInterval		=> [ 135,                       		3 ],
     ActivityRecording		=> [ 138,                      		3,		$ResponseValues{ActivityRecording} ],
+    ActivityConnOverride	=> [ 239,                          	3 ],
+    ActivityTrace		=> [ 240,                  		3 ],
+
     AdoptNewMCACheck		=> [ 102,                     		3,		$ResponseValues{AdoptNewMCACheck} ],
     AdoptNewMCAType		=> [ 103,                    		3,		$ResponseValues{AdoptNewMCAType}  ],
     AlterationDate		=> [ 2027,                  		4 ],
     AlterationTime		=> [ 2028,                  		4 ],
     BridgeEvent			=> [ 74,                 		3 ],
+    ChlAuthRecords		=> [ 248,                   		3 ],
+    CFConlos			=> [ 245,                 		3,		$ResponseValues{CFConlos} ],
     CreationDate		=> [ 2004,                		4 ],
     CreationTime		=> [ 2005,                		4 ],
     ChannelAutoDefExit		=> [ 2026,                        	4 ],
@@ -55,6 +60,7 @@ package MQSeries::Command::PCF;
     CommandEvent		=> [ 99,                  		3,		$ResponseValues{CommandEvent} ],
     CommandInputQName		=> [ 2003,                       	4 ],
     CommandServerControl	=> [ 120,                      		3,		$ResponseValues{CommandServerControl} ],
+    Custom			=> [ 2119,         			3 ],
     DeadLetterQName		=> [ 2006,                     		4 ],
     DefXmitQName		=> [ 2025,                  		4 ],
     Platform			=> [ 32,             			3,		$ResponseValues{Platform} ],
@@ -81,6 +87,7 @@ package MQSeries::Command::PCF;
     DistLists			=> [ 34,               			3 ],
     DNSGroup			=> [ 2071,            			4 ],
     DNSWLM			=> [ 106,           			3 ],
+    EncryptionPolicySuiteB	=> [ 247,                    		5,	$ResponseValues{EncryptionPolicySuiteB} ],
     ExpiryInterval		=> [ 39,                    		3 ],
     GroupUR			=> [ 221,            			3,		$ResponseValues{GroupUR} ],
     IGQPutAuthority		=> [ 65,                      		3,		$ResponseValues{IGQPutAuthority} ],
@@ -109,6 +116,7 @@ package MQSeries::Command::PCF;
     OutboundPortMin		=> [ 110,                     		3 ],
     PerformanceEvent		=> [ 53,                      		3 ],
     Parent			=> [ 2102,         			4 ],
+    PubSubClus			=> [ 249,                  		3 ],
     PubSubMaxMsgRetryCount	=> [ 206,                             	3 ],
     PubSubMode			=> [ 187,               			3,		$ResponseValues{PubSubMode} ],
     PubSubNPInputMsg		=> [ 203,                 		3,		$ResponseValues{PubSubNPInputMsg} ],
@@ -143,6 +151,8 @@ package MQSeries::Command::PCF;
     TraceRouteRecording		=> [ 137,                         	3,		$ResponseValues{TraceRouteRecording} ],
     TreeLifeTime		=> [ 183,                  		3 ],
     TriggerInterval		=> [ 25,                     		3 ],
+    Version			=> [ 2120,          			4 ],
+    XrCapability			=> [ 243,                 		3 ],
    },
 
    QueueManagerStatus =>
@@ -151,12 +161,18 @@ package MQSeries::Command::PCF;
     CommandServerStatus		=> [ 1233,                      		3,	$ResponseValues{QMgrServiceStatus}  ],
     ConnectionCount		=> [ 1230,                     		3 ],
     CurrentLog			=> [ 3071,                            	4 ],
+    InstallationDesc		=> [ 2115,                    		4 ],
+    InstallationName		=> [ 2116,                    		4 ],
+    InstallationPath		=> [ 2117,                    		4 ],
     LogPath			=> [ 3074,             			4 ],
     MediaRecoveryLog		=> [ 3073,                          	4 ],
     PermitStandby		=> [ 1325,                   		3 ],
     QMgrName			=> [ 2015,             			4 ],
     QMgrStatus			=> [ 1149,                 		3,	$ResponseValues{QMgrStatus}  ],
     RestartRecoveryLog		=> [ 3072,                            	4 ],
+    StartDate			=> [ 3175,                     		4 ],
+    StartTime			=> [ 3176,                     		4 ],
+    Version			=> [ 2120,          			4 ],
    },
 
    Queue =>
@@ -179,6 +195,7 @@ package MQSeries::Command::PCF;
     CreationDate		=> [ 2004,                		4 ],
     CreationTime		=> [ 2005,                		4 ],
     CurrentQDepth		=> [ 3,                     		3 ],
+    Custom			=> [ 2119,         			4 ],
     DefBind			=> [ 61,             			3,		$ResponseValues{DefBind} ],
     DefinitionType		=> [ 7,                     		3,		$ResponseValues{DefinitionType} ],
     DefInputOpenOption		=> [ 4,                           	3,		$ResponseValues{DefInputOpenOption} ],
@@ -280,6 +297,7 @@ package MQSeries::Command::PCF;
    {
     AlterationDate		=> [ 2027,                  		4 ],
     AlterationTime		=> [ 2028,                  		4 ],
+    BatchDataLimit		=> [ 1624,                     		3 ],
     BatchHeartBeat		=> [ 1567,             			3 ],
     BatchInterval		=> [ 1564,                   		3 ],
     BatchSize			=> [ 1502,               		3 ],
@@ -302,6 +320,7 @@ package MQSeries::Command::PCF;
     CreationDate		=> [ 2004,                		4 ],
     CreationTime		=> [ 2005,                		4 ],
     DataConversion		=> [ 1515,                    		3 ],
+    DefReconnect		=> [ 1640,                  		3,		$ResponseValues{DefReconnect} ],
     DefaultChannelDisposition	=> [ 1614,                     		3,		$ResponseValues{ChannelDisposition} ],
     DiscInterval		=> [ 1503,                  		3 ],
     HeaderCompression		=> [ 1575,                    		5,	$ResponseValues{HeaderCompression} ],
@@ -334,6 +353,7 @@ package MQSeries::Command::PCF;
     QSGDispositions		=> [ 1126,              			5,		$ResponseValues{QSGDisposition} ],
     ReceiveExit			=> [ 3511,                  		4 ],
     ReceiveUserData		=> [ 3516,                       	4 ],
+    ResetRequested		=> [ 1623,                    		3 ],
     ResponseId			=> [ 7004,                		9                   ],
     ResponseQMgrName		=> [ 3070,                        	4 ],
     SecurityExit		=> [ 3508,                  		4 ],
@@ -351,7 +371,36 @@ package MQSeries::Command::PCF;
     TransportType		=> [ 1501,                       	3,		$ResponseValues{TransportType} ],
     UserIdentifier		=> [ 3517,            			4 ],
     XmitQName			=> [ 3505,                		4 ],
+    UseDLQ			=> [ 234,                     		3,		$ResponseValues{UseDLQ} ],
    },
+
+   #
+   # MQ 7.1 introducted ChannelAuthRecords
+   #
+
+   ChlAuthRec =>
+   {
+    Action                      => [ 1086,                               3,            $ResponseVaues{ChlAuthAction} ],
+    Address			=> [ 3506,                    		4 ],
+    Addrlist			=> [ 3566,                         	6 ],
+    AlterationDate		=> [ 2027,                  		4 ],
+    AlterationTime		=> [ 2028,                  		4 ],
+    ChlAuth			=> [ 3501,                 		4 ],
+    ChlAuthDesc                 => [ 2118,                               4, ],
+    ClientUserId		=> [ 3567,                   		4 ],
+    Custom                      => [ 2119,                               4 ],
+    MCAUserIdentifier		=> [ 3527,                		4 ],
+    RemoteQMgrName		=> [ 2017,                    		4 ],
+    SSLPeerName			=> [ 3545,                  		4 ],
+    ChlAuthType			=> [ 1352,                 		3,		$ResponseValues{ChlAuthType} ],
+    MCAUserIdList		=> [ 3568,                     		6 ],
+    UserSource			=> [ 1638,                		3,		$ResponseValues{UserSource} ],
+    Warning			=> [ 1639,            			3 ],
+   },
+    #ChlAuthAttrs                => [ 1355,                               5,            $RequestValues{ChlAuthAttrs} ],
+    #CommandScope                => [ 3080,                               4 ],
+    #Match                       => [ 1637,                               3,         $RequestValues{ChlAuthMatch} ],
+
 
    #
    # ChannelInitiator is used for InquireChannelInitiator; Z/OS only
@@ -404,6 +453,7 @@ package MQSeries::Command::PCF;
     ChannelStartTime		=> [ 3528,                       	4 ],
     ChannelStatus		=> [ 1527,                   		3,		$ResponseValues{ChannelStatus} ],
     ChannelType			=> [ 1511,                 		3,		$ResponseValues{ChannelType} ],
+    ClientIdentifier		=> [ 3564,              			4 ],
     CompressionRate		=> [ 1611,                     		5 ],
     CompressionTime		=> [ 1612,                     		5 ],
     ConnectionName		=> [ 3506,                    		4 ],
@@ -434,7 +484,9 @@ package MQSeries::Command::PCF;
     NonPersistentMsgSpeed	=> [ 1562,              			3,		$ResponseValues{NonPersistentMsgSpeed} ],
     QMgrName			=> [ 2015,             			4 ],
     RemoteApplTag		=> [ 3548,                    		4 ],
+    RemoteProduct		=> [ 3561,                   		4 ],
     RemoteQMgrName		=> [ 2017,                    		4 ],
+    RemoteVersion		=> [ 3560,                   		4 ],
     ResponseId			=> [ 7004,                		9                   ],
     ResponseQMgrName		=> [ 3070,                        	4 ],
     SSLCertRemoteIssuerName	=> [ 3550,                         	4 ],
@@ -619,6 +671,7 @@ package MQSeries::Command::PCF;
    #
    CFStruc =>
    {
+    Access			=> [ 1332,                    		3,		$ResponseValues{CFStrucAccess} ],
     AlterationDate		=> [ 2027,                  		4 ],
     AlterationTime		=> [ 2028,                  		4 ],
     BackupDate			=> [ 3098,                		4 ],
@@ -626,6 +679,7 @@ package MQSeries::Command::PCF;
     BackupSize			=> [ 1144,                         	3 ],
     BackupStartRBA		=> [ 3101,                          	4 ],
     BackupTime			=> [ 3099,                		4 ],
+    CFConlos			=> [ 246,               			3,         $ResponseValues{CFConlos} ],
     CFStatusType		=> [ 1135,                   		3,		$ResponseValues{CFStatusType} ],
     CFStrucDesc			=> [ 2052,                		4 ],
     CFStrucName			=> [ 2039,                		4 ],
@@ -633,16 +687,34 @@ package MQSeries::Command::PCF;
     CFStrucStatus		=> [ 1130,                    		3,		$ResponseValues{CFStrucStatus} ],
     CFStrucType			=> [ 1139,                  		3,		$ResponseValues{CFStrucType} ],
     CFLevel			=> [ 70,             			3 ],
+    DSBlock			=> [ 1328,                       		3,         $ResponseValues{DSBlock} ],
+    DSBufs			=> [ 228,                   		3 ],
+    DSExpand			=> [ 1329,                   		3,		$ResponseValues{DSExpand} ],
+    DSGroup			=> [ 3182,                         	4 ],
+
     EntriesMax			=> [ 1142,                         	3 ],
     EntriesUsed			=> [ 1143,                          	3 ],
     FailDate			=> [ 3096,              			4 ],
     FailTime			=> [ 3097,              			4 ],
     LogQMgrNames		=> [ 3103,                        	6 ],
     QMgrName			=> [ 2015,             			4 ],
+    Offload			=> [ 224,              			3,		$ResponseValues{Offload} ],
+    OffLdUse			=> [ 229,               		3,		$ResponseValues{OffLdUse} ],
+    OFFLD1SZ			=> [ 3179,                     		4 ],
+    OFFLD2SZ			=> [ 3180,                     		4 ],
+    OFFLD3SZ			=> [ 3181,                     		4 ],
+    OFFLD1TH			=> [ 225,                         	3 ],
+    OFFLD2TH			=> [ 226,                         	3 ],
+    OFFLD3TH			=> [ 227,                         	3 ],
+    Recauto			=> [ 244,              			3 ],
+    Recovery			=> [ 71,               			3 ],
+
     SizeMax			=> [ 1140,                      		3 ],
     SizeUsed			=> [ 1141,                       	3 ],
     SysName			=> [ 3100,                		4 ],
     Recovery			=> [ 71,               			3 ],
+    RcvDate			=> [ 3184,                  		4 ],
+    RcvTime			=> [ 3185,                  		4 ],
     ResponseId			=> [ 7004,                		9                   ],
     ResponseQMgrName		=> [ 3070,                        	4 ],
    },
@@ -664,6 +736,20 @@ package MQSeries::Command::PCF;
     Recovery			=> [ 71,               			3 ],
     ResponseId			=> [ 7004,                		9                   ],
     ResponseQMgrName		=> [ 3070,                        	4 ],
+    CFConlos			=> [ 246,               			3,         $ResponseValues{CFConlos} ],
+    DSBlock			=> [ 1328,                       		3,         $ResponseValues{DSBlock} ],
+    DSBufs			=> [ 228,                   		3 ],
+    DSExpand			=> [ 1329,                   		3,		$ResponseValues{DSExpand} ],
+    DSGroup			=> [ 3182,                         	4 ],
+    Offload			=> [ 224,              			3,		$ResponseValues{Offload} ],
+    OffLdUse			=> [ 229,               		3,		$ResponseValues{OffLdUse} ],
+    OFFLD1SZ			=> [ 3179,                     		4 ],
+    OFFLD2SZ			=> [ 3180,                     		4 ],
+    OFFLD3SZ			=> [ 3181,                     		4 ],
+    OFFLD1TH			=> [ 225,                         	3 ],
+    OFFLD2TH			=> [ 226,                         	3 ],
+    OFFLD3TH			=> [ 227,                         	3 ],
+    Recauto			=> [ 244,              			3 ],
    },
 
    #
@@ -948,7 +1034,7 @@ package MQSeries::Command::PCF;
     DestinationClass		=> [ 1273,                      		3,		$ResponseValues{DestinationClass} ],
     DestinationCorrelId		=> [ 7015,                          	9                   ],
     DestinationQueueManager	=> [ 3153,                      		4 ],
-    Durable			=> [ 1274,                         	3,		$ResponseValues{DurableSubscriptions} ],
+    Durable			=> [ 1274,                         	3,		$ResponseValues{Durable} ],
     Expiry			=> [ 1244,           			3 ],
     PublishPriority		=> [ 1283,                 		3,		$ResponseValues{PublishPriority} ],
     PublishSubscribeProperties	=> [ 1271,                      		3,		$ResponseValues{PubSubProperties} ],
@@ -956,7 +1042,7 @@ package MQSeries::Command::PCF;
     PublishedApplicationIdentifier => [ 3135,                       	4 ],
     RequestOnly			=> [ 1280,                 		3,		$ResponseValues{RequestOnly} ],
     Selector			=> [ 3160,                 		4 ],
-    SelectorType		=> [ 1321,                  		3 ],
+    SelectorType		=> [ 1321,                  		3, 	$ResponseValues{SelectorType} ],
     SubId			=> [ 7016,           			9                   ],
     SubName			=> [ 3152,             			4 ],
     SubscriptionLevel		=> [ 1307,              			3 ],
@@ -974,14 +1060,15 @@ package MQSeries::Command::PCF;
    #
    # Subscription Status for MQ v7
    #
+# LastPublishDate/Time seems to be related to topic.
    SubscriptionStatus =>
    {
     ActiveConnection		=> [ 7006,                  		9                   ],
-    Durable			=> [ 1274,                         	3,		$ResponseValues{DurableSubscriptions} ],
+    Durable			=> [ 1274,                         	3,		$ResponseValues{Durable} ],
     LastMessageDate		=> [ 3168,                  		4 ],
     LastMessageTime		=> [ 3167,                  		4 ],
-    LastPublishDate		=> [ 3161,                  		4 ],
-    LastPublishTime		=> [ 3162,                  		4 ],
+#    LastPublishDate		=> [ 3161,                  		4 ],
+#    LastPublishTime		=> [ 3162,                  		4 ],
     NumberOfMessages		=> [ 1290,                  		3 ],
     ResumeDate			=> [ 2098,              			4 ],
     ResumeTime			=> [ 2099,              			4 ],
@@ -992,6 +1079,15 @@ package MQSeries::Command::PCF;
    },
 
    #
+   # PubSubStatus
+   #
+   PubSubStatus =>
+   {
+    QueueManagerName		=> [ 2015,             			4 ],
+    Type			=> [ 1314,                   		3,		$ResponseValues{PubSubStatusType} ],
+    Status			=> [ 1311,                  		3,		$ResponseValues{PubSubStatus} ],
+   },
+   #
    # Pub/Sub Topic for MQ v7
    #
    Topic =>
@@ -999,11 +1095,13 @@ package MQSeries::Command::PCF;
     AlterationDate		=> [ 2027,                  		4 ],
     AlterationTime		=> [ 2028,                  		4 ],
     ClusterName			=> [ 2029,               		4 ],
+    ComminfoName		=> [ 2110,                 		4 ],
+    Custom			=> [ 2119,         			3 ],
     DefPersistence		=> [ 185,                         	3,		$ResponseValues{TopicDefPersistence} ],
     DefPriority			=> [ 6,                  		3 ],
     DefPutResponse		=> [ 184,                         	3,		$ResponseValues{DefPutResponse} ],
     DurableModelQName		=> [ 2096,                  		4 ],
-    DurableSubscriptions	=> [ 175,               			3,		$ResponseValues{DurableSubscriptions} ],
+    DurableSubscriptions	=> [ 175,               			3,		$ResponseValues{TopicDurableSubscriptions} ],
     InhibitPublications		=> [ 181,               			3,		$ResponseValues{InhibitPublications} ],
     InhibitSubscriptions	=> [ 182,               			3,		$ResponseValues{InhibitSubscriptions} ],
     NonDurableModelQName	=> [ 2097,                      		4 ],
@@ -1012,12 +1110,14 @@ package MQSeries::Command::PCF;
     ProxySubscriptions		=> [ 199,             			3,		$ResponseValues{ProxySubscriptions} ],
     PublicationScope		=> [ 219,             			3,		$ResponseValues{PubSubScope} ],
     QMgrName			=> [ 2015,             			4 ],
+    QSGDisposition		=> [ 63,             			3,		$ResponseValues{QSGDisposition} ],
     SubscriptionScope		=> [ 218,             			3,		$ResponseValues{PubSubScope} ],
     TopicDesc			=> [ 2093,             			4 ],
     TopicName			=> [ 2092,             			4 ],
     TopicNames			=> [ 3151,                		6 ],
     TopicString			=> [ 2094,               		4 ],
     TopicType			=> [ 208,              			3,			$ResponseValues{TopicType}],
+    UseDLQ			=> [ 234,                     		3, 	$ResponseValues{TopicUseDLQ} ],
     WildcardOperation		=> [ 216,                      		3,		$ResponseValues{WildcardOperation} ],
    },
 
@@ -1028,12 +1128,13 @@ package MQSeries::Command::PCF;
    {
     ActiveConnection		=> [ 7006,                  		9                   ],
     AdminTopicName		=> [ 2105,                   		4 ],
+    ClusterName			=> [ 2029,               		4 ],
     DefPriority			=> [ 6,                  		3 ],
     DefPersistence		=> [ 185,                         	3,		$ResponseValues{TopicDefPersistence}  ],
     DefPutResponse		=> [ 184,                         	3,		$ResponseValues{DefPutResponse} ],
     DurableModelQName		=> [ 2096,                  		4 ],
-    Durable			=> [ 1274,                         	3,		$ResponseValues{DurableSubscriptions} ],
-    DurableSubscriptions	=> [ 175,               			3,		$ResponseValues{DurableSubscriptions} ],
+    Durable			=> [ 1274,                         	3,		$ResponseValues{Durable} ],
+    DurableSubscriptions	=> [ 175,               			3,		$ResponseValues{TopicStatusDurableSubscriptions} ],
     InhibitPublications		=> [ 181,               			3,		$ResponseValues{InhibitPublications} ],
     InhibitSubscriptions	=> [ 182,               			3,		$ResponseValues{InhibitSubscriptions} ],
     LastMessageDate		=> [ 3168,                  		4 ],
@@ -1049,13 +1150,39 @@ package MQSeries::Command::PCF;
     PublishCount		=> [ 215,             			3 ],
     ResumeDate			=> [ 2098,              			4 ],
     ResumeTime			=> [ 2099,              			4 ],
-    RetainedPublication		=> [ 1300,                         	3 ],
+    RetainedPublication		=> [ 1300,                         	3,		$ResponseValues{RetainedPublication} ],
     SubscriptionCount		=> [ 204,             			3 ],
     SubId			=> [ 7016,           			9                   ],
     SubscriptionUserId		=> [ 3156,                		4 ],
     SubscriptionScope		=> [ 218,             			3,		$ResponseValues{PubSubScope} ],
     SubscriptionType		=> [ 1289,             			3,		$ResponseValues{SubscriptionType} ],
     TopicString			=> [ 2094,               		4 ],
+    UseDLQ			=> [ 234,                     		3, 	$ResponseValues{TopicUseDLQ} ],
+   },
+
+   #
+   # Comminfo in 7.1
+   #
+   Comminfo =>
+   {
+    AlterationDate		=> [ 2027,                  		3 ],
+    AlterationTime		=> [ 2028,                  		3 ],
+    ComminfoName                => [ 2110,                               4 ],
+    Bridge                      => [ 233,                                3 ],
+    CodedCharSetId              => [ 2,                                  3,		$ResponseValues{ComminfoCCSID} ],
+    CommEvent                   => [ 232,                                3,         $ResponseValues{CommEvent} ],
+    ComminfoDesc                => [ 2111,                               4 ],
+    Encoding                    => [ 1243,                               3,         $ResponseValues{Encoding} ],
+    GrpAddress                  => [ 3562,                               4 ],
+    MonitorInterval             => [ 81,                                 3 ],
+    MsgHistory                  => [ 1625,                               3 ],
+    MulticastHeartbeat          => [ 1628,                               3 ],
+    MulticastPropControl        => [ 1626,                               3,         $ResponseValues{MulticastPropControl} ],
+    NewSubHistory               => [ 1627,                               3,         $ResponseValues{NewSubHistory}
+ ],
+    PortNumber                  => [ 1522,                               3 ],
+    ComminfoType                => [ 223,                                3,         $ResponseValues{ComminfoType}
+],
    },
 
    #
@@ -1098,6 +1225,9 @@ package MQSeries::Command::PCF;
 
     EntityType			=> [ 1001,               		3,		$ResponseValues{MorganEntityType} ],
     EntityName			=> [ 3001,               		4 ],
+
+    ExpiresAt                   => [ 4000,                               23 ],
+    ExpiresAfter                => [ 4001,                               3 ],
 
     Connect			=> [ 1011,                		3 ],
     Browse			=> [ 1012,               		3 ],

@@ -1,7 +1,7 @@
 #
-# $Id: 52oo-command-filter.t,v 33.7 2011/05/18 15:47:29 anbrown Exp $
+# $Id: 52oo-command-filter.t,v 38.2 2012/09/26 16:15:34 jettisu Exp $
 #
-# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Additional MQSeries::Command test to create, copy, change and delete
@@ -20,7 +20,7 @@ BEGIN {
 use Data::Dumper;
 use Test::More tests => 86;
 BEGIN {
-    our $VERSION = '1.33';
+    our $VERSION = '1.34';
     use_ok('__APITYPE__::MQSeries' => $VERSION);
     use_ok('MQSeries::QueueManager' => $VERSION);
     use_ok('MQSeries::Command' => $VERSION);
@@ -148,6 +148,10 @@ SKIP: {
             #
             my ($enum, $int, $int_list, $string, $string_list);
             while (my ($k, $v) = each %$entry) {
+                # "InquireNamelist" may yield a "Names" value which is
+                # empty (and therefore useless), so just skip that
+                next if ($method eq "InquireNamelist" &&
+                         $k eq "Names" && ref($v) && !@{$v});
                 if (!defined $enum && $v =~ /^[A-Z]\w+$/) {
                     $enum = $k;
                 } elsif (!defined $int && $v =~ /^\d+$/) {

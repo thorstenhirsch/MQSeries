@@ -1,7 +1,7 @@
 #
-# $Id: Requests.pl,v 33.3 2011/01/03 15:04:48 anbrown Exp $
+# $Id: Requests.pl,v 33.6 2012/09/26 16:13:38 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -96,6 +96,10 @@ package MQSeries::Command::MQSC;
    StartChannelInitiator	=> [ "START CHINIT",	$RequestParameters{Channel} ],
    StartChannelListener		=> [ "START LISTENER",	$RequestParameters{Channel} ],
    StopChannel			=> [ "STOP",      	$RequestParameters{Channel} ],
+
+   # ChannelAuthorityRecord commands
+   InquireChlAuthRecs		=> [ "DISPLAY",		$RequestParameters{ChlAuthRec} ],
+   SetChlAuthRec		=> [ "SET",		$RequestParameters{ChlAuthRec} ],
 
    #
    # Namelist commands

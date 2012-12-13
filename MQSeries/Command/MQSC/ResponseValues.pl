@@ -1,7 +1,7 @@
 #
-# $Id: ResponseValues.pl,v 33.7 2011/05/27 20:08:08 anbrown Exp $
+# $Id: ResponseValues.pl,v 33.11 2012/09/26 16:13:38 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -334,6 +334,7 @@ package MQSeries::Command::MQSC;
 
    DefBind =>
    {
+    GROUP		=> "OnGroup",
     OPEN		=> "OnOpen",
     NOTFIXED		=> "NotFixed",
    },
@@ -549,6 +550,91 @@ package MQSeries::Command::MQSC;
     SUSPTEMP			=> "SuspendedTemporary",
     NONE			=> "None",
    },
+
+   #
+   # Added in 1.33 to match what has been done for PCF in 1.33
+   #
+   DefReconnect =>
+   {
+    QMGR			=> "QMgr",
+    DISABLED			=> "Disabled",
+    NO				=> "No",
+    YES				=> "Yes",
+   },
+
+   ChlAuthType =>
+   {
+    BLOCKUSER			=> "BlockUser",
+    BLOCKADDR			=> "BlockAddress",
+    SSLPEERMAP			=> "SSLPeerMap",
+    ADDRESSMAP			=> "AddressMap",
+    USERMAP			=> "UserMap",
+    QMGRMAP			=> "QMgrMap",
+   },
+
+   ChlAuthMatch =>
+   {
+    RUNCHECK			=> "Runcheck",
+    EXACT			=> "Exact",
+    GENERIC			=> "Generic",
+   },
+
+   UserSource =>
+   {
+    CHANNEL			=> "Channel",
+    MAP				=> "Map",
+    NOACCESS			=> "NoAccess",
+   },
+
+   DSBlock =>
+   {
+    "0K"				=> "0K",
+    "8K"				=> "8K",
+    "16K"				=> "16K",
+    "32K"				=> "32K",
+    "64K"				=> "64K",
+    "128K"			=> "128K",
+    "256K"			=> "256K",
+    "512K"			=> "512K",
+    "1M"				=> "1M",
+   },
+
+   DSExpand =>
+   {
+    NO				=> "No",
+    YES				=> "Yes",
+    DEFAULT			=> "Default",
+   },
+
+   Offload =>
+   {
+    DB2				=> "DB2",
+    SMDS			=> "SMDS",
+    NONE			=> "None",
+   },
+
+   CFConlos =>
+   {
+    ASQMGR			=> "AsQMgr",
+    TERMINATE			=> "Terminate",
+    TOLERATE			=> "Tolerate",
+   },
+
+   EncryptionPolicySuiteB =>
+   {
+    NONE			=> "None",
+    "128_BIT"			=> "128Bit",
+    "192_BIT"			=> "192Bit",
+   },
+
+   ChlAuthAction =>
+   {
+    ADD				=> "Add",
+    REPLACE			=> "Replace",
+    REMOVE			=> "Remove",
+    REMOVEALL			=> "RemoveAll",
+   },
+
 
  );
 

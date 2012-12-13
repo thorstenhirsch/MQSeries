@@ -1,7 +1,7 @@
 #
-# $Id: typemap.PL,v 36.2 2011/01/03 15:04:43 anbrown Exp $
+# $Id: typemap.PL,v 38.2 2012/09/26 16:10:09 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Script to generate a typemap from the MQSeries header files
@@ -97,7 +97,7 @@ while ( <> ) {
             $input{$type} .= &long_input($field);
             $output{$type} .= &long_output($field);
 
-        } elsif ($fieldt eq 'MQHMSG') {
+        } elsif ($fieldt eq 'MQHMSG' || $fieldt eq 'MQINT64') {
             # MQHMSG is a MQINT64, not a MQLONG (or MQULONG)
             $input{$type} .= &int64_input($field);
             $output{$type} .= &int64_output($field);

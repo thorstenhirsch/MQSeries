@@ -1,10 +1,10 @@
 #
 # MQSeries::Message::ConfigEvent - Config Event Message
 #
-# (c) 2002-2011 Morgan Stanley & Co. Incorporated
+# (c) 2002-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: ConfigEvent.pm,v 37.2 2011/06/13 22:21:07 anbrown Exp $
+# $Id: ConfigEvent.pm,v 37.4 2012/09/26 16:15:15 jettisu Exp $
 #
 
 package MQSeries::Message::ConfigEvent;
@@ -17,7 +17,7 @@ use MQSeries qw(:functions);
 use MQSeries::Message;
 use MQSeries::Command::Base; # for valuemap translators
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message);
 
 require "MQSeries/Message/ConfigEvent.pl";

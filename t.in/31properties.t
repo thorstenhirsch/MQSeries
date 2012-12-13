@@ -1,7 +1,7 @@
 #
-# $Id: 31properties.t,v 33.9 2011/05/17 20:46:07 anbrown Exp $
+# $Id: 31properties.t,v 33.11 2012/09/26 16:15:33 jettisu Exp $
 #
-# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -17,7 +17,7 @@ BEGIN {
 use Data::Dumper;
 use Test::More tests => 22;
 BEGIN { 
-    our $VERSION = '1.33';
+    our $VERSION = '1.34';
     use_ok('__APITYPE__::MQSeries' => $VERSION); 
 }
 

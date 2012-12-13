@@ -1,7 +1,7 @@
 #
-# $Id: Makefile.PL,v 37.1 2011/05/18 14:49:59 anbrown Exp $
+# $Id: Makefile.PL,v 38.2 2012/09/26 16:10:08 jettisu Exp $
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -89,34 +89,22 @@ if ( $mqmtop =~ /\s/ ) {
     $libdir = "-L$mqmtop/lib";
 }
 
-
-if ( $Config{osname} =~ /linux|hpux|aix/ ) {
-    #
-    # On Linux and HP-UX WMQ 5.3 clients, the name of the shared
-    # library is different for single- and multi-threaded apps.
-    #
-    if ( $Config{usethread} ||
-         $Config{usethreads} ||
-         $Config{useithreads}
-       ) {
-        if ( $apitype eq "MQClient" ) {
-            $libs = "$libdir -lmqic_r";
-        } else {
-            $libs = "$libdir -lmqm_r";
-        }
-    } else {
-        if ( $apitype eq "MQClient" ) {
-            $libs = "$libdir -lmqic";
-        } else {
-            $libs = "$libdir -lmqm";
-        }
-    }
-} else {                        # All other platforms
-    if ( $apitype eq "MQClient" ) {
-        $libs = "$libdir -lmqicg -lmqic -lmqic32 -lmqmcs -lmqmzse";
-    } else {
-        $libs = "$libdir -lmqm -lmqmcs -lmqmzse";
-    }
+#
+# On Linux, HP-UX, and AIX, the name of the shared library is
+# different for single- and multi-threaded apps.  NB: other platforms
+# includes windows.
+#
+$libs = "$libdir " .
+    [
+     # MQServer / MQClient
+     ["-lmqm",    "-lmqic -lmqic32"],  # non linux/hpux/aix or non-threaded
+     ["-lmqm_r",  "-lmqic_r"],         # threaded perl on linux/hpux/aix
+    ]
+    ->[($Config{osname} =~ /linux|hpux|aix/) &&
+       ($Config{usethread} || $Config{usethreads} || $Config{useithreads})]
+    ->[$apitype eq "MQClient"];
+if ($libs =~ /_r$/) {
+    $extra_args{DEFINE} .= " -DRLIBS";
 }
 
 #
@@ -401,9 +389,17 @@ eval {
     open($save, ">&", \*STDERR);
     my $null = $Config{osname} =~ /win32/i ? "nul" : "/dev/null";
     open(STDERR, ">>", $null);
-    my $cmvc = qx{dspmqver};
-    if ($cmvc =~ m{CMVC level:\s+(\S+)}) {
-	$extra_args{DEFINE} .= " -DMQ_CMVC_LVALUE=\\\"$1\\\"";
+    my $dspmqver = qx{dspmqver};
+    my @v;
+    if ($dspmqver =~ m{^(Version):\s+(\S+)}m) {
+	push(@v, "v$2");
+    }
+    if ($dspmqver =~ m{^(CMVC level|Level):\s+(\S+)}m) {
+	push(@v, $2);
+    }
+    if (@v) {
+	@v = join("/", @v);
+	$extra_args{DEFINE} .= " -DMQ_CMVC_LVALUE=\\\"@v\\\""; 
     }
     open(STDERR, ">&", $save);
 };

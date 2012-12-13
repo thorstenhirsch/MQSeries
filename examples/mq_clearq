@@ -2,9 +2,9 @@
 #
 # mq_cleanq - Clear a queue without administrative authority
 #
-# (c) 2009-2011 Morgan Stanley & Co. Incorporated
+# (c) 2009-2012 Morgan Stanley & Co. Incorporated
 #
-# $Id: mq_clearq,v 33.3 2011/01/03 15:04:55 anbrown Exp $
+# $Id: mq_clearq,v 33.4 2012/09/26 16:15:21 jettisu Exp $
 #
 
 use Carp;

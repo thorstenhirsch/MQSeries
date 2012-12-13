@@ -1,7 +1,7 @@
 #
-# $Id: System.pm,v 37.2 2011/05/03 19:52:17 anbrown Exp $
+# $Id: System.pm,v 37.4 2012/09/26 16:15:18 jettisu Exp $
 #
-# (c) 2011 Morgan Stanley & Co. Incorporated
+# (c) 2011-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Message::PCF qw(MQDecodePCF);
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 our @ISA = qw(MQSeries::Message::PCF);
 
 my %xlat; # translation table function list

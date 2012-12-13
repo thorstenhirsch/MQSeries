@@ -12,7 +12,7 @@
 #
 #    ..../src/util/flatten_macros
 #
-# (c) 1999-2011 Morgan Stanley & Co. Incorporated
+# (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 package MQSeries::Command::PCF;
@@ -34,6 +34,8 @@ package MQSeries::Command::PCF;
     AccountingConnOverride	=> 136,
     AccountingInterval		=> 135,
     ActivityRecording		=> 138,
+    ActivityConnOverride	=> 239,
+    ActivityTrace		=> 240,
     AlterationDate		=> 2027,
     AlterationTime		=> 2028,
     AdoptNewMCACheck		=> 102,
@@ -41,6 +43,7 @@ package MQSeries::Command::PCF;
     AlterationTime		=> 2028,
     AuthorityEvent		=> 47,
     BridgeEvent			=> 74,
+    CFConlos			=> 245,
     ChannelAutoDef		=> 55,
     ChannelAutoDefEvent		=> 56,
     ChannelAutoDefExit		=> 2026,
@@ -53,6 +56,7 @@ package MQSeries::Command::PCF;
     ChinitServiceParm		=> 2076,
     ChinitTraceAutoStart	=> 117,
     ChinitTraceTableSize	=> 118,
+    ChlAuthRecords		=> 248,
     ClusterSenderMonitoringDefault => 124,
     ClusterSenderStatistics	=> 130,
     ClusterWorkLoadData		=> 2034,
@@ -69,12 +73,14 @@ package MQSeries::Command::PCF;
     CPILevel			=> 27,
     CreationDate		=> 2004,
     CreationTime		=> 2005,
+    Custom			=> 2119,
     DeadLetterQName		=> 2006,
     DefXmitQName		=> 2025,
     DistLists			=> 34,
     DNSGroup			=> 2071,
     DNSWLM			=> 106,
     ExpiryInterval		=> 39,
+    EncryptionPolicySuiteB	=> 247,
     GroupUR			=> 221,
     IGQUserId			=> 2041,
     IGQPutAuthority		=> 65,
@@ -104,6 +110,7 @@ package MQSeries::Command::PCF;
     Parent			=> 2102,
     PerformanceEvent		=> 53,
     Platform			=> 32,
+    PubSubClus			=> 249,
     PubSubMaxMsgRetryCount	=> 206,
     PubSubMode			=> 187,
     PubSubNPInputMsg		=> 203,
@@ -141,6 +148,8 @@ package MQSeries::Command::PCF;
     TraceRouteRecording		=> 137,
     TreeLifeTime		=> 183,
     TriggerInterval		=> 25,
+    Version			=> 2120,
+    XrCapability			=> 243,
    },
 
    AdoptNewMCACheck =>
@@ -254,11 +263,16 @@ package MQSeries::Command::PCF;
     CommandServerStatus		=> 1233,
     ConnectionCount		=> 1230,
     CurrentLog			=> 3071,
+    InstallationDesc		=> 2115,
+    InstallationName		=> 2116,
+    InstallationPath		=> 2117,
     LogPath			=> 3074,
     MediaRecoveryLog		=> 3073,
     QMgrName			=> 2015,
     QMgrStatus			=> 1149,
-    RestartRecoveryLog		=> 3072
+    RestartRecoveryLog		=> 3072,
+    StartDate			=> 3175,
+    StartTime			=> 3176,
    },
 
    ReceiveTimeoutType =>
@@ -351,6 +365,7 @@ package MQSeries::Command::PCF;
     CreationDate		=> 2004,
     CreationTime		=> 2005,
     CurrentQDepth		=> 3,
+    Custom			=> 2119,
     DefBind			=> 61,
     DefinitionType		=> 7,
     DefInputOpenOption		=> 4,
@@ -361,6 +376,7 @@ package MQSeries::Command::PCF;
     DistLists			=> 34,
     HardenGetBackout		=> 8,
     HighQDepth			=> 36,
+    IndexType			=> 57,
     InhibitGet			=> 9,
     InhibitPut			=> 10,
     InitiationQName		=> 2008,
@@ -462,13 +478,13 @@ package MQSeries::Command::PCF;
    },
 
    #
-   # Durable Pub/Sub Subscriptions for MQ v7
+   # Durable Pub/Sub Subscriptions for MQ v7 (Part of Subscription object)
    #
-   DurableSubscriptions =>
+   Durable =>
    {
-    AsParent			=> 0,
-    Durable			=> 1,
-    NonDurable			=> 2,
+    All				=> -1,
+    Yes				=> 1,
+    No				=> 2,
    },
 
    #
@@ -489,6 +505,14 @@ package MQSeries::Command::PCF;
     Allowed			=> 2,
     AsParent			=> 0,
     Inhibited			=> 1,
+   },
+
+   Multicast =>
+   {
+    AsParent			=> 0,
+    Enabled			=> 1,
+    Disabled			=> 2,
+    Only			=> 3,
    },
 
    MonitoringDft =>		# ClusSdrMonDft, Queue-level QueueMonitoring, Channel-level ChannelMonitoring
@@ -526,6 +550,7 @@ package MQSeries::Command::PCF;
     Compatibility		=> 0,
     ForceRFH2			=> 3,
     None			=> 1,
+    V6Compat			=> 4,
    },
 
    #
@@ -658,6 +683,12 @@ package MQSeries::Command::PCF;
     Passthru			=> 2,
    },
 
+   ClearTopicStringScope =>
+   {
+    Local			=> 1,
+    Global			=> 2,
+   },
+
    #
    # Channels
    #
@@ -668,6 +699,7 @@ package MQSeries::Command::PCF;
 
     AlterationDate		=> 2027,
     AlterationTime		=> 2028,
+    BatchDataLimit		=> 1624,
     BatchHeartBeat		=> 1567,
     BatchInterval		=> 1564,
     BatchSize			=> 1502,
@@ -687,6 +719,7 @@ package MQSeries::Command::PCF;
     ConnectionAffinity		=> 1621,
     ConnectionName		=> 3506,
     DataConversion		=> 1515,
+    DefReconnect		=> 1640,
     DiscInterval		=> 1503,
     HeaderCompression		=> 1575,
     HeartbeatInterval		=> 1563,
@@ -715,6 +748,7 @@ package MQSeries::Command::PCF;
     QMgrName			=> 2015,
     ReceiveExit			=> 3511,
     ReceiveUserData		=> 3516,
+    ResetRequested		=> 1623,
     SecurityExit		=> 3508,
     SecurityUserData		=> 3513,
     SendExit			=> 3510,
@@ -730,6 +764,86 @@ package MQSeries::Command::PCF;
     TransportType		=> 1501,
     UserIdentifier		=> 3517,
     XmitQName			=> 3505,
+    UseDLQ			=> 234,
+   },
+
+   ChlAuthAction =>
+   {
+    Add				=> 5,
+    Replace			=> 6,
+    Remove			=> 7,
+    RemoveAll			=> 8,
+   },
+
+   ChlAuthAttrs =>
+   {
+    All				=> 1009,
+    AlterationDate		=> 2027,
+    AlterationTime		=> 2028,
+    ChlAuthDesc			=> 2118,
+    RemoteQMgrName		=> 2017,
+    ChlAuth			=> 3501,
+    ClientUserId		=> 3567,
+    Address			=> 3506,
+    Addrlist			=> 3566,
+    MCAUserIdentifier		=> 3527,
+    MCAUserIdList		=> 3568,
+    SSLPeerName			=> 3545,
+    ChAuthType			=> 1352,
+    Match			=> 1637,
+    UserSource			=> 1638,
+    Warning			=> 1639,
+   },
+
+   ChlAuthType =>
+   {
+    BlockUser			=> 1,
+    BlockAddress		=> 2,
+    SSLPeerMap			=> 3,
+    AddressMap			=> 4,
+    UserMap			=> 5,
+    QMgrMap			=> 6,
+    All				=> 0,
+   },
+
+   ChlAuthMatch =>
+   {
+    Runcheck			=> 1,
+    Exact			=> 2,
+    Generic			=> 0,
+    All				=> 3,
+   },
+
+#   ChlAuthRecords =>
+#   {
+#    Disabled			=> 0,
+#    Enabled			=> 1,
+#   },
+
+#   ChlAuthWarning =>
+#   {
+#    No				=> 0,
+#    Yes				=> 1,
+#   },
+
+   EncryptionPolicySuiteB =>
+   {
+    None			=> 1,
+    "128Bit"			=> 2,
+    "192Bit"			=> 4,
+   },
+
+#   PubSubClus =>
+#   {
+#    Disabled			=> 0,
+#    Enabled			=> 1,
+#   },
+
+   UserSource =>
+   {
+    Channel			=> 2,
+    Map				=> 0,
+    NoAccess			=> 1,
    },
 
    ChannelDisposition =>
@@ -738,6 +852,27 @@ package MQSeries::Command::PCF;
     Private			=> 4,
     Shared			=> 2,
     Fixshared			=> 5,
+   },
+
+   DefReconnect =>
+   {
+    QMgr			=> 2,
+    Disabled			=> 3,
+    No				=> 0,
+    Yes				=> 1,
+   },
+
+   UseDLQ =>
+   {
+    No				=> 1,
+    Yes				=> 2,
+   },
+
+   TopicUseDLQ =>
+   {
+    AsParent			=> 0,
+    No				=> 1,
+    Yes				=> 2,
    },
 
    #
@@ -791,6 +926,9 @@ package MQSeries::Command::PCF;
     NonPersistentMsgSpeed	=> 1562,
     QMgrName			=> 2015,
     RemoteApplTag		=> 3548,
+    RemoteQMgrName		=> 2017,
+    RemoteProduct		=> 3561,
+    RemoteVersion		=> 3560,
     ShortRetriesLeft		=> 1541,
     SSLCertRemoteIssuerName	=> 3550,
     SSLCertUserId		=>  3549,
@@ -846,6 +984,7 @@ package MQSeries::Command::PCF;
     Sender			=> 1,
     Server			=> 2,
     Svrconn			=> 7,
+    Telemetry			=> 10,
    },
 
    #
@@ -886,6 +1025,11 @@ package MQSeries::Command::PCF;
    MaxPropertiesLength =>
         sub { return MQSeries::Command::Base::strinteger(@_, -1,
                                                     "NOLIMIT", 104857600); },
+
+   # VALUEMAP-CODEREF
+   ComminfoCCSID =>
+        sub { return MQSeries::Command::Base::strinteger(@_, -4,
+                                                    "ASPUB", 65535); },
 
    TransportType =>
    {
@@ -1031,6 +1175,7 @@ package MQSeries::Command::PCF;
     NamelistName		=> 2010,
     Names			=> 2020,
     NameCount			=> 19,
+    NamelistType		=> 72,
    },
 
    ClusterAction =>
@@ -1042,6 +1187,7 @@ package MQSeries::Command::PCF;
    {
     AdvanceLog			=> 2,
     CollectStatistics		=> 3,
+    PubSub			=> 4
    },
 
    QMgrFacility =>
@@ -1052,6 +1198,7 @@ package MQSeries::Command::PCF;
 
    DefBind =>
    {
+    OnGroup			=> 2,
     OnOpen			=> 0,
     NotFixed			=> 1,
    },
@@ -1083,6 +1230,9 @@ package MQSeries::Command::PCF;
     SavedChannel		=> 1012,
     SvrconnChannel		=> 1013,
     ClntconnChannel		=> 1014,
+    CFStruc			=> 10,
+    ChlAuth			=> 1016,
+    StorageClass		=> 4,
    },
 
    #
@@ -1169,6 +1319,12 @@ package MQSeries::Command::PCF;
     Handle			=> 1104,
    },
 
+#   Authrec =>
+#   {
+#    Yes				=> 1,
+#    No				=> 0,
+#   },
+
    #
    # Namelist
    #
@@ -1184,23 +1340,70 @@ package MQSeries::Command::PCF;
    #
    # CF Structure (MQ on z/OS)
    #
+   CFConlos =>
+   {
+    AsQMgr			=> 2,
+    Terminate			=> 0,
+    Tolerate			=> 1,
+   },
+
+   Offload =>
+   {
+    DB2				=> 2,
+    SMDS			=> 1,
+    None			=> 0,
+   },
+
+   DSExpand =>
+   {
+    Yes				=> 1,
+    No				=> 2,
+    Default			=> 0,
+   },
+
+   DSBlock =>
+   {
+    "8K"			=> 1,
+    "16K"			=> 2,
+    "32K"			=> 3,
+    "64K"			=> 4,
+    "128K"			=> 5,
+    "256K"			=> 6,
+    "512K"			=> 7,
+    "1024K"			=> 8,
+    "1M"			=> 8,
+   },
+
    CFStrucAttrs =>
    {
     All				=> 1009,
-
     AlterationDate		=> 2027,
     AlterationTime		=> 2028,
+    CFConlos			=> 246,
     CFLevel			=> 70,
     CFStrucDesc			=> 2052,
     CFStrucName			=> 2039,
+    DSBlock			=> 1328,
+    DSBufs			=> 228,
+    DSExpand 			=> 1329,
+    DSGroup			=> 3182,
+    Offload			=> 224,
+    Recauto			=> 244,
     Recovery			=> 71,
    },
+
+#   Recauto =>
+#   {
+#    Yes				=> 1,
+#    No				=> 0,
+#   },
 
    CFStatusType =>
    {
     CFStatusSummary		=> 1136,
     CFStatusConnect		=> 1137,
     CFStatusBackup		=> 1138,
+    CFStatusSMDS		=> 1333,
    },
 
    #
@@ -1260,6 +1463,7 @@ package MQSeries::Command::PCF;
     BufferPool			=> 1170,
     DataSet			=> 1169,
     Pageset			=> 1168,
+    SMDS			=> 1335,
    },
 
    #
@@ -1270,6 +1474,7 @@ package MQSeries::Command::PCF;
     All				=> 1009,
     SecurityInterval		=> 1153,
     SecuritySwitch		=> 1154,
+    SecurityTimeout		=> 1152,
     #SecuritySwitchProfile	=> 3090,
     #SecuritySwitchSetting	=> 1155,
    },
@@ -1327,11 +1532,16 @@ package MQSeries::Command::PCF;
    #
    Authority =>
    {
+    All				=> -1,
+    AllAdmin			=> -2,
+    AllMqi			=> -3,
     AltUser			=> 1,
     Browse			=> 2,
     Change			=> 3,
     Clear			=> 4,
     Connect			=> 5,
+    Control			=> 17,
+    ControlExtended		=> 18,
     Create			=> 6,
     Delete			=> 7,
     Display			=> 8,
@@ -1427,6 +1637,7 @@ package MQSeries::Command::PCF;
     LU62			=> 1,
     NetBIOS			=> 3,
     SPX				=> 4,
+    All				=> -1,
    },
 
    InboundDisposition =>
@@ -1523,6 +1734,7 @@ package MQSeries::Command::PCF;
     StartDate			=> 3556,
     StartMode			=> 1601,
     StartTime			=> 3557,
+    Status			=> 1599,
     TPName			=> 3504,
     TransportType		=> 1501,
    },
@@ -1586,14 +1798,15 @@ package MQSeries::Command::PCF;
    },
 
    #
-   # Durable Pub/Sub Subscriptions for MQ v7
+   # Durable Pub/Sub Subscriptions for MQ v7 (Part of Topic object)
    #
    DurableSubscriptions =>
    {
     AsParent			=> 0,
-    Durable			=> 1,
-    NonDurable			=> 2,
+    Allowed			=> 1,
+    Inhibited			=> 2,
    },
+
 
    #
    # PublishPriority for
@@ -1655,16 +1868,17 @@ package MQSeries::Command::PCF;
    #
    # Subscription Status for MQ V7
    #
+# LastPublishDate/Time sees to be related to InquireTopicStatus..Verify
    SubscriptionStatusAttrs =>
    {
     All				=> 1009,
 
     ActiveConnection		=> 7006,
     Durable			=> 1274,
-    #LastMessageDate		=> [ 3168,                  		4 ],
-    #LastMessageTime		=> [ 3167,                  		4 ],
-    LastPublishDate		=> 3161,
-    LastPublishTime		=> 3162,
+    LastMessageDate		=> 3168,
+    LastMessageTime		=> 3167,
+#    LastPublishDate		=> 3161,
+#    LastPublishTime		=> 3162,
     NumberOfMessages		=> 1290,
     ResumeDate			=> 2098,
     ResumeTime			=> 2099,
@@ -1682,6 +1896,21 @@ package MQSeries::Command::PCF;
     User			=> -2,
    },
 
+   PubSubStatusAttrs =>
+   {
+    All				=> 1009,
+    Status			=> 1311,
+    Type			=> 1314,
+   },
+
+   PubSubStatusType =>
+   {
+    All				=> 0,
+    Local			=> 1,
+    Parent			=> 2,
+    Child			=> 3,
+   },
+
    #
    # Pub/Sub Topic for MQ V7
    #
@@ -1692,6 +1921,11 @@ package MQSeries::Command::PCF;
     AlterationDate		=> 2027,
     AlterationTime		=> 2028,
     ClusterName			=> 2029,
+    ClusterDate			=> 2037,
+    ClusterTime			=> 2038,
+    ClusterQMgrName		=> 2031,
+    ComminfoName		=> 2110,
+    Custom			=> 2119,
     DefPersistence		=> 185,
     DefPriority			=> 6,
     DefPutResponse		=> 184,
@@ -1709,6 +1943,7 @@ package MQSeries::Command::PCF;
     TopicName			=> 2092,
     TopicString			=> 2094,
     TopicType			=> 208,               # Not in docs
+    UseDLQ			=> 234,
     WildcardOperation		=> 216,                       # Not in docs
    },
 
@@ -1827,6 +2062,82 @@ package MQSeries::Command::PCF;
    {
     All				=> 2,
     QMgr			=> 1,
+   },
+
+   #
+   # Comminfo for 7.1
+   #
+   ComminfoAttrs =>
+   {
+   All				=> 1009,
+
+   CodedCharSetId		=> 2,
+   CommEvent			=> 232,
+   Bridge			=> 233,
+   MonitorInterval		=> 81,
+   Encoding			=> 1243,
+   MulticastHeartbeat		=> 1628,
+   MsgHistory			=> 1625,
+   MulticastPropControl		=> 1626,
+   NewSubHistory		=> 1627,
+   PortNumber			=> 1522,
+   AlterationDate		=> 2027,
+   AlterationTime		=> 2028,
+   ComminfoDesc			=> 2111,
+   ComminfoType			=> 223,
+   GrpAddress			=> 3562,
+   },
+
+   #
+   # Comminfo Encoding
+   #
+   Encoding =>
+   {
+    AsPublished			=> -1,
+    Normal			=> 273,
+    Reversed			=> 546,
+    S390			=> 785,
+    TNS				=> 1041,
+   },
+
+   #
+   # Comminfo ComminfoType
+   # Currently only supported type is Multicast.
+   #
+   ComminfoType =>
+   {
+    Multicast			=> 1,
+   },
+
+   #
+   # Comminfo CommEvent
+   #
+   CommEvent =>
+   {
+    Disabled			=> 0,
+    Enabled			=> 1,
+    Exception			=> 2,
+   },
+
+   #
+   # Comminfo NewSubHistory
+   #
+   NewSubHistory =>
+   {
+    None			=> 0,
+    All				=> -1,
+   },
+
+   #
+   # Comminfo MulticastPropControl
+   #
+   MulticastPropControl =>
+   {
+    All				=> -1,
+    Reply			=> 2,
+    User			=> 1,
+    None			=> 0,
+    Compat			=> -2,
    },
 
    #
