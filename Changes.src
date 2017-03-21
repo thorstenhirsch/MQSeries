@@ -3,6 +3,16 @@
 This file documents the changes to each and every release of the
 MQSeries perl API, going back as far as the 1.02 release.
 
+=head1 Changes for 1.35
+
+Makefile.PL and util/parse_headers:
+Multiple definition of MQI_BY_VALUE_STR error fixed, even though
+this seems like a bug in a new header file that comes with MQ v8
+
+MQSeries/Properties.pm:
+Object destructor (DESTROY) required valid Hconn, but Hconn might
+have been removed, causing "MQDLTMH failed" error with reason 2018.
+
 =head1 Changes for 1.34
 
 MQClient/typemap.PL will handle MQINT64 like how it handles MQHMSG.

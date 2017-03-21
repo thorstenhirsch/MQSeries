@@ -305,7 +305,7 @@ sub DESTROY {
             $self->{Hmsg},
             {},
             $self->{CompCode},
-            $self->{Reason});
+            $self->{Reason}) if defined $self->{QueueManager}->{Hconn};
     if ($self->{CompCode} != MQSeries::MQCC_OK ||
         $self->{Reason} != MQSeries::MQRC_NONE ) {
         $self->{Carp}->("MQDLTMH failed: (Reason => $self->{Reason}\n");

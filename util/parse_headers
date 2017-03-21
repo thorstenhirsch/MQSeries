@@ -75,6 +75,7 @@ foreach my $header ( @headers ) {
         chomp;
 
         if (m@^#if !defined.*\s+/\*\s+File not yet included\?\s+\*/@ ||
+            m@^#if !defined\([A-Z_]+_INCLUDED\)@ ||
             m@^#endif\s+/\* End of header file \*/@
            ) {
             #print "Skip include guard: $_\n";
