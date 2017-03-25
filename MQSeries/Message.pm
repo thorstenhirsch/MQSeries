@@ -16,7 +16,7 @@ use MQSeries qw(:functions);
 use MQSeries::Properties;
 use MQSeries::Utils qw(ConvertUnit);
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 sub new {
     my $proto = shift;

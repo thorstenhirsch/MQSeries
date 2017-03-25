@@ -17,7 +17,7 @@ use IO::File;
 
 use MQSeries::ErrorLog::Parser;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # Constructor

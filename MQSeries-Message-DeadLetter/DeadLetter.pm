@@ -16,7 +16,7 @@ use Exporter;
 use MQSeries qw(:functions);
 use MQSeries::Message;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw( MQSeries::Message Exporter DynaLoader );
 our @EXPORT_OK = qw(MQDecodeDeadLetter MQEncodeDeadLetter);
 

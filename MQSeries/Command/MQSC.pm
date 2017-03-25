@@ -10,7 +10,7 @@ package MQSeries::Command::MQSC;
 use strict;
 
 our @ISA = qw(MQSeries::Command);
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 use MQSeries qw(:functions);
 

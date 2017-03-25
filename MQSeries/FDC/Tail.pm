@@ -17,7 +17,7 @@ use IO::File;
 
 use MQSeries::FDC::Parser;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # The FDC logs are watched based on the following assumptions:

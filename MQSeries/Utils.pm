@@ -15,7 +15,7 @@ use Carp;
 use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(ConvertUnit);
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # Convert a Unit value from a symbolic value to the value

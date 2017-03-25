@@ -17,7 +17,7 @@ use MQSeries::Message::System;
 
 require "MQSeries/Message/Accounting.pl";
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::System);
 
 
@@ -52,12 +52,12 @@ sub _Translatable {
 
 
 package MQSeries::Message::Accounting::QueueManager;
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::Accounting);
 
 
 package MQSeries::Message::Accounting::Queue;
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::Accounting);
 
 

@@ -17,7 +17,7 @@ use MQSeries::Message::System;
 
 require "MQSeries/Message/Event.pl";
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::System);
 
 

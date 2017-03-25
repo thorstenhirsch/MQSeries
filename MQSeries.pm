@@ -22,7 +22,7 @@ require DynaLoader;
 use MQSeries::Config::Machine;
 
 our @ISA = qw(Exporter DynaLoader);
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our (@EXPORT, %EXPORT_TAGS);
 
 BEGIN {

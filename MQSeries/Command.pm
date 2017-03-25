@@ -22,7 +22,7 @@ use MQSeries::Command::Response;
 use MQSeries::Utils qw(ConvertUnit);
 use Params::Validate qw(validate);
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 sub new {
     my $proto = shift;

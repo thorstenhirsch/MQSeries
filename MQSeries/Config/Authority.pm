@@ -12,7 +12,7 @@ package MQSeries::Config::Authority;
 use strict;
 use Carp;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 use MQSeries qw(:functions);
 use MQSeries::Config::Machine;  # For localqmgrs()

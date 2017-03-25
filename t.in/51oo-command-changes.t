@@ -20,7 +20,7 @@ BEGIN {
 use Data::Dumper;
 use Test::More tests => 102;
 BEGIN {
-    our $VERSION = '1.34';
+    our $VERSION = '1.35';
     use_ok('__APITYPE__::MQSeries' => $VERSION);
     use_ok('MQSeries::QueueManager' => $VERSION);
     use_ok('MQSeries::Command' => $VERSION);

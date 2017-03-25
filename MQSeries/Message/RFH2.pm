@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Message;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message);
 
 #

@@ -16,7 +16,7 @@ use MQSeries::Command::Base;
 use MQSeries::Message;
 
 our @ISA = qw(MQSeries::Command::Base MQSeries::Message);
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 1;
 

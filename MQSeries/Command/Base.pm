@@ -19,7 +19,7 @@ use MQSeries::Command::MQSC;
 use MQSeries::Message;
 use MQSeries::Message::PCF qw(MQEncodePCF MQDecodePCF);
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 sub new {
 

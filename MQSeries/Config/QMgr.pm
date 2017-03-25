@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Config::Machine;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # Constructor: Read and parse the /var/mqm/qmgrs/XYYZY/qm.ini file.

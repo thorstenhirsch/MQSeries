@@ -17,7 +17,7 @@ BEGIN {
 use Data::Dumper;
 use Test::More tests => 18;
 BEGIN { 
-    our $VERSION = '1.34';
+    our $VERSION = '1.35';
     use_ok('__APITYPE__::MQSeries' => $VERSION); 
 }
 

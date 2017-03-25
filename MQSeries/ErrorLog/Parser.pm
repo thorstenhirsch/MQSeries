@@ -23,7 +23,7 @@ use MQSeries::ErrorLog::Entry;
 our $error_table;
 require "MQSeries/ErrorLog/descriptions.pl";
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # Constructor

@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Message;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message);
 
 #
@@ -412,7 +412,7 @@ message for a queue manager running on Solaris:
 
 =head1 AUTHORS
 
-Hildo Biersma, Jeff Dunn, Javier Ripoll Villagómez
+Hildo Biersma, Jeff Dunn, Javier Ripoll Villagï¿½mez
 
 =head1 SEE ALSO
 

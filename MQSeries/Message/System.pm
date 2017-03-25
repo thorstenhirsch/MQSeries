@@ -14,7 +14,7 @@ use Carp;
 
 use MQSeries::Message::PCF qw(MQDecodePCF);
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::PCF);
 
 my %xlat; # translation table function list

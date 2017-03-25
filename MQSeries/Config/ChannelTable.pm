@@ -10,7 +10,7 @@ package MQSeries::Config::ChannelTable;
 use strict;
 use Carp;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 our (@MQCDFields, %Outgoing, %Incoming, %SystemDefClntconn, %StrucLength);
 

@@ -15,7 +15,7 @@ use overload ('""'  => 'as_string',
               'cmp' => 'compare',
               '<=>' => 'compare');
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # Constructor

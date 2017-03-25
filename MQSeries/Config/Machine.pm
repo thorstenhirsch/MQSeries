@@ -12,7 +12,7 @@ package MQSeries::Config::Machine;
 use strict;
 use Carp;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # Constructor: Read and parse the /var/mqm/mqs.ini file.

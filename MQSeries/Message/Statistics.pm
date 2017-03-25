@@ -17,7 +17,7 @@ use MQSeries::Message::System;
 
 require "MQSeries/Message/Statistics.pl";
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::System);
 
 
@@ -54,17 +54,17 @@ sub _Translatable {
 
 
 package MQSeries::Message::Statistics::QueueManager;
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::Statistics);
 
 
 package MQSeries::Message::Statistics::Queue;
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::Statistics);
 
 
 package MQSeries::Message::Statistics::Channel;
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 our @ISA = qw(MQSeries::Message::Statistics);
 
 

@@ -26,7 +26,7 @@ use Params::Validate qw(validate);
 #
 use MQSeries::Command::PCF;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 sub new {
     my $proto = shift;
@@ -59,18 +59,18 @@ sub new {
     #
     my $self =
       {
-       Options          => MQSeries::MQOO_FAIL_IF_QUIESCING,
-       ObjDescPtr       => \%ObjDesc,
-       Carp             => \&carp,
-       RetryCount       => 0,
-       RetrySleep       => 60,
-       RetryReasons     => {
-                            map { $_ => 1 }
-                            (
-                             MQSeries::MQRC_OBJECT_IN_USE,
-                            )
-                           },
-       OpenArgs         => {},
+        Options          => MQSeries::MQOO_FAIL_IF_QUIESCING,
+        ObjDescPtr       => \%ObjDesc,
+        Carp             => \&carp,
+        RetryCount       => 0,
+        RetrySleep       => 60,
+        RetryReasons     => {
+                              map { $_ => 1 }
+                              (
+                               MQSeries::MQRC_OBJECT_IN_USE,
+                              )
+                            },
+        OpenArgs         => {},
       };
     bless ($self, $class);
 
@@ -597,21 +597,21 @@ sub Get {
     # GetMsgOpts.
     #
     if ($MQSeries::MQ_VERSION >= 7 &&
-	defined $self->{QueueManager}->{QMgrConfig} &&
-	$self->{QueueManager}->{QMgrConfig}{CommandLevel} >= 700) {
-	my $props_obj = $args{Message}->Properties();
-	unless (defined $props_obj) {
-	    $props_obj = MQSeries::Properties::->
-	      new('QueueManager' => $self->{QueueManager});
-	    $args{Message}->Properties($props_obj);
-	}
-	if (!defined $GetMsgOpts->{Version} ||
-	    $GetMsgOpts->{Version} < MQSeries::MQGMO_VERSION_4) {
-	    $GetMsgOpts->{Version} = MQSeries::MQGMO_VERSION_4;
-	}
-	$GetMsgOpts->{MsgHandle} = $props_obj->{Hmsg};
+    defined $self->{QueueManager}->{QMgrConfig} &&
+    $self->{QueueManager}->{QMgrConfig}{CommandLevel} >= 700) {
+      my $props_obj = $args{Message}->Properties();
+      unless (defined $props_obj) {
+        $props_obj = MQSeries::Properties::->
+        new('QueueManager' => $self->{QueueManager});
+        $args{Message}->Properties($props_obj);
+      }
+      if (!defined $GetMsgOpts->{Version} ||
+      $GetMsgOpts->{Version} < MQSeries::MQGMO_VERSION_4) {
+        $GetMsgOpts->{Version} = MQSeries::MQGMO_VERSION_4;
+      }
+      $GetMsgOpts->{MsgHandle} = $props_obj->{Hmsg};
     } else {
-	#print "Not compiled for V7 and connected to V7, ignoring properties\n";
+      #print "Not compiled for V7 and connected to V7, ignoring properties\n";
     }
 
     #
@@ -1789,11 +1789,11 @@ IBM documentation for such details.
     BackoutRequeueName		MQCA_BACKOUT_REQ_Q_NAME,
     BackoutThreshold		MQIA_BACKOUT_THRESHOLD,
     BaseQName			MQCA_BASE_Q_NAME,
-    BaseType			MQIA_BASE_TYPE,	
+    BaseType			MQIA_BASE_TYPE,
     CFStructure			MQCA_CF_STRUC_NAME,
     CLWLQueuePriority		MQIA_CLWL_Q_PRIORITY,
     CLWLQueueRank		MQIA_CLWL_Q_RANK,
-    CLWLUseQ			MQIA_CLWL_USEQ,	
+    CLWLUseQ			MQIA_CLWL_USEQ,
     ClusterDate			MQCA_CLUSTER_DATE,
     ClusterName			MQCA_CLUSTER_NAME,
     ClusterNamelist		MQCA_CLUSTER_NAMELIST,
@@ -1809,7 +1809,7 @@ IBM documentation for such details.
     DefPersistence		MQIA_DEF_PERSISTENCE,
     DefPriority			MQIA_DEF_PRIORITY,
     DefPutResponse		MQIA_DEF_PUT_RESPONSE_TYPE,
-    DefReadAhead		MQIA_DEF_READ_AHEAD,	
+    DefReadAhead		MQIA_DEF_READ_AHEAD,
     DistLists			MQIA_DIST_LISTS,
     HardenGetBackout		MQIA_HARDEN_GET_BACKOUT,
     HighQDepth			MQIA_HIGH_Q_DEPTH,
