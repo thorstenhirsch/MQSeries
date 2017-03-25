@@ -13,9 +13,10 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::QueueManager qw(GetMessageHandle);
 use Params::Validate qw(validate);
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 #
 # Constructor
@@ -57,23 +58,8 @@ sub new {
                        'Reason'       => 0,
                      }, $class;
 
-    #
-    # Call MQCRTMH
-    #
-    my $Hmsg = MQCRTMH($self->{QueueManager}->{Hconn},
-                       $self->{Options},
-                       $self->{CompCode},
-                       $self->{Reason},
-                      );
-    if ($self->{CompCode} == MQSeries::MQCC_OK) {
-        $self->{Hmsg} = $Hmsg;
-        return $self;
-    } elsif ($self->{CompCode} == MQSeries::MQCC_WARNING ||
-             $self->{CompCode} == MQSeries::MQCC_FAILED) {
-        $self->{Carp}->("MQCRTMH failed (Reason = $self->{Reason})");
-        return;
-    }
-    $self->{Carp}->("MQCRTMH failed, unrecognized CompCode: '$self->{CompCode}'");
+    # MessageHandle creation/deletion is handled by the QueueManager object
+    $self->{Hmsg} = $self->{QueueManager}->GetMessageHandle($self->{Options});
     return;
 }
 
@@ -291,27 +277,14 @@ sub DeleteProperty {
         $self->{Carp}->("MQDLTMP failed: (Reason => $self->{Reason}\n");
         return;
     }
+
     return 1;
 }
-
 
 #
 # Destructor
 #
-sub DESTROY {
-    my $self = shift;
-
-    MQDLTMH($self->{QueueManager}->{Hconn},
-            $self->{Hmsg},
-            {},
-            $self->{CompCode},
-            $self->{Reason}) if defined $self->{QueueManager}->{Hconn};
-    if ($self->{CompCode} != MQSeries::MQCC_OK ||
-        $self->{Reason} != MQSeries::MQRC_NONE ) {
-        $self->{Carp}->("MQDLTMH failed: (Reason => $self->{Reason}\n");
-    }
-}
-
+sub DESTROY { 1 }
 
 #
 # Return the completion code from the most recent operation
@@ -414,7 +387,7 @@ Message properties are only available if the MQSeries module has been
 compiled against MQ v7 headers and libraries, and if the queue manager
 connected to runs MQ v7 or above.
 
-The C<MQseries::Properties> class represents a message handle (Hmsg)
+The C<MQseries::Properties> class creates a message handle (Hmsg)
 and the implementation uses the message-handle related MQI calls.
 Properties can be specified when messages are put and are implicitly
 retrieved when messages are read.

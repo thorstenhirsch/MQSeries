@@ -31,7 +31,7 @@ use Params::Validate qw(validate);
 use MQSeries::Command::PCF;
 use MQSeries::Command::Base;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 sub new {
     my $proto = shift;
@@ -75,6 +75,7 @@ sub new {
        ConnectTimeout           => 0,
        ConnectArgs              => {},
        AutoCommit               => 0,
+       MessageHandles           => []
 
       };
     bless ($self, $class);
@@ -400,6 +401,19 @@ sub Disconnect {
                             "Reason => " . MQReasonToText($self->Reason()) . "\n");
             return;
         };
+    }
+
+    # delete open message handles first
+    foreach (@{$self->{MessageHandles}}) {
+        MQDLTMH($self->{QueueManager}->{Hconn},
+                $_, # Hmsg
+                {},
+                $self->{CompCode},
+                $self->{Reason});
+        if ($self->{CompCode} != MQSeries::MQCC_OK ||
+            $self->{Reason} != MQSeries::MQRC_NONE ) {
+            $self->{Carp}->("MQDLTMH failed: (Reason => $self->{Reason}\n");
+        }
     }
 
     MQDISC(
@@ -859,6 +873,28 @@ sub StatusInfo {
     return $stats;
 }
 
+sub GetMessageHandle
+{
+    my $self = shift;
+    my $options = shift;
+
+    #
+    # Call MQCRTMH
+    #
+    my $Hmsg = MQCRTMH($self->{Hconn},
+                       $options,
+                       $self->{CompCode},
+                       $self->{Reason});
+
+    if ($self->{CompCode} == MQSeries::MQCC_OK) {
+        push(@{$self->{MessageHandles}}, $Hmsg);
+    } elsif ($self->{CompCode} == MQSeries::MQCC_WARNING ||
+             $self->{CompCode} == MQSeries::MQCC_FAILED) {
+        $self->{Carp}->("MQCRTMH failed (Reason = $self->{Reason})");
+        return;
+    }
+    $self->{Carp}->("MQCRTMH failed, unrecognized CompCode: '$self->{CompCode}'");
+}
 
 1;
 
