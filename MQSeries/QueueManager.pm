@@ -371,6 +371,24 @@ sub Inquire {
 
 }
 
+sub DeleteMessageHandle {
+    my $self = shift;
+    my $hmsg = shift;
+
+    MQDLTMH($self->{Hconn},
+            $hmsg,
+            {},
+            $self->{CompCode},
+            $self->{Reason});
+    if ($self->{CompCode} != MQCC_OK ||
+        $self->{Reason} != MQRC_NONE ) {
+        $self->{Carp}->("MQDLTMH failed: (Reason => $self->{Reason}\n");
+        return 0;
+    }
+
+    delete $self->{MessageHandles}->{$hmsg};
+    return 1;
+}
 
 sub Disconnect {
     my $self = shift;
@@ -405,16 +423,8 @@ sub Disconnect {
     }
 
     # delete open message handles first
-    foreach (@{$self->{MessageHandles}}) {
-        MQDLTMH($self->{QueueManager}->{Hconn},
-                $_, # Hmsg
-                {},
-                $self->{CompCode},
-                $self->{Reason});
-        if ($self->{CompCode} != MQCC_OK ||
-            $self->{Reason} != MQRC_NONE ) {
-            $self->{Carp}->("MQDLTMH failed: (Reason => $self->{Reason}\n");
-        }
+    foreach (keys %{$self->{MessageHandles}}) {
+        $self->DeleteMessageHandle($_);
     }
 
     MQDISC(
@@ -879,16 +889,18 @@ sub GetMessageHandle
     my $self = shift;
     my $options = shift;
 
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason}   = MQRC_UNEXPECTED_ERROR;
     #
     # Call MQCRTMH
     #
-    my $Hmsg = MQCRTMH($self->{Hconn},
+    my $hmsg = MQCRTMH($self->{Hconn},
                        $options,
                        $self->{CompCode},
                        $self->{Reason});
 
     if ($self->{CompCode} == MQCC_OK) {
-        push(@{$self->{MessageHandles}}, $Hmsg);
+        push(@{$self->{MessageHandles}}, $hmsg);
     } elsif ($self->{CompCode} == MQCC_WARNING ||
              $self->{CompCode} == MQCC_FAILED) {
         $self->{Carp}->("MQCRTMH failed (Reason = $self->{Reason})");

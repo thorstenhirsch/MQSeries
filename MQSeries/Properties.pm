@@ -14,7 +14,6 @@ use Carp;
 
 use MQSeries qw(:functions);
 use MQSeries::Constants;
-use MQSeries::QueueManager qw(GetMessageHandle);
 use Params::Validate qw(validate);
 
 our $VERSION = '1.35';
@@ -285,7 +284,10 @@ sub DeleteProperty {
 #
 # Destructor
 #
-sub DESTROY { 1 }
+sub DESTROY {
+    my $self = shift;
+    $self->{QueueManager}->deleteMessageHandle($self->{Hmsg});
+}
 
 #
 # Return the completion code from the most recent operation
