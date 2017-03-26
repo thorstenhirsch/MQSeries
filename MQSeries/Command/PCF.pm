@@ -13,6 +13,7 @@ our @ISA = qw(MQSeries::Command);
 our $VERSION = '1.35';
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 
 #
 # Note -- the order is important, so resist the anal retentive urge to
@@ -51,7 +52,7 @@ sub _LastSeen {
 
     my $last = $self->{Response}->[-1];
     return unless ref $last && $last->isa("MQSeries::Command::Response");
-    return unless $last->Header("Control") == MQSeries::MQCFC_LAST;
+    return unless $last->Header("Control") == MQCFC_LAST;
     return 1;
 }
 
@@ -76,11 +77,11 @@ sub _ProcessResponses {
         # message.
         #
         if (
-            $self->{"CompCode"} == MQSeries::MQCC_OK &&
-            $self->{"Reason"} == MQSeries::MQRC_NONE &&
+            $self->{"CompCode"} == MQCC_OK &&
+            $self->{"Reason"} == MQRC_NONE &&
             (
-             $response->Header("CompCode") != MQSeries::MQCC_OK ||
-             $response->Header("Reason") != MQSeries::MQRC_NONE
+             $response->Header("CompCode") != MQCC_OK ||
+             $response->Header("Reason") != MQRC_NONE
             )
            ) {
             $self->{"CompCode"} = $response->Header("CompCode");
@@ -98,11 +99,11 @@ sub _ProcessResponses {
         #
         if (
             $command eq 'InquireChannelStatus'  &&
-            $self->{"Reason"} == MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND
+            $self->{"Reason"} == MQRCCF_CHL_STATUS_NOT_FOUND
            ) {
             $response->{Parameters}->{ChannelStatus} = 'NotFound';
-            $response->{Header}->{CompCode} = MQSeries::MQCC_OK;
-            $response->{Header}->{Reason} = MQSeries::MQRC_NONE;
+            $response->{Header}->{CompCode} = MQCC_OK;
+            $response->{Header}->{Reason} = MQRC_NONE;
         }
 
     }
@@ -138,7 +139,7 @@ sub _ReverseMap {
                 my $ReverseValueMap = {};
 
                 foreach my $value ( keys %$ForwardValueMap ) {
-                    if ($ForwardType == MQSeries::MQCFT_GROUP) {
+                    if ($ForwardType == MQCFT_GROUP) {
                         #
                         # Groups have a $valuemap that's actually a
                         # regular map (for mapping the subparams) so

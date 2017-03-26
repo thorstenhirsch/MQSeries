@@ -13,6 +13,7 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::QueueManager qw(GetMessageHandle);
 use Params::Validate qw(validate);
 
@@ -80,15 +81,15 @@ sub GetProperties {
                               });
 
     $params{Name} = '' unless (defined $params{Name});
-    my $options = { 'Options' => MQSeries::MQIMPO_INQ_FIRST, };
+    my $options = { 'Options' => MQIMPO_INQ_FIRST, };
     my $length = 1024;          # FIXME: remember across calls
     my $retval = {};
     while (1) {
-        my $type = MQSeries::MQTYPE_AS_SET;
+        my $type = MQTYPE_AS_SET;
         if (defined $params{Type} &&
-            $params{Type} ne MQSeries::MQTYPE_AS_SET) {
+            $params{Type} ne MQTYPE_AS_SET) {
             $type = $params{Type};
-            $options->{Options} |= MQSeries::MQIMPO_CONVERT_TYPE;
+            $options->{Options} |= MQIMPO_CONVERT_TYPE;
         }
         my $len = $length;
         my $prop_desc = {};
@@ -101,17 +102,17 @@ sub GetProperties {
                            $len,
                            $self->{CompCode},
                            $self->{Reason});
-        if ($self->{CompCode} != MQSeries::MQCC_OK ||
-            $self->{Reason} != MQSeries::MQRC_NONE) {
-            if ($self->{Reason} == MQSeries::MQRC_PROPERTY_NOT_AVAILABLE) {
+        if ($self->{CompCode} != MQCC_OK ||
+            $self->{Reason} != MQRC_NONE) {
+            if ($self->{Reason} == MQRC_PROPERTY_NOT_AVAILABLE) {
                 last;
-            } elsif ($self->{Reason} == MQSeries::MQRC_PROPERTY_VALUE_TOO_BIG &&
+            } elsif ($self->{Reason} == MQRC_PROPERTY_VALUE_TOO_BIG &&
                      $len > $length) {
                 #warn "oops - size too small (have $length, need $len) - re-read\n";
                 $length = $len;
-                $options->{Options} &= ~MQSeries::MQIMPO_INQ_FIRST;
-                $options->{Options} &= !MQSeries::MQIMPO_INQ_NEXT;
-                $options->{Options} |= MQSeries::MQIMPO_INQ_PROP_UNDER_CURSOR;
+                $options->{Options} &= ~MQIMPO_INQ_FIRST;
+                $options->{Options} &= !MQIMPO_INQ_NEXT;
+                $options->{Options} |= MQIMPO_INQ_PROP_UNDER_CURSOR;
                 redo;
             } else {
                 $self->{Carp}->("MQINQMP failed: (Reason => $self->{Reason}\n");
@@ -127,9 +128,9 @@ sub GetProperties {
             $retval->{ $options->{ReturnedName} } = $prop;
         }
     } continue {
-        $options->{Options} &= ~MQSeries::MQIMPO_INQ_FIRST;
-        $options->{Options} &= ~MQSeries::MQIMPO_INQ_PROP_UNDER_CURSOR;
-        $options->{Options} |= MQSeries::MQIMPO_INQ_NEXT;
+        $options->{Options} &= ~MQIMPO_INQ_FIRST;
+        $options->{Options} &= ~MQIMPO_INQ_PROP_UNDER_CURSOR;
+        $options->{Options} |= MQIMPO_INQ_NEXT;
     }
 
     return $retval;
@@ -152,15 +153,15 @@ sub GetDetailedProperties {
                               });
 
     $params{Name} = '' unless (defined $params{Name});
-    my $options = { 'Options' => MQSeries::MQIMPO_INQ_FIRST, };
+    my $options = { 'Options' => MQIMPO_INQ_FIRST, };
     my $length = 1024;          # FIXME: remember across calls
     my @retval;
     while (1) {
-        my $type = MQSeries::MQTYPE_AS_SET;
+        my $type = MQTYPE_AS_SET;
         if (defined $params{Type} &&
-            $params{Type} ne MQSeries::MQTYPE_AS_SET) {
+            $params{Type} ne MQTYPE_AS_SET) {
             $type = $params{Type};
-            $options->{Options} |= MQSeries::MQIMPO_CONVERT_TYPE;
+            $options->{Options} |= MQIMPO_CONVERT_TYPE;
         }
         my $len = $length;
         my $prop_desc = {};
@@ -173,17 +174,17 @@ sub GetDetailedProperties {
                            $len,
                            $self->{CompCode},
                            $self->{Reason});
-        if ($self->{CompCode} != MQSeries::MQCC_OK ||
-            $self->{Reason} != MQSeries::MQRC_NONE) {
-            if ($self->{Reason} == MQSeries::MQRC_PROPERTY_NOT_AVAILABLE) {
+        if ($self->{CompCode} != MQCC_OK ||
+            $self->{Reason} != MQRC_NONE) {
+            if ($self->{Reason} == MQRC_PROPERTY_NOT_AVAILABLE) {
                 last;
-            } elsif ($self->{Reason} == MQSeries::MQRC_PROPERTY_VALUE_TOO_BIG &&
+            } elsif ($self->{Reason} == MQRC_PROPERTY_VALUE_TOO_BIG &&
                      $len > $length) {
                 #warn "oops - size too small (have $length, need $len) - re-read\n";
                 $length = $len;
-                $options->{Options} &= ~MQSeries::MQIMPO_INQ_FIRST;
-                $options->{Options} &= !MQSeries::MQIMPO_INQ_NEXT;
-                $options->{Options} |= MQSeries::MQIMPO_INQ_PROP_UNDER_CURSOR;
+                $options->{Options} &= ~MQIMPO_INQ_FIRST;
+                $options->{Options} &= !MQIMPO_INQ_NEXT;
+                $options->{Options} |= MQIMPO_INQ_PROP_UNDER_CURSOR;
                 redo;
             } else {
                 $self->{Carp}->("MQINQMP failed: (Reason => $self->{Reason}\n");
@@ -196,14 +197,14 @@ sub GetDetailedProperties {
                       Value    => $prop,
                       Encoding => $options->{ReturnedEncoding},
                     };
-        if ($type == MQSeries::MQTYPE_STRING) {
+        if ($type == MQTYPE_STRING) {
             $entry->{CCSID} = $options->{ReturnedCCSID};
         }
         push @retval, $entry;
     } continue {
-        $options->{Options} &= ~MQSeries::MQIMPO_INQ_FIRST;
-        $options->{Options} &= ~MQSeries::MQIMPO_INQ_PROP_UNDER_CURSOR;
-        $options->{Options} |= MQSeries::MQIMPO_INQ_NEXT;
+        $options->{Options} &= ~MQIMPO_INQ_FIRST;
+        $options->{Options} &= ~MQIMPO_INQ_PROP_UNDER_CURSOR;
+        $options->{Options} |= MQIMPO_INQ_NEXT;
     }
 
     return @retval;
@@ -233,7 +234,7 @@ sub SetProperty {
                                 'Type'  => 0,
                               });
     unless (defined $params{Type}) {
-        $params{Type} = MQSeries::MQTYPE_STRING;
+        $params{Type} = MQTYPE_STRING;
     }
     MQSETMP($self->{QueueManager}->{Hconn},
             $self->{Hmsg},
@@ -244,8 +245,8 @@ sub SetProperty {
             $params{Value},
             $self->{CompCode},
             $self->{Reason});
-    if ($self->{CompCode} != MQSeries::MQCC_OK ||
-        $self->{Reason} != MQSeries::MQRC_NONE) {
+    if ($self->{CompCode} != MQCC_OK ||
+        $self->{Reason} != MQRC_NONE) {
         $self->{Carp}->("MQSETMP failed: (Reason => $self->{Reason}\n");
         return;
     }
@@ -272,8 +273,8 @@ sub DeleteProperty {
             $params{Name},
             $self->{CompCode},
             $self->{Reason});
-    if ($self->{CompCode} != MQSeries::MQCC_OK ||
-        $self->{Reason} != MQSeries::MQRC_NONE) {
+    if ($self->{CompCode} != MQCC_OK ||
+        $self->{Reason} != MQRC_NONE) {
         $self->{Carp}->("MQDLTMP failed: (Reason => $self->{Reason}\n");
         return;
     }
@@ -368,10 +369,10 @@ MQSeries::Properties -- OO interface to MQSeries message properties
   my $props = MQSeries::Properties->new('QueueManager' => $qmgr_obj);
   $props->SetProperty(Name  => 'perl.MQSeries.demo.int',
                       Value => 42,
-                      Type  => MQSeries::MQTYPE_INT32);
+                      Type  => MQTYPE_INT32);
   $props->SetProperty(Name  => 'perl.MQSeries.demo.float',
                       Value => 3.141265,
-                      Type  => MQSeries::MQTYPE_FLOAT64);
+                      Type  => MQTYPE_FLOAT64);
   my $prop_hashref = $props->GetProperties('Name' => 'perl.MQSeries.%');
   $props->DeletePropery(Name => 'perl.MQSeries.demo.float');
 
@@ -437,7 +438,7 @@ wildcard, e.g. 'perl.MQSeries.%'.
 
 The property type to be returned.  This is not a selection mechanism,
 but performs data conversion at the MQ level.  For example, if the
-type specified is C<MQSeries::MQTYPE_FLOAT64>, the properties will be
+type specified is C<MQTYPE_FLOAT64>, the properties will be
 converted to 64-bit floating point numbers by MQ before being
 returned; an error will be retrurned if the data cannot be converted.
 Given the flexibility of perl when dealing with scalar values, this
@@ -462,7 +463,7 @@ wildcard, e.g. 'perl.MQSeries.%'.
 
 The property type to be returned.  This is not a selection mechanism,
 but performs data conversion at the MQ level.  For example, if the
-type specified is C<MQSeries::MQTYPE_FLOAT64>, the properties will be
+type specified is C<MQTYPE_FLOAT64>, the properties will be
 converted to 64-bit floating point numbers by MQ before being
 returned; an error will be retrurned if the data cannot be converted.
 Given the flexibility of perl when dealing with scalar values, this
@@ -486,8 +487,8 @@ The property value (this can be C<undef>)
 =item Type
 
 The property type, as an integer matching one of the
-C<MQSeries::MQTYPE_xxx> constants.  For example, strings are returrned
-as C<MQSeries::MQTYPE_STRING>.
+C<MQTYPE_xxx> constants.  For example, strings are returrned
+as C<MQTYPE_STRING>.
 
 =item Encoding
 
@@ -496,7 +497,7 @@ The returned encoding
 =item CCSID
 
 The returned character set id (when the type is
-C<MQSeries::MQTYPE_STRING>).
+C<MQTYPE_STRING>).
 
 =back
 
@@ -533,9 +534,9 @@ properties.  This paramater is required.
 =item Type
 
 The property type, as an integer matching one of the
-C<MQSeries::MQTYPE_xxx> constants.  For example, strings are specified
-as C<MQSeries::MQTYPE_STRING> and 32-bit integers as
-C<MQSeries::MQTYPE_INT32>.
+C<MQTYPE_xxx> constants.  For example, strings are specified
+as C<MQTYPE_STRING> and 32-bit integers as
+C<MQTYPE_INT32>.
 
 This parameter is optional.  When not specified, the default is the
 string type.
@@ -558,7 +559,7 @@ To put a message that matches the selector, use:
   $queue_obj->Put(Message    => $msg,
                   Properties => { 'perl.MQSeries.test.value' =>
                                   { Value => 5,
-                                    Type  => MQSeries::MQTYPE_INT32,
+                                    Type  => MQTYPE_INT32,
                                   }
                                 },
                  );

@@ -12,6 +12,7 @@ use 5.008;
 use strict;
 use Carp;
 
+use MQSeries::Constants;
 use MQSeries::Message::PCF qw(MQDecodePCF);
 
 our $VERSION = '1.35';
@@ -141,22 +142,22 @@ sub _UnTranslatePCF {
         # translates by way of the thing it finds for one of the value
         # names it expects.
         #
-        if ($origparam->{Type} == MQSeries::MQCFT_STRING) {
+        if ($origparam->{Type} == MQCFT_STRING) {
             ($parameters->{$key} = $origparam->{"String"}) =~ s/[\s\0]+$//;
         }
-        elsif ($origparam->{Type} == MQSeries::MQCFT_INTEGER ||
-               $origparam->{Type} == MQSeries::MQCFT_INTEGER64) {
+        elsif ($origparam->{Type} == MQCFT_INTEGER ||
+               $origparam->{Type} == MQCFT_INTEGER64) {
             $parameters->{$key} = $origparam->{"Value"};
         }
-        elsif ($origparam->{Type} == MQSeries::MQCFT_BYTE_STRING) {
+        elsif ($origparam->{Type} == MQCFT_BYTE_STRING) {
             $parameters->{$key} = unpack("H*", $origparam->{"ByteString"});
             #$parameters->{$key} = $origparam->{"ByteString"};
         }
-        elsif ($origparam->{Type} == MQSeries::MQCFT_INTEGER_LIST ||
-               $origparam->{Type} == MQSeries::MQCFT_INTEGER64_LIST) {
+        elsif ($origparam->{Type} == MQCFT_INTEGER_LIST ||
+               $origparam->{Type} == MQCFT_INTEGER64_LIST) {
             $parameters->{$key} = $origparam->{"Values"};
         }
-        elsif ($origparam->{Type} == MQSeries::MQCFT_GROUP) {
+        elsif ($origparam->{Type} == MQCFT_GROUP) {
             my ($th, $tp) =
               _UnTranslatePCF($self, $origheader, $origparam->{"Group"});
             push(@{$parameters->{$key}}, $tp);

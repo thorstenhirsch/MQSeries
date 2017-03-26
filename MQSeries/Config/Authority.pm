@@ -15,6 +15,7 @@ use Carp;
 our $VERSION = '1.35';
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Config::Machine;  # For localqmgrs()
 
 #
@@ -25,26 +26,26 @@ my %auth_bit_to_name =
    #
    # Admin Rights
    #
-   MQSeries::MQZAO_CREATE                       => 'crt',
-   MQSeries::MQZAO_DELETE                       => 'dlt',
-   MQSeries::MQZAO_DISPLAY                      => 'dsp',
-   MQSeries::MQZAO_CHANGE                       => 'chg',
-   MQSeries::MQZAO_CLEAR                        => 'clr',
+   MQZAO_CREATE                       => 'crt',
+   MQZAO_DELETE                       => 'dlt',
+   MQZAO_DISPLAY                      => 'dsp',
+   MQZAO_CHANGE                       => 'chg',
+   MQZAO_CLEAR                        => 'clr',
 
    #
    # MQI Rights
    #
-   MQSeries::MQZAO_CONNECT                      => 'connect',
-   MQSeries::MQZAO_BROWSE                       => 'browse',
-   MQSeries::MQZAO_INPUT                        => 'get',
-   MQSeries::MQZAO_OUTPUT                       => 'put',
-   MQSeries::MQZAO_INQUIRE                      => 'inq',
-   MQSeries::MQZAO_SET                          => 'set',
-   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT        => 'passid',
-   MQSeries::MQZAO_PASS_ALL_CONTEXT             => 'passall',
-   MQSeries::MQZAO_SET_IDENTITY_CONTEXT         => 'setid',
-   MQSeries::MQZAO_SET_ALL_CONTEXT              => 'setall',
-   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY     => 'altusr',
+   MQZAO_CONNECT                      => 'connect',
+   MQZAO_BROWSE                       => 'browse',
+   MQZAO_INPUT                        => 'get',
+   MQZAO_OUTPUT                       => 'put',
+   MQZAO_INQUIRE                      => 'inq',
+   MQZAO_SET                          => 'set',
+   MQZAO_PASS_IDENTITY_CONTEXT        => 'passid',
+   MQZAO_PASS_ALL_CONTEXT             => 'passall',
+   MQZAO_SET_IDENTITY_CONTEXT         => 'setid',
+   MQZAO_SET_ALL_CONTEXT              => 'setall',
+   MQZAO_ALTERNATE_USER_AUTHORITY     => 'altusr',
   );
 my %auth_name_to_bit = reverse %auth_bit_to_name;
 
@@ -56,26 +57,26 @@ my %auth_bit_to_pcf =
    #
    # Admin Rights
    #
-   MQSeries::MQZAO_CREATE                       => 'Create',
-   MQSeries::MQZAO_DELETE                       => 'Delete',
-   MQSeries::MQZAO_DISPLAY                      => 'Display',
-   MQSeries::MQZAO_CHANGE                       => 'Change',
-   MQSeries::MQZAO_CLEAR                        => 'Clear',
+   MQZAO_CREATE                       => 'Create',
+   MQZAO_DELETE                       => 'Delete',
+   MQZAO_DISPLAY                      => 'Display',
+   MQZAO_CHANGE                       => 'Change',
+   MQZAO_CLEAR                        => 'Clear',
 
    #
    # MQI Rights
    #
-   MQSeries::MQZAO_CONNECT                      => 'Connect',
-   MQSeries::MQZAO_BROWSE                       => 'Browse',
-   MQSeries::MQZAO_INPUT                        => 'Input',
-   MQSeries::MQZAO_OUTPUT                       => 'Output',
-   MQSeries::MQZAO_INQUIRE                      => 'Inquire',
-   MQSeries::MQZAO_SET                          => 'Set',
-   MQSeries::MQZAO_PASS_IDENTITY_CONTEXT        => 'PassId',
-   MQSeries::MQZAO_PASS_ALL_CONTEXT             => 'PassAll',
-   MQSeries::MQZAO_SET_IDENTITY_CONTEXT         => 'SetId',
-   MQSeries::MQZAO_SET_ALL_CONTEXT              => 'SetAll',
-   MQSeries::MQZAO_ALTERNATE_USER_AUTHORITY     => 'AlternateUser',
+   MQZAO_CONNECT                      => 'Connect',
+   MQZAO_BROWSE                       => 'Browse',
+   MQZAO_INPUT                        => 'Input',
+   MQZAO_OUTPUT                       => 'Output',
+   MQZAO_INQUIRE                      => 'Inquire',
+   MQZAO_SET                          => 'Set',
+   MQZAO_PASS_IDENTITY_CONTEXT        => 'PassId',
+   MQZAO_PASS_ALL_CONTEXT             => 'PassAll',
+   MQZAO_SET_IDENTITY_CONTEXT         => 'SetId',
+   MQZAO_SET_ALL_CONTEXT              => 'SetAll',
+   MQZAO_ALTERNATE_USER_AUTHORITY     => 'AlternateUser',
   );
 
 #

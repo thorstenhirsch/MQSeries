@@ -12,6 +12,7 @@ package MQSeries::Message::IIH;
 use strict;
 use Carp;
 
+use MQSeries::Constants;
 use MQSeries::Message;
 
 our $VERSION = '1.35';
@@ -58,7 +59,7 @@ sub new {
 
     my %MsgDesc =
       (
-       Format   => MQSeries::MQFMT_IMS,
+       Format   => MQFMT_IMS,
       );
 
     my $carp = $args{Carp} || \&carp;
@@ -317,8 +318,8 @@ MQSeries::Message::IIH -- Class to send/receive IMS Bridge Header (IIH) messages
   #
   my $message = MQSeries::Message::IIH->
     new(Header => { Authenticator => 'foobar',
-                    CommitMode    => MQSeries::MQICM_COMMIT_THEN_SEND,
-                    TranState     => MQSeries::MQITS_IN_CONVERSATION,
+                    CommitMode    => MQICM_COMMIT_THEN_SEND,
+                    TranState     => MQITS_IN_CONVERSATION,
                   },
         Data   => { Transaction => 'ISIC7000',
                     Body        => '   Blah Blah Blah   ',
@@ -402,8 +403,8 @@ message for a queue manager running on Solaris:
   MQSeries::Message::IIH->_setEndianess(1);
   my $message = MQSeries::Message::IIH->
     new(Header => { Authenticator => 'foobar',
-                    CommitMode    => MQSeries::MQICM_COMMIT_THEN_SEND,
-                    TranState     => MQSeries::MQITS_IN_CONVERSATION,
+                    CommitMode    => MQICM_COMMIT_THEN_SEND,
+                    TranState     => MQITS_IN_CONVERSATION,
                   },
         Data   => { Transaction => 'ISIC7000',
                     Body        => '   Blah Blah Blah   ',
@@ -419,4 +420,3 @@ Hildo Biersma, Jeff Dunn, Javier Ripoll Villag�mez
 MQSeries(3), MQSeries::QueueManager(3), MQSeries::Queue(3), MQSeries::Message(3)
 
 =cut
-

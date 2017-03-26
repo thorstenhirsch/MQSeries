@@ -13,6 +13,7 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Message::System;
 
 require "MQSeries/Message/Statistics.pl";
@@ -34,15 +35,15 @@ sub _Translatable {
     my ($self, $header) = @_;
 
     my $subclass =
-        ($header->{"Command"} == MQSeries::MQCMD_STATISTICS_MQI) ?
+        ($header->{"Command"} == MQCMD_STATISTICS_MQI) ?
             "MQSeries::Message::Statistics::QueueManager" :
-        ($header->{"Command"} == MQSeries::MQCMD_STATISTICS_Q) ?
+        ($header->{"Command"} == MQCMD_STATISTICS_Q) ?
             "MQSeries::Message::Statistics::Queue" :
-        ($header->{"Command"} == MQSeries::MQCMD_STATISTICS_CHANNEL) ?
+        ($header->{"Command"} == MQCMD_STATISTICS_CHANNEL) ?
             "MQSeries::Message::Statistics::Channel" :
                 undef;
 
-    if ($header->{"Type"} == MQSeries::MQCFT_STATISTICS &&
+    if ($header->{"Type"} == MQCFT_STATISTICS &&
         defined($subclass)) {
         bless $self, $subclass;
         return (\%MQSeries::Message::Statistics::ResponseParameters,

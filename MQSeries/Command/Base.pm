@@ -13,6 +13,7 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Command;
 use MQSeries::Command::PCF;
 use MQSeries::Command::MQSC;
@@ -29,8 +30,8 @@ sub new {
 
     my %MsgDesc =
       (
-       MsgType  => $class =~ /::Request/ ? MQSeries::MQMT_REQUEST : MQSeries::MQMT_REPLY,
-       Format   => $args{Type} eq 'MQSC' ? MQSeries::MQFMT_STRING : MQSeries::MQFMT_ADMIN,
+       MsgType  => $class =~ /::Request/ ? MQMT_REQUEST : MQMT_REPLY,
+       Format   => $args{Type} eq 'MQSC' ? MQFMT_STRING : MQFMT_ADMIN,
       );
 
     if ( exists $args{MsgDesc} ) {
@@ -139,14 +140,14 @@ sub _TranslatePCF {
 
     #
     # Set the type to either
-    # - MQSeries::MQCFT_COMMAND (default)
-    # - MQSeries::MQCFT_COMMAND_XR (PCF against the MF, filters)
+    # - MQCFT_COMMAND (default)
+    # - MQCFT_COMMAND_XR (PCF against the MF, filters)
     #
     ($header->{Type}) = ( $self->isa("MQSeries::Command::Response") ?
-                          MQSeries::MQCFT_RESPONSE :
+                          MQCFT_RESPONSE :
                           ( $self->{CommandVersion} < 3 ?
-                            MQSeries::MQCFT_COMMAND :
-                            MQSeries::MQCFT_COMMAND_XR ),
+                            MQCFT_COMMAND :
+                            MQCFT_COMMAND_XR ),
                         );
 
     my $parameters = [];
@@ -220,8 +221,8 @@ sub _TranslatePCF {
             $self->{Carp}->("FilterCommand only support for PCF requests, not responses");
             return;
         }
-        if ($self->{CommandVersion} < MQSeries::MQCFH_VERSION_3) {
-            $self->{Carp}->("FilterCommand requires PCF commands with CommandVersion >= ", MQSeries::MQCFH_VERSION_3);
+        if ($self->{CommandVersion} < MQCFH_VERSION_3) {
+            $self->{Carp}->("FilterCommand requires PCF commands with CommandVersion >= ", MQCFH_VERSION_3);
             return;
         }
 
@@ -275,15 +276,15 @@ sub _TranslatePCF {
             return;
         }
         my ($paramkey,$paramtype,$ValueMap) = @{ $param_map->{ $filter->{Parameter} } };
-        if ($paramtype == MQSeries::MQCFT_STRING ||
-            $paramtype == MQSeries::MQCFT_STRING_LIST) {
+        if ($paramtype == MQCFT_STRING ||
+            $paramtype == MQCFT_STRING_LIST) {
             $filter->{Command} = 'StringFilterCommand';
-        } elsif ($paramtype == MQSeries::MQCFT_BYTE_STRING) {
+        } elsif ($paramtype == MQCFT_BYTE_STRING) {
             $filter->{Command} = 'ByteStringFilterCommand';
-        } elsif ($paramtype == MQSeries::MQCFT_INTEGER ||
-                 $paramtype == MQSeries::MQCFT_INTEGER64 ||
-                 $paramtype == MQSeries::MQCFT_INTEGER_LIST ||
-                 $paramtype == MQSeries::MQCFT_INTEGER64_LIST) {
+        } elsif ($paramtype == MQCFT_INTEGER ||
+                 $paramtype == MQCFT_INTEGER64 ||
+                 $paramtype == MQCFT_INTEGER_LIST ||
+                 $paramtype == MQCFT_INTEGER64_LIST) {
             $filter->{Command} = 'IntegerFilterCommand';
         } else {
             $self->{Carp}->("Unexpected type '$paramtype' for filter parameter '$filter->{Parameter}'");
@@ -297,30 +298,30 @@ sub _TranslatePCF {
         #
         # Translate the operator string to an MQ constant
         #
-        my %ops = ('<'    => MQSeries::MQCFOP_LESS,
-                   '<='   => MQSeries::MQCFOP_NOT_GREATER,
-                   '=='   => MQSeries::MQCFOP_EQUAL,
-                   '!='   => MQSeries::MQCFOP_NOT_EQUAL,
-                   '<>'   => MQSeries::MQCFOP_NOT_EQUAL,
-                   '>'    => MQSeries::MQCFOP_GREATER,
-                   '>='   => MQSeries::MQCFOP_NOT_LESS,
-                   'like' => MQSeries::MQCFOP_LIKE,
-                   'not like' => MQSeries::MQCFOP_NOT_LIKE,
+        my %ops = ('<'    => MQCFOP_LESS,
+                   '<='   => MQCFOP_NOT_GREATER,
+                   '=='   => MQCFOP_EQUAL,
+                   '!='   => MQCFOP_NOT_EQUAL,
+                   '<>'   => MQCFOP_NOT_EQUAL,
+                   '>'    => MQCFOP_GREATER,
+                   '>='   => MQCFOP_NOT_LESS,
+                   'like' => MQCFOP_LIKE,
+                   'not like' => MQCFOP_NOT_LIKE,
                   );
-        my %list_ops = ('=='           => MQSeries::MQCFOP_CONTAINS,
-                        'contains'     => MQSeries::MQCFOP_CONTAINS,
-                        '!='           => MQSeries::MQCFOP_EXCLUDES,
-                        '<>'           => MQSeries::MQCFOP_EXCLUDES,
-                        'excludes'     => MQSeries::MQCFOP_EXCLUDES,
-                        'like'         => MQSeries::MQCFOP_CONTAINS_GEN,
-                        'contains_gen' => MQSeries::MQCFOP_CONTAINS_GEN,
-                        'not like'     => MQSeries::MQCFOP_EXCLUDES_GEN,
-                        'excludes_gen' => MQSeries::MQCFOP_EXCLUDES_GEN,
+        my %list_ops = ('=='           => MQCFOP_CONTAINS,
+                        'contains'     => MQCFOP_CONTAINS,
+                        '!='           => MQCFOP_EXCLUDES,
+                        '<>'           => MQCFOP_EXCLUDES,
+                        'excludes'     => MQCFOP_EXCLUDES,
+                        'like'         => MQCFOP_CONTAINS_GEN,
+                        'contains_gen' => MQCFOP_CONTAINS_GEN,
+                        'not like'     => MQCFOP_EXCLUDES_GEN,
+                        'excludes_gen' => MQCFOP_EXCLUDES_GEN,
                        );
         my $op = $ops{ $filter->{Operator} };
-        if ($paramtype == MQSeries::MQCFT_INTEGER_LIST ||
-            $paramtype == MQSeries::MQCFT_INTEGER64_LIST ||
-            $paramtype == MQSeries::MQCFT_STRING_LIST) {
+        if ($paramtype == MQCFT_INTEGER_LIST ||
+            $paramtype == MQCFT_INTEGER64_LIST ||
+            $paramtype == MQCFT_STRING_LIST) {
             $op = $list_ops{ $filter->{Operator} };
         }
         unless (defined $op) {
@@ -443,23 +444,23 @@ sub _TranslatePCF {
         # which can of course be represented as strings.  This
         # might just be a bad choice on my part in the XS code.
         #
-        if ( $paramtype == MQSeries::MQCFT_STRING ||
-             $paramtype == MQSeries::MQCFT_STRING_LIST ) {
+        if ( $paramtype == MQCFT_STRING ||
+             $paramtype == MQCFT_STRING_LIST ) {
             if ( ref($ValueMap) eq "CODE" ) {
                 # VALUEMAP-CODEREF - leave type and $origvalue alone
             } elsif ( ref $origvalue eq "ARRAY" &&
-                 $paramtype == MQSeries::MQCFT_STRING ) {
+                 $paramtype == MQCFT_STRING ) {
                 # flip type to match list
                 $newparameter->{"Type"} = $paramtype =
-                    MQSeries::MQCFT_STRING_LIST;
+                    MQCFT_STRING_LIST;
             } elsif ( ref $origvalue ne "ARRAY" &&
-                      $paramtype == MQSeries::MQCFT_STRING_LIST ) {
+                      $paramtype == MQCFT_STRING_LIST ) {
                 # array-ify non array
                 $origvalue = [ $origvalue ];
             }
             if (ref($ValueMap) eq "CODE") {
                 my ($typename, $newvalue);
-                if ($paramtype == MQSeries::MQCFT_STRING) {
+                if ($paramtype == MQCFT_STRING) {
                     $typename = "String";
                     # VALUEMAP-CODEREF
                     $newvalue = $ValueMap->(encodepcf => $origvalue);
@@ -474,7 +475,7 @@ sub _TranslatePCF {
                     $newvalue = [$ValueMap->(encodepcf => $origvalue)];
                 }
                 $newparameter->{$typename} = $newvalue;
-            } elsif ( $paramtype == MQSeries::MQCFT_STRING_LIST ) {
+            } elsif ( $paramtype == MQCFT_STRING_LIST ) {
                 $newparameter->{Strings} = [];
                 foreach my $value ( @$origvalue ) {
                     my $newvalue = length($value) == 0 ? " " : "$value";
@@ -489,14 +490,14 @@ sub _TranslatePCF {
         #
         # BYTE_STRING - Added newly for WMQ6 : Not fully tested
         #
-        if ( $paramtype == MQSeries::MQCFT_BYTE_STRING ) {
+        if ( $paramtype == MQCFT_BYTE_STRING ) {
             my $newvalue = length($origvalue)== 0 ? "\0" : pack("H*",$origvalue);
             #print "byte string orig value: [$origvalue] - new value: [$newvalue]\n";
             $newparameter->{ByteString} = "$newvalue";
         }
 
-        if ( $paramtype == MQSeries::MQCFT_INTEGER ||
-             $paramtype == MQSeries::MQCFT_INTEGER64 ) {
+        if ( $paramtype == MQCFT_INTEGER ||
+             $paramtype == MQCFT_INTEGER64 ) {
             if (!ref($ValueMap)) {
                 $newparameter->{Value} = $origvalue;
             }
@@ -514,8 +515,8 @@ sub _TranslatePCF {
             }
         }
 
-        if ( $paramtype == MQSeries::MQCFT_INTEGER_LIST ||
-             $paramtype == MQSeries::MQCFT_INTEGER64_LIST ) {
+        if ( $paramtype == MQCFT_INTEGER_LIST ||
+             $paramtype == MQCFT_INTEGER64_LIST ) {
             foreach my $value ( @$origvalue ) {
                 if ( ref $ValueMap ) {
                     # VALUEMAP-CODEREF
@@ -536,7 +537,7 @@ sub _TranslatePCF {
         #
         # MQ v6 and above: Integer/String/ByteString Filter
         #
-        if ($paramtype == MQSeries::MQCFT_BYTE_STRING_FILTER) {
+        if ($paramtype == MQCFT_BYTE_STRING_FILTER) {
             unless (ref $origvalue eq 'ARRAY' &&
                     @$origvalue == 3) {
                 $self->{Carp}->("Invalid byte string filter for parameter '$param', command '$command': must be an array-reference with three elements");
@@ -544,7 +545,7 @@ sub _TranslatePCF {
             }
             #print STDERR "XXX: Have byte string filter for [@$origvalue]\n";
             $newparameter->{ByteStringFilter} = $origvalue;
-        } elsif ($paramtype == MQSeries::MQCFT_INTEGER_FILTER) {
+        } elsif ($paramtype == MQCFT_INTEGER_FILTER) {
             unless (ref $origvalue eq 'ARRAY' &&
                     @$origvalue == 3) {
                 $self->{Carp}->("Invalid integer filter for parameter '$param', command '$command': must be an array-reference with three elements");
@@ -552,7 +553,7 @@ sub _TranslatePCF {
             }
             #print STDERR "XXX: Have integer filter for [@$origvalue]\n";
             $newparameter->{IntegerFilter} = $origvalue;
-        } elsif ($paramtype == MQSeries::MQCFT_STRING_FILTER) {
+        } elsif ($paramtype == MQCFT_STRING_FILTER) {
             unless (ref $origvalue eq 'ARRAY' &&
                     @$origvalue == 3) {
                 $self->{Carp}->("Invalid string filter for parameter '$param', command '$command': must be an array-reference with three elements");
@@ -560,7 +561,7 @@ sub _TranslatePCF {
             }
             #print STDERR "XXX: Have string filter for [@$origvalue]\n";
             $newparameter->{StringFilter} = $origvalue;
-        } elsif ($paramtype == MQSeries::MQCFT_GROUP) {
+        } elsif ($paramtype == MQCFT_GROUP) {
             if (ref($origvalue) ne 'ARRAY') {
                 $self->{Carp}->("Invalid group for parameter '$param', command '$command': must be an array-reference");
                 return;
@@ -568,11 +569,11 @@ sub _TranslatePCF {
             # replace current parameter with an ObjectCount; the group
             # itself will be handled below
             if (!defined($header->{"Version"})) {
-                $header->{"Version"} = MQSeries::MQCFH_VERSION_3;
+                $header->{"Version"} = MQCFH_VERSION_3;
             }
             $newparameter = {
-                             "Parameter" => MQSeries::MQIAMO_OBJECT_COUNT,
-                             "Type"      => MQSeries::MQCFT_INTEGER,
+                             "Parameter" => MQIAMO_OBJECT_COUNT,
+                             "Type"      => MQCFT_INTEGER,
                              "Value"     => scalar(@{$origvalue}),
                             };
         }
@@ -580,7 +581,7 @@ sub _TranslatePCF {
         push(@$parameters,$newparameter);
 
         # if we're entering a group, add group stack frames
-        if ($paramtype == MQSeries::MQCFT_GROUP) {
+        if ($paramtype == MQCFT_GROUP) {
             # push all group elements into *this* encoding unit
             my $top = $parameters;
             # replace encoding state with all group elements (note
@@ -589,7 +590,7 @@ sub _TranslatePCF {
             foreach my $gelem (0..$#{$origvalue}) {
                 # make and add a brand new parameter to $top
                 $newparameter = {
-                                 "Parameter" => $paramkey, 
+                                 "Parameter" => $paramkey,
                                  "Type"      => $paramtype,
                                  "Group"     => [],
                                 };
@@ -630,7 +631,7 @@ sub _TranslatePCF {
     #
     # Lets set the Version to work with advanced V6 cmds and V6 MF qmgrs
     #
-    $header->{Version} = MQSeries::MQCFH_CURRENT_VERSION
+    $header->{Version} = MQCFH_CURRENT_VERSION
         unless ( $self->{CommandVersion} lt 3 );
 
     #print STDERR "Request Header: $header->{Type}, $header->{StrucLength}, $header->{Version}, $header->{Command}, $header->{Reason}, $header->{ParameterCount}...\n";
@@ -663,13 +664,13 @@ sub _UnTranslatePCF {
     #       extension for MQIAE_AUTH_PASSID, we have to exclude the
     #       MQCMDE_INQUIRE_AUTHORITY from this processing.
     #
-    if( $command != MQSeries::MQCMDE_INQUIRE_AUTHORITY &&
+    if( $command != MQCMDE_INQUIRE_AUTHORITY &&
         $self->isa("MQSeries::Command::Response") &&
         scalar(@$origparams) &&
         exists($origparams->[0]->{Parameter}) &&
-        ($origparams->[0]->{Parameter} == MQSeries::MQIACF_ESCAPE_TYPE ||
-         $origparams->[0]->{Parameter} == MQSeries::MQCACF_ESCAPE_TEXT) ) {
-        $command = MQSeries::MQCMD_ESCAPE;
+        ($origparams->[0]->{Parameter} == MQIACF_ESCAPE_TYPE ||
+         $origparams->[0]->{Parameter} == MQCACF_ESCAPE_TEXT) ) {
+        $command = MQCMD_ESCAPE;
     }
 
     my $parameters = {};
@@ -794,24 +795,24 @@ sub _UnTranslatePCF {
                 my %revop = (
                              # duplicates are commented out and the
                              # less ambiguous mappings were selected
-                             MQSeries::MQCFOP_LESS         => '<',
-                             MQSeries::MQCFOP_NOT_GREATER  => '<=',
-                             MQSeries::MQCFOP_EQUAL        => '==',
-                             MQSeries::MQCFOP_NOT_EQUAL    => '!=',
-                             # MQSeries::MQCFOP_NOT_EQUAL    => '<>',
-                             MQSeries::MQCFOP_GREATER      => '>',
-                             MQSeries::MQCFOP_NOT_LESS     => '>=',
-                             MQSeries::MQCFOP_LIKE         => 'like',
-                             MQSeries::MQCFOP_NOT_LIKE     => 'not like',
-                             # MQSeries::MQCFOP_CONTAINS     => '==',
-                             MQSeries::MQCFOP_CONTAINS     => 'contains',
-                             # MQSeries::MQCFOP_EXCLUDES     => '!=',
-                             # MQSeries::MQCFOP_EXCLUDES     => '<>',
-                             MQSeries::MQCFOP_EXCLUDES     => 'excludes',
-                             # MQSeries::MQCFOP_CONTAINS_GEN => 'like',
-                             MQSeries::MQCFOP_CONTAINS_GEN => 'contains_gen',
-                             # MQSeries::MQCFOP_EXCLUDES_GEN => 'not like',
-                             MQSeries::MQCFOP_EXCLUDES_GEN => 'excludes_gen',
+                             MQCFOP_LESS         => '<',
+                             MQCFOP_NOT_GREATER  => '<=',
+                             MQCFOP_EQUAL        => '==',
+                             MQCFOP_NOT_EQUAL    => '!=',
+                             # MQCFOP_NOT_EQUAL    => '<>',
+                             MQCFOP_GREATER      => '>',
+                             MQCFOP_NOT_LESS     => '>=',
+                             MQCFOP_LIKE         => 'like',
+                             MQCFOP_NOT_LIKE     => 'not like',
+                             # MQCFOP_CONTAINS     => '==',
+                             MQCFOP_CONTAINS     => 'contains',
+                             # MQCFOP_EXCLUDES     => '!=',
+                             # MQCFOP_EXCLUDES     => '<>',
+                             MQCFOP_EXCLUDES     => 'excludes',
+                             # MQCFOP_CONTAINS_GEN => 'like',
+                             MQCFOP_CONTAINS_GEN => 'contains_gen',
+                             # MQCFOP_EXCLUDES_GEN => 'not like',
+                             MQCFOP_EXCLUDES_GEN => 'excludes_gen',
                             );
                 my $op = $origparam->{Operator};
                 if ($self->{StrictMapping} && !defined($revop{$op})) {

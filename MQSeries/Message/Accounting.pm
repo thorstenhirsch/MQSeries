@@ -13,6 +13,7 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Message::System;
 
 require "MQSeries/Message/Accounting.pl";
@@ -34,9 +35,9 @@ sub _Translatable {
     my ($self, $header) = @_;
 
     my $subclass =
-        ($header->{"Command"} == MQSeries::MQCMD_ACCOUNTING_MQI) ?
+        ($header->{"Command"} == MQCMD_ACCOUNTING_MQI) ?
             "MQSeries::Message::Accounting::QueueManager" :
-        ($header->{"Command"} == MQSeries::MQCMD_ACCOUNTING_Q) ?
+        ($header->{"Command"} == MQCMD_ACCOUNTING_Q) ?
             "MQSeries::Message::Accounting::Queue" :
                 undef;
 

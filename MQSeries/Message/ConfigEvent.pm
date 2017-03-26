@@ -14,6 +14,7 @@ use Carp;
 use Convert::EBCDIC;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Message;
 use MQSeries::Command::Base; # for valuemap translators
 
@@ -43,14 +44,14 @@ sub GetConvert {
     my $version = $this->_readNumber($buffer, 8, 4);
     my $reason  = $this->_readNumber($buffer, 28, 4);
     confess "Invalid type [$type] (not MQCFT_EVENT)"
-      unless ($type == MQSeries::MQCFT_EVENT);
+      unless ($type == MQCFT_EVENT);
     confess "Unexpected version [$version] (not MQCFH_VERSION_2)"
-      unless ($version == 2) ; # MQSeries::MQCFH_VERSION_2
+      unless ($version == 2) ; # MQCFH_VERSION_2
     #confess "Unexpected reason code [$reason]"
-    #  unless ($reason == MQSeries::MQRC_CONFIG_CHANGE_OBJECT ||
-    #          $reason == MQSeries::MQRC_CONFIG_CREATE_OBJECT ||
-    #          $reason == MQSeries::MQRC_CONFIG_DELETE_OBJECT ||
-    #          $reason == MQSeries::MQRC_CONFIG_REFRESH_OBJECT);
+    #  unless ($reason == MQRC_CONFIG_CHANGE_OBJECT ||
+    #          $reason == MQRC_CONFIG_CREATE_OBJECT ||
+    #          $reason == MQRC_CONFIG_DELETE_OBJECT ||
+    #          $reason == MQRC_CONFIG_REFRESH_OBJECT);
     $retval->{Version} = $version;
     $retval->{Reason} = $reason . " - " . MQReasonToText($reason);
     confess "Unknown reason [$reason]"
@@ -88,12 +89,12 @@ sub GetConvert {
 
         my $value;
 
-        if ($type == MQSeries::MQCFT_STRING) {
+        if ($type == MQCFT_STRING) {
             my $datalen = $this->_readNumber($buffer, $offset+16, 4);
             my $bytes = $this->_readByte($buffer, $offset+20, $datalen);
             $value = Convert::EBCDIC::ebcdic2ascii($bytes);
             $value =~ s!\s+$!!;
-        } elsif ($type == MQSeries::MQCFT_STRING_LIST) {
+        } elsif ($type == MQCFT_STRING_LIST) {
             my $count = $this->_readNumber($buffer, $offset+16, 4);
             confess "Invalid [$label] entry (list with length zero) at offset [$offset]" unless ($count);
             my $data = [];
@@ -109,12 +110,12 @@ sub GetConvert {
             }
 
             $value = $data;
-        } elsif ($type == 9) { # MQSeries::MQCFT_BYTE_STRING
+        } elsif ($type == 9) { # MQCFT_BYTE_STRING
             my $datalen = $this->_readNumber($buffer, $offset+12, 4);
             my $bytes = $this->_readByte($buffer, $offset+16, $datalen);
             $bytes =~ s!(.)!sprintf("%02x ", ord($1))!eg;
             $value = $bytes;
-        } elsif ($type == MQSeries::MQCFT_INTEGER) {
+        } elsif ($type == MQCFT_INTEGER) {
             $value = $this->_readNumber($buffer, $offset+12, 4);
             my $enum = $MQSeries::Message::ConfigEvent::ResponseEnums{$label};
             my $renum = $MQSeries::Command::PCF::ResponseValues{$label};
@@ -138,7 +139,7 @@ sub GetConvert {
             } else {
                 # Value is okay
             }
-        } elsif ($type == 5 ) { # MQSeries::MQCFT_INTEGER_LIST)
+        } elsif ($type == 5 ) { # MQCFT_INTEGER_LIST)
             my $count = $this->_readNumber($buffer, $offset+12, 4);
             confess "Invalid [$label] entry (list with length zero) at offset [$offset]" unless ($count);
             my $data = [];
@@ -285,4 +286,3 @@ MQSeries(3), MQSeries::QueueManager(3), MQSeries::Queue(3), MQSeries::Message(3)
 The "Event Monitoring" manual for WMQ 5.3 (Document Number SC34-6069-00).
 
 =cut
-

@@ -18,6 +18,7 @@ use Carp;
 use Config;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Properties;
 use MQSeries::Message;
 use Params::Validate qw(validate);
@@ -63,12 +64,12 @@ sub new {
        RetryReasons             => {
                                     map { $_ => 1 }
                                     (
-                                     MQSeries::MQRC_CONNECTION_BROKEN,
-                                     MQSeries::MQRC_Q_MGR_NOT_AVAILABLE,
-                                     MQSeries::MQRC_Q_MGR_QUIESCING,
-                                     MQSeries::MQRC_Q_MGR_STOPPING,
-                                     MQSeries::MQRC_CHANNEL_NOT_AVAILABLE,
-                                     MQSeries::MQRC_HOST_NOT_AVAILABLE,
+                                     MQRC_CONNECTION_BROKEN,
+                                     MQRC_Q_MGR_NOT_AVAILABLE,
+                                     MQRC_Q_MGR_QUIESCING,
+                                     MQRC_Q_MGR_STOPPING,
+                                     MQRC_CHANNEL_NOT_AVAILABLE,
+                                     MQRC_HOST_NOT_AVAILABLE,
                                     )
                                    },
        ConnectTimeoutSignal     => 'USR1',
@@ -172,8 +173,8 @@ sub Open {
                               'ObjDesc' => 0,
                             });
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     #
     # If the options are given, we assume you know what you're doing.
@@ -181,8 +182,8 @@ sub Open {
     if ( exists $args{Options} ) {
         $self->{Options} = $args{Options};
     } else {
-        $self->{Options} = MQSeries::MQOO_INQUIRE |
-          MQSeries::MQOO_FAIL_IF_QUIESCING;
+        $self->{Options} = MQOO_INQUIRE |
+          MQOO_FAIL_IF_QUIESCING;
     }
 
     #
@@ -198,7 +199,7 @@ sub Open {
     } else {
         $self->{ObjDescPtr} =
           {
-           ObjectType           => MQSeries::MQOT_Q_MGR,
+           ObjectType           => MQOT_Q_MGR,
           };
     }
 
@@ -213,9 +214,9 @@ sub Open {
                            $self->{Reason},
                           );
 
-    if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+    if ( $self->{CompCode} == MQCC_OK ) {
         return 1;
-    } elsif ( $self->{CompCode} == MQSeries::MQCC_FAILED ) {
+    } elsif ( $self->{CompCode} == MQCC_FAILED ) {
         $self->{Carp}->(qq/MQOPEN failed (Reason = $self->{Reason})/);
         return;
     } else {
@@ -230,20 +231,20 @@ sub Close {
 
     return 1 unless $self->{Hobj};
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     MQCLOSE(
             $self->{Hconn},
             $self->{Hobj},
-            MQSeries::MQCO_NONE,
+            MQCO_NONE,
             $self->{CompCode},
             $self->{Reason},
            );
-    if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+    if ( $self->{CompCode} == MQCC_OK ) {
         delete $self->{Hobj};
         return 1;
-    } elsif ( $self->{Reason} == MQSeries::MQRC_HCONN_ERROR ) {
+    } elsif ( $self->{Reason} == MQRC_HCONN_ERROR ) {
         delete $self->{Hobj};
         return 1;
     } else {
@@ -298,13 +299,13 @@ sub Inquire {
     my $self = shift;
     my (@args) = @_;
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     my (@keys) = ();
 
     my $ForwardMap = $MQSeries::Command::PCF::RequestValues{QueueManager};
-    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQSeries::MQCMD_INQUIRE_Q_MGR}->[1];
+    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQCMD_INQUIRE_Q_MGR}->[1];
 
     foreach my $key ( @args ) {
 
@@ -325,8 +326,8 @@ sub Inquire {
                          @keys,
                         );
 
-    unless ( $self->{CompCode} == MQSeries::MQCC_OK &&
-             $self->{Reason} == MQSeries::MQRC_NONE ) {
+    unless ( $self->{CompCode} == MQCC_OK &&
+             $self->{Reason} == MQRC_NONE ) {
         $self->{Carp}->("MQINQ call failed. " .
                         qq/CompCode => '$self->{CompCode}', / .
                         qq/Reason   => '$self->{Reason}'\n/);
@@ -334,8 +335,8 @@ sub Inquire {
     }
 
     # In case the data parsing fails...
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     my (%values) = ();
 
@@ -363,8 +364,8 @@ sub Inquire {
 
     }
 
-    $self->{CompCode} = MQSeries::MQCC_OK;
-    $self->{Reason} = MQSeries::MQRC_NONE;
+    $self->{CompCode} = MQCC_OK;
+    $self->{Reason} = MQRC_NONE;
 
     return %values;
 
@@ -389,8 +390,8 @@ sub Disconnect {
     #
     return 1 if $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}-- > 1;
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     if ( $self->{_Pending} && $self->{AutoCommit} == 0 ) {
         $self->Backout() || do {
@@ -410,8 +411,8 @@ sub Disconnect {
                 {},
                 $self->{CompCode},
                 $self->{Reason});
-        if ($self->{CompCode} != MQSeries::MQCC_OK ||
-            $self->{Reason} != MQSeries::MQRC_NONE ) {
+        if ($self->{CompCode} != MQCC_OK ||
+            $self->{Reason} != MQRC_NONE ) {
             $self->{Carp}->("MQDLTMH failed: (Reason => $self->{Reason}\n");
         }
     }
@@ -421,7 +422,7 @@ sub Disconnect {
            $self->{CompCode},
            $self->{Reason},
           );
-    if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+    if ( $self->{CompCode} == MQCC_OK ) {
         delete $self->{Hconn};
         return 1;
 
@@ -441,15 +442,15 @@ sub DESTROY {
 
 sub Backout {
     my $self = shift;
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     MQBACK(
            $self->{Hconn},
            $self->{CompCode},
            $self->{Reason},
           );
-    if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+    if ( $self->{CompCode} == MQCC_OK ) {
         delete $self->{_Pending};
         return 1;
     } else {
@@ -461,15 +462,15 @@ sub Backout {
 
 sub Commit {
     my $self = shift;
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     MQCMIT(
            $self->{Hconn},
            $self->{CompCode},
            $self->{Reason},
           );
-    if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+    if ( $self->{CompCode} == MQCC_OK ) {
         delete $self->{_Pending};
         return 1;
     } else {
@@ -499,7 +500,7 @@ sub Put1 {
                             });
 
     my $ObjDesc = {};
-    my $PutMsgOpts = { Options => MQSeries::MQPMO_FAIL_IF_QUIESCING, };
+    my $PutMsgOpts = { Options => MQPMO_FAIL_IF_QUIESCING, };
 
     my $retrycount = 0;
     my $buffer = undef;
@@ -509,8 +510,8 @@ sub Put1 {
         return;
     }
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     unless ($args{"ObjDesc"} or $args{Queue}) {
         $self->{Carp}->("Invalid argument: either 'ObjDesc' or " .
@@ -544,9 +545,9 @@ sub Put1 {
             $PutMsgOpts->{PutMsgRecs} = $args{PutMsgRecs};
         }
         if ($args{Sync}) {
-            $PutMsgOpts->{Options} |= MQSeries::MQPMO_SYNCPOINT;
+            $PutMsgOpts->{Options} |= MQPMO_SYNCPOINT;
         } else {
-            $PutMsgOpts->{Options} |= MQSeries::MQPMO_NO_SYNCPOINT;
+            $PutMsgOpts->{Options} |= MQPMO_NO_SYNCPOINT;
         }
     }
 
@@ -614,8 +615,8 @@ sub Put1 {
             return;
         }
         if (!defined $PutMsgOpts->{Version} ||
-            $PutMsgOpts->{Version} < MQSeries::MQPMO_VERSION_3) {
-            $PutMsgOpts->{Version} = MQSeries::MQPMO_VERSION_3;
+            $PutMsgOpts->{Version} < MQPMO_VERSION_3) {
+            $PutMsgOpts->{Version} = MQPMO_VERSION_3;
         }
         $PutMsgOpts->{OriginalMsgHandle} = $props_obj->{Hmsg};
     }
@@ -628,11 +629,11 @@ sub Put1 {
            $self->{CompCode},
            $self->{Reason},
           );
-    if ($self->{CompCode} == MQSeries::MQCC_FAILED) {
+    if ($self->{CompCode} == MQCC_FAILED) {
         $self->{Carp}->("MQPUT1 failed (Reason = $self->{Reason})");
         return;
     } else {
-        if ($PutMsgOpts->{Options} & MQSeries::MQPMO_SYNCPOINT) {
+        if ($PutMsgOpts->{Options} & MQPMO_SYNCPOINT) {
             $self->{_Pending}->{Put}++;
         }
         return 1;
@@ -657,8 +658,8 @@ sub Connect {
 
     return 1 if $self->{Hconn};
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
     my $retrycount = 0;
 
     foreach my $key ( qw( RetryCount RetrySleep ConnectTimeout ) ) {
@@ -791,8 +792,8 @@ sub Connect {
         }
 
 
-        if ( $self->{Reason} == MQSeries::MQRC_NONE ||
-             $self->{Reason} == MQSeries::MQRC_ALREADY_CONNECTED ) {
+        if ( $self->{Reason} == MQRC_NONE ||
+             $self->{Reason} == MQRC_ALREADY_CONNECTED ) {
             $self->{Hconn} = $Hconn;
             $MQSeries::QueueManager::Pid2Hconn{$$}->{$self->{Hconn}}++;
 
@@ -863,11 +864,11 @@ sub StatusInfo {
 
     my $stats = {};
     MQSTAT($self->{Hconn},
-           MQSeries::MQSTAT_TYPE_ASYNC_ERROR,
+           MQSTAT_TYPE_ASYNC_ERROR,
            $stats,
            $self->{CompCode},
            $self->{Reason});
-    if ($self->{CompCode} != MQSeries::MQCC_OK) {
+    if ($self->{CompCode} != MQCC_OK) {
         $self->{Carp}->("MQSTAT failed (Reason = $self->{Reason}\n");
     }
     return $stats;
@@ -886,10 +887,10 @@ sub GetMessageHandle
                        $self->{CompCode},
                        $self->{Reason});
 
-    if ($self->{CompCode} == MQSeries::MQCC_OK) {
+    if ($self->{CompCode} == MQCC_OK) {
         push(@{$self->{MessageHandles}}, $Hmsg);
-    } elsif ($self->{CompCode} == MQSeries::MQCC_WARNING ||
-             $self->{CompCode} == MQSeries::MQCC_FAILED) {
+    } elsif ($self->{CompCode} == MQCC_WARNING ||
+             $self->{CompCode} == MQCC_FAILED) {
         $self->{Carp}->("MQCRTMH failed (Reason = $self->{Reason})");
         return;
     }
@@ -990,8 +991,8 @@ MQSeries::QueueManager - OO interface to the MQSeries Queue Manager
       my $msg = MQSeries::Message->new(Data => $msg_data);
       $qmgr->Put1(Message    => $msg,
                   Queue      => 'SOME.QUEUE.NAME',
-                  PutMsgOpts => { Options => (MQSeries::MQPMO_ASYNC_RESPONSE |
-                                              MQSeries::MQPMO_FAIL_IF_QUIESCING),
+                  PutMsgOpts => { Options => (MQPMO_ASYNC_RESPONSE |
+                                              MQPMO_FAIL_IF_QUIESCING),
                                 },
                  );
   }
@@ -1225,8 +1226,8 @@ not have access to the CompCode() and Reason() method calls.  If you
 want to extract these values, you will have to pass a scalar reference
 value to the constructor, for example:
 
-  my $CompCode = MQSeries::MQCC_FAILED;
-  my $Reason = MQSeries::MQRC_UNEXPECTED_ERROR;
+  my $CompCode = MQCC_FAILED;
+  my $Reason = MQRC_UNEXPECTED_ERROR;
 
   my $qmgr = MQSeries::QueueManager->new
     (

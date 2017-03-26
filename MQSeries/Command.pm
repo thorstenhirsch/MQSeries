@@ -13,6 +13,7 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::Command::Request;
@@ -48,7 +49,7 @@ sub new {
       {
        Reason                   => 0,
        CompCode                 => 0,
-       CommandVersion           => MQSeries::MQCFH_VERSION_1,
+       CommandVersion           => MQCFH_VERSION_1,
        Wait                     => 60000, # 60 second wait for replies...
        #Expiry                  => 600, # 60 second expiry on requests
        Expiry                   => 999999999,
@@ -238,7 +239,7 @@ sub new {
     #
     if (!defined($args{"CommandVersion"}) &&
         $self->{"QueueManager"}->{"QMgrConfig"}->{"Platform"} eq "MVS") {
-        $self->{"CommandVersion"} = MQSeries::MQCFH_VERSION_3;
+        $self->{"CommandVersion"} = MQCFH_VERSION_3;
     }
 
     #
@@ -312,7 +313,7 @@ sub DataParameters {
     my @parameters;
 
     foreach my $response ( @{$self->{Response}} ) {
-        next if $response->Header('CompCode') == MQSeries::MQCC_FAILED;
+        next if $response->Header('CompCode') == MQCC_FAILED;
         push(@parameters,$response->Parameters());
     }
 
@@ -330,7 +331,7 @@ sub ErrorParameters {
     my @parameters;
 
     foreach my $response ( @{$self->{Response}} ) {
-        next if $response->Header('CompCode') != MQSeries::MQCC_FAILED;
+        next if $response->Header('CompCode') != MQCC_FAILED;
         push(@parameters,$response->Parameters());
     }
 
@@ -565,8 +566,8 @@ sub CreateObject {
         $Change                 = "ChangeComminfo";
         $Key                    = "ComminfoName";
         $Type                   = "Comminfo";
-    } 
-        
+    }
+
 
     #
     # First check to see if it exists.
@@ -578,10 +579,10 @@ sub CreateObject {
     # Of course we should...
     #
     if ( $self->Reason() &&
-         $self->Reason() != MQSeries::MQRC_UNKNOWN_OBJECT_NAME &&
-         $self->Reason() != MQSeries::MQRCCF_CHANNEL_NOT_FOUND &&
-         $self->Reason() != MQSeries::MQRC_NO_SUBSCRIPTION &&
-         $self->Reason() != MQSeries::MQRCCF_CHLAUTH_NOT_FOUND
+         $self->Reason() != MQRC_UNKNOWN_OBJECT_NAME &&
+         $self->Reason() != MQRCCF_CHANNEL_NOT_FOUND &&
+         $self->Reason() != MQRC_NO_SUBSCRIPTION &&
+         $self->Reason() != MQRCCF_CHLAUTH_NOT_FOUND
        ) {
         my $rc = $self->Reason();
         $self->Carp("Unable to verify existence of $Type '$QMgr/$Attrs->{$Key}' (Reason=$rc)\n");
@@ -677,7 +678,7 @@ sub CreateObject {
             $Changes->{'AuthInfoType'} = $Attrs->{'AuthInfoType'};
         } elsif ($Key eq 'ChlAuth') {
             $Changes->{'ChlAuthType'} = $Attrs->{'ChlAuthType'};
-            $Changes->{'Action'} = $Attrs->{'Action'}; 
+            $Changes->{'Action'} = $Attrs->{'Action'};
         }
     }
 
@@ -747,7 +748,7 @@ sub CreateObject {
             $action = $Attrs->{'Action'} eq "Add" ? "Creating" : "Updating";
         }
         else {
-            $action = $method eq $Change ? "Updating" : "Creating"; 
+            $action = $method eq $Change ? "Updating" : "Creating";
         }
         print("$action $Type '$QMgr/$Attrs->{$Key}'\n");
     }
@@ -958,7 +959,7 @@ sub _Command {
         Expiry      => $self->{Expiry},
       };
     my $putmsg_options =
-      { Options => MQSeries::MQPMO_FAIL_IF_QUIESCING,
+      { Options => MQPMO_FAIL_IF_QUIESCING,
       };
 
     #
@@ -971,11 +972,11 @@ sub _Command {
     if (defined $req_msgdesc->{ApplIdentityData} ||
         defined $req_msgdesc->{UserIdentifier}) {
         #print STDERR "XXX: Adding set-identity context to PMO\n";
-        $putmsg_options->{Options} |= MQSeries::MQPMO_SET_IDENTITY_CONTEXT;
+        $putmsg_options->{Options} |= MQPMO_SET_IDENTITY_CONTEXT;
     }
     if (defined $req_msgdesc->{ApplOriginData}) {
         #print STDERR "XXX: Adding set-all context to PMO\n";
-        $putmsg_options->{Options} |= MQSeries::MQPMO_SET_ALL_CONTEXT;
+        $putmsg_options->{Options} |= MQPMO_SET_ALL_CONTEXT;
     }
 
     $self->{Request} = MQSeries::Command::Request::->
@@ -987,8 +988,8 @@ sub _Command {
           StrictMapping  => $self->{StrictMapping},
           CommandVersion => $self->{CommandVersion},
          ) || do {
-             $self->{"CompCode"} = MQSeries::MQCC_FAILED;
-             $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
+             $self->{"CompCode"} = MQCC_FAILED;
+             $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
              return;
          };
 
@@ -1032,8 +1033,8 @@ sub _Command {
               Header            => $self->{Type} eq 'PCF' ? "" : {%$MQSCHeader},
               StrictMapping     => $self->{StrictMapping},
              ) || do {
-                 $self->{"CompCode"} = MQSeries::MQCC_FAILED;
-                 $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
+                 $self->{"CompCode"} = MQCC_FAILED;
+                 $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
                  return;
              };
         my $getresult = $self->{ReplyToQ}->
@@ -1066,7 +1067,7 @@ sub _Command {
         # essential for MQSC, but PCF tells us when the last response
         # is in.
         #
-        last if $self->{ReplyToQ}->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE;
+        last if $self->{ReplyToQ}->Reason() == MQRC_NO_MSG_AVAILABLE;
 
         #print STDERR "XXX: Response buffer [$response->{'Buffer'}]\n"
         #   if ($self->{Type} eq 'MQSC');
@@ -1116,10 +1117,10 @@ sub _Command {
     # If we didn't see the last message, then return the empty list.
     #
     unless ( $self->_LastSeen() ) {
-        $self->{"CompCode"} = MQSeries::MQCC_FAILED
-          if $self->{"CompCode"} == MQSeries::MQCC_OK;
-        $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR
-          if $self->{"Reason"} == MQSeries::MQRC_NONE;
+        $self->{"CompCode"} = MQCC_FAILED
+          if $self->{"CompCode"} == MQCC_OK;
+        $self->{"Reason"} = MQRC_UNEXPECTED_ERROR
+          if $self->{"Reason"} == MQRC_NONE;
         $self->Carp("Last response message never seen\n");
         return;
     }
@@ -1422,7 +1423,7 @@ MQSeries::Command - OO interface to the Programmable Commands
   # InquireConnection)
   #
   my $command = MQSeries::Command->new(QueueManager   => $qmgr_obj,
-                               CommandVersion => MQSeries::MQCFH_VERSION_3);
+                               CommandVersion => MQCFH_VERSION_3);
     or die("Unable to instantiate command object\n");
 
   #
@@ -1756,7 +1757,7 @@ follows to use PCF commands:
       new('ProxyQueueManager' => 'UNIXQM', # Also ReplyToQMgr
           'RealQueueManager'  => 'CSQ1',   # Displayed in messages
           'Type'              => 'PCF',
-          'CommandVersion'    => MQSeries::MQCFH_VERSION_3,
+          'CommandVersion'    => MQCFH_VERSION_3,
           'CommandQueue'      => $queue,
          ) ||
       die "Cannot create command";
@@ -1768,9 +1769,9 @@ to the C<MsgDesc> method:
     my $queue = MQSeries::Queue::->
       new('QueueManager' => 'UNIXQM',
           'Queue'        => 'SYSTEM.ADMIN.COMMAND.QUEUE',
-          'Options'      => (MQSeries::MQOO_FAIL_IF_QUIESCING |
-                             MQSeries::MQOO_OUTPUT |
-                             MQSeries::MQOO_SET_IDENTITY_CONTEXT,
+          'Options'      => (MQOO_FAIL_IF_QUIESCING |
+                             MQOO_OUTPUT |
+                             MQOO_SET_IDENTITY_CONTEXT,
                             ),
          ) ||
       die "Cannot open queue";
@@ -2376,7 +2377,7 @@ Filters require that the command object is created with CommandVersion
   $command = MQSeries::Command::->
     new('QueueManager'   => 'SOME.QUEUE.MANAGER',
         'Type'           => 'PCF',
-        'CommandVersion' => MQSeries::MQCFH_VERSION_3);
+        'CommandVersion' => MQCFH_VERSION_3);
 
 Following that, most Inquire commands accept an optional FilterCommand
 parameter that specifies an attribute to filter on, a comparison

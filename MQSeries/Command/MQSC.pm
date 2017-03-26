@@ -13,6 +13,7 @@ our @ISA = qw(MQSeries::Command);
 our $VERSION = '1.35';
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 
 #
 # Note -- the order is important, so resist the anal retentive urge to
@@ -79,11 +80,11 @@ sub _ProcessResponses {
         # message.
         #
         if (
-            $self->{"CompCode"} == MQSeries::MQCC_OK &&
-            $self->{"Reason"} == MQSeries::MQRC_NONE &&
+            $self->{"CompCode"} == MQCC_OK &&
+            $self->{"Reason"} == MQRC_NONE &&
             (
-             $response->Header("CompCode") != MQSeries::MQCC_OK ||
-             $response->Header("Reason") != MQSeries::MQRC_NONE
+             $response->Header("CompCode") != MQCC_OK ||
+             $response->Header("Reason") != MQRC_NONE
             )
            ) {
             $self->{"CompCode"} = $response->Header("CompCode");
@@ -99,7 +100,7 @@ sub _ProcessResponses {
                 $response->ReasonText() =~ /no chstatus found/mi
                ) {
                 $response->{Parameters}->{ChannelStatus} = 'NotFound';
-                $self->{"Reason"} = MQSeries::MQRCCF_CHL_STATUS_NOT_FOUND;
+                $self->{"Reason"} = MQRCCF_CHL_STATUS_NOT_FOUND;
             }
         }
 
@@ -147,8 +148,8 @@ sub _ProcessResponses {
            Parameters           => $MQSCParameters,
            Type                 => $self->{Type},
           ) || do {
-              $self->{"CompCode"} = MQSeries::MQCC_FAILED;
-              $self->{"Reason"} = MQSeries::MQRC_UNEXPECTED_ERROR;
+              $self->{"CompCode"} = MQCC_FAILED;
+              $self->{"Reason"} = MQRC_UNEXPECTED_ERROR;
               return;
           };
         push(@responses, $response);
@@ -169,7 +170,7 @@ sub _ProcessResponses {
         foreach my $response ( @responses ) {
             if ( keys %{$response->{Parameters}} ) {
                 $response->{Header}->{MsgSeqNumber} = ++$responsecount;
-                $response->{Header}->{Control} = MQSeries::MQCFC_NOT_LAST;
+                $response->{Header}->{Control} = MQCFC_NOT_LAST;
                 $response->{Header}->{ParameterCount} = scalar keys %{$response->{Parameters}};
                 delete $response->{Header}->{LastMsgSeqNumber};
                 push(@{$self->{Response}},$response);
@@ -181,7 +182,7 @@ sub _ProcessResponses {
         #
         if ( scalar(@{$self->{Response}}) ) {
             my $response = pop(@{$self->{Response}});
-            $response->{Header}->{Control} = MQSeries::MQCFC_LAST;
+            $response->{Header}->{Control} = MQCFC_LAST;
             push(@{$self->{Response}},$response);
         }
         #
@@ -191,7 +192,7 @@ sub _ProcessResponses {
         #
         else {
             $responses[0]->{Header}->{MsgSeqNumber} = 1;
-            $responses[0]->{Header}->{Control} = MQSeries::MQCFC_LAST;
+            $responses[0]->{Header}->{Control} = MQCFC_LAST;
             $responses[0]->{Header}->{ParameterCount} = 0;
             delete $responses[0]->{Header}->{LastMsgSeqNumber};
             push(@{$self->{Response}}, $responses[0]);

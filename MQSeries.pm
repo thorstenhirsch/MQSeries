@@ -215,7 +215,7 @@ The default: export functions and constants.
 Export just the functions.  This should be the way most modules
 import MQSeries, as it saves 400Kbyte per module importing MQSeries.
 In order to use a macro, e.g. C<MQCC_FAILED>, you could either add it to the
-list on the C<use> statement, or refer to C<MQSeries::MQCC_FAILED>.
+list on the C<use> statement, or refer to C<MQCC_FAILED>.
 
 =item use MQSeries qw(:constants);
 
@@ -579,7 +579,7 @@ properties.
 The $CrtMsgHOpts parameter is a MQCMHO data structure, which for MQ v7
 only contains an 'Options' field.
 
-  $CrtMsgHOpts = { Options => ( MQSeries::MQCMHO_VALIDATE ) };
+  $CrtMsgHOpts = { Options => ( MQCMHO_VALIDATE ) };
 
 The default (listed above) is generally sufficient.
 
@@ -604,7 +604,7 @@ v7.  it deletes a message property.
 The $DltPropOpts parameter is a MQDMPO parameter, which only contains
 an 'Options' field.
 
-  $DltPropOpts = { Options => ( MQSeries::MQDMPO_DEL_FIRST ) };
+  $DltPropOpts = { Options => ( MQDMPO_DEL_FIRST ) };
 
 The default (listed above) is generally sufficient.
 
@@ -625,10 +625,10 @@ The $Name parameter is a property name, which may contain a wildcard.
 The $PropDesc parameter is an MQPD data structure.
 
 The $Type parameter determines the return type if the option
-MQSeries::MQIMPO_CONVERT_TYPE is specified as part of the $InqPropOpts
+MQIMPO_CONVERT_TYPE is specified as part of the $InqPropOpts
 parameter.  In either case, it is also an output parameter that
 specifies the returned type of the proeprty,
-e.g. MQSeries::MQTYPE_STRING.
+e.g. MQTYPE_STRING.
 
 The $Length parameter is the maximum length of the property value to
 return.  It is also an output parameter that specifies the length of
@@ -644,7 +644,7 @@ v7.  It sets or updates a message property.
 The $SetPropOpts parameter is a MQHMSG data structur, which for MQ v7
 only contains an 'Options' field.
 
-  $SetPropOpts = { Options => ( MQSeries::MQSMPO_SET_FIRST ) };
+  $SetPropOpts = { Options => ( MQSMPO_SET_FIRST ) };
 
 The default (listed above) is generally sufficient.
 
@@ -653,7 +653,7 @@ The $Name parameter is the property name.
 The $PropDesc parameter is an MQPD data structure.
 
 The $Type parameter specifies the data type of the property,
-e.g. MQSeries::MQTYPE_STRING or MQSeries::MQTYPE_FLOAT64.
+e.g. MQTYPE_STRING or MQTYPE_FLOAT64.
 
 The $Value parameter is the actual proeprty value.  It may be C<undef>
 for string and byte string properties.
@@ -666,7 +666,7 @@ This call is only available if the module has been compiled with MQ
 v7.  It returns queue manager asynchronous put status information.
 
 The $StatType parameter must always be
-MQSeries::MQSTAT_TYPE_ASYNC_ERROR.
+MQSTAT_TYPE_ASYNC_ERROR.
 
 The $Stat parameter is a MQSTS data structure must be specified as a
 hash reference.  On output, it includes the MQSTS fields documented in

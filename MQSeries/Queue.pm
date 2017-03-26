@@ -13,6 +13,7 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::QueueManager;
 use MQSeries::Properties;
 use MQSeries::Utils qw(ConvertUnit);
@@ -59,7 +60,7 @@ sub new {
     #
     my $self =
       {
-        Options          => MQSeries::MQOO_FAIL_IF_QUIESCING,
+        Options          => MQOO_FAIL_IF_QUIESCING,
         ObjDescPtr       => \%ObjDesc,
         Carp             => \&carp,
         RetryCount       => 0,
@@ -67,7 +68,7 @@ sub new {
         RetryReasons     => {
                               map { $_ => 1 }
                               (
-                               MQSeries::MQRC_OBJECT_IN_USE,
+                               MQRC_OBJECT_IN_USE,
                               )
                             },
         OpenArgs         => {},
@@ -116,7 +117,7 @@ sub new {
     if ($MQSeries::MQ_VERSION >= 7 &&
 	defined $self->{QueueManager}->{QMgrConfig} &&
 	$self->{QueueManager}->{QMgrConfig}{CommandLevel} >= 700) {
-	$self->{ObjDescPtr}{Version} = MQSeries::MQOD_VERSION_4;
+	$self->{ObjDescPtr}{Version} = MQOD_VERSION_4;
     }
 
     #
@@ -168,8 +169,8 @@ sub new {
     if ($args{SelectionString}) {
 	$self->{ObjDescPtr}->{SelectionString} = $args{SelectionString};
 	if (!defined $self->{ObjDescPtr}->{Version} ||
-	    $self->{ObjDescPtr}->{Version} < MQSeries::MQOD_VERSION_4) {
-	    $self->{ObjDescPtr}->{Version} = MQSeries::MQOD_VERSION_4;
+	    $self->{ObjDescPtr}->{Version} < MQOD_VERSION_4) {
+	    $self->{ObjDescPtr}->{Version} = MQOD_VERSION_4;
 	}
     }
 
@@ -288,8 +289,8 @@ sub Close {
 
     return 1 unless $self->{Hobj};
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     if ( $args{Options} ) {
         $self->{CloseOptions} = $args{Options};
@@ -307,10 +308,10 @@ sub Close {
             $self->{CompCode},
             $self->{Reason},
            );
-    if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+    if ( $self->{CompCode} == MQCC_OK ) {
         delete $self->{Hobj};
         return 1;
-    } elsif ( $self->{Reason} == MQSeries::MQRC_HCONN_ERROR ) {
+    } elsif ( $self->{Reason} == MQRC_HCONN_ERROR ) {
         delete $self->{Hobj};
         return 1;
     } else {
@@ -336,12 +337,12 @@ sub Put {
 
     return unless $self->Open();
 
-    $self->{CompCode}         = MQSeries::MQCC_FAILED;
-    $self->{Reason}           = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason}   = MQRC_UNEXPECTED_ERROR;
 
     my $PutMsgOpts =
       {
-       Options                  => MQSeries::MQPMO_FAIL_IF_QUIESCING,
+       Options => MQPMO_FAIL_IF_QUIESCING,
       };
 
     my $buffer = "";
@@ -374,8 +375,8 @@ sub Put {
     # user-specified PutMsgOpts.
     #
     if (defined $args{Sync}) {
-        my $set = MQSeries::MQPMO_SYNCPOINT;
-        my $check = MQSeries::MQPMO_NO_SYNCPOINT;
+        my $set = MQPMO_SYNCPOINT;
+        my $check = MQPMO_NO_SYNCPOINT;
         unless ($args{Sync}) {  # No syncpoint: reverse set/check
             ($set, $check) = ($check, $set);
         }
@@ -447,8 +448,8 @@ sub Put {
 	    return;
 	}
 	if (!defined $PutMsgOpts->{Version} ||
-	    $PutMsgOpts->{Version} < MQSeries::MQPMO_VERSION_3) {
-	    $PutMsgOpts->{Version} = MQSeries::MQPMO_VERSION_3;
+	    $PutMsgOpts->{Version} < MQPMO_VERSION_3) {
+	    $PutMsgOpts->{Version} = MQPMO_VERSION_3;
 	}
 	$PutMsgOpts->{OriginalMsgHandle} = $props_obj->{Hmsg};
     }
@@ -463,18 +464,18 @@ sub Put {
 	  $self->{Reason},
 	 );
 
-    if ( $self->{CompCode} == MQSeries::MQCC_FAILED ) {
+    if ( $self->{CompCode} == MQCC_FAILED ) {
         $self->{Carp}->(qq/MQPUT failed (Reason = $self->{Reason})/);
         return;
     } else {
 
-        if ( $PutMsgOpts->{Options} & MQSeries::MQPMO_SYNCPOINT ) {
+        if ( $PutMsgOpts->{Options} & MQPMO_SYNCPOINT ) {
             $self->{QueueManager}->{_Pending}->{Put}++;
         }
 
-        if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+        if ( $self->{CompCode} == MQCC_OK ) {
             return 1;
-        } elsif ( $self->{CompCode} == MQSeries::MQCC_WARNING ) {
+        } elsif ( $self->{CompCode} == MQCC_WARNING ) {
             # What do we do here?  These are 'partial' successes.
             return -1;
         }
@@ -511,8 +512,8 @@ sub Get {
 
     return unless $self->Open();
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     my $GetMsgOpts = {};
 
@@ -540,27 +541,27 @@ sub Get {
     }
 
     my $options_flag = $GetMsgOpts->{Options}  ||
-      MQSeries::MQGMO_FAIL_IF_QUIESCING;
+      MQGMO_FAIL_IF_QUIESCING;
 
     if (defined $args{Convert}) {
         if ($args{Convert}) {
-            $options_flag |= MQSeries::MQGMO_CONVERT;
+            $options_flag |= MQGMO_CONVERT;
         } else {                # Possibly override GetMsgOpts
-            $options_flag &= (~MQSeries::MQGMO_CONVERT);
+            $options_flag &= (~MQGMO_CONVERT);
         }
     } else {                    # Default = convert
-        $options_flag |= MQSeries::MQGMO_CONVERT;
+        $options_flag |= MQGMO_CONVERT;
     }
 
     if (defined $args{Sync}) {  # Compare against GetMsgOptions, if specified
         my @check;
         if ($args{Sync}) {
-            @check = (MQSeries::MQGMO_NO_SYNCPOINT,
-                      MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT);
-            $options_flag |= MQSeries::MQGMO_SYNCPOINT;
+            @check = (MQGMO_NO_SYNCPOINT,
+                      MQGMO_SYNCPOINT_IF_PERSISTENT);
+            $options_flag |= MQGMO_SYNCPOINT;
         } else {
-            @check = (MQSeries::MQGMO_SYNCPOINT,
-                      MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT);
+            @check = (MQGMO_SYNCPOINT,
+                      MQGMO_SYNCPOINT_IF_PERSISTENT);
         }
         foreach my $opt (@check) {
             if (($options_flag & $opt) == $opt) {
@@ -572,17 +573,17 @@ sub Get {
     if (exists $args{Wait}) {
         my $value = ConvertUnit('Wait', $args{'Wait'});
         if ($value == 0) {
-            $options_flag &= (~MQSeries::MQGMO_WAIT);
-            $options_flag |= MQSeries::MQGMO_NO_WAIT; # No-op: NO_WAIT = zero
+            $options_flag &= (~MQGMO_WAIT);
+            $options_flag |= MQGMO_NO_WAIT; # No-op: NO_WAIT = zero
         } elsif ($value == -1) {
-            $options_flag |= MQSeries::MQGMO_WAIT;
-            $GetMsgOpts->{WaitInterval} = MQSeries::MQWI_UNLIMITED;
+            $options_flag |= MQGMO_WAIT;
+            $GetMsgOpts->{WaitInterval} = MQWI_UNLIMITED;
         } else {
-            $options_flag |= MQSeries::MQGMO_WAIT;
+            $options_flag |= MQGMO_WAIT;
             $GetMsgOpts->{WaitInterval} = $value;
         }
     } else {
-        $options_flag |= MQSeries::MQGMO_NO_WAIT; # No-op: NO_WAIT = zero
+        $options_flag |= MQGMO_NO_WAIT; # No-op: NO_WAIT = zero
     }
     $GetMsgOpts->{Options} = $options_flag;
 
@@ -606,8 +607,8 @@ sub Get {
         $args{Message}->Properties($props_obj);
       }
       if (!defined $GetMsgOpts->{Version} ||
-      $GetMsgOpts->{Version} < MQSeries::MQGMO_VERSION_4) {
-        $GetMsgOpts->{Version} = MQSeries::MQGMO_VERSION_4;
+      $GetMsgOpts->{Version} < MQGMO_VERSION_4) {
+        $GetMsgOpts->{Version} = MQGMO_VERSION_4;
       }
       $GetMsgOpts->{MsgHandle} = $props_obj->{Hmsg};
     } else {
@@ -655,20 +656,20 @@ sub Get {
         # truncated message.  Note that it may very well fail, but
         # we'll try anyway.
         #
-        if ($self->{CompCode} == MQSeries::MQCC_OK ||
+        if ($self->{CompCode} == MQCC_OK ||
             (
-             $self->{CompCode} == MQSeries::MQCC_WARNING &&
-             $self->{Reason} == MQSeries::MQRC_TRUNCATED_MSG_ACCEPTED
+             $self->{CompCode} == MQCC_WARNING &&
+             $self->{Reason} == MQRC_TRUNCATED_MSG_ACCEPTED
             ) ||
             (
-             $self->{CompCode} == MQSeries::MQCC_WARNING &&
-             $self->{Reason} == MQSeries::MQRC_FORMAT_ERROR &&
-             $args{Message}->MsgDesc('Format') eq MQSeries::MQFMT_NONE
+             $self->{CompCode} == MQCC_WARNING &&
+             $self->{Reason} == MQRC_FORMAT_ERROR &&
+             $args{Message}->MsgDesc('Format') eq MQFMT_NONE
             )) {                # Successful read
 
-            if ($GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT ||
+            if ($GetMsgOpts->{Options} & MQGMO_SYNCPOINT ||
                 (
-                 $GetMsgOpts->{Options} & MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT &&
+                 $GetMsgOpts->{Options} & MQGMO_SYNCPOINT_IF_PERSISTENT &&
                  $args{Message}->MsgDesc('Persistence')
                 )) {
                 $self->{QueueManager}->{_Pending}->{Get}++;
@@ -705,9 +706,9 @@ sub Get {
 
             return 1;
 
-        } elsif ( $self->{CompCode} == MQSeries::MQCC_WARNING ) {
+        } elsif ( $self->{CompCode} == MQCC_WARNING ) {
 
-            if ( $self->{Reason} == MQSeries::MQRC_TRUNCATED_MSG_FAILED
+            if ( $self->{Reason} == MQRC_TRUNCATED_MSG_FAILED
                  and $retry_allowed ) {
                 #
                 # FIXME: Maybe add some buffer poker-space
@@ -730,7 +731,7 @@ sub Get {
             }
 
         } else {
-            if ( $self->{Reason} == MQSeries::MQRC_NO_MSG_AVAILABLE ) {
+            if ( $self->{Reason} == MQRC_NO_MSG_AVAILABLE ) {
                 #
                 # If we are in a retry, somebody else beat us to the
                 # message.  Retry for a fresh message...
@@ -769,13 +770,13 @@ sub Inquire {
     my $self = shift;
     my (@args) = @_;
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     my (@keys) = ();
 
     my $ForwardMap = $MQSeries::Command::PCF::RequestValues{Queue};
-    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQSeries::MQCMD_INQUIRE_Q}->[1];
+    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQCMD_INQUIRE_Q}->[1];
 
     foreach my $key ( @args ) {
 
@@ -796,7 +797,7 @@ sub Inquire {
                          @keys,
                         );
 
-    unless ( $self->{CompCode} == MQSeries::MQCC_OK && $self->{Reason} == MQSeries::MQRC_NONE ) {
+    unless ( $self->{CompCode} == MQCC_OK && $self->{Reason} == MQRC_NONE ) {
         $self->{Carp}->("MQINQ call failed. " .
                         qq(CompCode => '$self->{CompCode}', ) .
                         qq(Reason => '$self->{Reason}'\n));
@@ -804,8 +805,8 @@ sub Inquire {
     }
 
     # In case the data parsing fails...
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     my (%values) = ();
 
@@ -827,8 +828,8 @@ sub Inquire {
 
     }
 
-    $self->{CompCode} = MQSeries::MQCC_OK;
-    $self->{Reason} = MQSeries::MQRC_NONE;
+    $self->{CompCode} = MQCC_OK;
+    $self->{Reason} = MQRC_NONE;
 
     return %values;
 }
@@ -838,8 +839,8 @@ sub Set {
     my $self = shift;
     my (%args) = @_;
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     my (%keys) = ();
 
@@ -876,7 +877,7 @@ sub Set {
           %keys,
          );
 
-    unless ( $self->{CompCode} == MQSeries::MQCC_OK && $self->{Reason} == MQSeries::MQRC_NONE ) {
+    unless ( $self->{CompCode} == MQCC_OK && $self->{Reason} == MQRC_NONE ) {
         $self->{Carp}->("MQSET call failed. " .
                         qq/CompCode => '$self->{CompCode}', / .
                         qq/Reason => '$self->{Reason}'\n/);
@@ -920,8 +921,8 @@ sub Open {
 
     return 1 if $self->{Hobj};
 
-    $self->{CompCode} = MQSeries::MQCC_FAILED;
-    $self->{Reason} = MQSeries::MQRC_UNEXPECTED_ERROR;
+    $self->{CompCode} = MQCC_FAILED;
+    $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
     my $retrycount = 0;
 
@@ -945,16 +946,16 @@ sub Open {
     #
     if ( exists $args{Mode} ) {
         if ( $args{Mode} eq 'input' ) {
-            $self->{Options} |= MQSeries::MQOO_INPUT_AS_Q_DEF;
+            $self->{Options} |= MQOO_INPUT_AS_Q_DEF;
             $self->{GetEnable} = 1;
         } elsif ( $args{Mode} eq 'input_exclusive' ) {
-            $self->{Options} |= MQSeries::MQOO_INPUT_EXCLUSIVE;
+            $self->{Options} |= MQOO_INPUT_EXCLUSIVE;
             $self->{GetEnable} = 1;
         } elsif ( $args{Mode} eq 'input_shared' ) {
-            $self->{Options} |= MQSeries::MQOO_INPUT_SHARED;
+            $self->{Options} |= MQOO_INPUT_SHARED;
             $self->{GetEnable} = 1;
         } elsif ( $args{Mode} eq 'output' ) {
-            $self->{Options} |= MQSeries::MQOO_OUTPUT;
+            $self->{Options} |= MQOO_OUTPUT;
             $self->{PutEnable} = 1;
         } else {
             $self->{Carp}->("Invalid argument: 'Mode' value $args{Mode} not yet supported");
@@ -1004,14 +1005,14 @@ sub Open {
                           $self->{Reason},
                          );
 
-        if ( $self->{CompCode} == MQSeries::MQCC_OK ) {
+        if ( $self->{CompCode} == MQCC_OK ) {
             $self->{Hobj} = $Hobj;
             return 1;
-        } elsif ( $self->{CompCode} == MQSeries::MQCC_WARNING ) {
+        } elsif ( $self->{CompCode} == MQCC_WARNING ) {
             # This is when Reason == MQRC_MULTIPLE_REASONS
             $self->{Hobj} = $Hobj;
             return -1;
-        } elsif ( $self->{CompCode} == MQSeries::MQCC_FAILED ) {
+        } elsif ( $self->{CompCode} == MQCC_FAILED ) {
 
             if ( exists $self->{RetryReasons}->{$self->{Reason}} ) {
                 if ( $retrycount < $self->{RetryCount} ) {
@@ -1571,7 +1572,7 @@ The value is simply interpreted as true or false.
 If the C<Sync> option is combined with the C<PutMsgOpts> option, the
 C<Options> field in the C<PutMsgOpts> is checked for compatibility.
 If the C<Sync> flag is true and the C<PutMsgOpts> specifies
-MQseries::MQPMO_NO_SYNCPOINT, or vice versa, a fatal error is raised.
+MQPMO_NO_SYNCPOINT, or vice versa, a fatal error is raised.
 If no conflict exists, the C<Sync> flag amends the C<PutMsgOpts>.
 
 =item PutConvert

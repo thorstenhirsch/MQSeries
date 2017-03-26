@@ -14,6 +14,7 @@ use DynaLoader;
 use Exporter;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Message;
 
 our $VERSION = '1.35';
@@ -29,7 +30,7 @@ sub new {
 
     my %MsgDesc =
       (
-       Format   => MQSeries::MQFMT_DEAD_LETTER_HEADER,
+       Format   => MQFMT_DEAD_LETTER_HEADER,
       );
 
     #

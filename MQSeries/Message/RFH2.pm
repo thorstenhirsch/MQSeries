@@ -12,6 +12,7 @@ package MQSeries::Message::RFH2;
 use strict;
 use Carp;
 
+use MQSeries::Constants;
 use MQSeries::Message;
 
 our $VERSION = '1.35';
@@ -27,9 +28,9 @@ my @RFH_Struct =
    [ qw(StrucId                 String          4       RFH     ) ],
    [ qw(Version                 Number          4       2       ) ],
    [ qw(StrucLength             Number          4       36      ) ],
-   [ qw(Encoding                Number          4),     MQSeries::MQENC_NATIVE ],
+   [ qw(Encoding                Number          4),     MQENC_NATIVE ],
    [ qw(CodedCharSetId          Number          4       -2      ) ],
-   [ qw(Format                  String          8),     MQSeries::MQFMT_NONE  ],
+   [ qw(Format                  String          8),     MQFMT_NONE  ],
    [ qw(Flags                   Number          4       0       ) ],
    [ qw(NameValueCCSID          Number          4       1208    ) ],
 );
@@ -52,7 +53,7 @@ sub new {
         unless (ref $carp eq 'CODE');
 
     # this is important, otherwise MQ does not recognize this as a message with RFH2 header
-    $args{MsgDesc}{Format} = MQSeries::MQFMT_RF_HEADER_2;
+    $args{MsgDesc}{Format} = MQFMT_RF_HEADER_2;
 
     my $this = MQSeries::Message->new(%args) || return;
 
@@ -63,7 +64,7 @@ sub new {
         $args{Header}{NameValueData} = [ $args{Header}{NameValueData} ] unless ref($args{Header}{NameValueData});
     } else  {
         $args{Header}{NameValueData} = [];
-    }  
+    }
 
     $this->{Header} = $args{Header} || {};
 
@@ -93,13 +94,13 @@ sub Header {
 #
 sub NameValueData {
    my ( $this, $valuedata ) = @_;
-   
+
    if ( defined $valuedata ) {
        die "NameValueData must be a scalar" if ref($valuedata);
        push @{$this->{Header}{NameValueData}}, $valuedata;
    }
    return wantarray ? @{$this->{Header}{NameValueData}} : $this->{Header}{NameValueData}[0];
-}   
+}
 
 #
 # Conversion routine on get: decode RFH into Header and Data
@@ -138,7 +139,7 @@ sub GetConvert {
       $offset += 4;
       $this->NameValueData($this->_readString($buffer, $offset, $datalen));
       $offset += $datalen;
-    }  
+    }
 
     # data is behind the RFH2 structure
     return substr($buffer,$strucLength);
@@ -168,7 +169,7 @@ sub PutConvert {
     foreach my $data ( @{$header->{NameValueData}} ) {
         die "RFH2 NameValueData must be an XML-like string" unless $data && ref($data) eq "";
         $strucLength += 4 * int((length($data) + 3)/ 4) + 4 ; # + 4 because of size of NameValueLength field
-    }  
+    }
 
     #### structureLength is size of the structure + size of NameValueData fields
     foreach my $field ( @RFH_Struct ) {
@@ -177,7 +178,7 @@ sub PutConvert {
 
     $header->{StrucLength} = $strucLength;
 
-    # 
+    #
     # create the structure
     #
     foreach my $field (@RFH_Struct) {
@@ -337,7 +338,7 @@ MQSeries::Message::RFH2 -- Class to send/receive RFH2 messages
   $msg2->NameValueData('<test>value</test>');
 
   # Same with an array as NameValueData
-  my $msg3 = MQSeries::Message::RFH2->new('NameValueData' => ['<foo>bar</foo>','<test>value</test>'], 
+  my $msg3 = MQSeries::Message::RFH2->new('NameValueData' => ['<foo>bar</foo>','<test>value</test>'],
                                           'Data' => 'message with mydata');
 
   #
@@ -373,7 +374,7 @@ properly.
 
 =head2 NameValueData
 
-Add another string as NameValueData to the header or return the 
+Add another string as NameValueData to the header or return the
 stored NameValueData strings
 
 # add a string
@@ -425,4 +426,3 @@ Hildo Biersma, Tim Kimber, Peter Heuchert
 MQSeries(3), MQSeries::QueueManager(3), MQSeries::Queue(3), MQSeries::Message(3)
 
 =cut
-

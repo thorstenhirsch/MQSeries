@@ -177,4 +177,3 @@ MQSeries(3), MQSeries::QueueManager(3), MQSeries::Queue(3), MQSeries::Message(3)
 The "Application Programming Guide".
 
 =cut
-

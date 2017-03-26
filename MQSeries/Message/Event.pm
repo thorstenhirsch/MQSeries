@@ -13,6 +13,7 @@ use strict;
 use Carp;
 
 use MQSeries qw(:functions);
+use MQSeries::Constants;
 use MQSeries::Message::System;
 
 require "MQSeries/Message/Event.pl";
@@ -33,10 +34,10 @@ sub import {
 sub _Translatable {
     my ($self, $header) = @_;
 
-    if ($header->{"Type"} == MQSeries::MQCFT_EVENT &&
-       ($header->{"Command"} == MQSeries::MQCMD_Q_MGR_EVENT ||
-        $header->{"Command"} == MQSeries::MQCMD_PERFM_EVENT ||
-        $header->{"Command"} == MQSeries::MQCMD_CHANNEL_EVENT)) {
+    if ($header->{"Type"} == MQCFT_EVENT &&
+       ($header->{"Command"} == MQCMD_Q_MGR_EVENT ||
+        $header->{"Command"} == MQCMD_PERFM_EVENT ||
+        $header->{"Command"} == MQCMD_CHANNEL_EVENT)) {
        return (\%MQSeries::Message::Event::ResponseParameters,
                "%MQSeries::Message::Event::ResponseParameters");
     }
