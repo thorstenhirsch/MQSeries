@@ -13,8 +13,7 @@ use strict;
 use Carp;
 use Convert::EBCDIC;
 
-use MQSeries qw(:functions);
-use MQSeries::Constants;
+use MQSeries qw(:functions :constants);
 use MQSeries::Message;
 use MQSeries::Command::Base; # for valuemap translators
 

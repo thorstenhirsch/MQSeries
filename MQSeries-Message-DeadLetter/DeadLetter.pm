@@ -13,8 +13,7 @@ use Carp;
 use DynaLoader;
 use Exporter;
 
-use MQSeries qw(:functions);
-use MQSeries::Constants;
+use MQSeries qw(:functions :constants);
 use MQSeries::Message;
 
 our $VERSION = '1.35';

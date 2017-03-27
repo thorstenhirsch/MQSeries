@@ -12,7 +12,7 @@ use 5.008;
 use strict;
 use Carp;
 
-use MQSeries::Constants;
+use MQSeries qw(:constants :constants);
 use MQSeries::Message::PCF qw(MQDecodePCF);
 
 our $VERSION = '1.35';

@@ -12,8 +12,7 @@ use 5.008;
 use strict;
 use Carp;
 
-use MQSeries qw(:functions);
-use MQSeries::Constants;
+use MQSeries qw(:functions :constants);
 use MQSeries::Message::System;
 
 require "MQSeries/Message/Accounting.pl";

@@ -12,7 +12,7 @@ package MQSeries::Message::IIH;
 use strict;
 use Carp;
 
-use MQSeries::Constants;
+use MQSeries qw(:constants :constants);
 use MQSeries::Message;
 
 our $VERSION = '1.35';

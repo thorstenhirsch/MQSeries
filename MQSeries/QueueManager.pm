@@ -17,8 +17,7 @@ use Carp;
 #
 use Config;
 
-use MQSeries qw(:functions);
-use MQSeries::Constants;
+use MQSeries qw(:functions :constants);
 use MQSeries::Properties;
 use MQSeries::Message;
 use Params::Validate qw(validate);

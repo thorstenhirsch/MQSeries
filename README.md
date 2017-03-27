@@ -197,7 +197,7 @@ man MQSeries::FDC::Tail
 man MQSeries::FDC::Entry
 ```
 
-AUTHORS
+##AUTHORS
 The code is currently maintained and supported by:
 
 > Thorsten Hirsch <t-dot-hirsch(at)web-dot-de>

@@ -12,8 +12,7 @@ use strict;
 our @ISA = qw(MQSeries::Command);
 our $VERSION = '1.35';
 
-use MQSeries qw(:functions);
-use MQSeries::Constants;
+use MQSeries qw(:functions :constants);
 
 #
 # Note -- the order is important, so resist the anal retentive urge to

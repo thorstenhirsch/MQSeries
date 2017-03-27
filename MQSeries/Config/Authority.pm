@@ -14,8 +14,7 @@ use Carp;
 
 our $VERSION = '1.35';
 
-use MQSeries qw(:functions);
-use MQSeries::Constants;
+use MQSeries qw(:functions :constants);
 use MQSeries::Config::Machine;  # For localqmgrs()
 
 #
