@@ -46,7 +46,7 @@ sub GetConvert {
     confess "Invalid type [$type] (not MQTM_STRUC_ID_ARRAY)"
       unless ($type eq 'TM  ');
     confess "Unexpected version [$version] (not MQTM_VERSION_1)"
-      unless ($version == 1) ; # MQSeries::MQTM_VERSION_1
+      unless ($version == 1) ; # MQTM_VERSION_1
     $retval->{Version} = $version;
     $offset += 8;
 

@@ -40,7 +40,7 @@ sub _Translatable {
             "MQSeries::Message::Accounting::Queue" :
                 undef;
 
-    if ($header->{"Type"} == MQSeries::MQCFT_ACCOUNTING &&
+    if ($header->{"Type"} == MQCFT_ACCOUNTING &&
         defined($subclass)) {
         bless $self, $subclass;
         return (\%MQSeries::Message::Accounting::ResponseParameters,

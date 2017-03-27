@@ -174,7 +174,7 @@ sub QueueManager {
 
     if (!ref($newqmgr) || !$newqmgr->isa("MQSeries::QueueManager")) {
         $self->{Carp}->("Invalid argument: must be an MQSeries::QueueManager object.\n");
-        return; 
+        return;
     }
 
     (my $oldqmgr, $self->{QueueManager}) = ($self->{QueueManager}, $newqmgr);
@@ -227,7 +227,7 @@ MQSeries::Message -- OO interface to MQSeries messages
     (
      MsgDesc            =>
      {
-      Format            => MQSeries::MQFMT_STRING,
+      Format            => MQFMT_STRING,
      },
     );
 
@@ -243,7 +243,7 @@ MQSeries::Message -- OO interface to MQSeries messages
     (
      MsgDesc            =>
      {
-      Format            => MQSeries::MQFMT_STRING,
+      Format            => MQFMT_STRING,
       CorrelId          => $request->MsgDesc("MsgId"),
      },
     );

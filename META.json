@@ -1,0 +1,45 @@
+{
+   "abstract" : "Interface to IBM's MQSeries Product",
+   "author" : [
+      "MQ Engineering Group <mqseries@cpan.org>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "ExtUtils::MakeMaker version 7.24, CPAN::Meta::Converter version 2.150010",
+   "license" : [
+      "unknown"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "MQSeries",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "inc"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Convert::EBCDIC" : "0.06",
+            "Params::Validate" : "1.00",
+            "Test::Pod" : "1.20",
+            "Test::Simple" : "0.62"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "version" : "1.35",
+   "x_serialization_backend" : "JSON::PP version 2.27400"
+}

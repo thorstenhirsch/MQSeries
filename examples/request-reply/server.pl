@@ -10,7 +10,7 @@
 use strict;
 use warnings;
 
-use MQSeries qw(:functions);
+use MQSeries qw(:functions :constants);
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::Message;
@@ -74,10 +74,10 @@ while (1) {
           'GetMsgOpts' =>
           {
            'WaitInterval' => 5000,  # 5 seconds
-           'Options'      => (MQSeries::MQGMO_WAIT |
-                              MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT |
-                              MQSeries::MQGMO_CONVERT |
-                              MQSeries::MQGMO_FAIL_IF_QUIESCING),
+           'Options'      => (MQGMO_WAIT |
+                              MQGMO_SYNCPOINT_IF_PERSISTENT |
+                              MQGMO_CONVERT |
+                              MQGMO_FAIL_IF_QUIESCING),
           },
          );
     unless ($status) {  # Error
@@ -113,17 +113,17 @@ while (1) {
             # MQRO_COPY_MSG_ID_TO_CORRELID protocol, but allow the
             # message id / correl id to be passed back if requested.
             #
-            my $msgdesc = { Format      => MQSeries::MQFMT_NONE,
-                            MessageType => MQSeries::MQMT_REPLY,
+            my $msgdesc = { Format      => MQFMT_NONE,
+                            MessageType => MQMT_REPLY,
                             CorrelId    => $request_msg->MsgDesc('MsgId'),
                             Persistence => $request_msg->MsgDesc('Persistence'),
                             Expiry      => $request_msg->MsgDesc('Expiry'),
                             Priority    => $request_msg->MsgDesc('Priority'),
                           };
-            if ($request_msg->MsgDesc('Report') & MQSeries::MQRO_PASS_MSG_ID) {
+            if ($request_msg->MsgDesc('Report') & MQRO_PASS_MSG_ID) {
                 $msgdesc->{MsgId} = $request_msg->MsgDesc('MsgId');
             }
-            if ($request_msg->MsgDesc('Report') & MQSeries::MQRO_PASS_CORREL_ID) {
+            if ($request_msg->MsgDesc('Report') & MQRO_PASS_CORREL_ID) {
                 $msgdesc->{CorrelId} = $request_msg->MsgDesc('CorrelId');
             }
             while (my ($key, $value) = each %$reply_msg_flags) {  # From callback
@@ -145,8 +145,8 @@ while (1) {
                 my $dest_qname = $request_msg->MsgDesc('ReplyToQMgr') . '/' .  $request_msg->MsgDesc('ReplyToQ');
             my $errmsg = "Cannot perform Put1 on queue manager $qmgr_name and reply queue $dest_qname\n" .
               "\tReason: $rc (" . MQReasonToText($rc) . ")\n";
-                if ($rc == MQSeries::MQRC_UNKNOWN_OBJECT_NAME ||
-                    $rc == MQSeries::MQRC_NOT_AUTHORIZED) {
+                if ($rc == MQRC_UNKNOWN_OBJECT_NAME ||
+                    $rc == MQRC_NOT_AUTHORIZED) {
                     #
                     # If the reply-to qmgr/queue is an invalid object
                     # name or does not grant permission, that is a

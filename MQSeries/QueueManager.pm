@@ -56,27 +56,25 @@ sub new {
 
     my $self =
       {
-
-       Carp                     => \&carp,
-       RetryCount               => 0,
-       RetrySleep               => 60,
-       RetryReasons             => {
-                                    map { $_ => 1 }
+        Carp                 => \&carp,
+        RetryCount           => 0,
+        RetrySleep           => 60,
+        RetryReasons         => {
+                                  map { $_ => 1 }
                                     (
-                                     MQRC_CONNECTION_BROKEN,
-                                     MQRC_Q_MGR_NOT_AVAILABLE,
-                                     MQRC_Q_MGR_QUIESCING,
-                                     MQRC_Q_MGR_STOPPING,
-                                     MQRC_CHANNEL_NOT_AVAILABLE,
-                                     MQRC_HOST_NOT_AVAILABLE,
+                                      MQRC_CONNECTION_BROKEN,
+                                      MQRC_Q_MGR_NOT_AVAILABLE,
+                                      MQRC_Q_MGR_QUIESCING,
+                                      MQRC_Q_MGR_STOPPING,
+                                      MQRC_CHANNEL_NOT_AVAILABLE,
+                                      MQRC_HOST_NOT_AVAILABLE,
                                     )
-                                   },
-       ConnectTimeoutSignal     => 'USR1',
-       ConnectTimeout           => 0,
-       ConnectArgs              => {},
-       AutoCommit               => 0,
-       MessageHandles           => []
-
+                                },
+        ConnectTimeoutSignal => 'USR1',
+        ConnectTimeout       => 0,
+        ConnectArgs          => {},
+        AutoCommit           => 0,
+        MessageHandles       => {}
       };
     bless ($self, $class);
 
@@ -343,7 +341,7 @@ sub Inquire {
 
         my ($key,$value) = ($keys[$index],$values[$index]);
 
-        my ($newkey,$ValueMap) = @{$ReverseMap->{$key}};
+        my ($newkey,$ValueMap) = @{$ReverseMap->{$key}} if defined $ReverseMap->{$key};
 
         if (!$ValueMap) {
             $values{$newkey} = $value;
@@ -820,7 +818,7 @@ sub Connect {
                 $self->{QMgrConfig} = \%attr;
             };
             if ($@) {
-                $self->{Carp}->("Could not inquire queue manager attributes");
+                $self->{Carp}->("Could not inquire queue manager attributes: $@");
             }
 
             return 1;
@@ -1143,7 +1141,7 @@ below shows how it can be used:
 
   my $qmgr = MQSeries::QueueManager->
     new(QueueManager  => 'some.queue.manager',
-        SecurityParms => { 'AuthenticationType' => MQSeries::MQZAT_INITIAL_CONTEXT,
+        SecurityParms => { 'AuthenticationType' => MQZAT_INITIAL_CONTEXT,
                            'CSPUserId'          => $userid,
                            'CSPPassword'        => $passwd,
                          },
@@ -1478,10 +1476,10 @@ which is usually the correct thing to do.  However, property options
 can be specified if so desired:
 
   Properties => { 'perl.MQSeries.label' => 'important',
-                  'perl.MQSeries.price' => { Type  => MQSeries::MQTYPE_FLOAT64,
+                  'perl.MQSeries.price' => { Type  => MQTYPE_FLOAT64,
                                              Value => '8.99',
                                            },
-                  'perl.MQSeries.count' => { Type  => MQSeries::MQTYPE_INT32,
+                  'perl.MQSeries.count' => { Type  => MQTYPE_INT32,
                                              Value => 12,
                                            },
                 }

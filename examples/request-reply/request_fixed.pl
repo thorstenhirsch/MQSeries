@@ -10,7 +10,7 @@
 use strict;
 use warnings;
 
-use MQSeries qw(:functions);
+use MQSeries qw(:functions :constants);
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::Message;
@@ -43,7 +43,7 @@ my $reply_queue =  MQSeries::Queue::->
 
 foreach my $counter (1..10) {
     my $put_message = MQSeries::Message::->
-      new('MsgDesc' => { 'Format'      => MQSeries::MQFMT_STRING,
+      new('MsgDesc' => { 'Format'      => MQFMT_STRING,
                          'ReplyToQ'    => $reply_qname,
                          'Expiry'      => '30s',
                          'Persistence' => 0,

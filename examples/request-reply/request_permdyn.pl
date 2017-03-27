@@ -10,7 +10,7 @@
 use strict;
 use warnings;
 
-use MQSeries qw(:functions);
+use MQSeries qw(:functions :constants);
 use MQSeries::QueueManager;
 use MQSeries::Queue;
 use MQSeries::Message;
@@ -86,14 +86,14 @@ foreach my $counter (1..10) {
     # and use MsgId-to-CorrelId.
     #
     my $put_message = MQSeries::Message::->
-      new('MsgDesc' => { 'Format'      => MQSeries::MQFMT_STRING,
+      new('MsgDesc' => { 'Format'      => MQFMT_STRING,
                          'ReplyToQ'    => $reply_qname,
                          'Persistence' => 1,
-                         'Report'      => MQSeries::MQRO_PASS_CORREL_ID,
+                         'Report'      => MQRO_PASS_CORREL_ID,
                        },
           'Data'    => "Request message $counter for pid $$");
     $request_queue->Put('Message'    => $put_message,
-                        'PutMsgOpts' => { Options => MQSeries::MQPMO_NEW_CORREL_ID, },
+                        'PutMsgOpts' => { Options => MQPMO_NEW_CORREL_ID, },
                        ) ||
       die("Unable to put message\n" .
           "Reason = " . $request_queue->Reason() .

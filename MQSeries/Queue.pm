@@ -1306,7 +1306,7 @@ destroy when you are finished with them.
 The value specified here will be passed directly to the MQCLOSE()
 call, so it should be specified as:
 
-        CloseOptions    => MQSeries::MQCO_DELETE_PURGE,
+        CloseOptions    => MQCO_DELETE_PURGE,
 
 for example.
 
@@ -1601,10 +1601,10 @@ which is usually the correct thing to do.  However, property options
 can be specified if so desired:
 
   Properties => { 'perl.MQSeries.label' => 'important',
-                  'perl.MQSeries.price' => { Type  => MQSeries::MQTYPE_FLOAT64,
+                  'perl.MQSeries.price' => { Type  => MQTYPE_FLOAT64,
                                              Value => '8.99',
                                            },
-                  'perl.MQSeries.count' => { Type  => MQSeries::MQTYPE_INT32,
+                  'perl.MQSeries.count' => { Type  => MQTYPE_INT32,
                                              Value => 12,
                                            },
                 }

@@ -10,7 +10,7 @@
 use Carp;
 use Getopt::Long;
 
-use MQSeries qw(:functions);
+use MQSeries qw(:functions :constants);
 use MQSeries::Message;
 use MQSeries::Queue;
 use MQSeries::QueueManager;
@@ -88,17 +88,17 @@ while (1) {
           GetMsgOpts =>
           {
            Options   => (
-                         MQSeries::MQGMO_ACCEPT_TRUNCATED_MSG |
-                         MQSeries::MQGMO_FAIL_IF_QUIESCING |
-			 MQSeries::MQGMO_NO_SYNCPOINT
+                         MQGMO_ACCEPT_TRUNCATED_MSG |
+                         MQGMO_FAIL_IF_QUIESCING |
+                         MQGMO_NO_SYNCPOINT
                         ),
           },
          );
 
-    last if ($get_queue->Reason() == MQSeries::MQRC_NO_MSG_AVAILABLE);
+    last if ($get_queue->Reason() == MQRC_NO_MSG_AVAILABLE);
 
-    if ($get_queue->Reason() != MQSeries::MQRC_NONE &&
-        $get_queue->Reason() != MQSeries::MQRC_TRUNCATED_MSG_ACCEPTED) {
+    if ($get_queue->Reason() != MQRC_NONE &&
+        $get_queue->Reason() != MQRC_TRUNCATED_MSG_ACCEPTED) {
         die "Could not get message: reason " . $get_queue->Reason() .
           " (" . MQReasonToText($get_queue->Reason()) . ")\n";
     }
@@ -163,5 +163,3 @@ Hildo Biersma
 MQSeries(3)
 
 =cut
-
-

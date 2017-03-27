@@ -18,10 +18,10 @@ have been removed, causing "MQDLTMH failed" error with reason 2018.
 MQClient/typemap.PL will handle MQINT64 like how it handles MQHMSG.
 
 MQSeries/Comamnd/Base.pm: In untraslatePCF, the filters handled
-properly.  Filters may also apply to MQCFT_INTEGER64 and 
+properly.  Filters may also apply to MQCFT_INTEGER64 and
 MQCFT_INTEGER64_LIST as well as the shorter kinds.
 
-MQSeries/Command.pm : Added support for ChlAuth and Comminfo objects 
+MQSeries/Command.pm : Added support for ChlAuth and Comminfo objects
 of mqv7.1.
 
 MQSeries/ErrorLog/Parser.pm: addied a 'ip.ad.dre.ss (port)' parser
@@ -32,8 +32,8 @@ Allow single-character hostnames.  more likely this is the first
 character of an ip address where the first octet is a single digit.
 Add AMQ6048 for dbcs error.
 
-MQSeries/Message/RFH2.pm : Modified based CPAN user's input. It 
-handles NameValueData correctly. Also sets the default Format to 
+MQSeries/Message/RFH2.pm : Modified based CPAN user's input. It
+handles NameValueData correctly. Also sets the default Format to
 MQFMT_NONE instead of undef.
 
 util/parse_headers:
@@ -332,9 +332,9 @@ Updated descriptions.pl file in the Errorlog directory.
 Thanks to "Jean-Yves Baudy [jy.baudy@free.fr]" for pointing this out.
 Corrected the RequestParameterOrder file to expect the correct order.
 
-=head2 Fix the InquireChannelStatus PCF command 
+=head2 Fix the InquireChannelStatus PCF command
 
-Updated the ChannelStatus block in RequestParameters file with 
+Updated the ChannelStatus block in RequestParameters file with
 all the necessary optional parameters.
 
 =head1 Changes for 1.25
@@ -595,7 +595,7 @@ not.  In the next release, the warning becomes a fatal error.
 
 This release drops support for MQSeries 5.0, Solaris 2.5.1 and IRIX.
 We have not made any changes to the code that should affect these
-platforms and releases, but no longer have hese host types around.  
+platforms and releases, but no longer have hese host types around.
 If you care about these platforms, we'll be happy to merge patches to
 keep them working.
 
@@ -627,10 +627,10 @@ This means the following will now work:
 
     my $result = $request_queue->
       Get('Message'    => $get_message,
-          'GetMsgOpts' => 
+          'GetMsgOpts' =>
           {
-            'Options'  => (MQSeries::MQGMO_SYNCPOINT_IF_PERSISTENT |
-                           MQSeries::MQGMO_FAIL_IF_QUIESCING),
+            'Options'  => (MQGMO_SYNCPOINT_IF_PERSISTENT |
+                           MQGMO_FAIL_IF_QUIESCING),
           },
           'Wait'       => '30s',
          );
@@ -858,11 +858,11 @@ logic failed in the following (rare) corner-case:
 
 =over 4
 
-=item * 
+=item *
 
 You are getting a string message and requesting conversion
 
-=item * 
+=item *
 
 The data buffer specified is large enough to hold the message before
 conversion
@@ -900,13 +900,13 @@ Note that the syntax for the ClientConn options may be different than
 expected, as the MQCNO 'versions' and 'Options' flags must also be
 accomodated:
 
-  $HConn = MQCONNX($QmgrName, 
+  $HConn = MQCONNX($QmgrName,
                    { 'ClientConn' => { 'ChannelName'   => 'FOO',
                                        'TransportType' => 'TCP',
                                        'ConnectionName' => "hostname(1414)",
                                      },
                    },
-                   $CompCode, 
+                   $CompCode,
                    $Reason);
 
 The C<MQSeries::QueueManager> class now uses MQCONNX and supports an
@@ -976,7 +976,7 @@ releases will support the old flag for backwards compatibility.
 In retrospect, it was probably a mistake to add Commit() and Backout()
 methods to the MQSeries::Queue class and have them delegate these
 calls to the queue manager object.  Some developers were confused by
-this and thought the scope of transactions was per-queue.  
+this and thought the scope of transactions was per-queue.
 
 However, it is valid to create an MQSeries::Queue object without
 creating an MQSeries::QueueManager object first, and Commit() and
@@ -1068,7 +1068,7 @@ the new ResetQueueStatistics method, which returns the same results
 as the Unix (PCF) version.  The new DisplayQueueStatus MQSC command is not
 yet supported.
 
-Support for MQSeries 5.2 on Unix has also been tested; however, as 
+Support for MQSeries 5.2 on Unix has also been tested; however, as
 this worked without changes, none were made.
 
 =head2 MQSeries::QueueManager AutoCommit off by default
@@ -1082,7 +1082,7 @@ must set AutoCommit in your code.
 
 The MQSeries modules were becoming a serious memory hog, largely due
 to the import/export of all constants in modules the included
-MQSeries.  
+MQSeries.
 
 The MQSeries moduly now optionally allows importing just the
 functions, then referring to constants using an MQSeries:: prefix.
@@ -1192,7 +1192,7 @@ automatically commited, in order to be backwards compatible with the
 current behavior.  In 1.13, we will change this, since we feel very
 strongly that the intuitive behavior should be the default.  If the
 application does not explicitly commit transactions, then they will be
-backed out when we destroy the MQSeries::QueueManager objects.  
+backed out when we destroy the MQSeries::QueueManager objects.
 
 This means that applications will B<NOT> be required to explicitly
 call MQBACK() (well, the ->Backout() method, that is) in all of their
@@ -1280,7 +1280,7 @@ GetConvert as well as PutConvert.
 It is now possible to determine if the failure of a Put(), Put1() or
 Get() method calls was a result of a failed PutConvert() or
 GetConvert() method, which is called internally by each of the first 3
-methods.  
+methods.
 
 This is important when you want to know if the error was a result of
 an improperly formatted message body, or an MQSeries problem.
@@ -1352,7 +1352,7 @@ are in fact correct.  And yes, order is of course important.
 
 In all of the following modules, the GetConvert() method will save the
 raw buffer, which in gives the developer access to the raw,
-unconverted data, via the MQSeries::Message->Buffer() method.  
+unconverted data, via the MQSeries::Message->Buffer() method.
 
   MQSeries::Message::Storable
   MQSeries::Message::XML-Dumper
@@ -1383,7 +1383,7 @@ Both are now configurable via arguments to the constructor.
 
 This one is hard to explain.  The code to parse the PCF admin messages
 for PubSub wasn't handling multiple subscriber identities correctly.
-It does now.  
+It does now.
 
 =head2 MQSeries::Queue->Open() was silent on non-retried errors
 
@@ -1546,7 +1546,7 @@ totally broken as a result.
 When a command fails, the Reason() was being set to the last reason
 code found in the returned messages, which is always 3008 (command
 failed).  Now the code will catch the first non-zero return code, and
-default to that, and this reason code is usually the one you want.  
+default to that, and this reason code is usually the one you want.
 
 For example, InquireQueue for a non-existent queue name will now
 return 2085 (object not found), instead of the generic and
@@ -1557,7 +1557,7 @@ uninteresting 3008.
 Although I don't recommend using this particular interface, the
 constructors for both of these classes allow you to pass scalar
 references for the Reason and CompCode, so that the MQCONN() or
-MQOPEN() errors, if any, can be obtained.  
+MQOPEN() errors, if any, can be obtained.
 
 These were only being set if there was an error, and now they are set
 regardless.  Thus, if you initialize the values to, say
@@ -1581,7 +1581,7 @@ Publish/Subscribe which allow me to age bogus subscriptions
 able to DeregisterSubscriber as an alternate user ID.
 
 The API was enhanced to expose a bit more of the underlying method
-calls in order to make this possible.  
+calls in order to make this possible.
 
 In addition, several minor bugs in the Administrative PubSub API were
 fixed, making it possible to get at almost all of the metatopic
@@ -1602,7 +1602,7 @@ he discovered this? ;-) will leak memory heavily.  This is fixed.
 
 In addition, the same error was made in the
 MQSeries::Message::RulesFormat XS code as well, and that was also
-fixed.  
+fixed.
 
 Note that none of the basic MQI interfaces had any problems at all.
 There are now no known memory leaks anywhere in the XS code.  We've
@@ -1693,7 +1693,7 @@ This is a new class which provides an interface to the MQRFH Rules and
 Format messages used by the Publish/Subscribe system.  This can also
 be used to create messages for working with the NEON MQIntegrator 1.X
 product suites, since the format is the same, although the author
-hasn't actually tried this yet.  
+hasn't actually tried this yet.
 
 =head2 MQSeries::Message::XML-Dumper
 
@@ -1742,7 +1742,7 @@ caution.
 
 =back
 
-=head2 MQSeries::QueueManager 
+=head2 MQSeries::QueueManager
 
 =over 4
 
@@ -1780,7 +1780,7 @@ developer to make this call, and error check it explicitly.
 =item Inquire/Set MQINQ/MQSET Support
 
 Method calls have added to support the MQINQ() and MQSET() calls
-against queues.  
+against queues.
 
 =item Close method call
 
@@ -1843,7 +1843,7 @@ test string is done via a pair of automatically compiled files
 In fact, all of the files in MQSeries/Constants are auto-generated from
 templates in src/pre.in, by the tool src/util/flatten_macros.  This is
 a huge win, as it basically does the macro-to-value mapping such that
-the perl API is dealing with raw numbers.  
+the perl API is dealing with raw numbers.
 
 There is a non-trivial startup cost otherwise, as each and every macro
 has to be looked up in the symbol table, the AUTOLOAD function called,
@@ -1858,7 +1858,7 @@ elsewhere.  The MQSeries.xs.in directory is much more lean.
 
 The author now fully understands the XS concepts of mortality and
 reference counts, and the code returns correctly mortalized, and
-properly reference counted values.  
+properly reference counted values.
 
 =item Support for "default" queue manager
 
@@ -1872,7 +1872,7 @@ since the default queue manager is "", and "" is false...
 
 =head2 Installation Procedures, and other Miscellany
 
-=over 4 
+=over 4
 
 =item 5.004 required, not 5.005
 
@@ -1953,7 +1953,7 @@ course.
 
 =head2 MQSeries::QueueManager
 
-=over 
+=over
 
 =item MQCONN retry logic
 
@@ -2010,7 +2010,7 @@ freeze.
 
 =head1 Changes for 1.03
 
-=over 4 
+=over 4
 
 =item OO API
 
@@ -2071,4 +2071,3 @@ Automated the typemap generation using a typemap.PL file
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-
