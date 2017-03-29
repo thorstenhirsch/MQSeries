@@ -1,14 +1,14 @@
-#!/ms/dist/perl5/bin/perl5.6
+#!/usr/bin/env perl
 #
 # check_pcf_mqsc - Cross-check the PCF and MQSC command tables
 #
 # (c) 2005-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: check_pcf_mqsc,v 33.4 2012/09/26 16:15:36 jettisu Exp $
-#
 
 use strict;
+use warnings;
+
 use lib ".";
 require "MQSeries/Command/MQSC/RequestParameters.pl";
 require "MQSeries/Command/MQSC/Requests.pl";
@@ -232,7 +232,7 @@ sub check_parameters_xtype {
 	my ($type, $req, $resp) = @$set;
 	#print "For $type requests, have object types [" .
 	#  join(',', sort keys %$req), "]\n";
-	foreach my $obj_type (qw(QueueManager Queue Channel AuthInfo 
+	foreach my $obj_type (qw(QueueManager Queue Channel AuthInfo
 				 Namelist CFStruc CFStruct StorageClass)) {
 	    unless (defined $req->{$obj_type}) {
 		print "Object type '$obj_type' not defined in $type request params\n";
@@ -286,7 +286,7 @@ sub check_parameters_xtype {
     # with two or three values.  If size three, the third parameter
     # must be defined, must be a hash-ref, and must have key/values.
     #
-    foreach my $pair ( [ 'Request', 
+    foreach my $pair ( [ 'Request',
 			\%MQSeries::Command::PCF::RequestParameters,
 		      ],
 		      [ 'Response',

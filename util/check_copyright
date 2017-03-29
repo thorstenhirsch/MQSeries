@@ -1,6 +1,4 @@
-#!/usr/bin/perl
-#
-# $Id: check_copyright,v 33.4 2012/09/26 16:07:43 jettisu Exp $
+#!/usr/bin/env perl
 #
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -15,8 +13,10 @@
 use Getopt::Long;
 use File::Basename;
 
+my %args;
 GetOptions( \%args, qw( update ) ) || die;
 
+my %skip;
 %skip = map { $_ => 1 }
 qw(
    .options/rcsMajor
@@ -112,7 +112,7 @@ foreach my $old ( @old) {
     open(OLD, '<', $old) || die "Unable to read $old: $!\n";
 
     while ( <OLD> ) {
-        s/(\(c\)) (\d{4}).* (Morgan Stanley & Co\. Incorporated)/\1 \2-$thisyear \3/;
+        s/(\(c\)) (\d{4}).* (Morgan Stanley & Co\. Incorporated)/$1 $2-$thisyear $3/;
         print NEW;
     }
 

@@ -1,6 +1,4 @@
 #
-# $Id: PCF.pm,v 37.5 2012/09/26 16:15:08 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -123,7 +121,6 @@ sub _ReverseMap {
 
         my $ForwardCommandMap = $ForwardKeyMap->{$command};
 
-
         my $ForwardParameterMap = $ForwardCommandMap->[1];
 
         my $ReverseParameterMap = {};
@@ -157,7 +154,6 @@ sub _ReverseMap {
                             $value;
                     }
                 }
-
 
                 $ReverseParameterMap->{ $ForwardParameterMap->{$parameter}->[0] } =
                   [ $parameter, $ReverseValueMap ];

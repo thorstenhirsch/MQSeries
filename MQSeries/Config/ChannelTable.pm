@@ -1,6 +1,4 @@
 #
-# $Id: ChannelTable.pm,v 36.5 2012/09/26 16:15:10 jettisu Exp $
-#
 # (c) 2001-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #

@@ -11,8 +11,6 @@
 #$ netstat -na | grep 6666
 #tcp        0      0 :::6666    :::*        LISTEN
 
-
-
 ######################################################################
 # This is a very simple sample on a local queuemanager with one queue
 # and a channel to connect to
@@ -99,4 +97,3 @@ START CHANNEL('$CHANNEL')
 
 * start listener
 START LISTENER('listener')" | runmqsc $QM
-

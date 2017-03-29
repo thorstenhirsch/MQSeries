@@ -1,6 +1,4 @@
 #
-# $Id: SpecialParameters.pl,v 33.4 2012/09/26 16:15:08 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #

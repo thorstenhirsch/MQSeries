@@ -1,6 +1,4 @@
 #
-# $Id: RequestValues.pl,v 33.12 2012/09/26 16:13:37 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -155,7 +153,7 @@ package MQSeries::Command::MQSC;
     Off				=> "OFF",
    },
 
-   ActivityRecording =>	       
+   ActivityRecording =>
    {
     Disabled                    => "DISABLED",
     Msg                         => "MSG",
@@ -186,7 +184,7 @@ package MQSeries::Command::MQSC;
     QMgr                        => "QMGR",
     Off				=> "Off",
    },
-   
+
    CLWLUseQ =>
    {
     Any    		        => "ANY",
@@ -209,14 +207,14 @@ package MQSeries::Command::MQSC;
     OnlyIGQ                     => "ONLYIGQ",
    },
 
-   
+
    IPAddressVersion =>
    {
     IPv4		        => "IPV4",
     IPv6		        => "IPV6",
    },
-   
-   PubSubMode => 
+
+   PubSubMode =>
    {
    Compat			=> "COMPAT",
    Enabled			=> "ENABLED",
@@ -361,7 +359,7 @@ package MQSeries::Command::MQSC;
    {
     Disabled			=> "DISABLED",
     No				=> "NO",
-    Yes				=> "YES", 
+    Yes				=> "YES",
    },
 # I couldn't find 'AsParent' equivalent in MQSC
    DefPutResponse =>
@@ -745,15 +743,15 @@ package MQSeries::Command::MQSC;
     ZlibFast			=> "ZLIBFAST",
     ZlibHigh			=> "ZLIBHIGH",
    },
-  
+
    # VALUEMAP-CODEREF
    KeepAliveInterval =>
-    sub { MQSeries::Command::Base::strinteger(@_, -1, "AUTO", 99999); }, 
+    sub { MQSeries::Command::Base::strinteger(@_, -1, "AUTO", 99999); },
 
    # VALUEMAP-CODEREF
    MsgMarkBrowseInterval =>
        sub { MQSeries::Command::Base::strinteger(@_, -1, "NOLIMIT", 999999999); },
-   
+
 # 100MB max
    # VALUEMAP-CODEREF
    MaxPropertiesLength =>
@@ -787,7 +785,7 @@ package MQSeries::Command::MQSC;
     AlterationTime 		=> "ALTTIME",
     PageSetId                   => "PSID",
     QSGDisposition		=> "QSGDISP",
-    StorageClassDesc		=> "DESCR",	
+    StorageClassDesc		=> "DESCR",
     XCFGroupName		=> "XCFGNAME",
     XCFMemberName		=> "XCFMNAME",
    },
@@ -1015,11 +1013,11 @@ package MQSeries::Command::MQSC;
     Remove			=> "REMOVE",
     RemoveAll			=> "REMOVEALL",
    },
-   
+
    ChlAuthAttrs =>
    {
     All				=> "ALL",
-    AlterationDate		=> "ALTDATE", 
+    AlterationDate		=> "ALTDATE",
     AlterationTime		=> "ALTTIME",
     ChlAuth			=> "CHLAUTH",
     ChlAuthDesc			=> "DESCR",
@@ -1088,7 +1086,7 @@ package MQSeries::Command::MQSC;
     SMDS			=> "SMDS",
     None			=> "NONE",
    },
-  
+
    DefReconnect =>
    {
     QMgr			=> "QMGR",

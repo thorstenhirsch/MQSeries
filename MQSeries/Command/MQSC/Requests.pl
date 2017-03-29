@@ -1,6 +1,4 @@
 #
-# $Id: Requests.pl,v 33.6 2012/09/26 16:13:38 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #

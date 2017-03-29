@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Parse the headers to find all MQRC_xxx constants, then check the
 # files with reason code numbers / constants.  Those files,

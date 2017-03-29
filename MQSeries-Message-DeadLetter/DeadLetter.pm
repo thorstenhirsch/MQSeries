@@ -1,6 +1,4 @@
 #
-# $Id: DeadLetter.pm,v 33.11 2012/09/26 16:10:09 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #

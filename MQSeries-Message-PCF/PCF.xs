@@ -8,8 +8,6 @@ extern "C" {
 }
 #endif
 
-static char rcsid[] = "$Id: PCF.xs,v 37.11 2012/09/26 16:10:12 jettisu Exp $";
-
 /*
   (c) 1999-2012 Morgan Stanley & Co. Incorporated
   See ..../src/LICENSE for terms of distribution.
@@ -327,11 +325,11 @@ MQDecodePCF(pBuffer)
                          av_push(ListAV,newSViv((IV)pInteger64ParamList->Values[listcount]));
                      }
                  } else {
-                     char   printed_number[32]; 
-                     STRLEN len; 
+                     char   printed_number[32];
+                     STRLEN len;
                      for ( listcount = 0 ; listcount < (int)pInteger64ParamList->Count ; listcount++ ) {
-                         sprintf(printed_number, "%" PRIdLEAST64, pInteger64ParamList->Values[listcount]); 
-                         len = strlen((const char *)printed_number); 
+                         sprintf(printed_number, "%" PRIdLEAST64, pInteger64ParamList->Values[listcount]);
+                         len = strlen((const char *)printed_number);
                          av_push(ListAV,newSVpvn(printed_number,len));
                      }
                  }

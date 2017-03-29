@@ -1,12 +1,14 @@
-#-*-perl-*-
-#
-# $Id: parse_config,v 33.5 2012/09/26 16:15:38 jettisu Exp $
+#!/usr/bin/env perl
 #
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 # Parse our config file to get the parameters we need
 #
+
+use Config;
+use Env;
+use File::Basename;
 
 foreach my $relpath ( qw( . .. ../.. ../../.. ) ) {
     next unless -f "$relpath/CONFIG";
@@ -15,7 +17,6 @@ foreach my $relpath ( qw( . .. ../.. ../../.. ) ) {
 }
 
 die "Unable to locate CONFIG file\n" unless -f $config;
-use File::Basename;
 #
 # In the test scripts, we need to disable the non-lazy loading of
 # symbols, since the IRIX client has lots of undefined symbols that
@@ -23,7 +24,6 @@ use File::Basename;
 # problem.  However, since the non-lazy loading is an important test,
 # we only disable it on IRIX.
 #
-use Config;
 if ( $Config{osname} =~ /irix/ ) {
     $ENV{PERL_DL_NONLAZY} = '0';
 }
@@ -34,16 +34,16 @@ elsif ( $ENV{FORCE_PERL_DL_NONLAZY} ) {
 #
 # Accept MQMTOP from the environment even if not set in CONFIG file
 #
+our %myconfig;
 $myconfig{MQMTOP} = $ENV{MQMTOP} if (defined $ENV{MQMTOP});
 
 #
 # Read CONFIG file.  Anything can be overriden from environment.
 #
-open(CONFIG, '<', $config) or
-  die "Unable to open CONFIG file: $ERRNO\n";
+open(CONFIG, '<', $config) or die "Unable to open CONFIG file: $!\n";
 while ( <CONFIG> ) {
     next if /^\#/;
-    next unless ($key,$value) = /^(\w+)\s*=\s*(.*)\s*$/;
+    next unless my ($key,$value) = /^(\w+)\s*=\s*(.*)\s*$/;
     if ( $ENV{$key} ) {
         print "Environment variable '$key' overrides CONFIG definition\n";
         $myconfig{$key} = $ENV{$key};
@@ -51,8 +51,7 @@ while ( <CONFIG> ) {
         $myconfig{$key} = $value;
     }
 }
-close(CONFIG) or
-  die "Unable to close CONFIG file: $ERRNO\n";
+close(CONFIG) or die "Unable to close CONFIG file: $!\n";
 
 #
 # Validate the structure of the MQMTOP directory.  It has to exist,
@@ -62,7 +61,6 @@ close(CONFIG) or
 if ( defined $myconfig{MQMTOP} ) {
     $mqmtop = $myconfig{MQMTOP};
 } else {
-
     #
     # Canonical default.  True for most of the UNIX platforms.
     #
@@ -73,10 +71,13 @@ if ( defined $myconfig{MQMTOP} ) {
         $mqmtop = "/usr/lpp/mqm";
     } elsif ( $Config{osname} =~ /win32/i ) {
 
-      require "Win32/TieRegistry.pm";
-      import Win32::TieRegistry;
-
-      $Registry->Delimiter('/');
+      eval {
+          require "Win32/TieRegistry.pm";
+          import Win32::TieRegistry;
+          use vars qw( $Registry );
+          $Registry->Delimiter('/');
+      };
+      die "setting delimiter failed: $@" if ($@);
 
       my $CurrentVersion = "LMachine/SOFTWARE/IBM/MQSeries/CurrentVersion/";
 
@@ -124,10 +125,11 @@ if ( -d "$mqmtop/inc" ) {
 $mqversion = 5;
 
 open(CMQC, '<', "$include/cmqc.h")
-  or die "Unable to open $include/cmqc.h: $ERRNO\n";
+  or die "Unable to open $include/cmqc.h: $!\n";
 while ( <CMQC> ) {
     $mqversion = 6 if ($mqversion < 6 && /MQOT_LISTENER/); # New in MQ v6
     $mqversion = 7 if ($mqversion < 7 && /MQGMO_VERSION_4/);  # New in MQ v7
+    $mqversion = 8 if -f "$include/cmqstrc.h"; # New in MQ v8
 }
 close(CMQC);
 
@@ -155,7 +157,7 @@ sub cat2hfs {
     my $rc = 0;
     if ( ! -e "$incdir/$header" ) {
         $rc = `cat \"//'$hlq.$pdsdir($member)'\" > $incdir/$header`;
-        die "$rc, Unable to catenate \"//'$hlq.$pdsdir($member)'\": $ERRNO\n"
+        die "$rc, Unable to catenate \"//'$hlq.$pdsdir($member)'\": $!\n"
           if ( $rc || $? );
     }
 }

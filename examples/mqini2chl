@@ -1,12 +1,12 @@
-#!/usr/bin/perl5
-#
-# $Id: mqini2chl,v 33.4 2012/09/26 16:15:22 jettisu Exp $
+#!/usr/bin/env perl
 #
 # (c) 2001-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
 use strict;
+use warnings;
+
 use English;
 use Getopt::Long;
 
@@ -229,4 +229,3 @@ error message.
 mqchl2ini(8), MQSeries::Config::ChannelTable(3)
 
 =cut
-

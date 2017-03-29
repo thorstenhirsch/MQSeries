@@ -1,6 +1,4 @@
 #
-# $Id: 20convert.t,v 33.9 2012/09/26 16:15:32 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -12,15 +10,15 @@ BEGIN {
 BEGIN {
     $| = 1;
     if ( "__APITYPE__" eq "MQServer" && ! -d $systemdir ) {
-	print "1..0\n";
-	exit 0;
+        print "1..0\n";
+        exit 0;
     } else {
-	print "1..6\n";
+        print "1..6\n";
     }
 }
 
 END {print "not ok 1\n" unless $loaded;}
-use __APITYPE__::MQSeries 1.34;
+use __APITYPE__::MQSeries 1.35;
 $loaded = 1;
 print "ok 1\n";
 
@@ -97,6 +95,3 @@ if ( $msg ne $ascii ) {
 } else {
     print "ok 6\n";
 }
-
-
-

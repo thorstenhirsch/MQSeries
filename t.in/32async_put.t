@@ -1,24 +1,18 @@
 #
-# $Id: 32async_put.t,v 36.7 2012/09/26 16:15:33 jettisu Exp $
-#
 # (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
-use strict;
-use warnings;
+use Data::Dumper;
+use Test::More tests => 25;
 
-our %myconfig;
-our $systemdir;
 BEGIN {
     require "../util/parse_config";
 }
 
-use Data::Dumper;
-use Test::More tests => 25;
-BEGIN { 
+BEGIN {
     our $VERSION = '1.35';
-    use_ok('__APITYPE__::MQSeries' => $VERSION); 
+    use_ok('__APITYPE__::MQSeries' => $VERSION);
 }
 
 SKIP: {
@@ -98,10 +92,12 @@ SKIP: {
     #
     print "Getting status info (MQSTAT)\n";
     my $stats = {};
+    my $expected_putsuccesscount = 5; # because there were 5 PUTs in the test before
+       $expected_putsuccesscount = 0 if ($cmd_level < 800); # don't know why, but that's what MQ < v8 did
     MQSTAT($Hconn,MQSTAT_TYPE_ASYNC_ERROR,$stats,$compcode,$reason);
     ok ($compcode == MQCC_OK && $reason == MQRC_NONE, "MQSTAT");
     my $expected = { 'ResolvedQMgrName' => '',
-                     'PutSuccessCount' => 0,
+                     'PutSuccessCount' => $expected_putsuccesscount,
                      'ObjectQMgrName' => '',
                      'PutFailureCount' => 0,
                      'ObjectName' => '',
@@ -137,5 +133,3 @@ SKIP: {
     MQDISC($Hconn,$compcode,$reason);
     ok ($compcode == MQCC_OK && $reason == MQRC_NONE, "MQDISC");
 }
-
-

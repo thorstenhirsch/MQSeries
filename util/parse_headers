@@ -1,6 +1,4 @@
-#-*-perl-*-
-#
-# $Id: parse_headers,v 38.5 2012/09/26 16:15:38 jettisu Exp $
+#!/usr/bin/env perl
 #
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.

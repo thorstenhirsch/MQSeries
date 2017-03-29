@@ -1,7 +1,5 @@
 #-*-perl-*-
 #
-# $Id: RequestValues.in,v 37.20 2012/09/26 16:15:25 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -26,7 +24,7 @@ package MQSeries::Command::PCF;
     AccountingInterval		=> &MQIA_ACCOUNTING_INTERVAL,
     ActivityRecording		=> &MQIA_ACTIVITY_RECORDING,
     ActivityConnOverride	=> &MQIA_ACTIVITY_CONN_OVERRIDE,
-    ActivityTrace		=> &MQIA_ACTIVITY_TRACE, 
+    ActivityTrace		=> &MQIA_ACTIVITY_TRACE,
     AlterationDate		=> &MQCA_ALTERATION_DATE,
     AlterationTime		=> &MQCA_ALTERATION_TIME,
     AdoptNewMCACheck		=> &MQIA_ADOPTNEWMCA_CHECK,
@@ -342,11 +340,11 @@ package MQSeries::Command::PCF;
     BackoutThreshold		=> &MQIA_BACKOUT_THRESHOLD,
     BaseObjectName		=> &MQCA_BASE_OBJECT_NAME,
     BaseQName			=> &MQCA_BASE_Q_NAME,
-    BaseType			=> &MQIA_BASE_TYPE,	
+    BaseType			=> &MQIA_BASE_TYPE,
     CFStructure			=> &MQCA_CF_STRUC_NAME,
     CLWLQueuePriority		=> &MQIA_CLWL_Q_PRIORITY,
     CLWLQueueRank		=> &MQIA_CLWL_Q_RANK,
-    CLWLUseQ			=> &MQIA_CLWL_USEQ,	
+    CLWLUseQ			=> &MQIA_CLWL_USEQ,
     ClusterDate			=> &MQCA_CLUSTER_DATE,
     ClusterName			=> &MQCA_CLUSTER_NAME,
     ClusterNamelist		=> &MQCA_CLUSTER_NAMELIST,
@@ -363,7 +361,7 @@ package MQSeries::Command::PCF;
     DefPersistence		=> &MQIA_DEF_PERSISTENCE,
     DefPriority			=> &MQIA_DEF_PRIORITY,
     DefPutResponse		=> &MQIA_DEF_PUT_RESPONSE_TYPE,
-    DefReadAhead		=> &MQIA_DEF_READ_AHEAD,	
+    DefReadAhead		=> &MQIA_DEF_READ_AHEAD,
     DistLists			=> &MQIA_DIST_LISTS,
     HardenGetBackout		=> &MQIA_HARDEN_GET_BACKOUT,
     HighQDepth			=> &MQIA_HIGH_Q_DEPTH,
@@ -425,7 +423,7 @@ package MQSeries::Command::PCF;
     Remote			=> &MQQT_REMOTE,
    },
 
-   BaseType => 
+   BaseType =>
    {
     Queue			=> &MQOT_Q,
     Topic			=> &MQOT_TOPIC,
@@ -498,7 +496,7 @@ package MQSeries::Command::PCF;
     Inhibited			=> &MQTA_SUB_INHIBITED,
    },
 
-   Multicast => 
+   Multicast =>
    {
     AsParent			=> &MQMC_AS_PARENT,
     Enabled			=> &MQMC_ENABLED,
@@ -719,7 +717,7 @@ package MQSeries::Command::PCF;
     LongRetryCount		=> &MQIACH_LONG_RETRY,
     LongRetryInterval		=> &MQIACH_LONG_TIMER,
     MaxInstances		=> &MQIACH_MAX_INSTANCES,
-    MaxInstancesPerClient	=> &MQIACH_MAX_INSTS_PER_CLIENT,	
+    MaxInstancesPerClient	=> &MQIACH_MAX_INSTS_PER_CLIENT,
     MaxMsgLength		=> &MQIACH_MAX_MSG_LENGTH,
     MCAName			=> &MQCACH_MCA_NAME,
     MCAType			=> &MQIACH_MCA_TYPE,
@@ -765,8 +763,8 @@ package MQSeries::Command::PCF;
     Remove			=> &MQACT_REMOVE,
     RemoveAll			=> &MQACT_REMOVEALL,
    },
- 
-   ChlAuthAttrs => 
+
+   ChlAuthAttrs =>
    {
     All				=> &MQIACF_ALL,
     AlterationDate		=> &MQCA_ALTERATION_DATE,
@@ -811,7 +809,7 @@ package MQSeries::Command::PCF;
 #    Enabled			=> &MQCHLA_ENABLED,
 #   },
 
-#   ChlAuthWarning => 
+#   ChlAuthWarning =>
 #   {
 #    No				=> &MQWARN_NO,
 #    Yes				=> &MQWARN_YES,
@@ -889,7 +887,7 @@ package MQSeries::Command::PCF;
     ChannelStatus		=> &MQIACH_CHANNEL_STATUS,
     ChannelType			=> &MQIACH_CHANNEL_TYPE,
     CompressionRate		=> &MQIACH_COMPRESSION_RATE,
-    CompressionTime		=> &MQIACH_COMPRESSION_TIME,		
+    CompressionTime		=> &MQIACH_COMPRESSION_TIME,
     ConnectionName		=> &MQCACH_CONNECTION_NAME,
     CurrentLUWID		=> &MQCACH_CURRENT_LUWID,
     CurrentMsgs			=> &MQIACH_CURRENT_MSGS,
@@ -916,19 +914,19 @@ package MQSeries::Command::PCF;
     NetTime			=> &MQIACH_NETWORK_TIME_INDICATOR,
     NonPersistentMsgSpeed	=> &MQIACH_NPM_SPEED,
     QMgrName			=> &MQCA_Q_MGR_NAME,
-    RemoteApplTag		=> &MQCACH_REMOTE_APPL_TAG,		
-    RemoteQMgrName		=> &MQCA_REMOTE_Q_MGR_NAME,		
-    RemoteProduct		=> &MQCACH_REMOTE_PRODUCT,		
-    RemoteVersion		=> &MQCACH_REMOTE_VERSION,		
+    RemoteApplTag		=> &MQCACH_REMOTE_APPL_TAG,
+    RemoteQMgrName		=> &MQCA_REMOTE_Q_MGR_NAME,
+    RemoteProduct		=> &MQCACH_REMOTE_PRODUCT,
+    RemoteVersion		=> &MQCACH_REMOTE_VERSION,
     ShortRetriesLeft		=> &MQIACH_SHORT_RETRIES_LEFT,
     SSLCertRemoteIssuerName	=> &MQCACH_SSL_CERT_ISSUER_NAME,
-    SSLCertUserId		=>  &MQCACH_SSL_CERT_USER_ID,	
+    SSLCertUserId		=>  &MQCACH_SSL_CERT_USER_ID,
     SSLKeyResetDate		=> &MQCACH_SSL_KEY_RESET_DATE,
     SSLKeyResets		=> &MQIACH_SSL_KEY_RESETS,
     SSLKeyResetTime		=> &MQCACH_SSL_KEY_RESET_TIME,
     SSLShortPeerName		=> &MQCACH_SSL_SHORT_PEER_NAME,
     StopRequested		=> &MQIACH_STOP_REQUESTED,
-    SubState			=> &MQIACH_CHANNEL_SUBSTATE,	
+    SubState			=> &MQIACH_CHANNEL_SUBSTATE,
     XmitQName			=> &MQCACH_XMIT_Q_NAME,
     XQTime			=> &MQIACH_XMITQ_TIME_INDICATOR,
    },
@@ -1003,22 +1001,22 @@ package MQSeries::Command::PCF;
    },
 
    # VALUEMAP-CODEREF
-   KeepAliveInterval => 
+   KeepAliveInterval =>
         sub { return MQSeries::Command::Base::strinteger(@_, &MQKAI_AUTO,
                                                     "AUTO", 99999); },
 
    # VALUEMAP-CODEREF
-   MsgMarkBrowseInterval => 
+   MsgMarkBrowseInterval =>
         sub { return MQSeries::Command::Base::strinteger(@_, &MQMMBI_UNLIMITED,
                                                     "NOLIMIT", 999999999); },
 # 100MB max
    # VALUEMAP-CODEREF
-   MaxPropertiesLength => 
+   MaxPropertiesLength =>
         sub { return MQSeries::Command::Base::strinteger(@_, &MQPROP_UNRESTRICTED_LENGTH,
                                                     "NOLIMIT", 104857600); },
 
    # VALUEMAP-CODEREF
-   ComminfoCCSID => 
+   ComminfoCCSID =>
         sub { return MQSeries::Command::Base::strinteger(@_, &MQCCSI_AS_PUBLISHED,
                                                     "ASPUB", 65535); },
 
@@ -1178,7 +1176,7 @@ package MQSeries::Command::PCF;
    {
     AdvanceLog			=> &MQACT_ADVANCE_LOG,
     CollectStatistics		=> &MQACT_COLLECT_STATISTICS,
-    PubSub			=> &MQACT_PUBSUB 
+    PubSub			=> &MQACT_PUBSUB
    },
 
    QMgrFacility =>
@@ -1300,7 +1298,7 @@ package MQSeries::Command::PCF;
     TransactionId		=> &MQCACF_TRANSACTION_ID,
     UncommittedMsgs		=> &MQIACF_UNCOMMITTED_MSGS,
     UserIdentifier		=> &MQCACF_USER_IDENTIFIER,
-    UOWIdentifier		=> &MQBACF_EXTERNAL_UOW_ID,	
+    UOWIdentifier		=> &MQBACF_EXTERNAL_UOW_ID,
     UOWType			=> &MQIACF_UOW_TYPE,
    },
 
@@ -1333,22 +1331,22 @@ package MQSeries::Command::PCF;
    #
    CFConlos =>
    {
-    AsQMgr			=> &MQCFCONLOS_ASQMGR, 
+    AsQMgr			=> &MQCFCONLOS_ASQMGR,
     Terminate			=> &MQCFCONLOS_TERMINATE,
-    Tolerate			=> &MQCFCONLOS_TOLERATE, 
+    Tolerate			=> &MQCFCONLOS_TOLERATE,
    },
-  
+
    Offload =>
    {
     DB2				=> &MQCFOFFLD_DB2,
     SMDS			=> &MQCFOFFLD_SMDS,
     None			=> &MQCFOFFLD_NONE,
    },
-   
+
    DSExpand =>
    {
     Yes				=> &MQDSE_YES,
-    No				=> &MQDSE_NO,  
+    No				=> &MQDSE_NO,
     Default			=> &MQDSE_DEFAULT,
    },
 
@@ -1469,9 +1467,9 @@ package MQSeries::Command::PCF;
     #SecuritySwitchProfile	=> &MQCACF_SECURITY_PROFILE,
     #SecuritySwitchSetting	=> &MQIACF_SECURITY_SETTING,
    },
-   
-   # 
-   # V7 for SetLog 
+
+   #
+   # V7 for SetLog
    #
    LogCompression =>
    {
@@ -1481,7 +1479,7 @@ package MQSeries::Command::PCF;
    },
 
    #
-   # Commented lines came out of v7. But they seem to be 
+   # Commented lines came out of v7. But they seem to be
    # similar to existing ones except MQ being replaced with MX.
    # Needs clarification.
    #
@@ -1492,11 +1490,11 @@ package MQSeries::Command::PCF;
     Namelist			=> &MQSECITEM_MQNLIST,
     Process			=> &MQSECITEM_MQPROC,
     Queue			=> &MQSECITEM_MQQUEUE,
-    #XAdministration		=> &MQSECITEM_MXADMIN, 
+    #XAdministration		=> &MQSECITEM_MXADMIN,
     #XNamelist			=> &MQSECITEM_MXNLIST,
     #XProcess			=> &MQSECITEM_MXPROC,
     #XQueue			=> &MQSECITEM_MXQUEUE,
-    #XTopic			=> &MQSECITEM_MXTOPIC, 
+    #XTopic			=> &MQSECITEM_MXTOPIC,
    },
 
    #
@@ -1829,7 +1827,7 @@ package MQSeries::Command::PCF;
     AlterationDate		=> &MQCA_ALTERATION_DATE,
     AlterationTime		=> &MQCA_ALTERATION_TIME,
     CreationDate		=> &MQCA_CREATION_DATE,
-    CreationTime		=> &MQCA_CREATION_TIME,	
+    CreationTime		=> &MQCA_CREATION_TIME,
     Destination			=> &MQCACF_DESTINATION,
     DestinationClass		=> &MQIACF_DESTINATION_CLASS,
     DestinationCorrelId		=> &MQBACF_DESTINATION_CORREL_ID,
@@ -2027,7 +2025,7 @@ package MQSeries::Command::PCF;
     Topic			=> &MQWS_TOPIC,
    },
 
-   # 
+   #
    # For z/os v7
    #
    GroupUR =>

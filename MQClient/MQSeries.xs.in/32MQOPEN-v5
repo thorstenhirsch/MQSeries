@@ -1,7 +1,5 @@
 # -*-c-*-
 #
-# $Id: 32MQOPEN-v5,v 33.5 2012/09/26 16:10:03 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -249,7 +247,7 @@ MQOPEN(Hconn,ObjDesc,Options,CompCode,Reason)
 #ifdef MQOD_VERSION_4
         /*
 	 * If we have version 4 of the MQOD, make sure the
-	 * MQCHARV for the ResObjectString points to a 
+	 * MQCHARV for the ResObjectString points to a
 	 * buffer with a long enough name.
 	 */
         if (ObjDesc.Version >= MQOD_VERSION_4) {

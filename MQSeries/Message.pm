@@ -1,6 +1,4 @@
 #
-# $Id: Message.pm,v 37.3 2012/09/26 16:15:15 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::Message;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries qw(:functions);

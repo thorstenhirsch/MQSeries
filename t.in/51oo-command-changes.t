@@ -1,6 +1,4 @@
 #
-# $Id: 51oo-command-changes.t,v 36.9 2012/09/26 16:15:34 jettisu Exp $
-#
 # (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -8,17 +6,13 @@
 # objects.
 #
 
-use strict;
-use warnings;
+use Data::Dumper;
+use Test::More tests => 102;
 
-our %myconfig;
-our $systemdir;
 BEGIN {
     require "../util/parse_config";
 }
 
-use Data::Dumper;
-use Test::More tests => 102;
 BEGIN {
     our $VERSION = '1.35';
     use_ok('__APITYPE__::MQSeries' => $VERSION);

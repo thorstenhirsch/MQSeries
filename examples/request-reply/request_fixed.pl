@@ -1,10 +1,8 @@
-#!/usr/bin/perl5
+#!/usr/bin/env perl
 #
 # request_fixed - request (client) application usign a fixed shared reply queue
 #
 # Copyright (c) 2009-2012 Morgan Stanley & Co. Incorporated
-#
-# $Id: request_fixed.pl,v 33.5 2012/09/26 16:15:22 jettisu Exp $
 #
 
 use strict;

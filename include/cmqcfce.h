@@ -1,8 +1,6 @@
 /*
  * Extensions for the PCF Command Set
  *
- * $Id: cmqcfce.h,v 33.5 2012/09/26 16:15:24 jettisu Exp $
- *
  * (c) 1999-2012 Morgan Stanley & Co. Incorporated
  * See ..../src/LICENSE for terms of distribution.
  *

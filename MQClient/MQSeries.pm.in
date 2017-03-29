@@ -1,7 +1,5 @@
 #-*-perl-*-
 #
-# $Id: MQSeries.pm.in,v 37.3 2012/09/26 16:10:01 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -9,6 +7,8 @@
 package __APITYPE__::MQSeries;
 
 use strict;
+use warnings;
+
 use Config;
 use Carp;
 
@@ -21,8 +21,9 @@ our @ISA = qw(Exporter DynaLoader);
 our (@EXPORT, %EXPORT_TAGS, $AUTOLOAD);
 
 our $VERSION = '1.35';
-$MQSeries::MQ_VERSION = __MQ_VERSION__; # Set to 5, 6 or 7 at compile time
-# (that's "compile" as in "put together from the pieces in the src tree")
+$MQSeries::MQ_VERSION = __MQ_VERSION__; # is being set indirectly
+# via $mqversion from parse_config at compile time (make)
+# that's "compile" as in "put together from the pieces in the src tree"
 
 #
 # This nonsense is only necessary if you don't have the locale files
@@ -57,7 +58,7 @@ if ( "__LOCALE__" ne "" ) {
 }
 
 BEGIN {
-    %EXPORT_TAGS = 
+    %EXPORT_TAGS =
       ( 'functions' => [ qw(
                             MQCONN
                             MQCONNX

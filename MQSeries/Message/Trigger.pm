@@ -4,12 +4,12 @@
 # (c) 2003-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Trigger.pm,v 33.11 2012/09/26 16:15:18 jettisu Exp $
-#
 
 package MQSeries::Message::Trigger;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries::Message;

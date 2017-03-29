@@ -1,7 +1,5 @@
 # -*-c-*-
 #
-# $Id: 55MQSTAT-v7,v 33.4 2012/09/26 16:10:08 jettisu Exp $
-#
 # (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -23,4 +21,3 @@ MQSTAT(Hconn,StatType,Stat,CompCode,Reason)
         Stat
         CompCode
         Reason
-

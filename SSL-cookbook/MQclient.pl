@@ -1,11 +1,11 @@
-#!/opt/smm/bin/perl -w
-#$Id: MQclient.pl,v 32.1 2008/03/27 18:20:10 biersma Exp $
+#!/usr/bin/env perl
 
 # MQ client test script
 # morten.bjornsvik@experian-scorex.no April 2006-2008
 
 use strict;
 use warnings;
+
 use Getopt::Long;
 use Time::HiRes qw(time);
 use Data::Dumper;
@@ -15,11 +15,11 @@ use MQSeries::QueueManager;
 use MQSeries::Message;
 use MQSeries::Queue;
 
-  
+
 #default values
 my $queue    = undef;     # mandatory queue
 my $qmgr     = undef;     # mandatory queuemanager to connect to
-my $type     = 'get';     # 'get' is default   
+my $type     = 'get';     # 'get' is default
 my $channel  = undef;
 my $server   = undef;     #MQservers IP or hostname
 my $sslkey   = undef;
@@ -51,7 +51,7 @@ $0 - WebsphereMQ client script
 
 Simple program to put or get messages from an IBM WebsphereMQ queue
 see the perldoc for full examples on how to set up WebsphereMQ and extensive
-use of this program. 
+use of this program.
 
 Mandatory parameters:
 -s|server=ip|hostname    - server running the queueumanager we connect to
@@ -59,7 +59,7 @@ Mandatory parameters:
 -q=queuename             - queue on server
 -ch|channel=channelname  - channel the client connects to
 -p|port=N                - port N the channel is running on
--t|type=(get|put)        - "get" = download from queue, "put" = add to queue, default:"get" 
+-t|type=(get|put)        - "get" = download from queue, "put" = add to queue, default:"get"
 
 Optional parameters:
 -file=filename              - write messages to filename, not defined: STDOUT (if -type=get)
@@ -96,11 +96,11 @@ sub mywait {
     $high=$2;
   }
   elsif($str =~ /^r(\d+)$/) {
-    $low=0;   
+    $low=0;
     $high=$1;
   }
   elsif($str =~ /(\d+)/) {
-    $low=$1;    
+    $low=$1;
   }
   else {
     return 0;
@@ -114,7 +114,7 @@ sub mywait {
   }
   print "Waiting $w ms\n" if($debug>=2);
   select(undef,undef,undef,$w/1000);
-  
+
   return $w;
 }
 
@@ -130,14 +130,14 @@ if ( ! scalar(@ARGV) ) {
 
 my $nparam = GetOptions (
   "s|server=s"        => \$server,
-  "qm|queuemanager=s" => \$qmgr,   
-  "q|queue=s"         => \$queue,  
+  "qm|queuemanager=s" => \$qmgr,
+  "q|queue=s"         => \$queue,
   "ch|channel=s"      => \$channel,
-  "p|port=i"          => \$port,  
+  "p|port=i"          => \$port,
   "f|file=s"          => \$file,
   "debug=i"           => \$debug,
-  "w|wait=i"          => \$wait,    
-  "ncount=i"          => \$ncount, 
+  "w|wait=i"          => \$wait,
+  "ncount=i"          => \$ncount,
   "wl|waitnline=s"    => \$waitnline,
   "wf|waitfull=s"     => \$waitfull,
   "backout"           => \$backout,
@@ -154,7 +154,7 @@ if(defined $help) {
 die("Error SSL Key-repository $sslkey does not exists\n") if(defined $sslkey && ! -f $sslkey.".kdb");
 
 my $find="/usr/bin/find";
-die("Error: binary $find=$find is not correctly set\n") if($type eq "put" && -d $file && ! -x $find); 
+die("Error: binary $find=$find is not correctly set\n") if($type eq "put" && -d $file && ! -x $find);
 
 if(!defined $server || !defined $qmgr || !defined $queue || !defined $channel ||
   !defined $port || !defined $type) {
@@ -193,23 +193,23 @@ my $myqmgr = undef;
 if(defined $sslkey) { #QueueManager setup with SSL has some changes
   $myqmgr = MQSeries::QueueManager->new (
     QueueManager => $qmgr,
-    ClientConn   => { 
+    ClientConn   => {
       Version        => 8,
       ChannelName    => $channel,
       TransportType  => 'TCP',
       SSLCipherSpec => $sslcipherspec,
       ConnectionName => $server."(".$port.")",
     },
-    SSLConfig    => { 
-      KeyRepository => $sslkey, 
+    SSLConfig    => {
+      KeyRepository => $sslkey,
     },
-  );  
+  );
   print "Using SSLkey = $sslkey\n" if($debug>=2);
 }
 else {
   $myqmgr = MQSeries::QueueManager->new (
     QueueManager => $qmgr,
-    ClientConn   => { 
+    ClientConn   => {
       ChannelName    => $channel,
       TransportType  => 'TCP',
       ConnectionName => $server."(".$port.")",
@@ -218,16 +218,16 @@ else {
 }
 die("Unable to connect to queuemanager: $qmgr\n") if(! defined $myqmgr);
 
-print "\$myqmgr=",Dumper($myqmgr) if(defined $dump); 
+print "\$myqmgr=",Dumper($myqmgr) if(defined $dump);
 
 
 
-if($type eq "get") {  
+if($type eq "get") {
   # get messages from queue
   #
   # Open a queue for output, loop getting messages, updating some
   # database with the data.
-  # 
+  #
   my $myqueue = MQSeries::Queue->new (
     QueueManager       => $myqmgr,
     Queue              => $queue,
@@ -235,15 +235,15 @@ if($type eq "get") {
   )
   or die("Unable to open queue: $queue.\n");
 
-  
+
   if(defined $file && $type eq "get") {
     my $op=">>";
     $op=">" if(! -e $file);
-    open($FILE,"$op $file") || 
-      die ("Error: unable to open file $file for ",$type eq "get"?"writing":"reading","\n");    
+    open($FILE,"$op $file") ||
+      die ("Error: unable to open file $file for ",$type eq "get"?"writing":"reading","\n");
   }
 
-  print "\$myqueue=",Dumper($myqueue) if(defined $dump); 
+  print "\$myqueue=",Dumper($myqueue) if(defined $dump);
   while ( !$exitflag ) {
     $t1=time if($num==$oldnum);
     my $getmessage = MQSeries::Message->new();
@@ -253,9 +253,9 @@ if($type eq "get") {
       Sync => 1,
       Wait => $wait,
   #			GetMsgOpts => {
-  #      	Options => MQGMO_FAIL_IF_QUIESCING | MQGMO_SYNCPOINT | MQGMO_WAIT, 
+  #      	Options => MQGMO_FAIL_IF_QUIESCING | MQGMO_SYNCPOINT | MQGMO_WAIT,
   #        WaitInterval => MQWI_UNLIMITED,
-  #      }, 
+  #      },
 
     ) or die(
       "Unable to get message from $qmgr:$queue - " .
@@ -297,8 +297,8 @@ if($type eq "get") {
 	$oldnum=$num;
         # this is only to be able to test slower input
         mywait($waitnline);
-      }      
-    } 
+      }
+    }
     else {  # if no message on queue
       my $rc = $myqueue->QueueManager()->Backout() ||
         die(
@@ -309,7 +309,7 @@ if($type eq "get") {
     }
   }
 }
-else { 
+else {
 ################################
 # put messages onto the queue
 ################################
@@ -320,12 +320,12 @@ else {
   )
   or die("Unable to open queue: $queue.\n");
 
-  print "Dump of \$myqueue=",Dumper($myqueue) if(defined $dump); 
+  print "Dump of \$myqueue=",Dumper($myqueue) if(defined $dump);
 
   my @dirs = ();
   if(defined $file && -d $file) {
     chomp(@dirs =`cd $file; $find -L`);
-    for(my $i=0;$i<scalar(@dirs); $i++) {      
+    for(my $i=0;$i<scalar(@dirs); $i++) {
       $dirs[$i] = $file ."/". $dirs[$i] if(-f $file."/".$dirs[$i]);
     }
     print "Will try reading ",scalar(@dirs)," file",
@@ -345,24 +345,24 @@ else {
         Data    => $line,
         MSGDesc => { Format => MQFMT_STRING },
       );
-      
+
       do {
         $myqueue->Put(
           Message => $putmessage,
           Sync => 0,    # do not sync just add as fast as possible
         );
-        
+
         if( $myqueue->Reason() == 2053 ) {
           print "Queue $qmgr:$queue is full\n" if($debug);
           mywait($waitfull);
-        } 
+        }
         elsif($myqueue->Reason()){
           die("Killed  $qmgr:$queue due to reason: $myqueue->Reason()\n");
         }
       }while ( $myqueue->Reason() == 2053 );
-      
+
       $num++;
-      print "#$num <$line> put on $qmgr:$queue\n" if($debug>=2);      
+      print "#$num <$line> put on $qmgr:$queue\n" if($debug>=2);
 
       if($num >= $oldnum + $ncount)	{
 	$t2 = time;
@@ -371,7 +371,7 @@ else {
 	$oldnum=$num;
         # wait between ncount blocks of messages, if you like a slower input
         mywait($waitnline);
-      }            
+      }
     }
   }
   $t2 = time;
@@ -397,7 +397,7 @@ MQclient.pl - Client access program for WebsphereMQ
  -q=queuename             - queue on server
  -ch|channel=channelname  - channel the client connects to
  -p|port=N                - port N the channel is running on
- -t|type=(get|put)        - 'get'-download from queue, 'put'-add to queue, default:"get" 
+ -t|type=(get|put)        - 'get'-download from queue, 'put'-add to queue, default:"get"
 
  Optional parameters:
  -file=filename              - write messages to filename, not defined: STDOUT(if -type=get)
@@ -427,7 +427,7 @@ is not firewalled.
  Client needs minimum the following packages:
  MQSeriesRuntime
  MQSeriesClient
- 
+
  Server needs minimum:
  MQSeriesRuntime
  MQSeriesServer
@@ -435,7 +435,7 @@ is not firewalled.
  If you need ssl install on server:
  MQSeriesKeyMan
  gsk7bas (holds gsk7cmd which creates the certificates which is created with script mq-ca.pl)
- 
+
 =head2 SETUP A TEST QUEUE ON A WEBSPHEREMQ QUEUEMANAGER
 
 This program is useless without a MQserver to connect to, So if you do not have one around to
@@ -450,7 +450,7 @@ aswell. Otherwhise you will get MQRC 2035 - 'not authorized to connect' in non S
 With SSL you only get MQRC 2059 - 'MQRC_Q_MGR_NOT_AVAILABLE'.
 
  MQclient.pl -> put -> MQserver -> get -> MQclient.pl
- 
+
 =head2 MQSERVER SETUP
 
 I recommend creating a script which set up the mqserver, This example set up mqserver swolinux
@@ -541,7 +541,7 @@ gsk7cmd on the same server using the my script mq-ca.pl. See the perldoc on mq-c
        :
        : * start listener
      1 : START LISTENER('listener')
- AMQ8021: Request to start WebSphere MQ Listener accepted. 
+ AMQ8021: Request to start WebSphere MQ Listener accepted.
 
      1 : dis listener('listener') all
  AMQ8630: Display listener information details.
@@ -609,7 +609,7 @@ Add --debug=2 if you like to see the messages.
 While communication is running you can browse the channelstatus on queuemanager:
 
  echo "dis chs('secana.ssl') all" | runmqsc swolinux
- 
+
 AMQ8417: Display Channel Status details.
    CHANNEL(secana.ssl)                     CHLTYPE(SVRCONN)
    BUFSRCVD(20206)                         BUFSSENT(20205)
@@ -665,6 +665,4 @@ NULL_MD5 which is the default, Please look up the Global Security Kit manuals fo
 
 =head1 AUTHOR
 
-Morten Bjørnsvik - morten.bjornsvik@experian-scorex.no - 2006-2008
-
-
+Morten Bj

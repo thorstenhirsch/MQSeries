@@ -2,8 +2,6 @@
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Makefile.PL,v 38.2 2012/09/26 16:15:20 jettisu Exp $
-#
 use English;
 use ExtUtils::MakeMaker;
 use File::Copy;
@@ -78,5 +76,3 @@ WriteMakefile(
 			       'Test::Pod'        => '1.20',
 			     },
 	     );
-
-

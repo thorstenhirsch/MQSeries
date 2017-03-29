@@ -1,12 +1,14 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #                                                    -*-perl-*-
 # (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: saveauth,v 33.4 2012/09/26 16:15:23 jettisu Exp $
+#
 #
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries::Command;
@@ -38,7 +40,7 @@ my $command = new MQSeries::Command('QueueManager' => $qmgr_name,
 # Dump the queue-manager
 #
 {
-    my $authobj = 
+    my $authobj =
       MQSeries::Config::Authority->new('QMgrName'   => $qmgr_name,
                                        'ObjectType' => 'qmgr');
     foreach my $group ($authobj->entities()) {
@@ -55,7 +57,7 @@ my $command = new MQSeries::Command('QueueManager' => $qmgr_name,
 my @proc_names = $command->InquireProcessNames();
 if (@proc_names) {
     foreach my $proc (@proc_names) {
-        my $authobj = 
+        my $authobj =
           MQSeries::Config::Authority->new('QMgrName'   => $qmgr_name,
                                            'ObjectType' => 'process',
                                            'ObjectName' => $proc);
@@ -74,7 +76,7 @@ if (@proc_names) {
 my @namelists = $command->InquireNamelistNames();
 if (@namelists) {
     foreach my $name (@namelists) {
-        my $authobj = 
+        my $authobj =
           MQSeries::Config::Authority->new('QMgrName'   => $qmgr_name,
                                            'ObjectType' => 'namelist',
                                            'ObjectName' => $name);
@@ -86,7 +88,7 @@ if (@namelists) {
     }
     print "\n";
 }
- 
+
 #
 # Dump all queues, but skip temporary queues
 #
@@ -101,8 +103,8 @@ if (@queues) {
                  $queue->{'DefinitionType'} eq 'Permanent');
 
         my $qname = $queue->{'QName'};
-        
-        my $authobj = 
+
+        my $authobj =
           MQSeries::Config::Authority->new('QMgrName'   => $qmgr_name,
                                            'ObjectType' => 'queue',
                                            'ObjectName' => $qname);
@@ -144,7 +146,7 @@ files.  Typically, the userid used will be 'mqm'.
 
 In order to create 'setmqaut' commands for all objects on queue manager
 'TEST' and write the commands to the file 'saved.txt', run:
-  
+
   saveauth TEST > saved.txt
 
 =cut

@@ -1,6 +1,4 @@
 #
-# $Id: Storable.pm,v 33.11 2012/09/26 16:15:17 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::Message::Storable;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use Storable qw(nfreeze thaw);

@@ -5,12 +5,12 @@
 # (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Parser.pm,v 38.2 2012/09/26 16:15:12 jettisu Exp $
-#
 
 package MQSeries::ErrorLog::Parser;
 
 use strict;
+use warnings;
+
 use Carp;
 use Time::Local;
 

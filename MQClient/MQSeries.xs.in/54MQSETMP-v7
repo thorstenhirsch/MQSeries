@@ -1,7 +1,5 @@
 # -*-c-*-
 #
-# $Id: 54MQSETMP-v7,v 36.3 2012/09/26 16:10:08 jettisu Exp $
-#
 # (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -139,4 +137,3 @@ MQSETMP(Hconn,Hmsg,SetPropOpts,Name,PropDesc,Type,Value,CompCode,Reason)
         PropDesc
         CompCode
         Reason
-

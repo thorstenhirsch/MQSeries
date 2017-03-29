@@ -1,7 +1,5 @@
 # -*-c-*-
 #
-# $Id: 53MQINQMP-v7,v 36.3 2012/09/26 16:10:07 jettisu Exp $
-#
 # (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -168,4 +166,3 @@ MQINQMP(Hconn,Hmsg,InqPropOpts,Name,PropDesc,Type,Length,CompCode,Reason)
         Length
         CompCode
         Reason
-

@@ -1,6 +1,4 @@
 #
-# $Id: Utils.pm,v 33.11 2012/09/26 16:15:20 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::Utils;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use Exporter;
@@ -36,7 +36,7 @@ sub ConvertUnit {
         # Wait is in milli-seconds, Expiry in tenths of a second
         #
         my $scale = ($name eq 'Wait' ? 1000 : 10);
-        if ($value =~ m!^$numeric_patt$!) { 
+        if ($value =~ m!^$numeric_patt$!) {
             # Nothing to be done
         } elsif ($value =~ m!^($numeric_patt)s$!) {
             # Times <scale>

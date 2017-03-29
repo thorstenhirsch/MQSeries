@@ -1,6 +1,4 @@
 #
-# $Id: Properties.pm,v 33.11 2012/09/26 16:15:18 jettisu Exp $
-#
 # (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::Properties;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries qw(:functions :constants);

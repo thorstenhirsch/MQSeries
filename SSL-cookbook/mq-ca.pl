@@ -1,12 +1,13 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 # self signed CA SSL certificate generator for MQ using IBM GSK
-# $Id: mq-ca.pl,v 32.1 2008/03/27 18:20:19 biersma Exp $
+#
 # $Date: 2008/03/27 18:20:19 $
 
 # morten.bjornsvik@experian-scorex.no Jan 2008
 
 use strict;
 use warnings;
+
 use Time::HiRes qw(time);
 use Getopt::Long;
 
@@ -28,13 +29,13 @@ my $calabel   = 'Experian Secana Public CA';
 my $debug = 1;        # 0-none,1-standard,2-verbose,3-everything
 my $test = undef;     # do not execute only test
 my $op= undef;
-my $force = undef;        
+my $force = undef;
 #my $dn  = undef;     # distinguished name, tailored for your organization
 my $dn = "CN=Experian Secana CA,O=Experian,OU=Decision Analytics,L=Oslo,C=NO";
 my $help = undef;
 my $JAVA_HOME = '/opt/mqm/ssl/jre';   #gsk7cmd is java based
 my $old_java_home = undef;
-my $hint = 1;  # print oout some mq setup hint 
+my $hint = 1;  # print oout some mq setup hint
 my $cadir = 'ca';
 my $uname = undef;
 
@@ -79,7 +80,7 @@ die("--cadir=<directory to CA-reporistory> not defined\n") if(! defined $cadir);
 die("--op=<operation> must be defined (ca|mq|client)\n") if(! defined $op);
 
 if($op =~ /^client$/i && ! defined $uname) {
-  die("--uname=<client username> must be defined if --op=client\n");  
+  die("--uname=<client username> must be defined if --op=client\n");
 }
 
 # store old JAVA_HOME environment if it exists
@@ -115,7 +116,7 @@ if( $op =~ /ca/i) {
 
   print "#Create directory '$cadir'\n" if($debug);
   pexe("$mkdir -p $cadir");
-  
+
   # the timespan on the certificate must be larger than for the keys
   my $exp2 = $exp + 1;
   print "#Create CA key repository '$cadir/myCA.kdb'\n" if($debug);
@@ -123,9 +124,9 @@ if( $op =~ /ca/i) {
 
   print "#Create a self signed CA certificate in '$cadir/myCA.kdb'\n" if($debug);
   pexe("$gsk7cmd -cert -create -db '$cadir/myCA.kdb' -type cms -pw $pw -label '$calabel' -dn '$dn' -expire $exp2 -size 1024");
-  
+
   print "#Extract CA public certificate '$cadir/myCA.cer'\n" if($debug);
-  pexe("$gsk7cmd -cert -extract -db '$cadir/myCA.kdb' -pw $pw -label '$calabel' -target '$cadir/myCApublic.cer'");  
+  pexe("$gsk7cmd -cert -extract -db '$cadir/myCA.kdb' -pw $pw -label '$calabel' -target '$cadir/myCApublic.cer'");
 }
 
 # create a self-signed certificate for a queue-manager
@@ -141,10 +142,10 @@ if( $op =~ /qm/i || $op =~/queuemanager/i) {
 
   print "#Create queue-manager directory '$keydir'\n" if($debug);
   pexe("$mkdir -p $keydir");
-  
+
   print "#Creating qm-key repository '$keydir/$qm.kdb'\n" if($debug);
   pexe("$gsk7cmd -keydb -create -db '$keydir/$qm.kdb' -pw $pw -type cms -expire $exp -stash");
-  
+
   print "#Add the CA cert '$cadir/myCAcertfile.cer' to qm-key repository\n" if($debug);
   pexe("$gsk7cmd -cert -add -db '$keydir/$qm.kdb' -pw $pw -label '$calabel' -file '$cadir/myCApublic.cer' -format ascii -trust enable");
 
@@ -152,13 +153,13 @@ if( $op =~ /qm/i || $op =~/queuemanager/i) {
   $dn =~ s/CN=.+?,/CN=$qm - queuemanager,/;    # we need a unique dn fro all certificates
   pexe("$gsk7cmd -certreq -create -db '$keydir/$qm.kdb' -pw $pw -label 'ibmwebspheremq$qm' -dn '$dn' -file '$keydir/$qm.req'");
 
-  # do we need all files in the same directory?  
+  # do we need all files in the same directory?
   print "#CA signs '$keydir/$qm.req' certificate request\n" if($debug);
   pexe("$gsk7cmd -cert -sign -db '$cadir/myCA.kdb' -pw $pw -label '$calabel' -file '$keydir/$qm.req' -target '$keydir/$qm.cer' -expire $exp");
-    
+
   print "#Receive signed certificate '$keydir/$qm.cer' into qm-key repository\n" if($debug);
   pexe("$gsk7cmd -cert -receive -db '$keydir/$qm.kdb' -pw $pw -file '$keydir/$qm.cer'");
-  
+
   print "#Cleaning up temporary files\n" if($debug);
   pexe("$rm $keydir/$qm.cer") if(-f "$keydir/$qm.cer");
   pexe("$rm $keydir/$qm.req") if(-f "$keydir/$qm.req");
@@ -179,19 +180,19 @@ if( $op =~ /client/i ) {
 
   die("--cadir=<directory to CA-reporistory> not defined\n") if(! defined $cadir);
   die("--cadir=$cadir not a directory\n") if(! -d $cadir);
-  
+
   # all files related to keys
   my $keydir = 'clientcert-'.$uname;
-  
+
   die("You must do the CA part first\n") if(! -d $cadir);
   check_dir($keydir);
 
   print "#Create queue-manager directory '$keydir'\n" if($debug);
   pexe("$mkdir -p $keydir");
-  
+
   print "#Creating qm-key repository '$keydir/key.kdb'\n" if($debug);
   pexe("$gsk7cmd -keydb -create -db '$keydir/$uname.kdb' -pw $pw -type cms -expire $exp -stash");
-  
+
   print "#Add the CA cert '$cadir/myCAcertfile.cer' to qm-key repository\n" if($debug);
   pexe("$gsk7cmd -cert -add -db '$keydir/$uname.kdb' -pw $pw -label '$calabel' -file '$cadir/myCApublic.cer' -format ascii -trust enable");
 
@@ -199,13 +200,13 @@ if( $op =~ /client/i ) {
   $dn =~ s/CN=.+?,/CN=$qm - client,/;    # we need a unique dn fro all certificates
   pexe("$gsk7cmd -certreq -create -db '$keydir/$uname.kdb' -pw $pw -label 'ibmwebspheremq$uname' -dn '$dn' -file '$keydir/$uname.req'");
 
-  # do we need all files in the same directory?  
+  # do we need all files in the same directory?
   print "#CA signs '$keydir/$uname.req' certificate request\n" if($debug);
   pexe("$gsk7cmd -cert -sign -db '$cadir/myCA.kdb' -pw $pw -label '$calabel' -file '$keydir/$uname.req' -target '$keydir/$uname.cer' -expire $exp");
-    
+
   print "#Receive signed certificate '$keydir/$uname.cer' into $uname-key repository\n" if($debug);
   pexe("$gsk7cmd -cert -receive -db '$keydir/$uname.kdb' -pw $pw -file '$keydir/$uname.cer'");
-  
+
   print "#Cleaning up temporary files\n" if($debug);
   pexe("$rm $keydir/$uname.cer") if(-f "$keydir/$uname.cer");
   pexe("$rm $keydir/$uname.req") if(-f "$keydir/$uname.req");
@@ -273,7 +274,7 @@ sub check_dir {
     else {
       die("Unable to delete '$dir', set --force to overwrite\n");
     }
-  }   
+  }
 }
 # parsing execute string
 # if global $test is defined then just print the command, do not execute
@@ -313,19 +314,19 @@ Frontend to gsk7cmd for creating MQ SSL queuemanager certificates
 
  # create Certification Authority (CA) used to sign certificates:
  mq-ca.pl -op=ca -qm=queuemanager -pw=passwd -exp=expire in days \
-  -label=label of cetificate [--force] [-debug=0|1|2] 
+  -label=label of cetificate [--force] [-debug=0|1|2]
 
  # create certificate for queuemanager being signed by the above CA:
  mq-ca.pl -op=qm -qm=queuemanager -pw=passwd -exp=expire in days \
-  -label=label of cetificate [--force] [-debug=0|1|2] 
+  -label=label of cetificate [--force] [-debug=0|1|2]
 
  # create a client certificate being signed by the above CA:
  mq-ca.pl -op=client -uname=username -pw=passwd -exp=expire in days \
   -label=label of cetificate [--force] [-debug=0|1|2]
- 
+
  here username is clients username which must be present and member of mqm on
  both client and server. Do a 'refresh security' inside the queue-manager.
- 
+
  -op = type of operation:
      ca     - create a CA which is used to sign certtificates
      qm     - name of quememanager to reside queues on
@@ -337,7 +338,7 @@ Frontend to gsk7cmd for creating MQ SSL queuemanager certificates
  -dn  = <distinguished name> identificator, should be unique for all certificates
         just change the CN, can be anything
         ex: 'CN=Experian Secana CA,O=Experian,OU=Decision Analytics,L=Oslo,C=NO'
- -gsk7cmd = <path to gsk2cmd binary> does all the certificate/ssl handling for mq             
+ -gsk7cmd = <path to gsk2cmd binary> does all the certificate/ssl handling for mq
 
 =head1 REQUIREMENTS
 
@@ -392,14 +393,14 @@ This is then refered to as --sslkey=/tmp/mqssl/mbj when using MQclient.pl
  # view changes:
  echo "dis qmgr all" | runmqsc swolinux
  echo "dis chl('secana.ssl') all" | runmqsc swolinux
- 
+
 =head2 CHANGES ON CLIENT
 
 On client you only have to refere the --sslkey parameter in the MQclient.pl call
 
 
 =head1 DEBUG
- 
+
  List certificates in a key-database:
  gsk7cmd -cert -list all -db key.kdb -pw *****
 
@@ -408,7 +409,7 @@ On client you only have to refere the --sslkey parameter in the MQclient.pl call
 
  Then check log files:
  ikmcdbg.log, ikmgdbg.log, ikmjdbg.log
- 
+
  You can also try and recreate the problem using the gui-tool gsk7ikm
  with full debug:
  gsk7ikm -Dkeyman.debug=true -Dkeyman.jinitracing=ON \
@@ -484,7 +485,7 @@ create queuemanager certificate and sign it with the previously created CA:
  /bin/rm qmcert-swolinux/swolinux.cer
  #ok 0.00 sec
  /bin/rm qmcert-swolinux/swolinux.req
- #ok 0.00 sec 
+ #ok 0.00 sec
 
 For queuemanager then point MQclient.pl --sslkey=/dist/mq/mq-scripts/qmcert-swolinux/swolinux or
 copy the directory anywhere else more convenient like /var/mqm/ssl which is the default SSLKEYR.
@@ -518,7 +519,7 @@ Create a client certificate for the user mbj and sign it with the previosuly gen
  #Receive signed certificate 'clientcert-mbj/mbj.cer' into mbj-key repository
  /bin/gsk7cmd -cert -receive -db 'clientcert-mbj/mbj.kdb' -pw mypassword123 -file 'clientcert-mbj/mbj.cer'
  #ok 4.47 sec
- 
+
  ls -l /dist/mq/mq-scripts/clientcert-mbj/
  -rw-r--r--  1 secana secana     80 Mar  5 13:38 mbj.crl
  -rw-r--r--  1 secana secana 125080 Mar  5 13:38 mbj.kdb
@@ -533,5 +534,3 @@ user is mbj connecting to the same queuemanager.
 =head1 AUTHOR
 
 Morten Bjoernsvik - morten.bjornsvik@experian-scorex.no - 2008
-
-

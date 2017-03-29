@@ -105,7 +105,7 @@ MQSeries/QueueManager.pm
 MQSeries/Utils.pm
 Makefile.PL
 README
-README.html
+README.md
 README.windows
 SSL-cookbook/MQclient.pl
 SSL-cookbook/MQmanager-swolinux-sslclient.sh

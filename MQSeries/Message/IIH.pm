@@ -4,12 +4,12 @@
 # (c) 2002-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: IIH.pm,v 33.11 2012/09/26 16:15:16 jettisu Exp $
-#
 
 package MQSeries::Message::IIH;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries qw(:constants :constants);
@@ -413,7 +413,7 @@ message for a queue manager running on Solaris:
 
 =head1 AUTHORS
 
-Hildo Biersma, Jeff Dunn, Javier Ripoll Villag�mez
+Hildo Biersma, Jeff Dunn, Javier Ripoll Villagemez
 
 =head1 SEE ALSO
 

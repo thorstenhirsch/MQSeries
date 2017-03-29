@@ -1,6 +1,4 @@
-#!/usr/bin/perl
-#
-# $Id: flatten_macros,v 37.2 2012/09/26 16:15:37 jettisu Exp $
+#!/usr/bin/env perl
 #
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -19,30 +17,34 @@ use Getopt::Long;
 require "./util/parse_config";
 require "./util/parse_headers";
 
-GetOptions( \%Args, qw( force ) ) ||
+my %args;
+GetOptions( \%args, qw( force ) ) ||
   die "Error parsing \@ARGV\n";
 
+my @infiles;
 unless ( @infiles = split(/\n+/,qx{find pre.in -type f -name '*.in' -print}) ) {
     die "Unable to find *.in files in pre.in\n";
 }
 
+my $maxlen;
 foreach my $infile ( @infiles ) {
     $maxlen = length($infile) if length($infile) > $maxlen;
 }
 
-$thisyear = (localtime())[5] + 1900;
+my $thisyear = (localtime())[5] + 1900;
 
 warn "Flattening MQSeries macros...\n";
 
+our @tmpfiles;
 foreach my $infile ( @infiles ) {
 
     my $outfile = $infile;
     $outfile =~ s:^pre\.in/::;
     $outfile =~ s/\.in$/.pl/;
-    $tmpfile = "$outfile.$$";
-    push(@tmpfiles,$tmpfile);
+    my $tmpfile = "$outfile.$$";
+    push @tmpfiles, $tmpfile;
 
-    if ( -f $outfile && ! $Args{force} ) {
+    if ( -f $outfile && ! $args{force} ) {
         my (@outstat) = stat($outfile) or die "Unable to stat $outfile: $!\n";
         my (@instat) = stat($infile) or die "Unable to stat $infile: $!\n";
         next if $instat[9] < $outstat[9];

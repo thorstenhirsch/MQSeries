@@ -1,6 +1,6 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 #
-# $Id: check_version,v 36.4 2012/09/26 16:15:36 jettisu Exp $
+#
 #
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -12,13 +12,14 @@
 # ./util/check_version
 #
 
+use Cwd;
 use Getopt::Long;
 use File::Basename;
-use Cwd;
 
+my %args;
 GetOptions( \%args, qw( update ) ) || die;
 
-%skip = map { $_ => 1 }
+my %skip = map { $_ => 1 }
 qw(
    .options/rcsMajor
    .msbaseline

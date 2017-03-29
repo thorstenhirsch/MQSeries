@@ -1,6 +1,4 @@
 #
-# $Id: Statistics.pm,v 37.6 2012/09/26 16:15:17 jettisu Exp $
-#
 # (c) 2011-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::Message::Statistics;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries qw(:functions :constants);

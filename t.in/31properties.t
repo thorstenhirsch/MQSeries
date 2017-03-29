@@ -1,24 +1,18 @@
 #
-# $Id: 31properties.t,v 33.11 2012/09/26 16:15:33 jettisu Exp $
-#
 # (c) 2009-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
 
-use strict;
-use warnings;
+use Data::Dumper;
+use Test::More tests => 22;
 
-our %myconfig;
-our $systemdir;
 BEGIN {
     require "../util/parse_config";
 }
 
-use Data::Dumper;
-use Test::More tests => 22;
-BEGIN { 
+BEGIN {
     our $VERSION = '1.35';
-    use_ok('__APITYPE__::MQSeries' => $VERSION); 
+    use_ok('__APITYPE__::MQSeries' => $VERSION);
 }
 
 SKIP: {
@@ -172,5 +166,3 @@ SKIP: {
     MQDISC($Hconn,$compcode,$reason);
     ok ($compcode == MQCC_OK && $reason == MQRC_NONE, "MQDISC");
 }
-
-

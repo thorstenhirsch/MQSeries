@@ -1,6 +1,4 @@
-#!/usr/bin/perl
-#
-# $Id: write_manifest,v 33.4 2012/09/26 16:15:38 jettisu Exp $
+#!/usr/bin/env perl
 #
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -12,6 +10,7 @@
 #
 
 use strict;
+use warnings;
 
 my %skip = map { $_ => 1 } qw(
                               .options/rcsMajor

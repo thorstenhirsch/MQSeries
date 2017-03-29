@@ -1,6 +1,4 @@
 #
-# $Id: QueueManager.pm,v 38.6 2012/09/26 16:15:19 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::QueueManager;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 #
@@ -294,34 +294,30 @@ sub Reasons {
 
 sub Inquire {
     my $self = shift;
-    my (@args) = @_;
+    my @args = @_;
 
     $self->{CompCode} = MQCC_FAILED;
     $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
-    my (@keys) = ();
-
     my $ForwardMap = $MQSeries::Command::PCF::RequestValues{QueueManager};
-    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQCMD_INQUIRE_Q_MGR}->[1];
+    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQSeries::MQCMD_INQUIRE_Q_MGR}->[1];
 
+    my @keys = ();
     foreach my $key ( @args ) {
-
         unless ( exists $ForwardMap->{$key} ) {
             $self->{Carp}->("Unrecognized Queue attribute: '$key'");
             return;
         }
-
         push(@keys,$ForwardMap->{$key});
-
     }
 
-    my (@values) = MQINQ(
-                         $self->{Hconn},
-                         $self->{Hobj},
-                         $self->{CompCode},
-                         $self->{Reason},
-                         @keys,
-                        );
+    my @values = MQINQ(
+                       $self->{Hconn},
+                       $self->{Hobj},
+                       $self->{CompCode},
+                       $self->{Reason},
+                       @keys,
+                      );
 
     unless ( $self->{CompCode} == MQCC_OK &&
              $self->{Reason} == MQRC_NONE ) {
@@ -335,30 +331,28 @@ sub Inquire {
     $self->{CompCode} = MQCC_FAILED;
     $self->{Reason} = MQRC_UNEXPECTED_ERROR;
 
-    my (%values) = ();
+    my %values = ();
 
     for ( my $index = 0 ; $index <= $#keys ; $index++ ) {
 
-        my ($key,$value) = ($keys[$index],$values[$index]);
+        my ($key, $value) = ($keys[$index], $values[$index]);
 
-        my ($newkey,$ValueMap) = @{$ReverseMap->{$key}} if defined $ReverseMap->{$key};
+        my $newkey = $key;
+        my $ValueMap;
+        ($newkey, $ValueMap) = @{$ReverseMap->{$key}} if exists $ReverseMap->{$key};
 
         if (!$ValueMap) {
             $values{$newkey} = $value;
-        }
-        elsif (ref($ValueMap) eq "CODE" && # VALUEMAP-CODEREF
+        } elsif (ref($ValueMap) eq "CODE" && # VALUEMAP-CODEREF
                defined($ValueMap = $ValueMap->(decodepcf => $value))) {
             $values{$newkey} = $ValueMap;
-        }
-        elsif (ref($ValueMap) eq "HASH" &&
+        } elsif (ref($ValueMap) eq "HASH" &&
                exists($ValueMap->{$value})) {
             $values{$newkey} = $ValueMap->{$value}; # maybe not defined?
-        }
-        else {
+        } else {
             $self->{Carp}->("Unrecognized value '$value' for key '$newkey'\n");
             return;
         }
-
     }
 
     $self->{CompCode} = MQCC_OK;

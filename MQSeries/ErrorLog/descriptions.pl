@@ -5,8 +5,6 @@
 # (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: descriptions.pl,v 38.3 2012/09/26 16:15:13 jettisu Exp $
-#
 
 #
 # For more info on all these messages, see the
@@ -16,7 +14,7 @@
 package MQSeries::ErrorLog::Parser;
 
 use strict;
-
+use warnings;
 
 #
 # Define a set of helper-patterns

@@ -1,6 +1,4 @@
-#-*-perl-*-
-#
-# $Id: fake_mm,v 33.4 2012/09/26 16:15:37 jettisu Exp $
+#!/usr/bin/env perl
 #
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
@@ -11,26 +9,30 @@
 # make maker doesn't have this, and it is *very* convenient for
 # skipping sections of the build.
 #
+
+use strict;
+use warnings;
+
 sub myWriteEmptyMakefile {
 
     if ( defined &ExtUtils::MakeMaker::WriteEmptyMakefile ) {
-	ExtUtils::MakeMaker::WriteEmptyMakefile();
-	return 1;
+        ExtUtils::MakeMaker::WriteEmptyMakefile();
+        return 1;
     }
 
     open(MF,">Makefile") || die "Unable to open Makefile: $!\n";
 
     print MF <<"EndOfMakefile";
 all:
- 
+
 clean:
- 
+
 install:
- 
+
 makemakerdflt:
- 
+
 test:
- 
+
 EndOfMakefile
 
     close(MF) || die "Unable to close Makefile: $!\n";

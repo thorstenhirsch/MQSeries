@@ -1,10 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # server - Sample server script for request/reply examples
 #
 # Copyright (c) 2009-2012 Morgan Stanley & Co. Incorporated
-#
-# $Id: server.pl,v 33.4 2012/09/26 16:15:23 jettisu Exp $
 #
 
 use strict;

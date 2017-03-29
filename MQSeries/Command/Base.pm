@@ -1,6 +1,4 @@
 #
-# $Id: Base.pm,v 38.8 2012/09/26 16:10:14 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #

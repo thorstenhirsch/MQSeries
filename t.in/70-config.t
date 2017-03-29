@@ -1,9 +1,10 @@
 #
-# $Id: 70-config.t,v 33.9 2012/09/26 16:15:35 jettisu Exp $
-#
 # (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
+
+use MQSeries::Config::Machine 1.35;
+use MQSeries::Config::QMgr 1.35;
 
 BEGIN {
     require "../util/parse_config";
@@ -16,9 +17,7 @@ BEGIN {
 
 END { print "not ok 1\n" unless $loaded; }
 
-use __APITYPE__::MQSeries 1.34;
-use MQSeries::Config::Machine 1.34;
-use MQSeries::Config::QMgr 1.34;
+use __APITYPE__::MQSeries 1.35;
 $loaded = 1;
 print "ok 1\n";
 

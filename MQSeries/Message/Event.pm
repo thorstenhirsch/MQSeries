@@ -1,6 +1,4 @@
 #
-# $Id: Event.pm,v 33.15 2012/09/26 16:15:16 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::Message::Event;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries qw(:functions :constants);

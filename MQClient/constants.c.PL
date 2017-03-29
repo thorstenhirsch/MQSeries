@@ -1,6 +1,4 @@
 #
-# $Id: constants.c.PL,v 36.3 2012/09/26 16:10:09 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -63,16 +61,16 @@ if (keys %extra_hex || keys %extra_num) {
 EndOfText
     ;
     foreach my $name (sort keys %extra_hex) {
-	my $value = $extra_hex{$name};
-	print "#ifndef $name\n";
-	printf "#define $name 0x%04x\n", $value;
-	print "#endif /* $name */\n";
+        my $value = $extra_hex{$name};
+        print "#ifndef $name\n";
+        printf "#define $name 0x%04x\n", $value;
+        print "#endif /* $name */\n";
     }
     foreach my $name (sort keys %extra_num) {
-	my $value = $extra_num{$name};
-	print "#ifndef $name\n";
-	print "#define $name $value\n";
-	print "#endif /* $name */\n";
+        my $value = $extra_num{$name};
+        print "#ifndef $name\n";
+        print "#define $name $value\n";
+        print "#endif /* $name */\n";
     }
     print "\n\n";
 }
@@ -195,4 +193,3 @@ rename("constants.c.$$","constants.c") ||
   die "Unable to rename constants.c.$$ to constants.c: $ERRNO\n";
 
 exit 0;
-

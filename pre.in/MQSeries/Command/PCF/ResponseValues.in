@@ -1,7 +1,5 @@
 #-*-perl-*-
 #
-# $Id: ResponseValues.in,v 37.8 2012/09/26 16:15:27 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -426,7 +424,7 @@ package MQSeries::Command::PCF;
    },
 
    ChannelInitiatorControl =>
-   {		
+   {
     Manual			=> &MQSVC_CONTROL_MANUAL,
     QMgr			=> &MQSVC_CONTROL_Q_MGR,
    },
@@ -823,7 +821,7 @@ package MQSeries::Command::PCF;
     Off				=> &MQMON_OFF,
    },
 
-   QMgrClusterMonitoring =>	
+   QMgrClusterMonitoring =>
    {
     High			=> &MQMON_HIGH,
     Low				=> &MQMON_LOW,
@@ -921,7 +919,7 @@ package MQSeries::Command::PCF;
     QMgr			=> &MQCLWL_USEQ_AS_Q_MGR,
    },
 
-   QueueAccounting =>	
+   QueueAccounting =>
    {
     On			       => &MQMON_ON,
     Off			       => &MQMON_OFF,
@@ -958,7 +956,7 @@ package MQSeries::Command::PCF;
     Multiply			=> &MQRCVTIME_MULTIPLY,
    },
 
-   ActivityRecording =>	
+   ActivityRecording =>
    {
     Disabled			=> &MQRECORDING_DISABLED,
     Msg				=> &MQRECORDING_MSG,
@@ -1052,7 +1050,7 @@ package MQSeries::Command::PCF;
     Local			=> &MQTOPT_LOCAL,
    },
 
-   TraceRouteRecording =>	
+   TraceRouteRecording =>
    {
     Disabled			=> &MQRECORDING_DISABLED,
     Msg				=> &MQRECORDING_MSG,
@@ -1249,7 +1247,7 @@ package MQSeries::Command::PCF;
     XA				=> &MQUOWT_XA,
    },
 
-   # 
+   #
    # On z/os, v7, GroupUR
    #
    GroupUR =>
@@ -1289,9 +1287,9 @@ package MQSeries::Command::PCF;
    },
 
    #
-   #  v7 stuff on z/os 
+   #  v7 stuff on z/os
    #
-   LogCompression => 
+   LogCompression =>
    {
     None			=> &MQCOMPRESS_NONE,
     RLE				=> &MQCOMPRESS_RLE,

@@ -4,12 +4,12 @@
 # (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Entry.pm,v 33.11 2012/09/26 16:15:12 jettisu Exp $
-#
 
 package MQSeries::ErrorLog::Entry;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use overload ('""'  => 'as_string',

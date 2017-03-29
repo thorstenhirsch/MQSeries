@@ -1,6 +1,4 @@
 #
-# $Id: Queue.pm,v 37.6 2012/09/26 16:15:19 jettisu Exp $
-#
 # (c) 1999-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
@@ -10,6 +8,8 @@ package MQSeries::Queue;
 use 5.008;
 
 use strict;
+use warnings;
+
 use Carp;
 
 use MQSeries qw(:functions :constants);
@@ -775,7 +775,7 @@ sub Inquire {
     my (@keys) = ();
 
     my $ForwardMap = $MQSeries::Command::PCF::RequestValues{Queue};
-    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQCMD_INQUIRE_Q}->[1];
+    my $ReverseMap = $MQSeries::Command::PCF::_Responses{MQSeries::MQCMD_INQUIRE_Q}->[1];
 
     foreach my $key ( @args ) {
 

@@ -1,10 +1,8 @@
-#!/usr/bin/perl5
+#!/usr/bin/env/perl
 #
 # request_tempdyn - Sample request script with a temporary dynamic reply queue
 #
 # Copyright (c) 2009-2012 Morgan Stanley & Co. Incorporated
-#
-# $Id: request_permdyn.pl,v 33.4 2012/09/26 16:15:22 jettisu Exp $
 #
 
 use strict;

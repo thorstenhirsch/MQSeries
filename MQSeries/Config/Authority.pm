@@ -4,8 +4,6 @@
 # (c) 2000-2012 Morgan Stanley & Co. Incorporated
 # See ..../src/LICENSE for terms of distribution.
 #
-# $Id: Authority.pm,v 33.11 2012/09/26 16:15:10 jettisu Exp $
-#
 
 package MQSeries::Config::Authority;
 
