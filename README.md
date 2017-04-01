@@ -1,4 +1,5 @@
 # MQSeries Perl Module
+[![GitHub version](https://github.com/thorstenhirsch%2FMQSeries%2Fversion.svg)]
 
 ## INTRODUCTION
 This module implements a perl5 API for the IBM MQSeries / WebSphere MQ
@@ -13,9 +14,9 @@ For more information on the MQSeries / WebSphere MQ product itself, see
 the IBM website at: http://www.ibm.com/software/products/en/ibm-mq
 
 ## PREREQUISITES
-This release requires perl5.8 or later, and a current release of the IBM
-Websphere MQ (MQSeries) product installed, either V5.2 (+ high CSD),
-V5.3, V6.0, V7.0 or 7.1.
+This release requires Perl 5.8 or later, and a current release of IBM MQ
+(formerly known as Websphere MQ and MQSeries) installed, either V5.2
+(+ high CSD), V5.3, V6.0, V7.0, 7.1, 7.5, 8.0, or 9.0.
 
 ## PLATFORMS
 This package has been known to build with the following combinations of
@@ -49,6 +50,7 @@ maintainers.
    *Red Hat EL 5 / x86_64   7.1                     5.8
     Red Hat EL 6 / x86_64   8.0                     5.22
     Red Hat EL 7 / x86_64   8.0                     5.24
+    Red Hat EL 7 / x86_64   9.0                     5.24
    *HP-UX 11.31 Itanium     7.0                     5.8.9
    *Windows XP SP2          5.3                     Active Perl 5.8.8
    *Windows XP SP2          6.0                     Active Perl 5.8.8
@@ -197,7 +199,7 @@ man MQSeries::FDC::Tail
 man MQSeries::FDC::Entry
 ```
 
-##AUTHORS
+## AUTHORS
 The code is currently maintained and supported by:
 
 > Thorsten Hirsch <t-dot-hirsch(at)web-dot-de>
