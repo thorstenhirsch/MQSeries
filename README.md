@@ -1,5 +1,5 @@
 # MQSeries Perl Module
-[![GitHub version](https://cdn.rawgit.com/thorstenhirsch/MQSeries/master/img/version.svg)](https://github.com/thorstenhirsch/MQSeries)
+[![GitHub version](https://rawgit.com/thorstenhirsch/MQSeries/master/version.svg)](https://github.com/thorstenhirsch/MQSeries)
 
 ## INTRODUCTION
 This module implements a perl5 API for the IBM MQSeries / WebSphere MQ
