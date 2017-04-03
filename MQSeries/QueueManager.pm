@@ -891,7 +891,8 @@ sub GetMessageHandle
                        $self->{Reason});
 
     if ($self->{CompCode} == MQCC_OK) {
-        push(@{$self->{MessageHandles}}, $hmsg);
+        $self->{MessageHandles}->{$hmsg} = 1;
+        return $hmsg;
     } elsif ($self->{CompCode} == MQCC_WARNING ||
              $self->{CompCode} == MQCC_FAILED) {
         $self->{Carp}->("MQCRTMH failed (Reason = $self->{Reason})");

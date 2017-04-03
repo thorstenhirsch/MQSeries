@@ -428,40 +428,40 @@ sub Put {
     #
     my $props_obj;		# Scope must extend past MQPUT
     if (defined $args{Properties}) {
-	my $props = $args{Properties};
-	if (ref $props eq 'HASH') {
-	    $props_obj = MQSeries::Properties::->
-	      new('QueueManager' => $self->{QueueManager});
-	    while (my ($name, $value) = each %$props) {
-		if (ref $value) {  # Assume hash-ref
-		    $props_obj->SetProperty(%$value, 'Name' => $name);
-		} else {	# String
-		    $props_obj->SetProperty('Name'  => $name,
-					    'Value' => $value);
-		}
-	    }
-	} elsif (ref $props && $props->isa("MQSeries::Properties")) {
-	    $props_obj = $props;
-	} else {
-	    $self->{Carp}->("Invalid argument 'Properties': must be a hash reference");
-	    return;
-	}
-	if (!defined $PutMsgOpts->{Version} ||
-	    $PutMsgOpts->{Version} < MQPMO_VERSION_3) {
-	    $PutMsgOpts->{Version} = MQPMO_VERSION_3;
-	}
-	$PutMsgOpts->{OriginalMsgHandle} = $props_obj->{Hmsg};
+        my $props = $args{Properties};
+        if (ref $props eq 'HASH') {
+            $props_obj = MQSeries::Properties::->
+                new('QueueManager' => $self->{QueueManager});
+            while (my ($name, $value) = each %$props) {
+                if (ref $value) {  # Assume hash-ref
+                    $props_obj->SetProperty(%$value, 'Name' => $name);
+                } else {	# String
+                    $props_obj->SetProperty('Name'  => $name,
+                            'Value' => $value);
+                }
+            }
+        } elsif (ref $props && $props->isa("MQSeries::Properties")) {
+            $props_obj = $props;
+        } else {
+            $self->{Carp}->("Invalid argument 'Properties': must be a hash reference");
+            return;
+        }
+        if (!defined $PutMsgOpts->{Version} ||
+                $PutMsgOpts->{Version} < MQPMO_VERSION_3) {
+            $PutMsgOpts->{Version} = MQPMO_VERSION_3;
+        }
+        $PutMsgOpts->{OriginalMsgHandle} = $props_obj->{Hmsg};
     }
 
     MQPUT(
-	  $self->{QueueManager}->{Hconn},
-	  $self->{Hobj},
-	  $args{Message}->MsgDesc(),
-	  $PutMsgOpts,
-	  $buffer,
-	  $self->{CompCode},
-	  $self->{Reason},
-	 );
+            $self->{QueueManager}->{Hconn},
+            $self->{Hobj},
+            $args{Message}->MsgDesc(),
+            $PutMsgOpts,
+            $buffer,
+            $self->{CompCode},
+            $self->{Reason},
+         );
 
     if ( $self->{CompCode} == MQCC_FAILED ) {
         $self->{Carp}->(qq/MQPUT failed (Reason = $self->{Reason})/);
@@ -597,21 +597,22 @@ sub Get {
     # GetMsgOpts.
     #
     if ($MQSeries::MQ_VERSION >= 7 &&
-    defined $self->{QueueManager}->{QMgrConfig} &&
-    $self->{QueueManager}->{QMgrConfig}{CommandLevel} >= 700) {
-      my $props_obj = $args{Message}->Properties();
-      unless (defined $props_obj) {
-        $props_obj = MQSeries::Properties::->
-        new('QueueManager' => $self->{QueueManager});
-        $args{Message}->Properties($props_obj);
-      }
-      if (!defined $GetMsgOpts->{Version} ||
-      $GetMsgOpts->{Version} < MQGMO_VERSION_4) {
-        $GetMsgOpts->{Version} = MQGMO_VERSION_4;
-      }
-      $GetMsgOpts->{MsgHandle} = $props_obj->{Hmsg};
+            defined $self->{QueueManager}->{QMgrConfig} &&
+            $self->{QueueManager}->{QMgrConfig}{CommandLevel} >= 700) {
+        my $props_obj = $args{Message}->Properties();
+        unless (defined $props_obj) {
+            $props_obj = MQSeries::Properties::->
+                new('QueueManager' => $self->{QueueManager});
+            $args{Message}->Properties($props_obj);
+        }
+        if (!defined $GetMsgOpts->{Version} ||
+                $GetMsgOpts->{Version} < MQGMO_VERSION_4) {
+            $GetMsgOpts->{Version} = MQGMO_VERSION_4;
+        }
+        die "no message handle in properties object" unless defined $props_obj->{Hmsg};
+        $GetMsgOpts->{MsgHandle} = $props_obj->{Hmsg};
     } else {
-      #print "Not compiled for V7 and connected to V7, ignoring properties\n";
+        #print "Not compiled for V7 and connected to V7, ignoring properties\n";
     }
 
     #

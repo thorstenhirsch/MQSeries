@@ -59,7 +59,8 @@ sub new {
 
     # MessageHandle creation/deletion is handled by the QueueManager object
     $self->{Hmsg} = $self->{QueueManager}->GetMessageHandle($self->{Options});
-    return;
+
+    return $self;;
 }
 
 
@@ -285,7 +286,7 @@ sub DeleteProperty {
 #
 sub DESTROY {
     my $self = shift;
-    $self->{QueueManager}->deleteMessageHandle($self->{Hmsg});
+    $self->{QueueManager}->DeleteMessageHandle($self->{Hmsg}) if ($self->{Hconn});
 }
 
 #
